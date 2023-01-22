@@ -30,15 +30,20 @@
             <q-item-section avatar>
               <q-icon name="list" />
             </q-item-section>
-
             <q-item-section> Home </q-item-section>
+          </q-item>
+
+          <q-item exact clickable v-ripple to="/register">
+            <q-item-section avatar>
+              <q-icon name="list" />
+            </q-item-section>
+            <q-item-section> Sign-up </q-item-section>
           </q-item>
 
           <q-item exact clickable v-ripple to="/login">
             <q-item-section avatar>
               <q-icon name="list" />
             </q-item-section>
-
             <q-item-section> Login </q-item-section>
           </q-item>
         </q-list>

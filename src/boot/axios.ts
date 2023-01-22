@@ -1,5 +1,6 @@
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
+import vue3GoogleLogin from 'vue3-google-login';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -21,6 +22,11 @@ export default boot(({ app }) => {
   app.config.globalProperties.$axios = axios;
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
   //       so you won't necessarily have to import axios in each vue file
+
+  app.use(vue3GoogleLogin, {
+    clientId:
+      '483299815090-0c487kh6kslbf31j3b2m5c7seij8e2gq.apps.googleusercontent.com',
+  });
 
   app.config.globalProperties.$api = api;
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
