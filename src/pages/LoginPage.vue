@@ -27,6 +27,8 @@ const callback = (response) => {
   console.log('Handle the response', response);
   const userData = decodeCredential(response.credential);
   console.log('Handle the userData', userData);
+  console.log('Handle the email', userData.email);
+  serverLogin(userData.email);
 };
 </script>
 
@@ -36,9 +38,36 @@ export default {
   methods: {
     auth(network) {
       this.$hello(network)
-        .login({ scope: 'friends' })
+        .login({
+          scope: 'email,user_friends',
+          returned_scopes: true,
+          force: true,
+        })
         .then((res) => {
           console.log(res);
+          this.$hello(network)
+            .api('me')
+            .then((res) => {
+              console.log(res.email);
+              this.serverLogin(res.email);
+            });
+        });
+    },
+    serverLogin(userEmail) {
+      console.log('userEmail', userEmail);
+      const data = {
+        email: userEmail,
+      };
+      console.log('data', data);
+      this.$api
+        //.post('/api/login', data)
+        .get('/help/fun')
+        .then((res) => {
+          console.log(res);
+          //this.$router.push('/profile');
+        })
+        .catch((err) => {
+          console.log(err);
         });
     },
   },
