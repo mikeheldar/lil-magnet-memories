@@ -1,17 +1,17 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <GoogleLogin :callback="callback" />
-    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-xs-12 q-pa-xl dark">
-      <div class="q-mt-xl">
+    <div class="column items-center" style="height: 150px">
+      <div class="col">
+        <GoogleLogin :callback="googleAuth" style="width: 248px" />
+      </div>
+      <div class="col">
         <q-btn
-          color="primary"
+          color="blue"
           glossy
-          push
-          class="full-width"
-          icon="fab fa-facebook-f"
+          icon="fa-facebook-f"
           label="Login with Facebook"
-          size="md"
-          @click="auth('facebook')"
+          @click="helloAuth('facebook')"
+          style="width: 248px"
         >
         </q-btn>
       </div>
@@ -21,27 +21,36 @@
 
 <script setup>
 import { decodeCredential } from 'vue3-google-login';
-const callback = (response) => {
-  // This callback will be triggered when the user selects or login to
-  // his Google account from the popup
-  console.log('Handle the response', response);
-  const userData = decodeCredential(response.credential);
-  console.log('Handle the userData', userData);
-  console.log('Handle the email', userData.email);
-  serverLogin(userData.email);
-};
+// const callback = (response) => {
+//   // This callback will be triggered when the user selects or login to
+//   // his Google account from the popup
+//   console.log('Handle the response', response);
+//   const userData = decodeCredential(response.credential);
+//   console.log('Handle the userData', userData);
+//   console.log('Handle the email', userData.email);
+//   serverLogin(userData.email);
+// };
 </script>
 
 <script>
 export default {
   name: 'LoginPage',
   methods: {
-    auth(network) {
+    googleAuth(response) {
+      // This callback will be triggered when the user selects or login to
+      // his Google account from the popup
+      console.log('Handle the response', response);
+      const userData = decodeCredential(response.credential);
+      console.log('Handle the userData', userData);
+      console.log('Handle the email', userData.email);
+      this.serverLogin(userData.email);
+    },
+    helloAuth(network) {
       this.$hello(network)
         .login({
           scope: 'email,user_friends',
           returned_scopes: true,
-          force: true,
+          //force: true,
         })
         .then((res) => {
           console.log(res);
@@ -54,20 +63,21 @@ export default {
         });
     },
     serverLogin(userEmail) {
-      console.log('userEmail', userEmail);
-      const data = {
+      console.log('In serverLogin, userEmail', userEmail);
+
+      const payload = {
         email: userEmail,
       };
-      console.log('data', data);
+
+      console.log('payload to send: ', payload);
       this.$api
-        //.post('/api/login', data)
-        .get('/help/fun')
+        .post('/api/login', payload)
         .then((res) => {
-          console.log(res);
+          console.log('Response from server: ', res);
           //this.$router.push('/profile');
         })
         .catch((err) => {
-          console.log(err);
+          console.log('Error: ', err);
         });
     },
   },

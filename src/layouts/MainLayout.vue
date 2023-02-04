@@ -11,10 +11,13 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
+        <q-toolbar-title> Spoiler Alert </q-toolbar-title>
       </q-toolbar>
+      <div class="q-px-lg q-pt-xl q-pb-md">
+        <div class="text-h3">TV Togetherness.</div>
+        <div class="text-subtitle1">No Spoilers.</div>
+      </div>
+      <q-img src="../statics/tv_kids.jpg" class="header-image absolute-top" />
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
@@ -50,16 +53,15 @@
       </q-scroll-area>
 
       <q-img
-        class="absolute-top"
-        src="../statics/cheers.jpg"
+        class="header-image absolute-top"
+        src="../statics/tv_kids.jpg"
         style="height: 192px"
       >
         <div class="absolute-bottom bg-transparent">
           <q-avatar size="56px" class="q-mb-sm">
-            <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
+            <img src="../statics/mini_tv.png" />
           </q-avatar>
-          <div class="text-weight-bold">Michael Helman-Darley</div>
-          <div>Heldar</div>
+          <div class="text-weight-bold">Spoiler Alert</div>
         </div>
       </q-img>
       <q-list>
@@ -148,3 +150,12 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss">
+.header-image {
+  height: 100%;
+  z-index: -1;
+  opacity: 0.6;
+  filter: grayscale(50%);
+}
+</style>
