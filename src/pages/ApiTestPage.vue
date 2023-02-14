@@ -13,7 +13,7 @@
         </q-btn>
       </div>
 
-      <div class="col q-pt-xl">
+      <!-- <div class="col q-pt-xl">
         <q-input filled v-model="emailToAdd" label="email to add" />
         <q-input filled v-model="passwordToAdd" label="password to add" />
         <q-btn
@@ -21,6 +21,18 @@
           glossy
           label="test add user api"
           @click="addUser(emailToAdd, passwordToAdd)"
+          style="width: 248px"
+        >
+        </q-btn>
+      </div> -->
+
+      <div class="col q-pt-xl">
+        <q-input filled v-model="messageToVerify" label="message to verify" />
+        <q-btn
+          color="primary"
+          glossy
+          label="test message verify api"
+          @click="verifyMessage(messageToVerify)"
           style="width: 248px"
         >
         </q-btn>
@@ -68,12 +80,35 @@ export default {
           console.log('Error: ', err);
         });
     },
+    verifyMessage(messageToVerify) {
+      console.log('In verifyMessage, messageToVerify', messageToVerify);
+
+      const payload = {
+        message: messageToVerify,
+      };
+      const headers = {
+        authorization:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IkplbiBKb25lcyIsImlhdCI6MTY3NjMyNzc3Mn0.SC9aReG5_bpzuMFPVVhHNmMsMeO20YCRceaS_yOF8xE',
+      };
+
+      console.log('payload to send: ', payload);
+      this.$api
+        .get('/api-test/verify', { headers })
+        .then((res) => {
+          console.log('Response from server: ', res);
+        })
+        .catch((err) => {
+          console.log('Error: ', err);
+        });
+    },
   },
+
   data() {
     return {
       emailToFind: '',
       emailToAdd: '',
       passwordToAdd: '',
+      messageToVerify: '',
     };
   },
 };
