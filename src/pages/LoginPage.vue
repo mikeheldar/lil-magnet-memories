@@ -16,7 +16,7 @@
         </q-btn>
       </div>
       <div class="col q-pt-lg">
-        <q-input filled v-model="userEmail" label="email address (login)" />
+        <q-input filled v-model="userEmail" label="email (classic login)" />
         <q-input filled v-model="userPassword" label="password" />
         <q-btn
           color="primary"
@@ -27,21 +27,16 @@
         >
         </q-btn>
       </div>
+      <div class="col">
+        <a @click="forgotPassword()">Forgot Password</a>
+      </div>
     </div>
   </q-page>
 </template>
 
 <script setup>
 import { decodeCredential } from 'vue3-google-login';
-// const callback = (response) => {
-//   // This callback will be triggered when the user selects or login to
-//   // his Google account from the popup
-//   console.log('Handle the response', response);
-//   const userData = decodeCredential(response.credential);
-//   console.log('Handle the userData', userData);
-//   console.log('Handle the email', userData.email);
-//   serverLogin(userData.email);
-// };
+import jwt_decode from 'jwt-decode';
 </script>
 
 <script>
@@ -81,7 +76,6 @@ export default {
     },
     serverLogin(userEmail, userToken) {
       console.log('In serverLogin, userEmail', userEmail);
-
       const payload = {
         email: userEmail,
         token: userToken,
@@ -89,15 +83,35 @@ export default {
       };
       console.log('userToken', JSON.stringify(userToken));
       console.log('payload to send: ', payload);
+
       this.$api
         .post('/api/login', payload)
         .then((res) => {
           console.log('Response from server: ', res);
-          //this.$router.push('/profile');
+
+          console.log('Response from server decoded...');
+          console.log(jwt_decode(res.data));
+          console.log(res.data);
+
+          //save the token in the local storage for future use
+          sessionStorage.setItem('token', res.data);
+          console.log(
+            'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
+          );
+          sessionStorage.setItem('loggedIn', 'true');
+          this.$eventbus.emit('loggedIn', 'true');
+          console.log(
+            'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
+          );
+
+          this.$router.push('/profile');
         })
         .catch((err) => {
           console.log('Error: ', err);
         });
+    },
+    forgotPassword() {
+      this.$router.push('/forgot-password');
     },
   },
   data() {

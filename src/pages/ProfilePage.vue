@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import { Quasar } from 'quasar';
 export default {
   name: 'ProfilePage',
   data() {
@@ -40,6 +41,15 @@ export default {
     },
     logout() {
       this.$hello.logout('facebook', { force: true });
+      console.log(
+        'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
+      );
+      sessionStorage.setItem('loggedIn', 'false');
+      this.$eventbus.emit('loggedIn', 'false');
+      console.log(
+        'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
+      );
+
       this.$router.push('/');
     },
   },

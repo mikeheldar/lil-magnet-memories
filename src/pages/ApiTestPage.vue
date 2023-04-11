@@ -81,17 +81,18 @@ export default {
         });
     },
     verifyMessage(messageToVerify) {
-      console.log('In verifyMessage, messageToVerify', messageToVerify);
+      console.log('In verifyMessage, messageToVerify: ', messageToVerify);
 
       const payload = {
         message: messageToVerify,
       };
       const headers = {
-        authorization:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IkplbiBKb25lcyIsImlhdCI6MTY3NjMyNzc3Mn0.SC9aReG5_bpzuMFPVVhHNmMsMeO20YCRceaS_yOF8xE',
+        authorization: sessionStorage.getItem('token'),
       };
 
       console.log('payload to send: ', payload);
+      console.log('headers to send: ', headers);
+
       this.$api
         .get('/api-test/verify', { headers })
         .then((res) => {

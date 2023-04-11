@@ -1,6 +1,5 @@
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
-import vue3GoogleLogin from 'vue3-google-login';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -15,6 +14,7 @@ declare module '@vue/runtime-core' {
 // "export default () => {}" function below (which runs individually
 // for each client)
 const api = axios.create({ baseURL: 'http://localhost:8924' });
+const tvdb = axios.create({ baseURL: 'https://api4.thetvdb.com/v4' });
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
@@ -23,14 +23,13 @@ export default boot(({ app }) => {
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
   //       so you won't necessarily have to import axios in each vue file
 
-  app.use(vue3GoogleLogin, {
-    clientId:
-      '483299815090-0c487kh6kslbf31j3b2m5c7seij8e2gq.apps.googleusercontent.com',
-  });
-
   app.config.globalProperties.$api = api;
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
+
+  app.config.globalProperties.$tvdb = tvdb;
+  // ^ ^ ^ this will allow you to use this.$tvdb (for Vue Options API form)
+  //       so you can easily perform requests against the TVDB API
 });
 
-export { api };
+export { api, tvdb };

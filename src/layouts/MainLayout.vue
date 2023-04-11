@@ -10,12 +10,31 @@
           aria-label="Menu"
           @click="toggleLeftDrawer"
         />
-
         <q-toolbar-title> Spoiler Alert </q-toolbar-title>
+        <q-space />
+        <q-btn
+          v-if="loggedIn == 'true'"
+          flat
+          dense
+          round
+          icon="person"
+          aria-label="Profile"
+          @click="goToProfilePage"
+        />
+        <q-btn
+          v-if="loggedIn == 'false'"
+          flat
+          dense
+          round
+          icon="login"
+          aria-label="Login"
+          @click="goToLoginPage"
+        />
       </q-toolbar>
       <div class="q-px-lg q-pt-xl q-pb-md">
         <div class="text-h3">TV Togetherness.</div>
         <div class="text-subtitle1">No Spoilers.</div>
+        <div>Session Data: {{ loggedIn }}</div>
       </div>
       <q-img src="../statics/tv_kids.jpg" class="header-image absolute-top" />
     </q-header>
@@ -49,6 +68,13 @@
             </q-item-section>
             <q-item-section> Login </q-item-section>
           </q-item>
+
+          <q-item exact clickable v-ripple to="/add-show">
+            <q-item-section avatar>
+              <q-icon name="list" />
+            </q-item-section>
+            <q-item-section> Add Show </q-item-section>
+          </q-item>
         </q-list>
       </q-scroll-area>
 
@@ -81,7 +107,7 @@
   </q-layout>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
 
@@ -147,6 +173,30 @@ export default defineComponent({
         leftDrawerOpen.value = !leftDrawerOpen.value;
       },
     };
+  },
+
+  data() {
+    return {
+      loggedIn: sessionStorage.getItem('loggedIn'),
+    };
+  },
+  mounted() {
+    this.loggedIn = sessionStorage.getItem('loggedIn');
+    this.$eventbus.on('loggedIn', (loggedIn) => {
+      this.loggedIn = loggedIn;
+    });
+    console.log('local loggedIn now: ', this.loggedIn);
+  },
+
+  methods: {
+    goToLoginPage() {
+      console.log('goToLoginPage');
+      this.$router.push('/login');
+    },
+    goToProfilePage() {
+      console.log('goToProfilePage');
+      this.$router.push('/profile');
+    },
   },
 });
 </script>
