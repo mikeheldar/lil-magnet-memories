@@ -26,11 +26,19 @@
 
           <q-item-section>
             <q-btn
+              v-if="!inMyShows(show.id.replace('series-', ''))"
               @click="addShow(show)"
               flat
               rounded
               color="primary"
-              icon="add_circle_outline"
+              icon="bookmark_add"
+            />
+            <q-btn
+              v-if="inMyShows(show.id.replace('series-', ''))"
+              flat
+              rounded
+              color="accent"
+              icon="bookmark_added"
             />
           </q-item-section>
         </q-item>
@@ -40,18 +48,13 @@
 </template>
 
 <script>
-
 export default {
   name: 'ProfilePage',
   data() {
     return {
       showToFind: '',
-      shows: [
-        {
-          name: 'test show',
-          overview: 'test overview',
-        },
-      ],
+      shows: [],
+      myShowIDs: [],
     };
   },
   watch: {
@@ -59,12 +62,15 @@ export default {
       this.getTVShows(this.showToFind);
     },
   },
+  mounted() {
+    this.getMyShowIDs();
+  },
   methods: {
     getTVShows(query) {
       console.log('In getTVShows');
       const apikey = '24c87807-e9cd-4e9c-8d19-28ef0f44d186';
       const authtoken =
-        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2UiOiIiLCJhcGlrZXkiOiJmYjFjMzVkNC0xYmNmLTQ4MTEtODc1ZS1lOThmM2M2MzcxNDIiLCJjb21tdW5pdHlfc3VwcG9ydGVkIjp0cnVlLCJleHAiOjE2ODM3MTkxMjEsImdlbmRlciI6IiIsImhpdHNfcGVyX2RheSI6MTAwMDAwMDAwLCJoaXRzX3Blcl9tb250aCI6MTAwMDAwMDAwLCJpZCI6IjIzMTYyMjEiLCJpc19tb2QiOmZhbHNlLCJpc19zeXN0ZW1fa2V5IjpmYWxzZSwiaXNfdHJ1c3RlZCI6ZmFsc2UsInBpbiI6IlZLR0dPUVNFIiwicm9sZXMiOltdLCJ0ZW5hbnQiOiJ0dmRiIiwidXVpZCI6IiJ9.PrC4ZBRg9htCVABLOJKb8A3oeukD0PFvReeZMmFj3_EHzcMmJ5qDfRmXPgaT3pmFzjWVPBW4tNKutTunTrNbjQX_YMXXsu4kEGlj49L82tlYJEM3pla0D7LNlJIoVh7r8VNAaOxWxQjtuwV1mYu3d06cvrqVYemCQMu1M8ZWx27wRCsuhaBb5ln4qrFDedrPUz2kt_ZmJKH_9G_eOAhhN_MtJX9iqEtXxZY0Lzpx8u32jogOazIvfk7ob4rgdudci7GMvKXiDPuui92Wan4qs8wi_KCx7ml7J_ud7KGUGA8AAZr0I-nYk5r5n00-fBTVbaswl8YU2yHCpJcLUU37HuDmNNKpm_bld0bkZ5RUD6Rxd4O6c5JwUudknHJ24SoQ5smEBGMIWeI0-GsPAHXpVmzv1Z7VwFuqnMwaHRAAz1BPxR6Tjqgzn7QAUuuCUrOBk6Iz7tI5pDnoeNqFpJ-RChCWqnEDpzwmbRhSGMe6K6E_aYeHM4m4SdyObkX2aUx80djbDkis22j8fKkSKTonypC6mfYMx7yW-ZSFtQkVQHSnfxCvLjAozFuiD-ssP8sNI2edMzs-Zj2yrWV_O_9lhNd-EGCI-lE5KQigVpEWuVSlLARPwoBY5fJroYBD0cja2rP1U2Z6t7kOhewBfh2vPY1jm7vsEZ1mG_5ZSJm7Sro';
+        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2UiOiIiLCJhcGlrZXkiOiIyNGM4NzgwNy1lOWNkLTRlOWMtOGQxOS0yOGVmMGY0NGQxODYiLCJjb21tdW5pdHlfc3VwcG9ydGVkIjp0cnVlLCJleHAiOjE2OTYwNzI2MTAsImdlbmRlciI6IiIsImhpdHNfcGVyX2RheSI6MTAwMDAwMDAwLCJoaXRzX3Blcl9tb250aCI6MTAwMDAwMDAwLCJpZCI6IjIzMTYyMjEiLCJpc19tb2QiOmZhbHNlLCJpc19zeXN0ZW1fa2V5IjpmYWxzZSwiaXNfdHJ1c3RlZCI6ZmFsc2UsInBpbiI6IlZLR0dPUVNFIiwicm9sZXMiOltdLCJ0ZW5hbnQiOiJ0dmRiIiwidXVpZCI6IiJ9.Fi_ZVrzzmafrcq84RGHhqxB-Pv8wpooi0tXEOZq9gE0dbq2lPdGu6U1HFWKAhTRHJKjxZk3oMB89wuyfAe1ZM0rvmoL0WLLqzoffwNI9mbhhqIvqqU_0Ei0CPtRtOQ_XyJkCMh4Ve5rxFqaxqbhY9xchOIAajKYN9lXanDs9MZO7Tlse7O1KwRh4afAETKxjIpOkDjlobQJWB6Tfy4fcohLZWei-Ut5hTljyAlNB9uzkoJRaPx_Bm5uH3iAzxvhkvnH92stEPB15abasDIquQysHv33B0Ai-t3hwbe6_9w3sFzyPlpFExBRt7hq8qdYwVFtC1sw51KRlNO6Bj08gwWfTmjAx9rcdlKcal77X09GC362dxtLsJnhEiod-H5JFkp0Qxbu1FUpB66xbf3EvjtIzRJwYG9odcr-gEoXg9YZhtpsPRaLJeopviugwc8S6EcA7uu7nWwPuPR2rv58q34axcR6KNQ4nms1l0pOfwTAY43lPmg8eP08rJEKnxdcbsO2H9nL10OAzsGw2eYLzVyLHPLFthondjAC1OpJo33gNDm0WRW6_gU5XYbWf8eYSQQ-ssgLBYDYyY7AEgQ5zK7H65IqprdJcAnmuOpiezFrAN2WFM2PDnEZweECwONe0SsV6a29Jvxaka42thrl0qdVdCPj382udR4JAKAue4m0';
 
       const payload = {
         apikey: apikey,
@@ -94,21 +100,76 @@ export default {
       console.log('In addShow, show: ', showToAdd);
 
       const payload = {
-        id: showToAdd.id,
+        id: showToAdd.id.replace('series-', ''),
         name: showToAdd.name,
-      }
+        year: showToAdd.year,
+        image_url: showToAdd.image_url,
+        thumbnail: showToAdd.thumbnail,
+        overview: showToAdd.overview,
+      };
       const headers = {
         authorization: sessionStorage.getItem('token'),
       };
 
       this.$api
-        .post('/api-test/add-show', payload, { headers })
+        .post('/api/add-show', payload, { headers })
         .then((res) => {
           console.log('Response from server: ', res);
+          console.log(this.myShowIDs);
+          console.log('showToAdd.id: ', showToAdd.id);
+          this.getMyShowIDs();
         })
         .catch((err) => {
           console.log('Error: ', err);
+          this.logout();
         });
+    },
+    getMyShowIDs() {
+      console.log('In getMyShowIDs');
+      const headers = {
+        authorization: sessionStorage.getItem('token'),
+      };
+
+      this.$api
+        .get('/api/get-my-show-ids', { headers })
+        .then((res) => {
+          console.log('get-my-show-ids response from server: ', res.data);
+          this.myShowIDs = res.data;
+          console.log('this.myShowIDs: ', this.myShowIDs);
+        })
+        .catch((err) => {
+          console.log('Error: ', err);
+          this.logout();
+        });
+    },
+    inMyShows(showID) {
+      const show_id_num = parseInt(showID);
+      console.log('In inMyShows, showID: ', show_id_num);
+      console.log(this.myShowIDs);
+
+      if (
+        this.myShowIDs != -1 &&
+        this.myShowIDs.some((item) => item.show_id === show_id_num)
+      ) {
+        console.log('showID is in myShowIDs');
+        return true;
+      } else {
+        console.log('showID is NOT in myShowIDs');
+        return false;
+      }
+    },
+    logout() {
+      this.$hello.logout('facebook', { force: true });
+      console.log(
+        'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
+      );
+      sessionStorage.setItem('loggedIn', 'false');
+      this.$eventbus.emit('loggedIn', 'false');
+      console.log(
+        'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
+      );
+
+      this.$router.push('/login');
     },
   },
 };

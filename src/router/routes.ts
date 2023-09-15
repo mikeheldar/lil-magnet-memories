@@ -11,6 +11,8 @@ const routes: RouteRecordRaw[] = [
       { path: '/profile', component: () => import('pages/ProfilePage.vue') },
       { path: '/api-test', component: () => import('pages/ApiTestPage.vue') },
       { path: '/add-show', component: () => import('pages/AddShowPage.vue') },
+      { path: '/my-shows', component: () => import('pages/MyShowsPage.vue') },
+      { path: '/show/:show_id', component: () => import('pages/ShowPage.vue') },
       {
         path: '/forgot-password',
         component: () => import('pages/ForgotPasswordPage.vue'),

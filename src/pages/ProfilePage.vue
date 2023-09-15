@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import { Quasar } from 'quasar';
 export default {
   name: 'ProfilePage',
   data() {
@@ -50,7 +49,7 @@ export default {
         'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
       );
 
-      this.$router.push('/');
+      this.$router.push('/login');
     },
   },
 };

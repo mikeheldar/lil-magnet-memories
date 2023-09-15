@@ -34,7 +34,6 @@
       <div class="q-px-lg q-pt-xl q-pb-md">
         <div class="text-h3">TV Togetherness.</div>
         <div class="text-subtitle1">No Spoilers.</div>
-        <div>Session Data: {{ loggedIn }}</div>
       </div>
       <q-img src="../statics/tv_kids.jpg" class="header-image absolute-top" />
     </q-header>
@@ -74,6 +73,13 @@
               <q-icon name="list" />
             </q-item-section>
             <q-item-section> Add Show </q-item-section>
+          </q-item>
+
+          <q-item exact clickable v-ripple to="/my-shows">
+            <q-item-section avatar>
+              <q-icon name="list" />
+            </q-item-section>
+            <q-item-section> My Shows </q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
