@@ -52,7 +52,12 @@ module.exports = configure(function (/* ctx */) {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16',
       },
-
+      env: {
+        API_BASE_URL:
+          process.env.SA_ENVIRONMENT === 'dev_local'
+            ? 'http://localhost:8924'
+            : 'https://api.spoileralert-tv.com',
+      },
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,

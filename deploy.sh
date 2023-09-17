@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-
+quasar build
 aws s3 sync ./dist/spa/ s3://spoileralert-tv.com
 
 #Push to CloudFront - MHD: Not sure how this works yet

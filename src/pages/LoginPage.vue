@@ -4,7 +4,7 @@
       <div col v-if="!logging_in_classic">
         <q-label class="header">Time to Sign in!</q-label>
         <div class="q-pt-lg">
-          <GoogleLogin :="googleAuth" />
+          <GoogleLogin :callback="googleAuth" />
         </div>
         <div class="q-pt-sm">
           <q-btn

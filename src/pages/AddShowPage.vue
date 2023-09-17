@@ -5,8 +5,8 @@
       <q-btn
         color="primary"
         glossy
-        label="Find Show"
-        @click="getTVShows(showToFind)"
+        label="Get back to my shows!"
+        @click="myShows()"
         style="width: 100%"
       >
       </q-btn>
@@ -66,6 +66,9 @@ export default {
     this.getMyShowIDs();
   },
   methods: {
+    myShows() {
+      this.$router.push('/my-shows');
+    },
     getTVShows(query) {
       console.log('In getTVShows');
       const apikey = '24c87807-e9cd-4e9c-8d19-28ef0f44d186';

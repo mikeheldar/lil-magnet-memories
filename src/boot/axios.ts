@@ -13,9 +13,13 @@ declare module '@vue/runtime-core' {
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
+console.log('WE USING: ' + process.env.API_BASE_URL);
+
 const api = axios.create({
-  baseURL: 'https://api.spoileralert-tv.com',
+  baseURL: process.env.API_BASE_URL,
 });
+// const api = axios.create({ baseURL: 'http://localhost:8924' });
+
 const tvdb = axios.create({ baseURL: 'https://api4.thetvdb.com/v4' });
 
 export default boot(({ app }) => {
