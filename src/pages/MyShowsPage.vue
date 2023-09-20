@@ -49,7 +49,13 @@ export default {
   },
 
   mounted() {
-    this.getMyShows();
+    if (sessionStorage.getItem('loggedIn') === 'false') {
+      console.log('Not logged in, redirecting to login page');
+      this.$router.push('/login');
+    } else {
+      console.log('Logged in, getting my shows');
+      this.getMyShows();
+    }
   },
   methods: {
     getMyShows() {

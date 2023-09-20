@@ -63,7 +63,13 @@ export default {
     },
   },
   mounted() {
-    this.getMyShowIDs();
+    if (sessionStorage.getItem('loggedIn') === 'false') {
+      console.log('Not logged in, redirecting to login page');
+      this.$router.push('/login');
+    } else {
+      console.log('Logged in, getting my shows');
+      this.getMyShowIDs();
+    }
   },
   methods: {
     myShows() {
@@ -173,6 +179,13 @@ export default {
       );
 
       this.$router.push('/login');
+    },
+    checkLoggedIn() {
+      console.log('In checkLoggedIn');
+      if (sessionStorage.getItem('loggedIn') === 'false') {
+        console.log('Not logged in, redirecting to login page');
+        this.$router.push('/login');
+      }
     },
   },
 };

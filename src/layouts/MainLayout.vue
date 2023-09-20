@@ -47,11 +47,11 @@
         "
       >
         <q-list padding>
-          <q-item exact clickable v-ripple to="/">
+          <q-item exact clickable v-ripple to="/about">
             <q-item-section avatar>
               <q-icon name="list" />
             </q-item-section>
-            <q-item-section> Home </q-item-section>
+            <q-item-section> About </q-item-section>
           </q-item>
 
           <q-item exact clickable v-ripple to="/register">
@@ -116,6 +116,7 @@
 <script>
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
+import router from 'src/router';
 
 const linksList = [
   {
@@ -187,11 +188,11 @@ export default defineComponent({
     };
   },
   mounted() {
-    this.loggedIn = sessionStorage.getItem('loggedIn');
     this.$eventbus.on('loggedIn', (loggedIn) => {
       this.loggedIn = loggedIn;
     });
-    console.log('local loggedIn now: ', this.loggedIn);
+    this.checkLoggedIn();
+    this.$router.push('/my-shows');
   },
 
   methods: {
@@ -202,6 +203,13 @@ export default defineComponent({
     goToProfilePage() {
       console.log('goToProfilePage');
       this.$router.push('/profile');
+    },
+    checkLoggedIn() {
+      console.log('In checkLoggedIn');
+      if (sessionStorage.getItem('loggedIn') === 'false') {
+        console.log('Not logged in, redirecting to login page');
+        this.$router.push('/login');
+      }
     },
   },
 });
