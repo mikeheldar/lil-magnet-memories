@@ -2,7 +2,7 @@
   <q-page class="row items-top justify-evenly">
     <div class="column items-center q-pt-lg border-div">
       <div col v-if="!logging_in_classic">
-        <q-label class="header">Time to Sign in!</q-label>
+        <q-item-label class="header">Time to Sign in!</q-item-label>
         <div class="q-pt-lg">
           <GoogleLogin :callback="googleAuth" />
         </div>
@@ -25,7 +25,7 @@
         </div>
       </div>
       <div class="col" v-if="logging_in_classic">
-        <q-label class="header">Sign-in Classic Style!</q-label>
+        <q-item-label class="header">Sign-in Classic Style!</q-item-label>
         <q-dialog v-model="showLoginFailedDialog">
           <q-card>
             <q-card-section>
@@ -163,6 +163,11 @@ export default {
       showLoginFailedDialog: false,
       error_message: '',
     };
+  },
+  async mounted() {
+    // since we're in login page, we want to make sure the header is not shrunk
+    sessionStorage.setItem('shrinkHeader', 'false');
+    this.$eventbus.emit('shrinkHeader', 'false');
   },
   methods: {
     getClassicLogin() {

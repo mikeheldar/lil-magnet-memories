@@ -11,7 +11,7 @@
           @click="toggleLeftDrawer"
         />
         <q-toolbar-title> Spoiler Alert </q-toolbar-title>
-        <q-space />
+
         <q-btn
           v-if="loggedIn == 'true'"
           flat
@@ -31,7 +31,7 @@
           @click="goToLoginPage"
         />
       </q-toolbar>
-      <div class="q-px-lg q-pt-xl q-pb-md">
+      <div class="q-px-lg q-pt-xl q-pb-md" v-if="shrinkHeader == 'false'">
         <div class="text-h3">TV Togetherness.</div>
         <div class="text-subtitle1">No Spoilers.</div>
       </div>
@@ -52,13 +52,6 @@
               <q-icon name="list" />
             </q-item-section>
             <q-item-section> About </q-item-section>
-          </q-item>
-
-          <q-item exact clickable v-ripple to="/register">
-            <q-item-section avatar>
-              <q-icon name="list" />
-            </q-item-section>
-            <q-item-section> Sign-up </q-item-section>
           </q-item>
 
           <q-item exact clickable v-ripple to="/login">
@@ -96,15 +89,6 @@
           <div class="text-weight-bold">Spoiler Alert</div>
         </div>
       </q-img>
-      <q-list>
-        <q-item-label header> Essential Links </q-item-label>
-
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
     </q-drawer>
 
     <q-page-container>
@@ -115,66 +99,14 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
-import EssentialLink from 'components/EssentialLink.vue';
-import router from 'src/router';
-
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },
-];
 
 export default defineComponent({
   name: 'MainLayout',
-
-  components: {
-    EssentialLink,
-  },
 
   setup() {
     const leftDrawerOpen = ref(false);
 
     return {
-      essentialLinks: linksList,
       leftDrawerOpen,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;
@@ -185,11 +117,15 @@ export default defineComponent({
   data() {
     return {
       loggedIn: sessionStorage.getItem('loggedIn'),
+      shrinkHeader: sessionStorage.getItem('shrinkHeader'),
     };
   },
   mounted() {
     this.$eventbus.on('loggedIn', (loggedIn) => {
       this.loggedIn = loggedIn;
+    });
+    this.$eventbus.on('shrinkHeader', (shrinkHeader) => {
+      this.shrinkHeader = shrinkHeader;
     });
     this.checkLoggedIn();
     this.$router.push('/my-shows');

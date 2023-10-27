@@ -54,6 +54,9 @@ export default {
       this.$router.push('/login');
     } else {
       console.log('Logged in, getting my shows');
+      // since we're in my shows page let's shrink the header
+      sessionStorage.setItem('shrinkHeader', 'true');
+      this.$eventbus.emit('shrinkHeader', 'true');
       this.getMyShows();
     }
   },

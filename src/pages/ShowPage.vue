@@ -62,7 +62,7 @@
             v-if="!posting && episode !== '0 - Not Started'"
             color="primary"
             glossy
-            label="Talk about it"
+            label="Make a new post"
             icon="edit"
             @click="startPost"
             style="width: 100%"
@@ -74,7 +74,16 @@
             label="Post it!"
             icon="chat"
             @click="addPost"
-            style="width: 100%"
+            style="width: 80%"
+          />
+          <q-btn
+            v-if="posting"
+            color="primary"
+            glossy
+            label="Cancel"
+            icon="cancel"
+            @click="posting = false"
+            style="width: 20%"
           />
         </q-item>
       </q-list>
@@ -83,7 +92,8 @@
           v-ripple
           v-for="post in posts
             .filter((p) => p.season <= season)
-            .filter((p) => p.episode <= user_latest_season_episode.value)"
+            .filter((p) => p.episode <= user_latest_season_episode.value)
+            .filter((p) => p.parent_id === null)"
           :key="post.created_at"
         >
           <div class="col">
@@ -128,12 +138,74 @@
             <div class="row q-pt-lg">
               <q-item-section>
                 <q-list v-if="showComments && showCommentsForPost === post.id">
+                  <q-item v-if="!commenting">
+                    <q-btn
+                      glossy
+                      label="Add comment!"
+                      color="primary"
+                      icon="comment"
+                      @click="commenting = true"
+                      style="width: 100% align-items: top align-content: right"
+                    />
+                  </q-item>
+                  <q-item v-if="commenting">
+                    <q-input
+                      type="textarea"
+                      v-model="my_comment"
+                      autogrow
+                      label="Comment Here:"
+                      filled
+                      style="width: 90%"
+                    />
+
+                    <q-item-section>
+                      <q-btn
+                        color="primary"
+                        glossy
+                        icon="cancel"
+                        @click="commenting = false"
+                        style="width: 30px"
+                      />
+                      <q-btn
+                        color="primary"
+                        glossy
+                        icon="check_circle"
+                        @click="addComment(post.id)"
+                        style="width: 30px"
+                      />
+                    </q-item-section>
+                  </q-item>
                   <q-item
-                    class="comment-border"
-                    v-for="item in nestedItems"
-                    :key="item.id"
+                    class="comment"
+                    v-for="comment in posts.filter(
+                      (p) => p.parent_id === this.showCommentsForPost
+                    )"
+                    :key="comment.id"
                   >
-                    {{ item.content }}
+                    <q-item-section top>
+                      <q-item-label class="user-handle-label">{{
+                        'season ' +
+                        comment.season +
+                        ', episode ' +
+                        comment.episode
+                      }}</q-item-label>
+                      <q-item-label class="user-handle-label">{{
+                        comment.user_handle
+                      }}</q-item-label>
+                      <q-item-label>{{
+                        new Date(comment.created_at).toLocaleString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: 'numeric',
+                          hour12: true,
+                        })
+                      }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>{{ comment.post_text }}</q-item-label>
+                    </q-item-section>
                   </q-item>
                 </q-list>
               </q-item-section>
@@ -170,14 +242,27 @@ export default {
       all_caught_up: false,
       nestedItems: [], // Nested items for the clicked post
       showComments: false, // Controls the visibility of the nested list
+      commenting: false, // Controls the visibility of the comment input
     };
   },
 
   async mounted() {
-    await this.getEpisodes();
-    await this.getPosts();
-    await this.getUserLatestSeasonEpisode();
-    this.checkProgress();
+    // Not sure if I need this code in all pages on mounted
+    if (sessionStorage.getItem('loggedIn') === 'false') {
+      console.log('Not logged in, redirecting to login page');
+      this.$router.push('/login');
+    } else {
+      console.log('Logged in, doing show page stuff');
+
+      // since we're in show page let's shrink the header
+      sessionStorage.setItem('shrinkHeader', 'true');
+      this.$eventbus.emit('shrinkHeader', 'true');
+
+      await this.getEpisodes();
+      await this.getPosts();
+      await this.getUserLatestSeasonEpisode();
+      this.checkProgress();
+    }
   },
   watch: {
     async selected_episode() {
@@ -245,16 +330,45 @@ export default {
         });
       this.posting = false;
     },
+    addComment(post_id) {
+      console.log('In addComment');
+      console.log('this.my_comment: ', this.my_comment);
+
+      const payload = {
+        show_id: this.show_id,
+        season: this.season,
+        episode: this.selected_episode.value,
+        post: this.my_comment,
+        post_id: post_id,
+      };
+      console.log('payload to send: ', payload);
+
+      const headers = {
+        authorization: sessionStorage.getItem('token'),
+      };
+
+      this.$api
+        .post('/api/add-comment', payload, { headers })
+        .then((res) => {
+          console.log('Response from server: ', res);
+          this.getPosts();
+        })
+        .catch((err) => {
+          console.log('Error: ', err);
+          this.logout();
+        });
+      this.commenting = false;
+    },
     async getEpisodes() {
       console.log('__________In getEpisodes__________');
 
       const apikey = '24c87807-e9cd-4e9c-8d19-28ef0f44d186';
       const authtoken =
-        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2UiOiIiLCJhcGlrZXkiOiIyNGM4NzgwNy1lOWNkLTRlOWMtOGQxOS0yOGVmMGY0NGQxODYiLCJjb21tdW5pdHlfc3VwcG9ydGVkIjp0cnVlLCJleHAiOjE2OTYwNzI2MTAsImdlbmRlciI6IiIsImhpdHNfcGVyX2RheSI6MTAwMDAwMDAwLCJoaXRzX3Blcl9tb250aCI6MTAwMDAwMDAwLCJpZCI6IjIzMTYyMjEiLCJpc19tb2QiOmZhbHNlLCJpc19zeXN0ZW1fa2V5IjpmYWxzZSwiaXNfdHJ1c3RlZCI6ZmFsc2UsInBpbiI6IlZLR0dPUVNFIiwicm9sZXMiOltdLCJ0ZW5hbnQiOiJ0dmRiIiwidXVpZCI6IiJ9.Fi_ZVrzzmafrcq84RGHhqxB-Pv8wpooi0tXEOZq9gE0dbq2lPdGu6U1HFWKAhTRHJKjxZk3oMB89wuyfAe1ZM0rvmoL0WLLqzoffwNI9mbhhqIvqqU_0Ei0CPtRtOQ_XyJkCMh4Ve5rxFqaxqbhY9xchOIAajKYN9lXanDs9MZO7Tlse7O1KwRh4afAETKxjIpOkDjlobQJWB6Tfy4fcohLZWei-Ut5hTljyAlNB9uzkoJRaPx_Bm5uH3iAzxvhkvnH92stEPB15abasDIquQysHv33B0Ai-t3hwbe6_9w3sFzyPlpFExBRt7hq8qdYwVFtC1sw51KRlNO6Bj08gwWfTmjAx9rcdlKcal77X09GC362dxtLsJnhEiod-H5JFkp0Qxbu1FUpB66xbf3EvjtIzRJwYG9odcr-gEoXg9YZhtpsPRaLJeopviugwc8S6EcA7uu7nWwPuPR2rv58q34axcR6KNQ4nms1l0pOfwTAY43lPmg8eP08rJEKnxdcbsO2H9nL10OAzsGw2eYLzVyLHPLFthondjAC1OpJo33gNDm0WRW6_gU5XYbWf8eYSQQ-ssgLBYDYyY7AEgQ5zK7H65IqprdJcAnmuOpiezFrAN2WFM2PDnEZweECwONe0SsV6a29Jvxaka42thrl0qdVdCPj382udR4JAKAue4m0';
+        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2UiOiIiLCJhcGlrZXkiOiIyNGM4NzgwNy1lOWNkLTRlOWMtOGQxOS0yOGVmMGY0NGQxODYiLCJjb21tdW5pdHlfc3VwcG9ydGVkIjp0cnVlLCJleHAiOjE2OTg5MjI1NTcsImdlbmRlciI6IiIsImhpdHNfcGVyX2RheSI6MTAwMDAwMDAwLCJoaXRzX3Blcl9tb250aCI6MTAwMDAwMDAwLCJpZCI6IjIzMTYyMjEiLCJpc19tb2QiOmZhbHNlLCJpc19zeXN0ZW1fa2V5IjpmYWxzZSwiaXNfdHJ1c3RlZCI6ZmFsc2UsInBpbiI6IlZLR0dPUVNFIiwicm9sZXMiOltdLCJ0ZW5hbnQiOiJ0dmRiIiwidXVpZCI6IiJ9.K0TOXuR6xObEKeUhAZB3GkcF5_QZNN1f-FicMLt0iBEtmy7sUHKrfCLCXtYllP8nzMGT3sibBqHRrWga5CC_LObuDnpaLV1FPAPCr91ETmcwUaRFA3CkVXITSn2Sn6bjWmDc6UjbcOXuieLW6Dwf8Z99PuVkiOFgqP-FMmOLyIbA9v7NdcGuAuEC41xRej5VEuT4J7H67OhhxEo1EwehnlIZXj658PCYyu1kbAFd8UzUdoHK1_YgH79ubWpal4SQTyEyemFuSYPyqD-3fCmXFH4tqGDoXjg1tRj4eZomVFZ__K0iYig6Ep-llF1E6xFOzUqDq1cIofRZMUoBUalnT9fgWgghcNsqHhel3DBybLoeDz4P0t-UAHGW_-VaYjbIl5MzJfmD-U-UrHmrMluY-b-5jFqQn0ro71W1NbHtryIjjqbYnR324_eE-G0jrkJuRsdXtfzvGyY-4EkOjwfLnUGokQaP_ZifECUQThT631QdBHZGuk0TppGtbH0p4i8iP71C1h9QwHFdacyIvBoW1LFyaUjkzjGHpJpgCxzClr9-8YvPt-SVkAj84XLFW4pw7pUhn6MaSSeZTx6Q2awhAOcspao7loPVzddDuFNGWtbTy6_kL8F3OGet-dufaO5Gn1OJdX-i_niRhcjg2NpwbhmIessYrvpAfB4fXWRYOiw';
 
       const payload = {
         apikey: apikey,
-        pin: 'VKGGOUSEF',
+        pin: 'VKGGOQSE',
       };
       console.log('payload to send: ', payload);
 
@@ -318,25 +432,7 @@ export default {
         });
       console.log('__________Out getPosts__________');
     },
-    async getCommentsForPost() {
-      console.log('__________In getCommentsForPost__________');
-      const headers = {
-        authorization: sessionStorage.getItem('token'),
-      };
 
-      await this.$api
-        .get('/api/get-comments/' + this.show_id, { headers })
-        .then((res) => {
-          console.log('get-comments response from server: ', res.data);
-          this.posts = res.data;
-          console.log('this.posts: ', this.posts);
-        })
-        .catch((err) => {
-          console.log('Error: ', err);
-          this.logout();
-        });
-      console.log('__________Out getCommentsForPost__________');
-    },
     async getUserLatestSeasonEpisode() {
       console.log('__________In getUserLatestSeasonEpisode__________');
       this.inGetUserLatestSeasonEpisode = true;
@@ -481,7 +577,7 @@ export default {
     openPost(post) {
       console.log('__________In openPost__________');
       console.log('post: ', post);
-      // this.getCommentsForPost(post.id);
+
       this.nestedItems = [
         { id: 1, content: 'Item 1' },
         { id: 2, content: 'Item 2' },
@@ -532,8 +628,10 @@ export default {
   font-style: italic;
 }
 
-.comment-border {
+.comment {
   border: 1px solid #ccc; /* Replace with your preferred border style and color */
-  padding: 10px; /* Add padding for spacing */
+  padding: 20px; /* Add padding for spacing */
+  width: 90%; /* Optionally set a width */
+  margin-left: 18px;
 }
 </style>

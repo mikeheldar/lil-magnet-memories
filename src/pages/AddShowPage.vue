@@ -79,11 +79,11 @@ export default {
       console.log('In getTVShows');
       const apikey = '24c87807-e9cd-4e9c-8d19-28ef0f44d186';
       const authtoken =
-        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2UiOiIiLCJhcGlrZXkiOiIyNGM4NzgwNy1lOWNkLTRlOWMtOGQxOS0yOGVmMGY0NGQxODYiLCJjb21tdW5pdHlfc3VwcG9ydGVkIjp0cnVlLCJleHAiOjE2OTYwNzI2MTAsImdlbmRlciI6IiIsImhpdHNfcGVyX2RheSI6MTAwMDAwMDAwLCJoaXRzX3Blcl9tb250aCI6MTAwMDAwMDAwLCJpZCI6IjIzMTYyMjEiLCJpc19tb2QiOmZhbHNlLCJpc19zeXN0ZW1fa2V5IjpmYWxzZSwiaXNfdHJ1c3RlZCI6ZmFsc2UsInBpbiI6IlZLR0dPUVNFIiwicm9sZXMiOltdLCJ0ZW5hbnQiOiJ0dmRiIiwidXVpZCI6IiJ9.Fi_ZVrzzmafrcq84RGHhqxB-Pv8wpooi0tXEOZq9gE0dbq2lPdGu6U1HFWKAhTRHJKjxZk3oMB89wuyfAe1ZM0rvmoL0WLLqzoffwNI9mbhhqIvqqU_0Ei0CPtRtOQ_XyJkCMh4Ve5rxFqaxqbhY9xchOIAajKYN9lXanDs9MZO7Tlse7O1KwRh4afAETKxjIpOkDjlobQJWB6Tfy4fcohLZWei-Ut5hTljyAlNB9uzkoJRaPx_Bm5uH3iAzxvhkvnH92stEPB15abasDIquQysHv33B0Ai-t3hwbe6_9w3sFzyPlpFExBRt7hq8qdYwVFtC1sw51KRlNO6Bj08gwWfTmjAx9rcdlKcal77X09GC362dxtLsJnhEiod-H5JFkp0Qxbu1FUpB66xbf3EvjtIzRJwYG9odcr-gEoXg9YZhtpsPRaLJeopviugwc8S6EcA7uu7nWwPuPR2rv58q34axcR6KNQ4nms1l0pOfwTAY43lPmg8eP08rJEKnxdcbsO2H9nL10OAzsGw2eYLzVyLHPLFthondjAC1OpJo33gNDm0WRW6_gU5XYbWf8eYSQQ-ssgLBYDYyY7AEgQ5zK7H65IqprdJcAnmuOpiezFrAN2WFM2PDnEZweECwONe0SsV6a29Jvxaka42thrl0qdVdCPj382udR4JAKAue4m0';
+        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2UiOiIiLCJhcGlrZXkiOiIyNGM4NzgwNy1lOWNkLTRlOWMtOGQxOS0yOGVmMGY0NGQxODYiLCJjb21tdW5pdHlfc3VwcG9ydGVkIjp0cnVlLCJleHAiOjE2OTg5MjI1NTcsImdlbmRlciI6IiIsImhpdHNfcGVyX2RheSI6MTAwMDAwMDAwLCJoaXRzX3Blcl9tb250aCI6MTAwMDAwMDAwLCJpZCI6IjIzMTYyMjEiLCJpc19tb2QiOmZhbHNlLCJpc19zeXN0ZW1fa2V5IjpmYWxzZSwiaXNfdHJ1c3RlZCI6ZmFsc2UsInBpbiI6IlZLR0dPUVNFIiwicm9sZXMiOltdLCJ0ZW5hbnQiOiJ0dmRiIiwidXVpZCI6IiJ9.K0TOXuR6xObEKeUhAZB3GkcF5_QZNN1f-FicMLt0iBEtmy7sUHKrfCLCXtYllP8nzMGT3sibBqHRrWga5CC_LObuDnpaLV1FPAPCr91ETmcwUaRFA3CkVXITSn2Sn6bjWmDc6UjbcOXuieLW6Dwf8Z99PuVkiOFgqP-FMmOLyIbA9v7NdcGuAuEC41xRej5VEuT4J7H67OhhxEo1EwehnlIZXj658PCYyu1kbAFd8UzUdoHK1_YgH79ubWpal4SQTyEyemFuSYPyqD-3fCmXFH4tqGDoXjg1tRj4eZomVFZ__K0iYig6Ep-llF1E6xFOzUqDq1cIofRZMUoBUalnT9fgWgghcNsqHhel3DBybLoeDz4P0t-UAHGW_-VaYjbIl5MzJfmD-U-UrHmrMluY-b-5jFqQn0ro71W1NbHtryIjjqbYnR324_eE-G0jrkJuRsdXtfzvGyY-4EkOjwfLnUGokQaP_ZifECUQThT631QdBHZGuk0TppGtbH0p4i8iP71C1h9QwHFdacyIvBoW1LFyaUjkzjGHpJpgCxzClr9-8YvPt-SVkAj84XLFW4pw7pUhn6MaSSeZTx6Q2awhAOcspao7loPVzddDuFNGWtbTy6_kL8F3OGet-dufaO5Gn1OJdX-i_niRhcjg2NpwbhmIessYrvpAfB4fXWRYOiw';
 
       const payload = {
         apikey: apikey,
-        pin: 'VKGGOUSEF',
+        pin: 'VKGGOQSE',
       };
       console.log('payload to send: ', payload);
 
@@ -180,13 +180,7 @@ export default {
 
       this.$router.push('/login');
     },
-    checkLoggedIn() {
-      console.log('In checkLoggedIn');
-      if (sessionStorage.getItem('loggedIn') === 'false') {
-        console.log('Not logged in, redirecting to login page');
-        this.$router.push('/login');
-      }
-    },
   },
 };
 </script>
+<style lang="scss"></style>

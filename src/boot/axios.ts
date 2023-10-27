@@ -18,7 +18,6 @@ console.log('WE USING: ' + process.env.API_BASE_URL);
 const api = axios.create({
   baseURL: process.env.API_BASE_URL,
 });
-// const api = axios.create({ baseURL: 'http://localhost:8924' });
 
 const tvdb = axios.create({ baseURL: 'https://api4.thetvdb.com/v4' });
 
