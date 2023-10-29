@@ -26,9 +26,19 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="no_input">
+      <q-card>
+        <q-card-section>
+          <q-item-label> You didn't say anything, try again. </q-item-label>
+        </q-card-section>
+        <q-card-actions>
+          <q-btn label="OK" @click="no_input = false" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <div class="col">
       <q-list>
-        <q-item class="header">{{ show_name }}</q-item>
+        <q-item class="header">Talking about: {{ show_name }}</q-item>
         <q-item>
           <q-item-section>
             <q-select
@@ -50,12 +60,29 @@
         <q-item v-if="posting">
           <q-input
             type="textarea"
+            class="post-input"
             v-model="my_post"
             autogrow
             label="Talk about it!"
-            filled
-            style="width: 100%"
           />
+          <q-item-section>
+            <q-btn
+              class="post-cancel-button"
+              v-if="posting"
+              color="primary"
+              glossy
+              icon="cancel"
+              @click="posting = false"
+            />
+            <q-btn
+              class="post-done-button"
+              v-if="posting"
+              color="primary"
+              glossy
+              icon="chat"
+              @click="addPost"
+            />
+          </q-item-section>
         </q-item>
         <q-item>
           <q-btn
@@ -66,24 +93,6 @@
             icon="edit"
             @click="startPost"
             style="width: 100%"
-          />
-          <q-btn
-            v-if="posting"
-            color="primary"
-            glossy
-            label="Post it!"
-            icon="chat"
-            @click="addPost"
-            style="width: 80%"
-          />
-          <q-btn
-            v-if="posting"
-            color="primary"
-            glossy
-            label="Cancel"
-            icon="cancel"
-            @click="posting = false"
-            style="width: 20%"
           />
         </q-item>
       </q-list>
@@ -98,34 +107,44 @@
         >
           <div class="col">
             <div class="row">
-              <q-item-section top>
-                <q-item-label class="user-handle-label">{{
-                  'season ' + post.season + ', episode ' + post.episode
+              <q-item-section top class="post-info-section">
+                <q-item-label class="post-season-episode-label">{{
+                  'season ' + post.season + ': episode ' + post.episode
                 }}</q-item-label>
-                <q-item-label class="user-handle-label">{{
+                <q-item-label class="post-user-handle-label">{{
                   post.user_handle
                 }}</q-item-label>
-                <q-item-label>{{
+                <q-item-label class="post-date-label">{{
                   new Date(post.created_at).toLocaleString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    hour12: true,
+                    month: 'short', // Short month name (e.g., Jan, Feb)
+                    day: 'numeric', // Numeric day (e.g., 1, 2, 3)
+                    year: 'numeric', // Numeric year (e.g., 2023)
+                    hour: '2-digit', // Two-digit hour (e.g., 01, 02)
+                    minute: '2-digit', // Two-digit minute (e.g., 01, 02)
+                    hour12: true, // Use 12-hour clock (AM/PM)
                   })
                 }}</q-item-label>
               </q-item-section>
-              <q-item-section>
+              <q-item-section style="align-items: top">
                 <q-item-label>{{ post.post_text }}</q-item-label>
               </q-item-section>
               <q-btn
+                v-if="!showComments || showCommentsForPost !== post.id"
                 flat
                 rounded
                 color="primary"
-                icon="comment"
+                icon="expand_more"
                 @click="openPost(post)"
               />
+              <q-btn
+                v-if="showComments && showCommentsForPost === post.id"
+                flat
+                rounded
+                color="primary"
+                icon="expand_less"
+                @click="openPost(post)"
+              />
+
               <q-btn
                 v-if="post.user_handle === user_handle"
                 flat
@@ -135,43 +154,42 @@
                 @click="deletePost(post)"
               />
             </div>
-            <div class="row q-pt-lg">
+            <div class="row q-pt-sm">
               <q-item-section>
                 <q-list v-if="showComments && showCommentsForPost === post.id">
-                  <q-item v-if="!commenting">
+                  <q-item v-if="!commenting" class="comment">
                     <q-btn
+                      class="comment-add-button"
                       glossy
                       label="Add comment!"
                       color="primary"
                       icon="comment"
                       @click="commenting = true"
-                      style="width: 100% align-items: top align-content: right"
                     />
                   </q-item>
+
                   <q-item v-if="commenting">
                     <q-input
+                      class="comment-input"
                       type="textarea"
                       v-model="my_comment"
                       autogrow
                       label="Comment Here:"
-                      filled
-                      style="width: 90%"
                     />
-
                     <q-item-section>
                       <q-btn
+                        class="comment-cancel-button"
                         color="primary"
-                        glossy
                         icon="cancel"
+                        glossy
                         @click="commenting = false"
-                        style="width: 30px"
                       />
                       <q-btn
+                        class="comment-done-button"
                         color="primary"
-                        glossy
                         icon="check_circle"
+                        glossy
                         @click="addComment(post.id)"
-                        style="width: 30px"
                       />
                     </q-item-section>
                   </q-item>
@@ -182,24 +200,18 @@
                     )"
                     :key="comment.id"
                   >
-                    <q-item-section top>
-                      <q-item-label class="user-handle-label">{{
-                        'season ' +
-                        comment.season +
-                        ', episode ' +
-                        comment.episode
-                      }}</q-item-label>
-                      <q-item-label class="user-handle-label">{{
+                    <q-item-section top class="post-info-section">
+                      <q-item-label class="post-user-handle-label">{{
                         comment.user_handle
                       }}</q-item-label>
-                      <q-item-label>{{
+                      <q-item-label class="post-date-label">{{
                         new Date(comment.created_at).toLocaleString('en-US', {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: 'numeric',
-                          hour12: true,
+                          month: 'short', // Short month name (e.g., Jan, Feb)
+                          day: 'numeric', // Numeric day (e.g., 1, 2, 3)
+                          year: 'numeric', // Numeric year (e.g., 2023)
+                          hour: '2-digit', // Two-digit hour (e.g., 01, 02)
+                          minute: '2-digit', // Two-digit minute (e.g., 01, 02)
+                          hour12: true, // Use 12-hour clock (AM/PM)
                         })
                       }}</q-item-label>
                     </q-item-section>
@@ -243,6 +255,7 @@ export default {
       nestedItems: [], // Nested items for the clicked post
       showComments: false, // Controls the visibility of the nested list
       commenting: false, // Controls the visibility of the comment input
+      no_input: false, // Controls the visibility of the no input dialog
     };
   },
 
@@ -305,6 +318,10 @@ export default {
     addPost() {
       console.log('In addPost');
       console.log('this.my_post: ', this.my_post);
+      if (this.my_post === '') {
+        this.no_input = true;
+        return;
+      }
 
       const payload = {
         show_id: this.show_id,
@@ -333,6 +350,10 @@ export default {
     addComment(post_id) {
       console.log('In addComment');
       console.log('this.my_comment: ', this.my_comment);
+      if (this.my_comment === '' || this.my_comment === undefined) {
+        this.no_input = true;
+        return;
+      }
 
       const payload = {
         show_id: this.show_id,
@@ -577,12 +598,6 @@ export default {
     openPost(post) {
       console.log('__________In openPost__________');
       console.log('post: ', post);
-
-      this.nestedItems = [
-        { id: 1, content: 'Item 1' },
-        { id: 2, content: 'Item 2' },
-        { id: 3, content: 'Item 3' },
-      ];
       this.showCommentsForPost = post.id;
       this.showComments = !this.showComments;
 
@@ -615,10 +630,19 @@ export default {
   font-weight: bold;
 }
 
-.user-handle-label {
+.post-season-episode-label {
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: underline;
+}
+.post-user-handle-label {
   font-size: 12px;
   font-weight: bold;
   font-style: italic;
+}
+
+.post-date-label {
+  font-size: 12px;
 }
 
 .card-label {
@@ -629,9 +653,55 @@ export default {
 }
 
 .comment {
-  border: 1px solid #ccc; /* Replace with your preferred border style and color */
-  padding: 20px; /* Add padding for spacing */
-  width: 90%; /* Optionally set a width */
-  margin-left: 18px;
+  width: 90%;
+  background-color: rgb(235, 236, 236);
+  border: 4px solid rgb(235, 236, 236);
+  border-radius: 4px;
+  margin-left: 17px;
+  margin-bottom: 2px;
+}
+
+.comment-input {
+  width: 90%;
+  background-color: rgb(235, 236, 236);
+  border: 4px solid rgb(235, 236, 236);
+  border-radius: 4px;
+}
+
+.comment-add-button {
+  height: 50%;
+  width: 100%;
+}
+
+.post-input {
+  width: 94%;
+  background-color: rgb(235, 236, 236);
+  border: 4px solid rgb(235, 236, 236);
+  border-radius: 4px;
+}
+
+.post-cancel-button {
+  width: 20px;
+  height: 50%;
+}
+
+.post-done-button {
+  width: 20px;
+  height: 50%;
+}
+
+.comment-cancel-button {
+  width: 10px;
+  height: 50%;
+}
+
+.comment-done-button {
+  width: 10px;
+  height: 50%;
+}
+
+.post-info-section {
+  flex: 30%;
+  max-width: 30%;
 }
 </style>
