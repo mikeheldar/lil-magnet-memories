@@ -125,7 +125,7 @@
                   })
                 }}</q-item-label>
               </q-item-section>
-              <q-item-section style="align-items: top">
+              <q-item-section class="post-post-section">
                 <q-item-label>{{ post.post_text }}</q-item-label>
               </q-item-section>
               <q-btn
@@ -639,6 +639,7 @@ export default {
   font-size: 12px;
   font-weight: bold;
   font-style: italic;
+  overflow: hidden;
 }
 
 .post-date-label {
@@ -703,5 +704,10 @@ export default {
 .post-info-section {
   flex: 30%;
   max-width: 30%;
+  margin-right: 10px;
+}
+
+.post-post-section {
+  width: 100%;
 }
 </style>
