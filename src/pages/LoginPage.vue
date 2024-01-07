@@ -230,16 +230,26 @@ export default {
           console.log('Response from server: ', res);
 
           console.log('Response from server decoded...');
-          console.log(jwt_decode(res.data));
-          console.log(res.data);
+          console.log('jwt_decode: ', jwt_decode(res.data));
 
           //save the token in the local storage for future use
           sessionStorage.setItem('token', res.data);
           console.log(
             'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
           );
+
           sessionStorage.setItem('loggedIn', 'true');
           this.$eventbus.emit('loggedIn', 'true');
+
+          console.log('isAdmin: ' + jwt_decode(res.data).isAdmin);
+          if (jwt_decode(res.data).isAdmin) {
+            sessionStorage.setItem('isAdmin', 'true');
+            this.$eventbus.emit('isAdmin', 'true');
+          } else {
+            sessionStorage.setItem('isAdmin', 'false');
+            this.$eventbus.emit('isAdmin', 'false');
+          }
+
           console.log(
             'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
           );

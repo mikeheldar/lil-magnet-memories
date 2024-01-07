@@ -11,6 +11,14 @@
           style="width: 248px"
         >
         </q-btn>
+        <q-btn
+          color="primary"
+          glossy
+          label="create post from text"
+          @click="createPostFromText(messageToVerify)"
+          style="width: 248px"
+        >
+        </q-btn>
       </div>
     </div>
   </q-page>
@@ -19,6 +27,24 @@
 <script>
 export default {
   name: 'LoginPage',
+  data() {
+    return {
+      messageToVerify: '',
+    };
+  },
+
+  async mounted() {
+    // Not sure if I need this code in all pages on mounted
+    if (
+      sessionStorage.getItem('loggedIn') === 'false' &&
+      sessionStorage.getItem('isAdmin') === 'true'
+    ) {
+      console.log('Not logged in, redirecting to login page');
+      this.$router.push('/login');
+    } else {
+      console.log('Logged in, doing show page stuff');
+    }
+  },
   methods: {
     verifyMessage(messageToVerify) {
       console.log('In verifyMessage, messageToVerify: ', messageToVerify);
@@ -42,12 +68,17 @@ export default {
           console.log('Error: ', err);
         });
     },
-  },
-
-  data() {
-    return {
-      messageToVerify: '',
-    };
+    async createPostFromText(messageToVerify) {
+      console.log('In createPostFromText, messageToVerify: ', messageToVerify);
+      try {
+        const result = await this.$gptFromText(messageToVerify); // Call your custom method
+        // Handle the result here
+        console.log(result); // Log the result to the console
+      } catch (error) {
+        // Handle any errors here
+        console.error(error);
+      }
+    },
   },
 };
 </script>
