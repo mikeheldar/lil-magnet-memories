@@ -45,6 +45,10 @@ export default {
       );
       sessionStorage.setItem('loggedIn', 'false');
       this.$eventbus.emit('loggedIn', 'false');
+
+      sessionStorage.setItem('isAdmin', 'false');
+      this.$eventbus.emit('isAdmin', 'false');
+
       console.log(
         'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
       );

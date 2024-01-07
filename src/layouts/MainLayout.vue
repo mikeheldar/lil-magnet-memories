@@ -74,6 +74,13 @@
             </q-item-section>
             <q-item-section> My Shows </q-item-section>
           </q-item>
+
+          <q-item v-if="isAdmin == 'true'" exact clickable v-ripple to="/admin">
+            <q-item-section avatar>
+              <q-icon name="list" />
+            </q-item-section>
+            <q-item-section> Admin Page </q-item-section>
+          </q-item>
         </q-list>
       </q-scroll-area>
 
@@ -117,6 +124,7 @@ export default defineComponent({
   data() {
     return {
       loggedIn: sessionStorage.getItem('loggedIn'),
+      isAdmin: sessionStorage.getItem('isAdmin'),
       shrinkHeader: sessionStorage.getItem('shrinkHeader'),
     };
   },
@@ -124,11 +132,21 @@ export default defineComponent({
     this.$eventbus.on('loggedIn', (loggedIn) => {
       this.loggedIn = loggedIn;
     });
+    this.$eventbus.on('isAdmin', (isAdmin) => {
+      this.isAdmin = isAdmin;
+    });
     this.$eventbus.on('shrinkHeader', (shrinkHeader) => {
       this.shrinkHeader = shrinkHeader;
     });
-    this.checkLoggedIn();
-    this.$router.push('/my-shows');
+
+    if (sessionStorage.getItem('loggedIn') === 'false') {
+      console.log('Not logged in, redirecting to login page');
+      this.$router.push('/login');
+    } else {
+      console.log('Logged in, doing show page stuff');
+
+      this.$router.push('/my-shows');
+    }
   },
 
   methods: {
@@ -139,13 +157,6 @@ export default defineComponent({
     goToProfilePage() {
       console.log('goToProfilePage');
       this.$router.push('/profile');
-    },
-    checkLoggedIn() {
-      console.log('In checkLoggedIn');
-      if (sessionStorage.getItem('loggedIn') === 'false') {
-        console.log('Not logged in, redirecting to login page');
-        this.$router.push('/login');
-      }
     },
   },
 });

@@ -27,7 +27,7 @@ module.exports = configure(function (/* ctx */) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['axios', 'hello', 'event-bus', 'google-login'],
+    boot: ['axios', 'hello', 'gpt', 'event-bus', 'google-login'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -57,6 +57,7 @@ module.exports = configure(function (/* ctx */) {
           process.env.SA_ENVIRONMENT === 'dev_local'
             ? 'http://localhost:8924'
             : 'https://api.spoileralert-tv.com',
+        GPT_KEY: process.env.GPT_KEY,
       },
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,
