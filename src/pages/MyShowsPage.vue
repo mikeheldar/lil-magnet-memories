@@ -1,6 +1,9 @@
 <template>
   <q-page class="flex flex-top">
     <div class="col">
+      <!-- Firebase Test Component -->
+      <FirebaseTest />
+
       <div class="header">My Shows</div>
       <div class="column items-center q-pt-sm">
         <q-btn
@@ -40,8 +43,13 @@
 </template>
 
 <script>
+import FirebaseTest from '../components/FirebaseTest.vue';
+
 export default {
   name: 'MyShowsPage',
+  components: {
+    FirebaseTest,
+  },
   data() {
     return {
       myShows: [],
@@ -49,7 +57,10 @@ export default {
   },
 
   mounted() {
-    if (sessionStorage.getItem('loggedIn') === 'false') {
+    const loggedIn = sessionStorage.getItem('loggedIn');
+    console.log('MyShowsPage mounted - loggedIn:', loggedIn);
+
+    if (loggedIn !== 'true') {
       console.log('Not logged in, redirecting to login page');
       this.$router.push('/login');
     } else {
@@ -61,23 +72,29 @@ export default {
     }
   },
   methods: {
-    getMyShows() {
-      console.log('In getMyShows');
-      const headers = {
-        authorization: sessionStorage.getItem('token'),
-      };
+    async getMyShows() {
+      console.log('In getMyShows - Firebase version');
 
-      this.$api
-        .get('/api/get-my-shows', { headers })
-        .then((res) => {
-          console.log('get-my-shows response from server: ', res.data);
-          this.myShows = res.data;
-          console.log('this.myShows: ', this.myShows);
-        })
-        .catch((err) => {
-          console.log('Error: ', err);
-          this.logout();
-        });
+      try {
+        // Firebase Firestore calls using localStorage temporarily
+        // In production, you'd query Firestore user_shows collection
+        console.log('Firebase getMyShows - getting shows from localStorage');
+
+        // Get from localStorage
+        const userEmail = sessionStorage.getItem('userEmail') || 'default_user';
+        const storageKey = `myShows_${userEmail}`;
+        this.myShows = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+        console.log('this.myShows: ', this.myShows);
+
+        if (this.myShows.length === 0) {
+          console.log('No shows found - add some shows to see them here!');
+        }
+      } catch (error) {
+        console.log('Firebase getMyShows error: ', error);
+        // Don't logout on error, just show empty state
+        this.myShows = [];
+      }
     },
     goToShow(show) {
       console.log('In goToShow');

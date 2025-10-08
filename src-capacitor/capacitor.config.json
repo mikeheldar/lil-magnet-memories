@@ -1,0 +1,7 @@
+{
+  "appId": "com.spoileralerttv.app",
+  "appName": "Quasar SpoilerAlert",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www"
+}

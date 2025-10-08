@@ -1,0 +1,12 @@
+{
+  "name": "quasar-spoileralert",
+  "version": "0.0.1",
+  "description": "SpoilerAlert re-written in Quasar v1.0",
+  "author": "mikeheldar <michael.helmandarley@gmail.com>",
+  "private": true,
+  "dependencies": {
+    "@capacitor/cli": "^2.0.0",
+    "@capacitor/core": "^2.0.0",
+    "@capacitor/ios": "^2.5.0"
+  }
+}

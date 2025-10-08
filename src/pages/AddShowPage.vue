@@ -79,7 +79,7 @@ export default {
       console.log('In getTVShows');
       const apikey = '24c87807-e9cd-4e9c-8d19-28ef0f44d186';
       const authtoken =
-        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2UiOiIiLCJhcGlrZXkiOiIyNGM4NzgwNy1lOWNkLTRlOWMtOGQxOS0yOGVmMGY0NGQxODYiLCJjb21tdW5pdHlfc3VwcG9ydGVkIjp0cnVlLCJleHAiOjE3MDcyMjUwNDEsImdlbmRlciI6IiIsImhpdHNfcGVyX2RheSI6MTAwMDAwMDAwLCJoaXRzX3Blcl9tb250aCI6MTAwMDAwMDAwLCJpZCI6IjIzMTYyMjEiLCJpc19tb2QiOmZhbHNlLCJpc19zeXN0ZW1fa2V5IjpmYWxzZSwiaXNfdHJ1c3RlZCI6ZmFsc2UsInBpbiI6IlZLR0dPUVNFIiwicm9sZXMiOltdLCJ0ZW5hbnQiOiJ0dmRiIiwidXVpZCI6IiJ9.FJ0BhZb_rKQaidR-M5MzznSeYSYZ7kCeRwNLcnQk4TSiU-YMzThnboaU3Lbtr1F6d54jk9taWzrAoXOoSKFdEP2Z86Qim-fbJHl8sWBOYphJCovfNagBwWrTRAlwoT8THD-rYGJk0N1jvskaDbMeMQ_CSSPojM6HCTikqOBdESdsLLYQTQmeBluzbm5rHorcCFNXGPOitvPftA-RIitfMA40BAsq4B0Q42rEuIVcFcdjnpS6tUNZIFsP4pZUwrDvU5IiV6ininY7q90G9ECXa--D_ruM6PhGcF1twJ7rDUgWXBAoAVEgSkw9nWhR74DuH68nxDMn-Hjc_Y2qiTfDN20gb9BbYokLZ2r98sisPf_ngg6353bM3RGlyYKsDrvoSxnS6VcQ8fojF3hmfvNXSBcQpj85Ur9kkIzhqgyQWY0q3M5zD_UV9-kGNnkCWlxqv4XPloMZJ9sJ3a3oEPIYSoEtPlPX4UPzhthFTpDPo4kr99imF7RDZDBGkLDBwXP-QGEg0TcOr0ogCw7JTyLLzyFFYSk-LHLjcsRPWKo4Cj1dUDiEyE1bQEqUuRiFwlWfC7gGSTv3ZwCkfJ6TlaLTFPWf1ZEP9vFaKhRdDQ-V1mUICjYQ-lgR0GfLQ7AJksK7N55UqauyshvNSCykFrOteL_C7kg0-MahibMykh3wT4w';
+        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2UiOiIiLCJhcGlrZXkiOiIyNGM4NzgwNy1lOWNkLTRlOWMtOGQxOS0yOGVmMGY0NGQxODYiLCJjb21tdW5pdHlfc3VwcG9ydGVkIjp0cnVlLCJleHAiOjE3NjI1MTgwODEsImdlbmRlciI6IiIsImhpdHNfcGVyX2RheSI6MTAwMDAwMDAwLCJoaXRzX3Blcl9tb250aCI6MTAwMDAwMDAwLCJpZCI6IjIzMTYyMjEiLCJpc19tb2QiOmZhbHNlLCJpc19zeXN0ZW1fa2V5IjpmYWxzZSwiaXNfdHJ1c3RlZCI6ZmFsc2UsInBpbiI6IlZLR0dPUVNFIiwicm9sZXMiOltdLCJ0ZW5hbnQiOiJ0dmRiIiwidXVpZCI6IiJ9.ZszKaNgTXg5lt9lDxjYMHL4g-fWRSSMvZhV3QCgGAAUf8Pm98r_zP3MNfS7YrdImlbABdVlN-d_-PiNag2NJjI0GvT3HlAyzzhgKPWcRawbdcwk154ZYqewIP3pQ7Kqn5w3O3baUcQVLBrz5xyoZ6MVDlFm_pAYBTtL-D5Av0IOyuCrMCllzM-swuDWjTlAicObTvgqsn1G4iyjmceT5HWpoov-XRuEdOMhLDv2UP6viXIFIjfRIYjVFh-VKlidJ2bIHrHmV6Vi_zk1EE527Ymus_Ummy0EuZuhk9OZ2TgneKljuc7rWmLJEswKiYJ_-x_FJIhiQyZ0BcjGNuLT8qsECYu_mIUVl0okEKHO5JnVW_if_adXrpIaXPbVK282A0GJCeAfkF0A9BV5BXv8cy6qqMLB4EMmtaHyOyiPklClXHgxc_g5BHWvNPJFq8LhI7lB3C79qpatyL6NFK0oLwIuJYQJPLFQ44yW5GQ8yhzfhRLQto0hemVgx93plzEph-pPkE7_Ee3iZ6nBPWfB0Dzg793DVN72LqAVOIcBZiF5HsxrdN0PBgsjzgCUjWeTY9Noobm29NVyafJM0TiKlj6p6cV5bZhcN0Lq5X7gqJOaM7_mD5ab-i3cEoRxrAyS9o4OE94H-3S9bgQDMiJeb1mHL7TIu8cW488G7Tzklddg';
 
       const payload = {
         apikey: apikey,
@@ -105,51 +105,70 @@ export default {
           console.log(error);
         });
     },
-    addShow(showToAdd) {
-      console.log('In addShow, show: ', showToAdd);
+    async addShow(showToAdd) {
+      console.log('In addShow (Firebase version), show: ', showToAdd);
 
-      const payload = {
-        id: showToAdd.id.replace('series-', ''),
-        name: showToAdd.name,
-        year: showToAdd.year,
-        image_url: showToAdd.image_url,
-        thumbnail: showToAdd.thumbnail,
-        overview: showToAdd.overview,
-      };
-      const headers = {
-        authorization: sessionStorage.getItem('token'),
-      };
+      try {
+        const payload = {
+          id: showToAdd.id.replace('series-', ''),
+          name: showToAdd.name,
+          year: showToAdd.year,
+          image_url: showToAdd.image_url,
+          thumbnail: showToAdd.thumbnail,
+          overview: showToAdd.overview,
+        };
+        console.log('Firebase addShow payload: ', payload);
 
-      this.$api
-        .post('/api/add-show', payload, { headers })
-        .then((res) => {
-          console.log('Response from server: ', res);
-          console.log(this.myShowIDs);
-          console.log('showToAdd.id: ', showToAdd.id);
-          this.getMyShowIDs();
-        })
-        .catch((err) => {
-          console.log('Error: ', err);
-          this.logout();
-        });
+        // Firebase show addition - simplified version using localStorage
+        // In production, you'd add to Firestore user_shows collection
+        console.log('Firebase addShow - adding show:', showToAdd.name);
+
+        // Save to localStorage as temporary storage
+        const userEmail = sessionStorage.getItem('userEmail') || 'default_user';
+        const storageKey = `myShows_${userEmail}`;
+        let myShows = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+        // Check if show already exists
+        if (!myShows.some((show) => show.id === payload.id)) {
+          myShows.push(payload);
+          localStorage.setItem(storageKey, JSON.stringify(myShows));
+          console.log('Show added successfully to localStorage');
+        } else {
+          console.log('Show already in list');
+        }
+
+        // Refresh the show list
+        this.getMyShowIDs();
+      } catch (err) {
+        console.log('Firebase addShow error: ', err);
+        // Don't logout on error, just show message
+        console.log('Failed to add show, but staying logged in');
+      }
     },
-    getMyShowIDs() {
-      console.log('In getMyShowIDs');
-      const headers = {
-        authorization: sessionStorage.getItem('token'),
-      };
+    async getMyShowIDs() {
+      console.log('In getMyShowIDs (Firebase version)');
 
-      this.$api
-        .get('/api/get-my-show-ids', { headers })
-        .then((res) => {
-          console.log('get-my-show-ids response from server: ', res.data);
-          this.myShowIDs = res.data;
-          console.log('this.myShowIDs: ', this.myShowIDs);
-        })
-        .catch((err) => {
-          console.log('Error: ', err);
-          this.logout();
-        });
+      try {
+        // Firebase show IDs retrieval - simplified version using localStorage
+        // In production, you'd query Firestore user_shows collection
+        console.log('Firebase getMyShowIDs - getting user shows');
+
+        // Get from localStorage
+        const userEmail = sessionStorage.getItem('userEmail') || 'default_user';
+        const storageKey = `myShows_${userEmail}`;
+        const myShows = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+        // Convert to show IDs format
+        this.myShowIDs = myShows.map((show) => ({
+          show_id: parseInt(show.id),
+        }));
+
+        console.log('this.myShowIDs: ', this.myShowIDs);
+      } catch (err) {
+        console.log('Firebase getMyShowIDs error: ', err);
+        // Don't logout on error, just show empty state
+        this.myShowIDs = [];
+      }
     },
     inMyShows(showID) {
       const show_id_num = parseInt(showID);

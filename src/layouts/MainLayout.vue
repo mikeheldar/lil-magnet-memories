@@ -139,13 +139,15 @@ export default defineComponent({
       this.shrinkHeader = shrinkHeader;
     });
 
-    if (sessionStorage.getItem('loggedIn') === 'false') {
+    const loggedIn = sessionStorage.getItem('loggedIn');
+    console.log('MainLayout mounted - loggedIn:', loggedIn);
+
+    if (loggedIn !== 'true') {
       console.log('Not logged in, redirecting to login page');
       this.$router.push('/login');
     } else {
-      console.log('Logged in, doing show page stuff');
-
-      this.$router.push('/my-shows');
+      console.log('Logged in, staying on current page');
+      // Don't redirect here - let the current page handle its own logic
     }
   },
 
