@@ -1,32 +1,74 @@
 <template>
-  <q-page class="row items-center justify-evenly">
-    <div class="column items-center" style="height: 150px">
-      <div class="col q-pt-xl">
-        <q-input filled v-model="messageToVerify" label="message to verify" />
-        <q-btn
-          color="primary"
-          glossy
-          label="test message verify api"
-          @click="verifyMessage(messageToVerify)"
-          style="width: 248px"
-        >
-        </q-btn>
-        <q-btn
-          color="primary"
-          glossy
-          label="create post from text"
-          @click="createPostFromText(messageToVerify)"
-          style="width: 248px"
-        >
-        </q-btn>
+  <q-page class="q-pa-md">
+    <div class="row justify-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="text-h4 text-purple q-mb-md text-weight-bold">
+          Admin Panel
+        </div>
+        <div class="text-subtitle2 text-grey-7 q-mb-lg">
+          Testing and administrative tools
+        </div>
+
+        <!-- Firebase Test Card -->
+        <q-card class="q-mb-lg">
+          <q-card-section>
+            <div class="text-h6 q-mb-md">
+              <q-icon name="cloud" class="q-mr-sm" />
+              Firebase Connection Test
+            </div>
+            <FirebaseTest />
+          </q-card-section>
+        </q-card>
+
+        <!-- API Testing Card -->
+        <q-card>
+          <q-card-section>
+            <div class="text-h6 q-mb-md">
+              <q-icon name="api" class="q-mr-sm" />
+              API Testing Tools
+            </div>
+            <q-input
+              filled
+              v-model="messageToVerify"
+              label="Test Message"
+              placeholder="Enter message to test"
+              class="q-mb-md"
+            >
+              <template v-slot:prepend>
+                <q-icon name="message" />
+              </template>
+            </q-input>
+            <div class="column q-gutter-md">
+              <q-btn
+                color="primary"
+                label="Test Message Verify API"
+                icon="verified"
+                @click="verifyMessage(messageToVerify)"
+                size="md"
+              />
+              <q-btn
+                color="secondary"
+                label="Create Post from Text"
+                icon="post_add"
+                @click="createPostFromText(messageToVerify)"
+                size="md"
+              />
+            </div>
+          </q-card-section>
+        </q-card>
       </div>
     </div>
   </q-page>
 </template>
 
 <script>
+import FirebaseTest from '../components/FirebaseTest.vue';
+
 export default {
-  name: 'LoginPage',
+  name: 'AdminPage',
+  components: {
+    FirebaseTest,
+  },
   data() {
     return {
       messageToVerify: '',

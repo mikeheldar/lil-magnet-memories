@@ -1,38 +1,56 @@
 <template>
-  <q-page class="row items-top justify-evenly">
-    <div class="column items-center q-pt-lg border-div">
-      <div col v-if="!logging_in_classic">
-        <q-item-label class="header">Time to Sign in!</q-item-label>
-        <div class="q-pt-lg">
-          <GoogleLogin :callback="googleAuth" />
+  <q-page class="row items-top justify-evenly q-pt-xl">
+    <div class="column items-center">
+      <div v-if="!logging_in_classic">
+        <div class="text-h4 text-primary text-weight-bold text-center q-mb-md">
+          Welcome to Spoiler Alert
         </div>
-        <div class="q-pt-sm">
-          <q-btn
-            color="blue"
-            icon="facebook"
-            label="Login with Facebook"
-            class="login-button"
-            @click="helloAuth('facebook')"
-          />
+        <div class="text-subtitle1 text-grey-7 text-center q-mb-xl">
+          Track your shows and connect with friends
         </div>
-        <div class="q-pt-md">
-          <q-btn
-            color="primary"
-            label="I'll login myself thanks!"
-            class="login-button"
-            @click="getClassicLogin"
-          />
+
+        <div class="login-buttons-container">
+          <div class="q-mb-md">
+            <GoogleLogin :callback="googleAuth" />
+          </div>
+          <div class="q-mb-md">
+            <q-btn
+              unelevated
+              color="blue"
+              icon="facebook"
+              label="Continue with Facebook"
+              class="login-btn facebook-btn"
+              @click="facebookAuth"
+            />
+          </div>
+          <div class="q-mt-sm">
+            <q-btn
+              outline
+              color="primary"
+              icon="email"
+              label="Sign in with Email"
+              class="login-btn"
+              @click="getClassicLogin"
+            />
+          </div>
         </div>
       </div>
-      <div class="col" v-if="logging_in_classic">
-        <q-item-label class="header">Sign-in Classic Style!</q-item-label>
+      <div v-if="logging_in_classic" class="login-classic-container">
+        <div class="text-h5 text-primary text-weight-bold text-center q-mb-md">
+          {{
+            new_user
+              ? 'Create Account'
+              : forgot_password
+              ? 'Reset Password'
+              : 'Email Login'
+          }}
+        </div>
+
         <q-dialog v-model="showLoginFailedDialog">
           <q-card>
             <q-card-section>
-              <q-item-label color="negative"> Login Failed </q-item-label>
-              <q-item-label>
-                {{ error_message }}
-              </q-item-label>
+              <div class="text-h6 text-negative q-mb-md">Login Failed</div>
+              <div class="text-body1">{{ error_message }}</div>
             </q-card-section>
 
             <q-card-actions align="right">
@@ -40,102 +58,118 @@
             </q-card-actions>
           </q-card>
         </q-dialog>
-        <div class="col q-pt-md">
+
+        <div class="q-gutter-md email-form-container">
           <q-input
             filled
             type="email"
             v-model="user_email"
-            label="user email"
+            label="Email Address"
             clearable
-          />
+            class="email-input"
+          >
+            <template v-slot:prepend>
+              <q-icon name="email" />
+            </template>
+          </q-input>
+
           <q-input
             v-if="!forgot_password"
             filled
             v-model="user_password"
-            label="password"
+            label="Password"
             type="password"
-          />
+            class="email-input"
+          >
+            <template v-slot:prepend>
+              <q-icon name="lock" />
+            </template>
+          </q-input>
+
           <q-input
             v-if="!forgot_password && new_user"
             filled
             v-model="user_password2"
-            label="type password again"
+            label="Confirm Password"
             type="password"
-          />
+            class="email-input"
+          >
+            <template v-slot:prepend>
+              <q-icon name="lock" />
+            </template>
+          </q-input>
+
           <q-btn
             v-if="!forgot_password && !new_user"
             color="primary"
-            glossy
-            label="login"
+            unelevated
+            label="Sign In"
             @click="handleLogin()"
-            style="width: 248px"
+            class="login-btn"
           />
+
           <q-btn
             v-if="!forgot_password && new_user"
             color="primary"
-            glossy
-            label="Sign Up!"
+            unelevated
+            label="Create Account"
             @click="handleSignup()"
-            style="width: 248px"
+            class="login-btn"
           />
+
           <q-btn
             v-if="forgot_password"
             color="primary"
-            glossy
-            label="send password reset email"
+            unelevated
+            label="Send Reset Email"
             @click="resetPassword(user_email)"
-            style="width: 248px"
+            class="login-btn"
           />
-        </div>
-        <div class="col">
+
+          <div class="row q-gutter-sm justify-center">
+            <q-btn
+              v-if="!forgot_password && !new_user"
+              flat
+              color="grey-7"
+              label="Forgot password?"
+              @click="forgotPassword"
+              size="sm"
+            />
+            <q-btn
+              v-if="!forgot_password && !new_user"
+              flat
+              color="grey-7"
+              label="New User?"
+              @click="newUser"
+              size="sm"
+            />
+            <q-btn
+              v-if="forgot_password"
+              flat
+              color="grey-7"
+              label="I remembered!"
+              @click="rememberPassword"
+              size="sm"
+            />
+            <q-btn
+              v-if="new_user"
+              flat
+              color="grey-7"
+              label="Already a User?"
+              @click="alreadyUser"
+              size="sm"
+            />
+          </div>
+
+          <q-separator class="q-my-xs" />
+
           <q-btn
-            v-if="!forgot_password"
-            color="secondary"
-            glossy
-            label="Forgot password?"
-            @click="forgotPassword"
-            dense
-            class="small-italic"
-            style="width: 124px"
-          />
-          <q-btn
-            v-if="forgot_password"
-            color="secondary"
-            glossy
-            label="I remembered!"
-            @click="rememberPassword"
-            dense
-            class="small-italic"
-            style="width: 124px"
-          />
-          <q-btn
-            v-if="!new_user"
-            color="secondary"
-            glossy
-            label="New User?"
-            @click="newUser"
-            dense
-            class="small-italic"
-            style="width: 124px"
-          />
-          <q-btn
-            v-if="new_user"
-            color="secondary"
-            glossy
-            label="Already a User?"
-            @click="alreadyUser"
-            dense
-            class="small-italic"
-            style="width: 124px"
-          />
-        </div>
-        <div class="q-pt-md">
-          <q-btn
+            outline
             color="primary"
-            glossy
-            label="Sign-in with Social!"
+            icon="arrow_back"
+            label="Back to Social Login"
             @click="getSocialLogin"
-            style="width: 248px"
+            class="login-btn back-btn"
           />
         </div>
       </div>
@@ -205,53 +239,138 @@ export default {
         // For Google login, we'll use the email directly
         // In a real implementation, you'd use GoogleAuthProvider
         const email = userData.email;
+        const name =
+          userData.name || userData.given_name || email.split('@')[0];
+        const avatar = userData.picture || '';
 
         // Try to sign in with email (this is a simplified approach)
         // In production, you should use GoogleAuthProvider properly
         console.log('Attempting Firebase login with email:', email);
 
-        // For now, let's simulate a successful login
-        // TODO: Implement proper Google OAuth with Firebase
+        // Save user profile data
         sessionStorage.setItem('loggedIn', 'true');
         sessionStorage.setItem('userEmail', email);
+        sessionStorage.setItem('userName', name);
+        sessionStorage.setItem('userAvatar', avatar);
+        sessionStorage.setItem('loginMethod', 'google');
         sessionStorage.setItem('isAdmin', 'false');
 
         this.$eventbus.emit('loggedIn', 'true');
         this.$eventbus.emit('isAdmin', 'false');
 
-        console.log('Firebase login successful, redirecting to /my-shows');
-        this.$router.push('/my-shows');
+        console.log('Google login successful with profile:', {
+          email,
+          name,
+          avatar,
+        });
+
+        // Check for pending invitation
+        const pendingInvitation = sessionStorage.getItem('pendingInvitation');
+        if (pendingInvitation) {
+          console.log('Found pending invitation, redirecting to accept...');
+          this.$router.push(`/accept-invite/${pendingInvitation}`);
+        } else {
+          this.$router.push('/my-shows');
+        }
       } catch (error) {
         console.log('Firebase authentication error:', error);
         throw error;
       }
     },
-    async helloAuth(network) {
-      try {
-        const res = await this.$hello(network).login({
-          scope: 'email,user_friends',
-          returned_scopes: true,
-          //force: true,
-        });
-        console.log(res);
-        console.log('saving access_token: ' + res.authResponse.access_token);
-        const access_token = res.authResponse.access_token;
+    async facebookAuth() {
+      console.log('Starting Facebook authentication...');
 
-        const user_res = await this.$hello(network).api('me');
-        console.log(user_res.email);
-        console.log('facebook me res: ' + JSON.stringify(user_res));
-        const user_exists_response = await this.userExistsTest(user_res.email);
-        console.log('user_exists_response: ' + user_exists_response);
-        if (!user_exists_response) {
-          console.log(
-            'user does not exist, this will be where we call addUser'
-          );
-          this.addUser(user_res.email, '');
-        }
-        this.user_password = '';
-        this.serverLogin(user_res.email, access_token);
+      // Check if FB SDK is loaded
+      if (!window.FB) {
+        console.error('Facebook SDK not loaded yet');
+        this.error_message =
+          'Facebook login is still loading. Please try again in a moment.';
+        this.showLoginFailedDialog = true;
+        return;
+      }
+
+      try {
+        // Use Facebook Login with modern SDK
+        window.FB.login(
+          (response) => {
+            console.log('Facebook login response:', response);
+
+            if (response.authResponse) {
+              console.log('Facebook login successful!');
+              const accessToken = response.authResponse.accessToken;
+
+              // Get user profile info
+              window.FB.api(
+                '/me',
+                { fields: 'id,name,email' },
+                async (userInfo) => {
+                  console.log('Facebook user info:', userInfo);
+
+                  if (!userInfo.email) {
+                    this.error_message =
+                      'Unable to get email from Facebook. Please ensure you granted email permission.';
+                    this.showLoginFailedDialog = true;
+                    return;
+                  }
+
+                  try {
+                    // Check if user exists
+                    const user_exists = await this.userExistsTest(
+                      userInfo.email
+                    );
+
+                    if (!user_exists) {
+                      console.log('New Facebook user, creating account...');
+                      await this.addUser(userInfo.email, '');
+                    }
+
+                    // Get Facebook profile picture
+                    window.FB.api(
+                      '/me/picture',
+                      { redirect: false, type: 'large' },
+                      (pictureData) => {
+                        const avatar = pictureData?.data?.url || '';
+
+                        // Save Facebook profile data
+                        sessionStorage.setItem(
+                          'userName',
+                          userInfo.name || userInfo.email.split('@')[0]
+                        );
+                        sessionStorage.setItem('userAvatar', avatar);
+                        sessionStorage.setItem('loginMethod', 'facebook');
+
+                        console.log('Facebook profile saved:', {
+                          name: userInfo.name,
+                          avatar: avatar,
+                        });
+                      }
+                    );
+
+                    // Log the user in
+                    await this.serverLogin(userInfo.email, accessToken);
+                  } catch (error) {
+                    console.error('Error during Facebook user setup:', error);
+                    this.error_message = 'Login failed. Please try again.';
+                    this.showLoginFailedDialog = true;
+                  }
+                }
+              );
+            } else {
+              console.log(
+                'User cancelled Facebook login or did not fully authorize.'
+              );
+              // User cancelled login, don't show error
+            }
+          },
+          {
+            scope: 'email,public_profile',
+            return_scopes: true,
+          }
+        );
       } catch (err) {
-        console.log('Error: ', err);
+        console.error('Facebook login error:', err);
+        this.error_message = 'Facebook login failed. Please try again.';
+        this.showLoginFailedDialog = true;
       }
     },
     async serverLogin(user_email, user_token) {
@@ -274,7 +393,14 @@ export default {
           'Session loggedIn now: ' + sessionStorage.getItem('loggedIn')
         );
 
-        this.$router.push('/my-shows');
+        // Check for pending invitation
+        const pendingInvitation = sessionStorage.getItem('pendingInvitation');
+        if (pendingInvitation) {
+          console.log('Found pending invitation, redirecting to accept...');
+          this.$router.push(`/accept-invite/${pendingInvitation}`);
+        } else {
+          this.$router.push('/my-shows');
+        }
       } catch (error) {
         console.log('Firebase login error: ', error);
         this.error_message = 'Login failed. Please try again.';
@@ -400,38 +526,103 @@ export default {
 };
 </script>
 
-<style lang="scss">
-.q-link {
-  color: blue;
-  text-decoration: underline;
-}
-.small-italic {
-  font-size: smaller;
-  font-style: italic;
-}
-
-.header {
-  color: $primary;
-  font-style: italic;
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.login-button {
-  color: white;
-  border-radius: 3px;
-  //text-transform: none;
-  border: 2px;
-  padding: 2px;
-  margin: 1px;
+<style lang="scss" scoped>
+.login-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  height: 38px;
-  //font-family: 'Arial', sans-serif;
-  font-size: 12px;
+  max-width: 320px;
+  margin: 0 auto;
 }
 
-.border-div {
-  border: 0px solid black; /* Add your preferred border color and style */
+.login-btn {
+  height: 40px;
+  font-size: 15px;
+  width: 245px !important; // Match typical Google button width
+  min-width: 245px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.facebook-btn {
+  background: #1877f2 !important;
+
+  &:hover {
+    background: #166fe5 !important;
+  }
+}
+
+.login-classic-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.email-form-container {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.email-input {
+  width: 240px !important;
+
+  :deep(.q-field__control) {
+    width: 240px !important;
+  }
+}
+
+// Mobile responsive adjustments
+@media (max-width: 599px) {
+  .login-buttons-container {
+    max-width: 280px;
+  }
+
+  .login-btn {
+    height: 40px;
+    font-size: 14px;
+    min-width: 200px;
+  }
+
+  .login-classic-container {
+    width: 100%;
+    padding: 0 20px;
+    max-width: 280px;
+
+    > div {
+      width: 100% !important;
+    }
+  }
+
+  .email-input {
+    width: 200px !important;
+
+    :deep(.q-field__control) {
+      width: 200px !important;
+    }
+  }
+
+  .back-btn {
+    margin-bottom: 4px !important;
+  }
+
+  .q-separator {
+    margin: 2px 0 !important;
+  }
+
+  .login-btn {
+    height: 40px;
+    font-size: 14px;
+    min-width: 200px;
+  }
 }
 </style>

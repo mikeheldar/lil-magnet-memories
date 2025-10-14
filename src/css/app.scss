@@ -1,1 +1,169 @@
 // app global css in SCSS form
+
+// Mobile-responsive styles
+@media (max-width: 599px) {
+  // Reduce button sizes on mobile
+  .q-btn {
+    &.q-btn--standard {
+      min-height: 36px;
+      padding: 4px 12px;
+      font-size: 13px;
+    }
+
+    &[size='lg'] {
+      min-height: 42px;
+      padding: 6px 16px;
+      font-size: 14px;
+    }
+
+    &[size='md'] {
+      min-height: 38px;
+      padding: 5px 14px;
+      font-size: 13px;
+    }
+
+    &[size='sm'] {
+      min-height: 32px;
+      padding: 3px 10px;
+      font-size: 12px;
+    }
+  }
+
+  // Make button labels wrap on small screens
+  .q-btn__content {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.2;
+  }
+
+  // Adjust heading sizes
+  .text-h4 {
+    font-size: 1.75rem !important;
+  }
+
+  .text-h5 {
+    font-size: 1.5rem !important;
+  }
+
+  .text-h6 {
+    font-size: 1.25rem !important;
+  }
+
+  // Make cards more compact
+  .q-card {
+    .q-card-section {
+      padding: 12px;
+    }
+  }
+
+  // Adjust avatar sizes
+  .q-avatar {
+    &[size='80px'] {
+      width: 60px !important;
+      height: 60px !important;
+      font-size: 40px;
+    }
+
+    &[size='120px'] {
+      width: 80px !important;
+      height: 80px !important;
+      font-size: 50px;
+    }
+  }
+
+  // Make badges smaller
+  .q-badge {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+
+  // Adjust list items
+  .q-item {
+    min-height: 56px;
+    padding: 8px 12px;
+  }
+
+  // Make chips smaller
+  .q-chip {
+    &[size='sm'] {
+      font-size: 11px;
+      padding: 2px 6px;
+    }
+  }
+
+  // Adjust spacing
+  .q-pa-md {
+    padding: 8px !important;
+  }
+
+  .q-pa-lg {
+    padding: 12px !important;
+  }
+
+  .q-px-xl {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  // Make button groups stack better on mobile
+  .row.q-gutter-sm,
+  .row.q-gutter-md {
+    flex-wrap: wrap;
+
+    > * {
+      margin-bottom: 8px;
+    }
+  }
+
+  // Improve input fields on mobile
+  .q-field {
+    .q-field__control {
+      min-height: 48px;
+    }
+  }
+
+  // Make tooltips smaller
+  .q-tooltip {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+// Tablet adjustments
+@media (min-width: 600px) and (max-width: 1023px) {
+  .q-btn {
+    &[size='lg'] {
+      min-height: 44px;
+      padding: 8px 20px;
+      font-size: 15px;
+    }
+  }
+
+  .q-avatar {
+    &[size='80px'] {
+      width: 70px !important;
+      height: 70px !important;
+    }
+  }
+}
+
+// Mobile-specific button class - icon only on small screens
+@media (max-width: 599px) {
+  .mobile-icon-only {
+    .gt-xs {
+      display: none;
+    }
+
+    min-width: auto !important;
+    padding: 8px !important;
+  }
+}
+
+// Ensure labels show on larger screens
+@media (min-width: 600px) {
+  .mobile-icon-only {
+    .gt-xs {
+      display: inline;
+    }
+  }
+}

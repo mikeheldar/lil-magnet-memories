@@ -56,7 +56,7 @@ module.exports = configure(function (/* ctx */) {
         API_BASE_URL:
           process.env.SA_ENVIRONMENT === 'dev_local'
             ? 'http://localhost:8924'
-            : 'https://api.spoileralert-tv.com',
+            : 'https://us-central1-spoileralert-firebase.cloudfunctions.net/api',
         GPT_KEY: process.env.GPT_KEY,
       },
       vueRouterMode: 'hash', // available values: 'hash', 'history'

@@ -1,48 +1,112 @@
 <template>
-  <q-page class="flex flex-top">
-    <div class="col">
-      <q-input filled v-model="showToFind" label="show to find" />
-      <q-btn
-        color="primary"
-        glossy
-        label="Get back to my shows!"
-        @click="myShows()"
-        style="width: 100%"
-      >
-      </q-btn>
+  <q-page class="q-pa-md">
+    <div class="row justify-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="text-h4 text-purple q-mb-md text-weight-bold">
+          Add Shows
+        </div>
+        <div class="text-subtitle2 text-grey-7 q-mb-lg">
+          Search and add TV shows to your watchlist
+        </div>
 
-      <q-list class="bg-white" separator bordered>
-        <q-item v-for="show in shows" :key="show.name" v-ripple>
-          <!-- <q-item-section>
-            <q-img :src="show.thumbnail" />
-          </q-item-section> -->
-
-          <q-item-section>
-            <q-item-label>{{ show.name }}</q-item-label>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ show.year }}</q-item-label>
-          </q-item-section>
-
-          <q-item-section>
+        <!-- Search Card -->
+        <q-card class="q-mb-lg">
+          <q-card-section>
+            <div class="text-h6 q-mb-md">
+              <q-icon name="search" class="q-mr-sm" />
+              Search Shows
+            </div>
+            <q-input
+              filled
+              v-model="showToFind"
+              label="Enter show name"
+              placeholder="e.g., Breaking Bad"
+            >
+              <template v-slot:prepend>
+                <q-icon name="tv" />
+              </template>
+            </q-input>
             <q-btn
-              v-if="!inMyShows(show.id.replace('series-', ''))"
-              @click="addShow(show)"
-              flat
-              rounded
               color="primary"
-              icon="bookmark_add"
-            />
-            <q-btn
-              v-if="inMyShows(show.id.replace('series-', ''))"
-              flat
-              rounded
-              color="accent"
-              icon="bookmark_added"
-            />
-          </q-item-section>
-        </q-item>
-      </q-list>
+              icon="arrow_back"
+              @click="myShows()"
+              class="full-width q-mt-md mobile-friendly-btn"
+              size="md"
+            >
+              <span class="gt-xs">Back to My Shows</span>
+              <span class="lt-sm">Back</span>
+            </q-btn>
+          </q-card-section>
+        </q-card>
+
+        <!-- Search Results -->
+        <q-card v-if="shows.length > 0">
+          <q-card-section>
+            <div class="text-h6 q-mb-md">
+              <q-icon name="list" class="q-mr-sm" />
+              Search Results
+              <q-badge color="primary" :label="shows.length" class="q-ml-sm" />
+            </div>
+
+            <q-list bordered separator class="rounded-borders">
+              <q-item v-for="show in shows" :key="show.name" v-ripple>
+                <q-item-section avatar v-if="show.thumbnail">
+                  <q-avatar rounded size="80px">
+                    <img :src="show.thumbnail" />
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label class="text-weight-bold">{{
+                    show.name
+                  }}</q-item-label>
+                  <q-item-label caption>{{ show.year }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    v-if="!inMyShows(show.id.replace('series-', ''))"
+                    @click="addShow(show)"
+                    flat
+                    round
+                    color="primary"
+                    icon="bookmark_add"
+                    size="md"
+                  >
+                    <q-tooltip>Add to My Shows</q-tooltip>
+                  </q-btn>
+                  <q-chip
+                    v-else
+                    color="green"
+                    text-color="white"
+                    icon="bookmark_added"
+                  >
+                    Added
+                  </q-chip>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-card-section>
+        </q-card>
+
+        <!-- Empty State -->
+        <q-card v-else-if="showToFind === ''">
+          <q-card-section class="text-center q-pa-lg text-grey-6">
+            <q-icon name="tv" size="64px" class="q-mb-md" />
+            <div class="text-h6">Start searching</div>
+            <div class="text-body2">
+              Enter a show name above to find TV shows
+            </div>
+          </q-card-section>
+        </q-card>
+
+        <!-- No Results -->
+        <q-card v-else>
+          <q-card-section class="text-center q-pa-lg text-grey-6">
+            <q-icon name="search_off" size="64px" class="q-mb-md" />
+            <div class="text-h6">No results found</div>
+            <div class="text-body2">Try a different search term</div>
+          </q-card-section>
+        </q-card>
+      </div>
     </div>
   </q-page>
 </template>
@@ -109,6 +173,7 @@ export default {
       console.log('In addShow (Firebase version), show: ', showToAdd);
 
       try {
+        const userEmail = sessionStorage.getItem('userEmail') || 'default_user';
         const payload = {
           id: showToAdd.id.replace('series-', ''),
           name: showToAdd.name,
@@ -116,29 +181,30 @@ export default {
           image_url: showToAdd.image_url,
           thumbnail: showToAdd.thumbnail,
           overview: showToAdd.overview,
+          userEmail: userEmail, // Add userEmail for Firebase
         };
         console.log('Firebase addShow payload: ', payload);
 
-        // Firebase show addition - simplified version using localStorage
-        // In production, you'd add to Firestore user_shows collection
-        console.log('Firebase addShow - adding show:', showToAdd.name);
+        // Save to Firebase API (primary storage - always happens)
+        const response = await this.$api.post('/add-show-public', payload);
 
-        // Save to localStorage as temporary storage
-        const userEmail = sessionStorage.getItem('userEmail') || 'default_user';
-        const storageKey = `myShows_${userEmail}`;
-        let myShows = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        if (response.data.success) {
+          console.log('✅ Show added successfully to Firebase');
 
-        // Check if show already exists
-        if (!myShows.some((show) => show.id === payload.id)) {
-          myShows.push(payload);
-          localStorage.setItem(storageKey, JSON.stringify(myShows));
-          console.log('Show added successfully to localStorage');
-        } else {
-          console.log('Show already in list');
+          // Also save to localStorage as cache
+          const storageKey = `myShows_${userEmail}`;
+          let myShows = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+          // Check if show already exists
+          if (!myShows.some((show) => show.id === payload.id)) {
+            myShows.push(payload);
+            localStorage.setItem(storageKey, JSON.stringify(myShows));
+            console.log('Show also cached in localStorage');
+          }
+
+          // Refresh the show list
+          this.getMyShowIDs();
         }
-
-        // Refresh the show list
-        this.getMyShowIDs();
       } catch (err) {
         console.log('Firebase addShow error: ', err);
         // Don't logout on error, just show message

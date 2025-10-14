@@ -12,6 +12,11 @@ const routes: RouteRecordRaw[] = [
       { path: '/admin', component: () => import('pages/AdminPage.vue') },
       { path: '/add-show', component: () => import('pages/AddShowPage.vue') },
       { path: '/my-shows', component: () => import('pages/MyShowsPage.vue') },
+      { path: '/friends', component: () => import('pages/FriendsPage.vue') },
+      {
+        path: '/accept-invite/:token',
+        component: () => import('pages/AcceptInvitePage.vue'),
+      },
       { path: '/about', component: () => import('pages/AboutPage.vue') },
       { path: '/show/:show_id', component: () => import('pages/ShowPage.vue') },
       {
