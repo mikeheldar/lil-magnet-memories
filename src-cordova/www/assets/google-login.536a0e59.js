@@ -1,0 +1,1 @@
+import{b as e}from"./index.97bff0c1.js";import{v as t}from"./index.esm.f52655f1.js";var g=e(({app:o})=>{o.use(t,{clientId:"483299815090-0c487kh6kslbf31j3b2m5c7seij8e2gq.apps.googleusercontent.com"})});export{g as default};

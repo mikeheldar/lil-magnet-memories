@@ -1,31 +1,26 @@
 <template>
-  <div class="fullscreen bg-blue text-white text-center q-pa-md flex flex-center">
-    <div>
-      <div style="font-size: 30vh">
-        404
+  <q-page class="flex flex-center">
+    <div class="text-center">
+      <div class="text-h1 text-primary q-mb-md">
+        <q-icon name="error_outline" size="64px" />
       </div>
-
-      <div class="text-h2" style="opacity:.4">
-        Oops. Nothing here...
+      <div class="text-h4 text-weight-bold q-mb-sm">Page Not Found</div>
+      <div class="text-h6 text-grey-7 q-mb-lg">
+        Sorry, the page you're looking for doesn't exist.
       </div>
-
       <q-btn
-        class="q-mt-xl"
-        color="white"
-        text-color="blue"
-        unelevated
-        to="/"
+        color="primary"
+        size="lg"
         label="Go Home"
-        no-caps
+        icon="home"
+        @click="$router.push('/')"
       />
     </div>
-  </div>
+  </q-page>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  name: 'ErrorNotFound'
-});
+<script>
+export default {
+  name: 'ErrorNotFound',
+};
 </script>

@@ -1,0 +1,1 @@
+import{Q as e}from"./QPage.e87dc99e.js";import{ac as a,h as s,ae as o,af as r,aj as t}from"./index.97bff0c1.js";const c={},n=t("h5",null,"Forgot Password",-1);function _(f,d){return s(),o(e,{class:"row items-center justify-evenly"},{default:r(()=>[n]),_:1})}var m=a(c,[["render",_]]);export{m as default};

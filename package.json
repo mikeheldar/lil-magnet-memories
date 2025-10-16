@@ -1,8 +1,8 @@
 {
-  "name": "quasar-spoileralert",
+  "name": "lil-magnet-memories",
   "version": "0.0.1",
-  "description": "SpoilerAlert re-written in Quasar v1.0",
-  "productName": "Quasar SpoilerAlert",
+  "description": "Photo upload form for Lil Magnet Memories custom magnets",
+  "productName": "Lil Magnet Memories",
   "author": "mikeheldar <michael.helmandarley@gmail.com>",
   "private": true,
   "scripts": {
@@ -13,27 +13,13 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@quasar/cli": "^2.2.3",
     "@quasar/extras": "^1.15.10",
     "axios": "^0.21.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "expo": "^47.0.13",
-    "firebase": "^10.14.1",
-    "google-auth-library": "^8.7.0",
-    "jwt-decode": "^3.1.2",
-    "openai": "^4.14.1",
-    "pinia": "^2.0.34",
     "quasar": "^2.6.0",
-    "to": "^0.2.9",
-    "tvdb.ts": "^1.6.8",
-    "update": "^0.7.4",
     "vue": "^3.2.47",
-    "vue-router": "^4.0.0",
-    "vue3-facebook-login": "^0.0.1",
-    "vue3-google-login": "^2.0.12",
-    "vuelidate": "^0.7.7",
-    "vuex": "^4.1.0"
+    "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.2.0",
