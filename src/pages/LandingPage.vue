@@ -1,10 +1,73 @@
 <template>
   <q-page class="landing-page">
+    <!-- Hero Section with Big Magnet Images -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <div class="hero-text">
+          <img
+            src="/assets/lil-magnet-memories-logo.png"
+            alt="Lil Magnet Memories"
+            class="hero-logo"
+          />
+          <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets</h1>
+          <p class="hero-subtitle">
+            Create custom photo magnets from your favorite moments. High-quality, personalized magnets for your fridge, office, or anywhere you want to display your memories.
+          </p>
+
+          <div class="hero-actions">
+            <q-btn
+              @click="$router.push('/upload')"
+              color="primary"
+              size="xl"
+              class="cta-button"
+              rounded
+            >
+              <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
+              Start Creating Magnets
+            </q-btn>
+
+            <div class="text-caption text-grey-6 q-mt-md">
+              No sign-in required • Upload photos and specify quantities
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-images">
+          <div class="magnet-grid">
+            <div class="magnet-item magnet-1">
+              <img src="/statics/cheers.jpg" alt="Celebration magnet" class="magnet-image" />
+              <div class="magnet-overlay">
+                <q-icon name="favorite" color="red" size="24px" />
+              </div>
+            </div>
+            <div class="magnet-item magnet-2">
+              <img src="/statics/fantasy.jpg" alt="Fantasy magnet" class="magnet-image" />
+              <div class="magnet-overlay">
+                <q-icon name="star" color="gold" size="24px" />
+              </div>
+            </div>
+            <div class="magnet-item magnet-3">
+              <img src="/statics/mountains.png" alt="Nature magnet" class="magnet-image" />
+              <div class="magnet-overlay">
+                <q-icon name="landscape" color="green" size="24px" />
+              </div>
+            </div>
+            <div class="magnet-item magnet-4">
+              <img src="/statics/tv_kids.jpg" alt="Family magnet" class="magnet-image" />
+              <div class="magnet-overlay">
+                <q-icon name="family_restroom" color="blue" size="24px" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="landing-container">
       <!-- Logo Section - Compact for Mobile -->
       <div class="logo-section">
         <img
-          src="/lil-magnet-memories-logo.png"
+          src="/assets/lil-magnet-memories-logo.png"
           alt="Lil Magnet Memories"
           class="landing-logo"
         />
@@ -326,12 +389,149 @@ export default {
 
 <style lang="scss" scoped>
 .landing-page {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+.hero-section {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  max-width: 1200px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  z-index: 2;
+}
+
+.hero-text {
+  color: white;
+}
+
+.hero-logo {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 2rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.1;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  line-height: 1.6;
+  margin: 0 0 2.5rem 0;
+  opacity: 0.95;
+  font-weight: 300;
+}
+
+.hero-actions {
+  .cta-button {
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 16px 32px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+.hero-images {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.magnet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 400px;
+}
+
+.magnet-item {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  &.magnet-1 {
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
+  }
+
+  &.magnet-2 {
+    grid-row: 1 / 2;
+    grid-column: 2 / 3;
+  }
+
+  &.magnet-3 {
+    grid-row: 2 / 3;
+    grid-column: 1 / 2;
+  }
+
+  &.magnet-4 {
+    grid-row: 2 / 3;
+    grid-column: 2 / 3;
+  }
+}
+
+.magnet-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.magnet-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.landing-container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
   padding: 20px;
+  background: white;
 }
 
 .landing-container {
@@ -421,7 +621,49 @@ export default {
 }
 
 // Mobile responsive adjustments
+@media (max-width: 768px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .magnet-grid {
+    max-width: 300px;
+    gap: 15px;
+  }
+
+  .magnet-image {
+    height: 150px;
+  }
+}
+
 @media (max-width: 599px) {
+  .hero-section {
+    padding: 20px 15px;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .hero-logo {
+    max-width: 250px;
+    margin-bottom: 1rem;
+  }
+
   .landing-container {
     padding: 10px;
   }
@@ -450,6 +692,22 @@ export default {
   .upload-card {
     max-width: 100%;
     margin: 0;
+  }
+
+  .magnet-grid {
+    max-width: 280px;
+    gap: 12px;
+  }
+
+  .magnet-image {
+    height: 120px;
+  }
+
+  .magnet-overlay {
+    width: 40px;
+    height: 40px;
+    top: 8px;
+    right: 8px;
   }
 }
 </style>
