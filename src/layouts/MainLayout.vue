@@ -323,7 +323,7 @@ export default {
             return 'Lil Magnet Memories';
         }
       })();
-      
+
       // Add test environment indicator
       return config.isTest ? `${baseTitle} (TEST)` : baseTitle;
     });
