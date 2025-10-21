@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Black outlined square background -->
-  <rect x="2" y="2" width="28" height="28" fill="none" stroke="#000000" stroke-width="3" rx="2"/>
-
-  <!-- M letter inside -->
-  <path d="M8 24 L8 8 L12 8 L16 18 L20 8 L24 8 L24 24 L20 24 L20 12 L16 22 L12 12 L12 24 Z" fill="#000000"/>
-</svg>
