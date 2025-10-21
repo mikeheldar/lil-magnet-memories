@@ -5,7 +5,7 @@
       <div class="hero-content">
         <div class="hero-text">
           <img
-            src="/assets/lil-magnet-memories-logo.png"
+            src="/assets/lil-magnet-memories-brand.png"
             alt="Lil Magnet Memories"
             class="hero-logo"
           />
@@ -33,31 +33,8 @@
         </div>
 
         <div class="hero-images">
-          <div class="magnet-grid">
-            <div class="magnet-item magnet-1">
-              <img src="/statics/cheers.jpg" alt="Celebration magnet" class="magnet-image" />
-              <div class="magnet-overlay">
-                <q-icon name="favorite" color="red" size="24px" />
-              </div>
-            </div>
-            <div class="magnet-item magnet-2">
-              <img src="/statics/fantasy.jpg" alt="Fantasy magnet" class="magnet-image" />
-              <div class="magnet-overlay">
-                <q-icon name="star" color="gold" size="24px" />
-              </div>
-            </div>
-            <div class="magnet-item magnet-3">
-              <img src="/statics/mountains.png" alt="Nature magnet" class="magnet-image" />
-              <div class="magnet-overlay">
-                <q-icon name="landscape" color="green" size="24px" />
-              </div>
-            </div>
-            <div class="magnet-item magnet-4">
-              <img src="/statics/tv_kids.jpg" alt="Family magnet" class="magnet-image" />
-              <div class="magnet-overlay">
-                <q-icon name="family_restroom" color="blue" size="24px" />
-              </div>
-            </div>
+          <div class="easel-container">
+            <img src="/statics/easel-display.jpg" alt="Custom photo magnets on easel display" class="easel-image" />
           </div>
         </div>
       </div>
@@ -463,67 +440,27 @@ export default {
   align-items: center;
 }
 
-.magnet-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  max-width: 400px;
+.easel-container {
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.magnet-item {
-  position: relative;
+.easel-image {
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: contain;
   border-radius: 20px;
-  overflow: hidden;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
   transition: all 0.4s ease;
-  cursor: pointer;
 
   &:hover {
-    transform: translateY(-8px) scale(1.05);
+    transform: translateY(-8px) scale(1.02);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   }
-
-  &.magnet-1 {
-    grid-row: 1 / 2;
-    grid-column: 1 / 2;
-  }
-
-  &.magnet-2 {
-    grid-row: 1 / 2;
-    grid-column: 2 / 3;
-  }
-
-  &.magnet-3 {
-    grid-row: 2 / 3;
-    grid-column: 1 / 2;
-  }
-
-  &.magnet-4 {
-    grid-row: 2 / 3;
-    grid-column: 2 / 3;
-  }
-}
-
-.magnet-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-
-.magnet-overlay {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .landing-container {
@@ -636,13 +573,12 @@ export default {
     font-size: 1.1rem;
   }
 
-  .magnet-grid {
-    max-width: 300px;
-    gap: 15px;
+  .easel-container {
+    max-width: 350px;
   }
 
-  .magnet-image {
-    height: 150px;
+  .easel-image {
+    max-height: 400px;
   }
 }
 
@@ -694,20 +630,12 @@ export default {
     margin: 0;
   }
 
-  .magnet-grid {
-    max-width: 280px;
-    gap: 12px;
+  .easel-container {
+    max-width: 300px;
   }
 
-  .magnet-image {
-    height: 120px;
-  }
-
-  .magnet-overlay {
-    width: 40px;
-    height: 40px;
-    top: 8px;
-    right: 8px;
+  .easel-image {
+    max-height: 300px;
   }
 }
 </style>
