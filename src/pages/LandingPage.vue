@@ -1,98 +1,49 @@
 <template>
   <q-page class="landing-page">
-    <!-- Hero Section with Big Magnet Images -->
-    <div class="hero-section">
-      <div class="hero-content">
-        <div class="hero-text">
-          <img
-            src="/assets/lil-magnet-memories-logo.png"
-            alt="Lil Magnet Memories"
-            class="hero-logo"
-          />
-          <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets</h1>
-          <p class="hero-subtitle">
-            Create custom photo magnets from your favorite moments. High-quality, personalized magnets for your fridge, office, or anywhere you want to display your memories.
-          </p>
+    <div class="landing-container">
+      <!-- Logo Section - Compact for Mobile -->
+      <div class="logo-section">
+        <img
+          src="/lil-magnet-memories-logo.png"
+          alt="Lil Magnet Memories"
+          class="landing-logo"
+        />
+        <h1 class="landing-title">Lil Magnet Memories</h1>
+        <p class="landing-subtitle">
+          Create beautiful custom magnets from your favorite photos
+        </p>
+      </div>
 
-          <div class="hero-actions">
+      <!-- Upload Photos Section - Most Prominent -->
+      <div class="upload-section">
+        <q-card class="upload-card">
+          <q-card-section class="text-center">
+            <div class="text-h4 q-mb-sm text-primary">
+              <q-icon name="camera_alt" size="32px" class="q-mr-sm" />
+              Upload Your Photos
+            </div>
+            <div class="text-body1 q-mb-md text-grey-7">
+              Get started right away - no sign-in required!
+            </div>
+
             <q-btn
               @click="$router.push('/upload')"
               color="primary"
-              size="xl"
-              class="cta-button"
-              rounded
+              size="lg"
+              class="upload-btn q-px-xl q-py-md"
             >
-              <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
-              Start Creating Magnets
+              <q-icon name="camera_alt" size="20px" class="q-mr-sm" />
+              Upload Photos Now
             </q-btn>
 
-            <div class="text-caption text-grey-6 q-mt-md">
-              No sign-in required • Upload photos and specify quantities
+            <div class="text-caption text-grey-6 q-mt-sm">
+              Upload photos and specify magnet quantities
             </div>
-          </div>
-        </div>
-
-        <div class="hero-images">
-          <div class="magnet-grid">
-            <div class="magnet-item magnet-1">
-              <img src="/statics/cheers.jpg" alt="Celebration magnet" class="magnet-image" />
-              <div class="magnet-overlay">
-                <q-icon name="favorite" color="red" size="24px" />
-              </div>
-            </div>
-            <div class="magnet-item magnet-2">
-              <img src="/statics/fantasy.jpg" alt="Fantasy magnet" class="magnet-image" />
-              <div class="magnet-overlay">
-                <q-icon name="star" color="gold" size="24px" />
-              </div>
-            </div>
-            <div class="magnet-item magnet-3">
-              <img src="/statics/mountains.png" alt="Nature magnet" class="magnet-image" />
-              <div class="magnet-overlay">
-                <q-icon name="landscape" color="green" size="24px" />
-              </div>
-            </div>
-            <div class="magnet-item magnet-4">
-              <img src="/statics/tv_kids.jpg" alt="Family magnet" class="magnet-image" />
-              <div class="magnet-overlay">
-                <q-icon name="family_restroom" color="blue" size="24px" />
-              </div>
-            </div>
-          </div>
-        </div>
+          </q-card-section>
+        </q-card>
       </div>
-    </div>
 
-    <!-- Upload Photos Section - Most Prominent -->
-    <div class="upload-section">
-      <q-card class="upload-card">
-        <q-card-section class="text-center">
-          <div class="text-h4 q-mb-sm text-primary">
-            <q-icon name="camera_alt" size="32px" class="q-mr-sm" />
-            Upload Your Photos
-          </div>
-          <div class="text-body1 q-mb-md text-grey-7">
-            Get started right away - no sign-in required!
-          </div>
-
-          <q-btn
-            @click="$router.push('/upload')"
-            color="primary"
-            size="lg"
-            class="upload-btn q-px-xl q-py-md"
-          >
-            <q-icon name="camera_alt" size="20px" class="q-mr-sm" />
-            Upload Photos Now
-          </q-btn>
-
-          <div class="text-caption text-grey-6 q-mt-sm">
-            Upload photos and specify magnet quantities
-          </div>
-        </q-card-section>
-      </q-card>
-    </div>
-
-    <!-- Sign In Section -->
+      <!-- Sign In Section -->
       <div class="signin-section">
         <q-card class="signin-card">
           <q-card-section class="text-center">
@@ -375,272 +326,130 @@ export default {
 
 <style lang="scss" scoped>
 .landing-page {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-}
-
-.hero-section {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative;
-  overflow: hidden;
+  padding: 20px;
 }
 
-.hero-content {
-  max-width: 1200px;
+.landing-container {
+  max-width: 800px;
   width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  align-items: center;
-  z-index: 2;
 }
 
-.hero-text {
-  color: white;
+.logo-section {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
-.hero-logo {
-  max-width: 300px;
+.landing-logo {
+  max-width: 250px;
   width: 100%;
   height: auto;
-  margin-bottom: 2rem;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  margin-bottom: 1rem;
 }
 
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  margin: 0 0 1.5rem 0;
-  line-height: 1.1;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+.landing-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #667eea;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.hero-subtitle {
-  font-size: 1.3rem;
-  line-height: 1.6;
-  margin: 0 0 2.5rem 0;
-  opacity: 0.95;
+.landing-subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  margin: 0;
   font-weight: 300;
 }
 
-.hero-actions {
-  .cta-button {
-    font-size: 1.3rem;
-    font-weight: 600;
-    padding: 16px 32px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-    }
-  }
-}
-
-.hero-images {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.magnet-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  max-width: 400px;
-}
-
-.magnet-item {
-  position: relative;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  transition: all 0.4s ease;
-  cursor: pointer;
-
-  &:hover {
-    transform: translateY(-8px) scale(1.05);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  }
-
-  &.magnet-1 {
-    grid-row: 1 / 2;
-    grid-column: 1 / 2;
-  }
-
-  &.magnet-2 {
-    grid-row: 1 / 2;
-    grid-column: 2 / 3;
-  }
-
-  &.magnet-3 {
-    grid-row: 2 / 3;
-    grid-column: 1 / 2;
-  }
-
-  &.magnet-4 {
-    grid-row: 2 / 3;
-    grid-column: 2 / 3;
-  }
-}
-
-.magnet-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-
-.magnet-overlay {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
 .upload-section {
-  padding: 80px 20px;
-  background: white;
-  margin-bottom: 0;
+  margin-bottom: 1.5rem;
 }
 
 .upload-card {
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-  border-radius: 24px;
-  border: none;
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+  border-radius: 20px;
+  border: 2px solid rgba(102, 126, 234, 0.1);
   background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 16px 48px rgba(102, 126, 234, 0.25);
   }
 }
 
 .upload-btn {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
   }
 }
 
 .signin-section {
-  padding: 60px 20px;
-  background: #f8f9ff;
-  margin-bottom: 0;
+  margin-bottom: 3rem;
 }
 
 .signin-card {
-  max-width: 500px;
+  max-width: 400px;
   margin: 0 auto;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
-  border: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
 }
 
 .features-section {
-  padding: 80px 20px;
-  background: white;
-
   .feature-card {
     height: 100%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 16px;
-    border: none;
 
     &:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     }
   }
 }
 
 // Mobile responsive adjustments
-@media (max-width: 768px) {
-  .hero-content {
-    grid-template-columns: 1fr;
-    gap: 40px;
-    text-align: center;
-  }
-
-  .hero-title {
-    font-size: 2.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.1rem;
-  }
-
-  .magnet-grid {
-    max-width: 300px;
-    gap: 15px;
-  }
-
-  .magnet-image {
-    height: 150px;
-  }
-}
-
 @media (max-width: 599px) {
-  .hero-section {
-    padding: 20px 15px;
+  .landing-container {
+    padding: 10px;
   }
 
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-
-  .hero-logo {
-    max-width: 250px;
+  .logo-section {
     margin-bottom: 1rem;
   }
 
-  .upload-section,
-  .signin-section,
-  .features-section {
-    padding: 40px 15px;
+  .landing-title {
+    font-size: 1.8rem;
   }
 
-  .magnet-grid {
-    max-width: 280px;
-    gap: 12px;
+  .landing-subtitle {
+    font-size: 0.9rem;
   }
 
-  .magnet-image {
-    height: 120px;
+  .landing-logo {
+    max-width: 200px;
+    margin-bottom: 0.5rem;
   }
 
-  .magnet-overlay {
-    width: 40px;
-    height: 40px;
-    top: 8px;
-    right: 8px;
+  .upload-section {
+    margin-bottom: 1rem;
+  }
+
+  .upload-card {
+    max-width: 100%;
+    margin: 0;
   }
 }
 </style>
