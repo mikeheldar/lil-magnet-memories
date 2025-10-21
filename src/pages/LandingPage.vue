@@ -13,7 +13,7 @@
           <p class="hero-subtitle">
             Create custom photo magnets from your favorite moments. High-quality, personalized magnets for your fridge, office, or anywhere you want to display your memories.
           </p>
-          
+
           <div class="hero-actions">
             <q-btn
               @click="$router.push('/upload')"
@@ -25,13 +25,13 @@
               <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
               Start Creating Magnets
             </q-btn>
-            
+
             <div class="text-caption text-grey-6 q-mt-md">
               No sign-in required • Upload photos and specify quantities
             </div>
           </div>
         </div>
-        
+
         <div class="hero-images">
           <div class="magnet-grid">
             <div class="magnet-item magnet-1">
@@ -92,7 +92,7 @@
       </q-card>
     </div>
 
-      <!-- Sign In Section -->
+    <!-- Sign In Section -->
       <div class="signin-section">
         <q-card class="signin-card">
           <q-card-section class="text-center">
@@ -435,7 +435,7 @@ export default {
     padding: 16px 32px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
@@ -463,27 +463,27 @@ export default {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
   transition: all 0.4s ease;
   cursor: pointer;
-  
+
   &:hover {
     transform: translateY(-8px) scale(1.05);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   }
-  
+
   &.magnet-1 {
     grid-row: 1 / 2;
     grid-column: 1 / 2;
   }
-  
+
   &.magnet-2 {
     grid-row: 1 / 2;
     grid-column: 2 / 3;
   }
-  
+
   &.magnet-3 {
     grid-row: 2 / 3;
     grid-column: 1 / 2;
   }
-  
+
   &.magnet-4 {
     grid-row: 2 / 3;
     grid-column: 2 / 3;
@@ -563,7 +563,7 @@ export default {
 .features-section {
   padding: 80px 20px;
   background: white;
-  
+
   .feature-card {
     height: 100%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -584,20 +584,20 @@ export default {
     gap: 40px;
     text-align: center;
   }
-  
+
   .hero-title {
     font-size: 2.5rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1.1rem;
   }
-  
+
   .magnet-grid {
     max-width: 300px;
     gap: 15px;
   }
-  
+
   .magnet-image {
     height: 150px;
   }
@@ -607,35 +607,35 @@ export default {
   .hero-section {
     padding: 20px 15px;
   }
-  
+
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1rem;
   }
-  
+
   .hero-logo {
     max-width: 250px;
     margin-bottom: 1rem;
   }
-  
+
   .upload-section,
   .signin-section,
   .features-section {
     padding: 40px 15px;
   }
-  
+
   .magnet-grid {
     max-width: 280px;
     gap: 12px;
   }
-  
+
   .magnet-image {
     height: 120px;
   }
-  
+
   .magnet-overlay {
     width: 40px;
     height: 40px;
