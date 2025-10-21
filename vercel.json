@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "lil-magnet-memories",
   "builds": [
     {
       "src": "package.json",
@@ -12,11 +11,20 @@
   ],
   "routes": [
     {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/icons/(.*)",
+      "dest": "/icons/$1"
+    },
+    {
+      "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "NODE_VERSION": "18"
-  }
+  ]
 }

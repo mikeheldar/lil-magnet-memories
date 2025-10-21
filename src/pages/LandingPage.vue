@@ -4,7 +4,7 @@
       <!-- Logo Section - Compact for Mobile -->
       <div class="logo-section">
         <img
-          src="/lil-magnet-memories-logo.png"
+          src="/assets/lil-magnet-memories-logo.png"
           alt="Lil Magnet Memories"
           class="landing-logo"
         />

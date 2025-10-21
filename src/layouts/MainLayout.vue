@@ -15,12 +15,24 @@
         <!-- Logo on the left -->
         <q-btn flat dense @click="$router.push('/')" class="q-mr-md">
           <img
-            src="/lil-magnet-memories-logo.png"
+            src="/assets/lil-magnet-memories-logo.png"
             alt="Lil Magnet Memories"
             class="logo-header"
             style="height: 40px; width: auto"
           />
         </q-btn>
+
+        <!-- Test Environment Indicator -->
+        <q-chip
+          v-if="isTestEnvironment"
+          color="orange"
+          text-color="white"
+          size="sm"
+          class="q-mr-md"
+          icon="bug_report"
+        >
+          TEST
+        </q-chip>
 
         <!-- Page title in center -->
         <q-toolbar-title class="text-center">
@@ -268,6 +280,7 @@ import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { useQuasar } from 'quasar';
+import { config } from '../config/environment.js';
 
 export default {
   name: 'MainLayout',
@@ -285,30 +298,37 @@ export default {
     });
 
     const pageTitle = computed(() => {
-      switch (route.path) {
-        case '/orders':
-          return 'Admin - Order List';
-        case '/customers':
-          return 'Admin - Customer List';
-        case '/upload':
-          return 'Upload Photos';
-        case '/my-orders':
-          return 'My Orders';
-        case '/thank-you':
-          return 'Order Confirmation';
-        case '/firebase-test':
-          return 'Firebase Diagnostic';
-        case '/admin':
-          return 'Admin Settings';
-        case '/email-test':
-          return 'Admin - Email Test';
-        case '/market-events':
-          return 'Admin - Market Events';
-        case '/':
-        default:
-          return 'Lil Magnet Memories';
-      }
+      const baseTitle = (() => {
+        switch (route.path) {
+          case '/orders':
+            return 'Admin - Order List';
+          case '/customers':
+            return 'Admin - Customer List';
+          case '/upload':
+            return 'Upload Photos';
+          case '/my-orders':
+            return 'My Orders';
+          case '/thank-you':
+            return 'Order Confirmation';
+          case '/firebase-test':
+            return 'Firebase Diagnostic';
+          case '/admin':
+            return 'Admin Settings';
+          case '/email-test':
+            return 'Admin - Email Test';
+          case '/market-events':
+            return 'Admin - Market Events';
+          case '/':
+          default:
+            return 'Lil Magnet Memories';
+        }
+      })();
+      
+      // Add test environment indicator
+      return config.isTest ? `${baseTitle} (TEST)` : baseTitle;
     });
+
+    const isTestEnvironment = computed(() => config.isTest);
 
     const toggleLeftDrawer = () => {
       leftDrawerOpen.value = !leftDrawerOpen.value;
@@ -424,6 +444,7 @@ export default {
 
     return {
       pageTitle,
+      isTestEnvironment,
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,

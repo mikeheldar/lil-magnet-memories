@@ -6,15 +6,21 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import { config } from './environment.js';
 
 // Admin Configuration
 // Initial admin emails (fallback if Firebase is not available)
-export const INITIAL_ADMIN_EMAILS = [
-  'lilmagnetmemories@gmail.com', // Your email
-  // Add more admin emails here as needed
-  // 'admin2@example.com',
-  // 'admin3@example.com',
-];
+export const INITIAL_ADMIN_EMAILS = config.isTest 
+  ? [
+      'test-admin@lilmagnetmemories.com', // Test admin email
+      'lilmagnetmemories@gmail.com', // Your email for testing
+    ]
+  : [
+      'lilmagnetmemories@gmail.com', // Your email
+      // Add more admin emails here as needed
+      // 'admin2@example.com',
+      // 'admin3@example.com',
+    ];
 
 // Admin configuration
 export const ADMIN_CONFIG = {
