@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Favicon Generator</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="32" height="32"></canvas>
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Clear canvas with white background
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, 32, 32);
+
+      // Draw black outlined square
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(2, 2, 28, 28);
+
+      // Draw M letter
+      ctx.fillStyle = 'black';
+      ctx.font = 'bold 20px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('M', 16, 16);
+
+      // Convert to favicon.ico data URL
+      const dataURL = canvas.toDataURL('image/png');
+      console.log('Data URL for favicon:', dataURL);
+
+      // Create download link
+      const link = document.createElement('a');
+      link.download = 'favicon.png';
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+    </script>
+  </body>
+</html>

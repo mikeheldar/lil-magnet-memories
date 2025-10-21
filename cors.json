@@ -1,0 +1,10 @@
+[
+  {
+    "origin": [
+      "https://lil-magnet-memories.vercel.app",
+      "http://localhost:9000"
+    ],
+    "method": ["GET", "HEAD"],
+    "maxAgeSeconds": 3600
+  }
+]
