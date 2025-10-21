@@ -5,7 +5,7 @@
       <div class="hero-content">
         <div class="hero-text">
           <img
-            src="/assets/lil-magnet-memories-brand.png"
+            src="/assets/lil-magnet-memories-logo.png"
             alt="Lil Magnet Memories"
             class="hero-logo"
           />
@@ -34,7 +34,7 @@
 
         <div class="hero-images">
           <div class="easel-container">
-            <img src="/statics/easel-display.jpg" alt="Custom photo magnets on easel display" class="easel-image" />
+            <img src="/statics/cheers.jpg" alt="Custom photo magnets display" class="easel-image" />
           </div>
         </div>
       </div>
