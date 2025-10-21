@@ -415,6 +415,8 @@ export default {
 }
 
 .hero-logo-wide {
+  max-width: 500px;
+  width: 100%;
   display: block;
 }
 
