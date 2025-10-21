@@ -5,7 +5,7 @@
       <div class="hero-content">
         <div class="hero-text">
           <img
-            src="/statics/isbl-picture.jpg"
+            src="/statics/biglogo.png"
             alt="Lil Magnet Memories"
             class="hero-logo hero-logo-wide"
           />
@@ -16,7 +16,9 @@
           />
           <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets</h1>
           <p class="hero-subtitle">
-            Create custom photo magnets from your favorite moments. High-quality, personalized magnets for your fridge, office, or anywhere you want to display your memories.
+            Create custom photo magnets from your favorite moments.
+            High-quality, personalized magnets for your fridge, office, or
+            anywhere you want to display your memories.
           </p>
 
           <div class="hero-actions">
@@ -39,7 +41,11 @@
 
         <div class="hero-images">
           <div class="easel-container">
-            <img src="/statics/magnetboard.jpg" alt="Custom photo magnets on easel display" class="easel-image" />
+            <img
+              src="/statics/magnetboard.png"
+              alt="Custom photo magnets on easel display"
+              class="easel-image"
+            />
           </div>
         </div>
       </div>
@@ -611,7 +617,7 @@ export default {
   .hero-logo-wide {
     display: none;
   }
-  
+
   .hero-logo-small {
     display: block;
   }
