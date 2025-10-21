@@ -5,9 +5,14 @@
       <div class="hero-content">
         <div class="hero-text">
           <img
+            src="/statics/isbl-picture.jpg"
+            alt="Lil Magnet Memories"
+            class="hero-logo hero-logo-wide"
+          />
+          <img
             src="/assets/lil-magnet-memories-logo.png"
             alt="Lil Magnet Memories"
-            class="hero-logo"
+            class="hero-logo hero-logo-small"
           />
           <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets</h1>
           <p class="hero-subtitle">
@@ -34,7 +39,7 @@
 
         <div class="hero-images">
           <div class="easel-container">
-            <img src="/statics/cheers.jpg" alt="Custom photo magnets display" class="easel-image" />
+            <img src="/statics/magnetboard.jpg" alt="Custom photo magnets on easel display" class="easel-image" />
           </div>
         </div>
       </div>
@@ -403,6 +408,14 @@ export default {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
+.hero-logo-wide {
+  display: block;
+}
+
+.hero-logo-small {
+  display: none;
+}
+
 .hero-title {
   font-size: 3.5rem;
   font-weight: 800;
@@ -593,6 +606,14 @@ export default {
 
   .hero-subtitle {
     font-size: 1rem;
+  }
+
+  .hero-logo-wide {
+    display: none;
+  }
+  
+  .hero-logo-small {
+    display: block;
   }
 
   .hero-logo {
