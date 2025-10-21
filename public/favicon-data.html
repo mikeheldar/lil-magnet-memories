@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Favicon Data Generator</title>
+  </head>
+  <body>
+    <h2>Favicon Generator for Lil Magnet Memories</h2>
+    <canvas
+      id="canvas"
+      width="32"
+      height="32"
+      style="border: 1px solid #ccc"
+    ></canvas>
+    <br /><br />
+    <button onclick="generateFavicon()">Generate Favicon</button>
+    <br /><br />
+    <div id="output"></div>
+
+    <script>
+      function generateFavicon() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Clear canvas with white background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 32, 32);
+
+        // Draw black outlined square (2px margin, 28x28 square)
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(2, 2, 28, 28);
+
+        // Draw magnet U shape with heart nose
+        ctx.fillStyle = 'black';
+
+        // Magnet U body - horseshoe shape
+        ctx.beginPath();
+        ctx.moveTo(8, 10);
+        ctx.arcTo(8, 6, 12, 6, 4);
+        ctx.lineTo(24, 6);
+        ctx.arcTo(24, 6, 24, 10, 4);
+        ctx.lineTo(24, 22);
+        ctx.arcTo(24, 26, 20, 26, 4);
+        ctx.lineTo(12, 26);
+        ctx.arcTo(8, 26, 8, 22, 4);
+        ctx.closePath();
+        ctx.fill();
+
+        // Heart nose on top
+        ctx.beginPath();
+        ctx.arc(15, 9, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Convert to data URL
+        const dataURL = canvas.toDataURL('image/png');
+
+        // Display result
+        const output = document.getElementById('output');
+        output.innerHTML = `
+                <h3>Generated Favicon:</h3>
+                <img src="${dataURL}" alt="Favicon" style="border: 1px solid #ccc;">
+                <br><br>
+                <strong>Data URL:</strong><br>
+                <textarea style="width: 100%; height: 100px;">${dataURL}</textarea>
+                <br><br>
+                <button onclick="downloadFavicon('${dataURL}')">Download as PNG</button>
+            `;
+      }
+
+      function downloadFavicon(dataURL) {
+        const link = document.createElement('a');
+        link.download = 'favicon-32x32.png';
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // Auto-generate on page load
+      generateFavicon();
+    </script>
+  </body>
+</html>
