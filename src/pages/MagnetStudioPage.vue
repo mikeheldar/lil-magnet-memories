@@ -14,6 +14,76 @@
         </q-card-section>
       </q-card>
 
+      <!-- Cropping Interface - Moved to Top -->
+      <q-card v-if="selectedPhoto" class="q-mt-md">
+        <q-card-section>
+          <div class="text-h6 q-mb-md">Crop Settings</div>
+
+          <!-- Single Input for Number of Squares -->
+          <div class="q-mb-md">
+            <q-input
+              v-model.number="numberOfSquares"
+              label="Number of Squares (Grid will be square)"
+              type="number"
+              min="1"
+              max="100"
+              style="max-width: 300px"
+            />
+            <div class="text-caption text-grey-6 q-mt-xs">
+              {{ sqrt(numberOfSquares).toFixed(1) }}x{{ sqrt(numberOfSquares).toFixed(1) }} grid
+            </div>
+          </div>
+
+          <!-- Image Preview with Interactive Grid -->
+          <div class="crop-container" @mousemove="handleGridMove" @mouseleave="handleGridLeave">
+            <div class="image-wrapper">
+              <img
+                ref="selectedImage"
+                :src="selectedPhoto.url"
+                alt="Selected photo for cropping"
+                class="selected-photo"
+                @load="initGridOverlay"
+              />
+              <div
+                v-if="showGrid"
+                class="grid-overlay"
+                :style="gridStyle"
+                @mousedown="startDrag"
+              >
+                <div
+                  v-for="row in gridDimension"
+                  :key="`row-${row}`"
+                  class="grid-line horizontal"
+                  :style="{ top: `${((row - 1) * 100) / gridDimension}%` }"
+                ></div>
+                <div
+                  v-for="col in gridDimension"
+                  :key="`col-${col}`"
+                  class="grid-line vertical"
+                  :style="{ left: `${((col - 1) * 100) / gridDimension}%` }"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="q-mt-md q-gutter-md">
+            <q-btn
+              color="primary"
+              label="Generate Crops"
+              @click="generateCrops"
+              :loading="generating"
+            />
+            <q-btn
+              outline
+              color="grey-8"
+              label="Cancel"
+              @click="cancelSelection"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+
       <!-- Recent Order Photos -->
       <q-card class="q-mt-md">
         <q-card-section>
@@ -49,105 +119,6 @@
                 <div class="text-caption text-grey-6">{{ photo.name }}</div>
               </div>
             </div>
-          </div>
-        </q-card-section>
-      </q-card>
-
-      <!-- Cropping Interface -->
-      <q-card v-if="selectedPhoto" class="q-mt-md">
-        <q-card-section>
-          <div class="text-h6 q-mb-md">Crop Settings</div>
-
-          <!-- Image Preview with Interactive Grid -->
-          <div class="crop-container" @mousemove="handleGridMove" @mouseleave="handleGridLeave">
-            <div class="image-wrapper">
-              <img
-                ref="selectedImage"
-                :src="selectedPhoto.url"
-                alt="Selected photo for cropping"
-                class="selected-photo"
-                @load="initGridOverlay"
-              />
-              <div
-                v-if="showGrid"
-                class="grid-overlay"
-                :style="gridStyle"
-                @mousedown="startDrag"
-              >
-                <div
-                  v-for="row in gridRows"
-                  :key="`row-${row}`"
-                  class="grid-line horizontal"
-                  :style="{ top: `${((row - 1) * 100) / gridRows}%` }"
-                ></div>
-                <div
-                  v-for="col in gridCols"
-                  :key="`col-${col}`"
-                  class="grid-line vertical"
-                  :style="{ left: `${((col - 1) * 100) / gridCols}%` }"
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Crop Settings -->
-          <div class="q-mt-md q-gutter-md row items-center">
-            <q-input
-              v-model.number="cropSize"
-              label="Crop Size (px)"
-              type="number"
-              min="100"
-              max="1000"
-              step="50"
-              style="max-width: 150px"
-            />
-            <q-input
-              v-model.number="gridRows"
-              label="Grid Rows"
-              type="number"
-              min="1"
-              max="10"
-              style="max-width: 150px"
-            />
-            <q-input
-              v-model.number="gridCols"
-              label="Grid Columns"
-              type="number"
-              min="1"
-              max="10"
-              style="max-width: 150px"
-            />
-            <q-toggle
-              v-model="showGrid"
-              label="Show Grid"
-              color="primary"
-            />
-            <q-btn-toggle
-              v-model="gridSize"
-              :options="[
-                { label: 'Small', value: 0.5 },
-                { label: 'Normal', value: 1 },
-                { label: 'Large', value: 1.5 }
-              ]"
-              color="primary"
-              text-color="white"
-            />
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="q-mt-md q-gutter-md">
-            <q-btn
-              color="primary"
-              label="Generate Crops"
-              @click="generateCrops"
-              :loading="generating"
-            />
-            <q-btn
-              outline
-              color="grey-8"
-              label="Cancel"
-              @click="cancelSelection"
-            />
           </div>
         </q-card-section>
       </q-card>
@@ -213,12 +184,10 @@ export default {
     const selectedPhoto = ref(null);
     const selectedImage = ref(null);
     const cropSize = ref(300);
-    const gridRows = ref(2);
-    const gridCols = ref(2);
+    const numberOfSquares = ref(4); // Start with 2x2 grid
     const croppedSquares = ref([]);
     const generating = ref(false);
     const showGrid = ref(true);
-    const gridSize = ref(1);
     const gridPosition = ref({ x: 0, y: 0 });
     const isDragging = ref(false);
     const dragStart = ref({ x: 0, y: 0 });
@@ -325,7 +294,7 @@ export default {
 
       generating.value = true;
       console.log('Generating crops...');
-      console.log('Grid:', gridRows.value, 'x', gridCols.value);
+      console.log('Grid:', gridDimension.value, 'x', gridDimension.value);
       console.log('Crop size:', cropSize.value);
 
       croppedSquares.value = [];
@@ -342,17 +311,16 @@ export default {
             canvas.width = cropSize.value;
             canvas.height = cropSize.value;
 
-            const totalSquares = gridRows.value * gridCols.value;
             const imageWidth = img.width;
             const imageHeight = img.height;
 
-            const squareWidth = imageWidth / gridCols.value;
-            const squareHeight = imageHeight / gridRows.value;
+            const squareWidth = imageWidth / gridDimension.value;
+            const squareHeight = imageHeight / gridDimension.value;
 
             const squares = [];
 
-            for (let row = 0; row < gridRows.value; row++) {
-              for (let col = 0; col < gridCols.value; col++) {
+            for (let row = 0; row < gridDimension.value; row++) {
+              for (let col = 0; col < gridDimension.value; col++) {
                 const sx = col * squareWidth;
                 const sy = row * squareHeight;
 
@@ -449,15 +417,23 @@ export default {
       });
     };
 
+    // Calculate grid dimension (sqrt of numberOfSquares, rounded to nearest integer)
+    const gridDimension = computed(() => {
+      return Math.ceil(Math.sqrt(numberOfSquares.value));
+    });
+
+    const sqrt = (value) => {
+      return Math.ceil(Math.sqrt(value));
+    };
+
     const initGridOverlay = () => {
       showGrid.value = true;
       gridPosition.value = { x: 0, y: 0 };
     };
 
     const gridStyle = computed(() => {
-      const scale = gridSize.value;
       return {
-        transform: `translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${scale})`,
+        transform: `translate(${gridPosition.value.x}px, ${gridPosition.value.y}px)`,
         transformOrigin: 'center center',
       };
     });
@@ -503,12 +479,12 @@ export default {
       selectedPhoto,
       selectedImage,
       cropSize,
-      gridRows,
-      gridCols,
+      numberOfSquares,
+      gridDimension,
+      sqrt,
       croppedSquares,
       generating,
       showGrid,
-      gridSize,
       gridStyle,
       selectPhoto,
       cancelSelection,
