@@ -58,17 +58,40 @@
         <q-card-section>
           <div class="text-h6 q-mb-md">Crop Settings</div>
 
-          <!-- Image Preview -->
-          <div class="crop-container">
-            <img
-              :src="selectedPhoto.url"
-              alt="Selected photo for cropping"
-              class="selected-photo"
-            />
+          <!-- Image Preview with Interactive Grid -->
+          <div class="crop-container" @mousemove="handleGridMove" @mouseleave="handleGridLeave">
+            <div class="image-wrapper">
+              <img
+                ref="selectedImage"
+                :src="selectedPhoto.url"
+                alt="Selected photo for cropping"
+                class="selected-photo"
+                @load="initGridOverlay"
+              />
+              <div
+                v-if="showGrid"
+                class="grid-overlay"
+                :style="gridStyle"
+                @mousedown="startDrag"
+              >
+                <div
+                  v-for="row in gridRows"
+                  :key="`row-${row}`"
+                  class="grid-line horizontal"
+                  :style="{ top: `${((row - 1) * 100) / gridRows}%` }"
+                ></div>
+                <div
+                  v-for="col in gridCols"
+                  :key="`col-${col}`"
+                  class="grid-line vertical"
+                  :style="{ left: `${((col - 1) * 100) / gridCols}%` }"
+                ></div>
+              </div>
+            </div>
           </div>
 
           <!-- Crop Settings -->
-          <div class="q-mt-md q-gutter-md row">
+          <div class="q-mt-md q-gutter-md row items-center">
             <q-input
               v-model.number="cropSize"
               label="Crop Size (px)"
@@ -93,6 +116,21 @@
               min="1"
               max="10"
               style="max-width: 150px"
+            />
+            <q-toggle
+              v-model="showGrid"
+              label="Show Grid"
+              color="primary"
+            />
+            <q-btn-toggle
+              v-model="gridSize"
+              :options="[
+                { label: 'Small', value: 0.5 },
+                { label: 'Normal', value: 1 },
+                { label: 'Large', value: 1.5 }
+              ]"
+              color="primary"
+              text-color="white"
             />
           </div>
 
@@ -158,7 +196,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
@@ -173,11 +211,17 @@ export default {
     const loadingOrders = ref(false);
     const orderPhotos = ref([]);
     const selectedPhoto = ref(null);
+    const selectedImage = ref(null);
     const cropSize = ref(300);
     const gridRows = ref(2);
     const gridCols = ref(2);
     const croppedSquares = ref([]);
     const generating = ref(false);
+    const showGrid = ref(true);
+    const gridSize = ref(1);
+    const gridPosition = ref({ x: 0, y: 0 });
+    const isDragging = ref(false);
+    const dragStart = ref({ x: 0, y: 0 });
 
     const checkAdminAccess = async () => {
       try {
@@ -405,10 +449,51 @@ export default {
       });
     };
 
+    const initGridOverlay = () => {
+      showGrid.value = true;
+      gridPosition.value = { x: 0, y: 0 };
+    };
+
+    const gridStyle = computed(() => {
+      const scale = gridSize.value;
+      return {
+        transform: `translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${scale})`,
+        transformOrigin: 'center center',
+      };
+    });
+
+    const startDrag = (event) => {
+      isDragging.value = true;
+      dragStart.value = {
+        x: event.clientX - gridPosition.value.x,
+        y: event.clientY - gridPosition.value.y,
+      };
+      event.preventDefault();
+    };
+
+    const handleGridMove = (event) => {
+      if (isDragging.value) {
+        gridPosition.value = {
+          x: event.clientX - dragStart.value.x,
+          y: event.clientY - dragStart.value.y,
+        };
+      }
+    };
+
+    const handleGridLeave = () => {
+      isDragging.value = false;
+    };
+
     onMounted(async () => {
       const hasAccess = await checkAdminAccess();
       if (hasAccess) {
         await loadRecentOrderPhotos();
+      }
+
+      // Add mouse event listeners for dragging
+      if (process.env.CLIENT) {
+        document.addEventListener('mousemove', handleGridMove);
+        document.addEventListener('mouseup', handleGridLeave);
       }
     });
 
@@ -416,17 +501,25 @@ export default {
       loadingOrders,
       orderPhotos,
       selectedPhoto,
+      selectedImage,
       cropSize,
       gridRows,
       gridCols,
       croppedSquares,
       generating,
+      showGrid,
+      gridSize,
+      gridStyle,
       selectPhoto,
       cancelSelection,
       handleImageError,
       generateCrops,
       downloadSquare,
       downloadAllSquares,
+      initGridOverlay,
+      startDrag,
+      handleGridMove,
+      handleGridLeave,
     };
   },
 };
@@ -470,12 +563,48 @@ export default {
   padding: 16px;
   border-radius: 8px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.image-wrapper {
+  position: relative;
+  display: inline-block;
 }
 
 .selected-photo {
   max-width: 100%;
   max-height: 400px;
   border-radius: 8px;
+  display: block;
+}
+
+.grid-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  cursor: move;
+}
+
+.grid-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+.grid-line.horizontal {
+  width: 100%;
+  height: 1px;
+  left: 0;
+}
+
+.grid-line.vertical {
+  height: 100%;
+  width: 1px;
+  top: 0;
 }
 
 .cropped-squares-grid {
