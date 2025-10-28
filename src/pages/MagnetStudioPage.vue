@@ -43,7 +43,11 @@
           </div>
 
           <!-- Image Preview with Interactive Grid -->
-          <div class="crop-container" @mousemove="handleGridMove" @mouseleave="handleGridLeave">
+          <div
+            class="crop-container"
+            @mousemove="handleGridMove"
+            @mouseleave="handleGridLeave"
+          >
             <div class="image-wrapper">
               <img
                 ref="selectedImage"
@@ -455,7 +459,6 @@ export default {
       });
     };
 
-
     const initGridOverlay = () => {
       showGrid.value = true;
       gridPosition.value = { x: 0, y: 0 };
@@ -470,24 +473,22 @@ export default {
     });
 
     const redOverlayStyle = computed(() => {
-      // Calculate the size and position of the red overlay (area outside grid)
+      // Red overlay with a hole in the middle for the white grid
       const scale = gridScale.value;
-      const gridSize = scale * 100; // Percentage of image size the grid takes
-
+      const gridHalfSize = (scale * 50); // Half the size of the grid in percentage
+      
+      // Use inset to create a square hole in the center
+      const insetValue = `${50 - gridHalfSize}%`;
+      
       return {
+        position: 'absolute',
         top: '0',
         left: '0',
         width: '100%',
         height: '100%',
-        clipPath: `polygon(
-          0 0,
-          0 100%,
-          ${50 - gridSize/2}% 100%,
-          ${50 - gridSize/2}% ${50 - gridSize/2}%,
-          ${50 + gridSize/2}% ${50 - gridSize/2}%,
-          ${50 + gridSize/2}% 0,
-          0 0
-        )`,
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+        clipPath: `inset(${insetValue})`,
+        WebkitClipPath: `inset(${insetValue})`,
       };
     });
 
@@ -622,11 +623,10 @@ export default {
 
 .grid-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  transform: translate(-50%, -50%);
   pointer-events: auto;
   cursor: move;
   z-index: 2;
