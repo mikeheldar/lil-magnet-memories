@@ -42,6 +42,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/MarketEventsPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },
       },
+      {
+        path: 'magnet-studio',
+        component: () => import('pages/MagnetStudioPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
     ],
   },
 

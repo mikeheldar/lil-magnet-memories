@@ -224,6 +224,15 @@
               </q-item-section>
             </q-item>
 
+            <q-item clickable v-ripple @click="navigateTo('/magnet-studio')">
+              <q-item-section avatar>
+                <q-icon name="apps" color="purple" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Magnet Studio</q-item-label>
+                <q-item-label caption>Crop images into squares</q-item-label>
+              </q-item-section>
+            </q-item>
             <q-item clickable v-ripple @click="navigateTo('/market-events')">
               <q-item-section avatar>
                 <q-icon name="event" color="green" />
@@ -318,6 +327,8 @@ export default {
             return 'Admin - Email Test';
           case '/market-events':
             return 'Admin - Market Events';
+          case '/magnet-studio':
+            return 'Admin - Magnet Studio';
           case '/':
           default:
             return 'Lil Magnet Memories';

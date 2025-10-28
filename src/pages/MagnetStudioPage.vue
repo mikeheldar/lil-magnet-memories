@@ -1,0 +1,510 @@
+<template>
+  <q-page padding>
+    <div class="q-pa-md">
+      <q-card>
+        <q-card-section>
+          <div class="text-h4 q-mb-md">
+            <q-icon name="apps" size="32px" class="q-mr-sm text-purple-7" />
+            Magnet Studio
+          </div>
+          <div class="text-body2 text-grey-6">
+            Crop images from recent orders into perfect square sections for magnets
+          </div>
+        </q-card-section>
+      </q-card>
+
+      <!-- Recent Order Photos -->
+      <q-card class="q-mt-md">
+        <q-card-section>
+          <div class="text-h6 q-mb-md">Recent Order Photos</div>
+          
+          <div v-if="loadingOrders" class="text-center q-pa-lg">
+            <q-spinner color="primary" size="48px" />
+            <div class="q-mt-md">Loading recent order photos...</div>
+          </div>
+
+          <div v-else-if="orderPhotos.length === 0" class="text-center q-pa-lg text-grey-6">
+            No recent order photos found
+          </div>
+
+          <div v-else class="photo-grid q-gutter-md">
+            <div
+              v-for="photo in orderPhotos"
+              :key="photo.id"
+              class="photo-thumbnail"
+              @click="selectPhoto(photo)"
+            >
+              <img
+                :src="photo.url"
+                :alt="photo.name"
+                class="thumbnail-image"
+                @error="handleImageError"
+              />
+              <div class="thumbnail-info">
+                <div class="text-caption">{{ photo.orderNumber }}</div>
+                <div class="text-caption text-grey-6">{{ photo.name }}</div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+
+      <!-- Cropping Interface -->
+      <q-card v-if="selectedPhoto" class="q-mt-md">
+        <q-card-section>
+          <div class="text-h6 q-mb-md">Crop Settings</div>
+          
+          <!-- Image Preview -->
+          <div class="crop-container">
+            <img
+              :src="selectedPhoto.url"
+              alt="Selected photo for cropping"
+              class="selected-photo"
+            />
+          </div>
+
+          <!-- Crop Settings -->
+          <div class="q-mt-md q-gutter-md row">
+            <q-input
+              v-model.number="cropSize"
+              label="Crop Size (px)"
+              type="number"
+              min="100"
+              max="1000"
+              step="50"
+              style="max-width: 150px"
+            />
+            <q-input
+              v-model.number="gridRows"
+              label="Grid Rows"
+              type="number"
+              min="1"
+              max="10"
+              style="max-width: 150px"
+            />
+            <q-input
+              v-model.number="gridCols"
+              label="Grid Columns"
+              type="number"
+              min="1"
+              max="10"
+              style="max-width: 150px"
+            />
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="q-mt-md q-gutter-md">
+            <q-btn
+              color="primary"
+              label="Generate Crops"
+              @click="generateCrops"
+              :loading="generating"
+            />
+            <q-btn
+              outline
+              color="grey-8"
+              label="Cancel"
+              @click="cancelSelection"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+
+      <!-- Cropped Squares Preview -->
+      <q-card v-if="croppedSquares.length > 0" class="q-mt-md">
+        <q-card-section>
+          <div class="text-h6 q-mb-md">
+            Cropped Squares ({{ croppedSquares.length }} total)
+          </div>
+          
+          <div class="cropped-squares-grid">
+            <div
+              v-for="(square, index) in croppedSquares"
+              :key="index"
+              class="cropped-square-preview"
+            >
+              <img
+                :src="square.dataUrl"
+                :alt="`Square ${index + 1}`"
+                @click="downloadSquare(square)"
+              />
+              <div class="square-label">{{ square.row }},{{ square.col }}</div>
+              <q-btn
+                icon="download"
+                size="xs"
+                class="square-download-btn"
+                @click="downloadSquare(square)"
+                color="primary"
+              />
+            </div>
+          </div>
+
+          <div class="q-mt-md">
+            <q-btn
+              color="green"
+              label="Download All Squares"
+              icon="archive"
+              @click="downloadAllSquares"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </div>
+  </q-page>
+</template>
+
+<script>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
+import { firebaseService } from '../services/firebaseService.js';
+
+export default {
+  name: 'MagnetStudioPage',
+  setup() {
+    const router = useRouter();
+    const $q = useQuasar();
+
+    const loadingOrders = ref(false);
+    const orderPhotos = ref([]);
+    const selectedPhoto = ref(null);
+    const cropSize = ref(300);
+    const gridRows = ref(2);
+    const gridCols = ref(2);
+    const croppedSquares = ref([]);
+    const generating = ref(false);
+
+    const checkAdminAccess = async () => {
+      try {
+        const loggedIn = sessionStorage.getItem('loggedIn');
+        const isAdmin = sessionStorage.getItem('isAdmin');
+
+        console.log('Magnet Studio - Admin check:', { loggedIn, isAdmin });
+
+        if (loggedIn !== 'true') {
+          console.log('Not logged in, redirecting...');
+          await router.push('/');
+          return false;
+        }
+
+        if (isAdmin !== 'true') {
+          console.log('Not an admin, redirecting...');
+          await router.push('/');
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error('Error checking admin access:', error);
+        await router.push('/');
+        return false;
+      }
+    };
+
+    const loadRecentOrderPhotos = async () => {
+      loadingOrders.value = true;
+      try {
+        console.log('Loading recent order photos...');
+        
+        const orders = await firebaseService.getOrders();
+        console.log('Loaded orders:', orders.length);
+
+        const photoArray = [];
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        orders.forEach(order => {
+          if (order.photos && order.photos.length > 0) {
+            const orderDate = order.submissionDate?.toDate ? order.submissionDate.toDate() : new Date(order.submissionDate);
+            
+            if (orderDate >= thirtyDaysAgo) {
+              order.photos.forEach((photo, index) => {
+                photoArray.push({
+                  id: `${order.id}_${index}`,
+                  name: photo.name || `Order ${order.orderNumber} - Photo ${index + 1}`,
+                  url: photo.url,
+                  orderNumber: order.orderNumber,
+                  uploadedAt: orderDate.toLocaleDateString(),
+                });
+              });
+            }
+          }
+        });
+
+        orderPhotos.value = photoArray;
+        console.log(`✅ Loaded ${photoArray.length} photos from recent orders`);
+
+        if (photoArray.length === 0) {
+          $q.notify({
+            type: 'info',
+            message: 'No photos from recent orders',
+            caption: 'Try uploading some orders first',
+          });
+        }
+      } catch (error) {
+        console.error('Error loading recent order photos:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to load recent order photos',
+          position: 'top',
+        });
+      } finally {
+        loadingOrders.value = false;
+      }
+    };
+
+    const selectPhoto = (photo) => {
+      selectedPhoto.value = photo;
+      croppedSquares.value = [];
+      console.log('Selected photo:', photo);
+    };
+
+    const cancelSelection = () => {
+      selectedPhoto.value = null;
+      croppedSquares.value = [];
+    };
+
+    const handleImageError = (event) => {
+      console.error('Image failed to load:', event.target.src);
+      event.target.style.display = 'none';
+    };
+
+    const generateCrops = async () => {
+      if (!selectedPhoto.value) return;
+
+      generating.value = true;
+      console.log('Generating crops...');
+      console.log('Grid:', gridRows.value, 'x', gridCols.value);
+      console.log('Crop size:', cropSize.value);
+
+      croppedSquares.value = [];
+
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = cropSize.value;
+            canvas.height = cropSize.value;
+
+            const totalSquares = gridRows.value * gridCols.value;
+            const imageWidth = img.width;
+            const imageHeight = img.height;
+
+            const squareWidth = imageWidth / gridCols.value;
+            const squareHeight = imageHeight / gridRows.value;
+
+            const squares = [];
+
+            for (let row = 0; row < gridRows.value; row++) {
+              for (let col = 0; col < gridCols.value; col++) {
+                const sx = col * squareWidth;
+                const sy = row * squareHeight;
+
+                ctx.clearRect(0, 0, cropSize.value, cropSize.value);
+
+                ctx.drawImage(
+                  img,
+                  sx, sy, squareWidth, squareHeight,
+                  0, 0, cropSize.value, cropSize.value
+                );
+
+                const dataUrl = canvas.toDataURL('image/png');
+
+                squares.push({
+                  dataUrl,
+                  row: row + 1,
+                  col: col + 1,
+                  index: row * gridCols.value + col,
+                });
+              }
+            }
+
+            croppedSquares.value = squares;
+            console.log(`✅ Generated ${squares.length} cropped squares`);
+
+            $q.notify({
+              type: 'positive',
+              message: `Generated ${squares.length} square crops`,
+              position: 'top',
+            });
+
+            resolve();
+          } catch (error) {
+            console.error('Error generating crops:', error);
+            $q.notify({
+              type: 'negative',
+              message: 'Failed to generate crops',
+              position: 'top',
+            });
+            reject(error);
+          } finally {
+            generating.value = false;
+          }
+        };
+
+        img.onerror = (error) => {
+          console.error('Error loading image:', error);
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to load image',
+            position: 'top',
+          });
+          generating.value = false;
+          reject(error);
+        };
+
+        img.src = selectedPhoto.value.url;
+      });
+    };
+
+    const downloadSquare = (square) => {
+      const link = document.createElement('a');
+      link.href = square.dataUrl;
+      link.download = `magnet-square-${square.row}-${square.col}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      $q.notify({
+        type: 'positive',
+        message: 'Square downloaded',
+        position: 'top',
+        timeout: 1000,
+      });
+    };
+
+    const downloadAllSquares = () => {
+      croppedSquares.value.forEach((square, index) => {
+        setTimeout(() => {
+          downloadSquare(square);
+        }, index * 100);
+      });
+
+      $q.notify({
+        type: 'positive',
+        message: `Downloading ${croppedSquares.value.length} squares...`,
+        position: 'top',
+      });
+    };
+
+    onMounted(async () => {
+      const hasAccess = await checkAdminAccess();
+      if (hasAccess) {
+        await loadRecentOrderPhotos();
+      }
+    });
+
+    return {
+      loadingOrders,
+      orderPhotos,
+      selectedPhoto,
+      cropSize,
+      gridRows,
+      gridCols,
+      croppedSquares,
+      generating,
+      selectPhoto,
+      cancelSelection,
+      handleImageError,
+      generateCrops,
+      downloadSquare,
+      downloadAllSquares,
+    };
+  },
+};
+</script>
+
+<style scoped>
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.photo-thumbnail {
+  position: relative;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.photo-thumbnail:hover {
+  border-color: #9c27b0;
+  transform: scale(1.05);
+}
+
+.thumbnail-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.thumbnail-info {
+  padding: 8px;
+  background: white;
+}
+
+.crop-container {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.selected-photo {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+}
+
+.cropped-squares-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 16px;
+}
+
+.cropped-square-preview {
+  position: relative;
+  display: inline-block;
+}
+
+.cropped-square-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 2px solid #1976d2;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.cropped-square-preview img:hover {
+  transform: scale(1.1);
+}
+
+.square-label {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.square-download-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+</style>
+
