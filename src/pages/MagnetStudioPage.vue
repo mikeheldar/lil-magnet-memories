@@ -44,12 +44,25 @@
                 class="selected-photo"
                 @load="initGridOverlay"
               />
+              
+              <!-- Red overlay for area outside grid -->
+              <div 
+                v-if="showGrid" 
+                class="red-overlay"
+                :style="redOverlayStyle"
+              ></div>
+
+              <!-- Grid overlay with draggable and scalable grid -->
               <div
                 v-if="showGrid"
                 class="grid-overlay"
                 :style="gridStyle"
                 @mousedown="startDrag"
               >
+                <!-- Grid border -->
+                <div class="grid-border"></div>
+                
+                <!-- Grid lines inside -->
                 <div
                   v-for="row in gridDimension"
                   :key="`row-${row}`"
@@ -64,6 +77,21 @@
                 ></div>
               </div>
             </div>
+          </div>
+
+          <!-- Grid size slider -->
+          <div class="q-mt-md" v-if="showGrid">
+            <div class="text-body2 q-mb-xs">Grid Size</div>
+            <q-slider
+              v-model="gridScale"
+              :min="0.3"
+              :max="2"
+              :step="0.05"
+              label-always
+              :label-value="`${Math.round(gridScale * 100)}%`"
+              color="primary"
+              style="max-width: 400px"
+            />
           </div>
 
           <!-- Action Buttons -->
@@ -188,6 +216,7 @@ export default {
     const croppedSquares = ref([]);
     const generating = ref(false);
     const showGrid = ref(true);
+    const gridScale = ref(1); // Size of grid (0.3 to 2)
     const gridPosition = ref({ x: 0, y: 0 });
     const isDragging = ref(false);
     const dragStart = ref({ x: 0, y: 0 });
@@ -429,12 +458,35 @@ export default {
     const initGridOverlay = () => {
       showGrid.value = true;
       gridPosition.value = { x: 0, y: 0 };
+      gridScale.value = 1;
     };
 
     const gridStyle = computed(() => {
       return {
-        transform: `translate(${gridPosition.value.x}px, ${gridPosition.value.y}px)`,
+        transform: `translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${gridScale.value})`,
         transformOrigin: 'center center',
+      };
+    });
+
+    const redOverlayStyle = computed(() => {
+      // Calculate the size and position of the red overlay (area outside grid)
+      const scale = gridScale.value;
+      const gridSize = scale * 100; // Percentage of image size the grid takes
+      
+      return {
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        clipPath: `polygon(
+          0 0, 
+          0 100%, 
+          ${50 - gridSize/2}% 100%, 
+          ${50 - gridSize/2}% ${50 - gridSize/2}%, 
+          ${50 + gridSize/2}% ${50 - gridSize/2}%, 
+          ${50 + gridSize/2}% 0, 
+          0 0
+        )`,
       };
     });
 
@@ -481,11 +533,13 @@ export default {
       cropSize,
       numberOfSquares,
       gridDimension,
+      gridScale,
       sqrt,
       croppedSquares,
       generating,
       showGrid,
       gridStyle,
+      redOverlayStyle,
       selectPhoto,
       cancelSelection,
       handleImageError,
@@ -555,14 +609,37 @@ export default {
   display: block;
 }
 
-.grid-overlay {
+.red-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background: rgba(255, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.grid-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
   pointer-events: auto;
   cursor: move;
+  z-index: 2;
+}
+
+.grid-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  pointer-events: none;
 }
 
 .grid-line {
