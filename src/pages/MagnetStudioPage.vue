@@ -19,18 +19,26 @@
         <q-card-section>
           <div class="text-h6 q-mb-md">Crop Settings</div>
 
-          <!-- Single Input for Number of Squares -->
-          <div class="q-mb-md">
+          <!-- Grid Dimensions -->
+          <div class="q-mb-md q-gutter-md row">
             <q-input
-              v-model.number="numberOfSquares"
-              label="Number of Squares (Grid will be square)"
+              v-model.number="gridRows"
+              label="Rows"
               type="number"
               min="1"
-              max="100"
-              style="max-width: 300px"
+              max="20"
+              style="max-width: 150px"
             />
-            <div class="text-caption text-grey-6 q-mt-xs">
-              {{ sqrt(numberOfSquares).toFixed(1) }}x{{ sqrt(numberOfSquares).toFixed(1) }} grid
+            <q-input
+              v-model.number="gridCols"
+              label="Columns"
+              type="number"
+              min="1"
+              max="20"
+              style="max-width: 150px"
+            />
+            <div class="text-caption text-grey-6 q-mt-lg">
+              {{ gridRows }}x{{ gridCols }} = {{ gridRows * gridCols }} squares
             </div>
           </div>
 
@@ -44,10 +52,10 @@
                 class="selected-photo"
                 @load="initGridOverlay"
               />
-              
+
               <!-- Red overlay for area outside grid -->
-              <div 
-                v-if="showGrid" 
+              <div
+                v-if="showGrid"
                 class="red-overlay"
                 :style="redOverlayStyle"
               ></div>
@@ -61,19 +69,19 @@
               >
                 <!-- Grid border -->
                 <div class="grid-border"></div>
-                
+
                 <!-- Grid lines inside -->
                 <div
-                  v-for="row in gridDimension"
+                  v-for="row in gridRows"
                   :key="`row-${row}`"
                   class="grid-line horizontal"
-                  :style="{ top: `${((row - 1) * 100) / gridDimension}%` }"
+                  :style="{ top: `${((row - 1) * 100) / gridRows}%` }"
                 ></div>
                 <div
-                  v-for="col in gridDimension"
+                  v-for="col in gridCols"
                   :key="`col-${col}`"
                   class="grid-line vertical"
-                  :style="{ left: `${((col - 1) * 100) / gridDimension}%` }"
+                  :style="{ left: `${((col - 1) * 100) / gridCols}%` }"
                 ></div>
               </div>
             </div>
@@ -212,7 +220,8 @@ export default {
     const selectedPhoto = ref(null);
     const selectedImage = ref(null);
     const cropSize = ref(300);
-    const numberOfSquares = ref(4); // Start with 2x2 grid
+    const gridRows = ref(2); // Start with 2 rows
+    const gridCols = ref(2); // Start with 2 columns
     const croppedSquares = ref([]);
     const generating = ref(false);
     const showGrid = ref(true);
@@ -323,7 +332,7 @@ export default {
 
       generating.value = true;
       console.log('Generating crops...');
-      console.log('Grid:', gridDimension.value, 'x', gridDimension.value);
+      console.log('Grid:', gridRows.value, 'x', gridCols.value);
       console.log('Crop size:', cropSize.value);
 
       croppedSquares.value = [];
@@ -343,13 +352,13 @@ export default {
             const imageWidth = img.width;
             const imageHeight = img.height;
 
-            const squareWidth = imageWidth / gridDimension.value;
-            const squareHeight = imageHeight / gridDimension.value;
+            const squareWidth = imageWidth / gridCols.value;
+            const squareHeight = imageHeight / gridRows.value;
 
             const squares = [];
 
-            for (let row = 0; row < gridDimension.value; row++) {
-              for (let col = 0; col < gridDimension.value; col++) {
+            for (let row = 0; row < gridRows.value; row++) {
+              for (let col = 0; col < gridCols.value; col++) {
                 const sx = col * squareWidth;
                 const sy = row * squareHeight;
 
@@ -446,14 +455,6 @@ export default {
       });
     };
 
-    // Calculate grid dimension (sqrt of numberOfSquares, rounded to nearest integer)
-    const gridDimension = computed(() => {
-      return Math.ceil(Math.sqrt(numberOfSquares.value));
-    });
-
-    const sqrt = (value) => {
-      return Math.ceil(Math.sqrt(value));
-    };
 
     const initGridOverlay = () => {
       showGrid.value = true;
@@ -472,19 +473,19 @@ export default {
       // Calculate the size and position of the red overlay (area outside grid)
       const scale = gridScale.value;
       const gridSize = scale * 100; // Percentage of image size the grid takes
-      
+
       return {
         top: '0',
         left: '0',
         width: '100%',
         height: '100%',
         clipPath: `polygon(
-          0 0, 
-          0 100%, 
-          ${50 - gridSize/2}% 100%, 
-          ${50 - gridSize/2}% ${50 - gridSize/2}%, 
-          ${50 + gridSize/2}% ${50 - gridSize/2}%, 
-          ${50 + gridSize/2}% 0, 
+          0 0,
+          0 100%,
+          ${50 - gridSize/2}% 100%,
+          ${50 - gridSize/2}% ${50 - gridSize/2}%,
+          ${50 + gridSize/2}% ${50 - gridSize/2}%,
+          ${50 + gridSize/2}% 0,
           0 0
         )`,
       };
@@ -531,10 +532,9 @@ export default {
       selectedPhoto,
       selectedImage,
       cropSize,
-      numberOfSquares,
-      gridDimension,
+      gridRows,
+      gridCols,
       gridScale,
-      sqrt,
       croppedSquares,
       generating,
       showGrid,
