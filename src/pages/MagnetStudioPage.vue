@@ -8,7 +8,8 @@
             Magnet Studio
           </div>
           <div class="text-body2 text-grey-6">
-            Crop images from recent orders into perfect square sections for magnets
+            Crop images from recent orders into perfect square sections for
+            magnets
           </div>
         </q-card-section>
       </q-card>
@@ -17,13 +18,16 @@
       <q-card class="q-mt-md">
         <q-card-section>
           <div class="text-h6 q-mb-md">Recent Order Photos</div>
-          
+
           <div v-if="loadingOrders" class="text-center q-pa-lg">
             <q-spinner color="primary" size="48px" />
             <div class="q-mt-md">Loading recent order photos...</div>
           </div>
 
-          <div v-else-if="orderPhotos.length === 0" class="text-center q-pa-lg text-grey-6">
+          <div
+            v-else-if="orderPhotos.length === 0"
+            class="text-center q-pa-lg text-grey-6"
+          >
             No recent order photos found
           </div>
 
@@ -53,7 +57,7 @@
       <q-card v-if="selectedPhoto" class="q-mt-md">
         <q-card-section>
           <div class="text-h6 q-mb-md">Crop Settings</div>
-          
+
           <!-- Image Preview -->
           <div class="crop-container">
             <img
@@ -116,7 +120,7 @@
           <div class="text-h6 q-mb-md">
             Cropped Squares ({{ croppedSquares.length }} total)
           </div>
-          
+
           <div class="cropped-squares-grid">
             <div
               v-for="(square, index) in croppedSquares"
@@ -158,6 +162,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
+import { authService } from '../services/authService.js';
 
 export default {
   name: 'MagnetStudioPage',
@@ -176,23 +181,21 @@ export default {
 
     const checkAdminAccess = async () => {
       try {
-        const loggedIn = sessionStorage.getItem('loggedIn');
-        const isAdmin = sessionStorage.getItem('isAdmin');
-
-        console.log('Magnet Studio - Admin check:', { loggedIn, isAdmin });
-
-        if (loggedIn !== 'true') {
-          console.log('Not logged in, redirecting...');
+        // Check if user is authenticated
+        if (!authService.isAuthenticated()) {
+          console.log('Magnet Studio - Not authenticated, redirecting...');
           await router.push('/');
           return false;
         }
 
-        if (isAdmin !== 'true') {
-          console.log('Not an admin, redirecting...');
+        // Check if user is admin
+        if (!authService.isAdmin()) {
+          console.log('Magnet Studio - Not an admin, redirecting...');
           await router.push('/');
           return false;
         }
 
+        console.log('Magnet Studio - Admin access granted');
         return true;
       } catch (error) {
         console.error('Error checking admin access:', error);
@@ -205,7 +208,7 @@ export default {
       loadingOrders.value = true;
       try {
         console.log('Loading recent order photos...');
-        
+
         const orders = await firebaseService.getOrders();
         console.log('Loaded orders:', orders.length);
 
@@ -213,15 +216,19 @@ export default {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        orders.forEach(order => {
+        orders.forEach((order) => {
           if (order.photos && order.photos.length > 0) {
-            const orderDate = order.submissionDate?.toDate ? order.submissionDate.toDate() : new Date(order.submissionDate);
-            
+            const orderDate = order.submissionDate?.toDate
+              ? order.submissionDate.toDate()
+              : new Date(order.submissionDate);
+
             if (orderDate >= thirtyDaysAgo) {
               order.photos.forEach((photo, index) => {
                 photoArray.push({
                   id: `${order.id}_${index}`,
-                  name: photo.name || `Order ${order.orderNumber} - Photo ${index + 1}`,
+                  name:
+                    photo.name ||
+                    `Order ${order.orderNumber} - Photo ${index + 1}`,
                   url: photo.url,
                   orderNumber: order.orderNumber,
                   uploadedAt: orderDate.toLocaleDateString(),
@@ -309,8 +316,14 @@ export default {
 
                 ctx.drawImage(
                   img,
-                  sx, sy, squareWidth, squareHeight,
-                  0, 0, cropSize.value, cropSize.value
+                  sx,
+                  sy,
+                  squareWidth,
+                  squareHeight,
+                  0,
+                  0,
+                  cropSize.value,
+                  cropSize.value
                 );
 
                 const dataUrl = canvas.toDataURL('image/png');
@@ -507,4 +520,3 @@ export default {
   right: 4px;
 }
 </style>
-
