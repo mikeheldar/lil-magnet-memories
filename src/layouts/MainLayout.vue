@@ -164,7 +164,7 @@
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="navigateTo('/magnet-studio')">
+            <q-item clickable v-ripple to="/magnet-studio">
               <q-item-section avatar>
                 <q-icon name="apps" color="purple" />
               </q-item-section>
