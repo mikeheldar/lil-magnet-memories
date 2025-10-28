@@ -163,6 +163,16 @@
                 <q-item-label caption>View all customers</q-item-label>
               </q-item-section>
             </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/magnet-studio')">
+              <q-item-section avatar>
+                <q-icon name="apps" color="purple" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Magnet Studio</q-item-label>
+                <q-item-label caption>Crop images into squares</q-item-label>
+              </q-item-section>
+            </q-item>
           </template>
 
           <q-item clickable v-ripple @click="navigateTo('/upload')">
@@ -224,15 +234,6 @@
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="navigateTo('/magnet-studio')">
-              <q-item-section avatar>
-                <q-icon name="apps" color="purple" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Magnet Studio</q-item-label>
-                <q-item-label caption>Crop images into squares</q-item-label>
-              </q-item-section>
-            </q-item>
             <q-item clickable v-ripple @click="navigateTo('/market-events')">
               <q-item-section avatar>
                 <q-icon name="event" color="green" />
