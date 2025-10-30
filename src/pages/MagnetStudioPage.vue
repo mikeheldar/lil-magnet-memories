@@ -60,9 +60,18 @@
               <!-- Red overlay for area outside grid -->
               <div v-if="showGrid" class="red-overlay-container">
                 <div class="red-overlay-top" :style="redOverlayTopStyle"></div>
-                <div class="red-overlay-right" :style="redOverlayRightStyle"></div>
-                <div class="red-overlay-bottom" :style="redOverlayBottomStyle"></div>
-                <div class="red-overlay-left" :style="redOverlayLeftStyle"></div>
+                <div
+                  class="red-overlay-right"
+                  :style="redOverlayRightStyle"
+                ></div>
+                <div
+                  class="red-overlay-bottom"
+                  :style="redOverlayBottomStyle"
+                ></div>
+                <div
+                  class="red-overlay-left"
+                  :style="redOverlayLeftStyle"
+                ></div>
               </div>
 
               <!-- Grid overlay with draggable and scalable grid -->
@@ -590,7 +599,7 @@ export default {
     const redOverlayTopStyle = computed(() => {
       const scale = gridScale.value;
       const aspectRatio = gridCols.value / gridRows.value;
-      
+
       let gridWidth, gridHeight;
       if (aspectRatio > 1) {
         gridHeight = 100 * scale;
@@ -599,9 +608,9 @@ export default {
         gridWidth = 100 * scale;
         gridHeight = gridWidth / aspectRatio;
       }
-      
+
       const topInset = 50 - gridHeight / 2;
-      
+
       return {
         position: 'absolute',
         top: '0',
@@ -615,7 +624,7 @@ export default {
     const redOverlayRightStyle = computed(() => {
       const scale = gridScale.value;
       const aspectRatio = gridCols.value / gridRows.value;
-      
+
       let gridWidth, gridHeight;
       if (aspectRatio > 1) {
         gridHeight = 100 * scale;
@@ -624,11 +633,11 @@ export default {
         gridWidth = 100 * scale;
         gridHeight = gridWidth / aspectRatio;
       }
-      
+
       const rightInset = 50 - gridWidth / 2;
       const topInset = 50 - gridHeight / 2;
       const bottomInset = 50 - gridHeight / 2;
-      
+
       return {
         position: 'absolute',
         top: `${topInset}%`,
@@ -642,7 +651,7 @@ export default {
     const redOverlayBottomStyle = computed(() => {
       const scale = gridScale.value;
       const aspectRatio = gridCols.value / gridRows.value;
-      
+
       let gridWidth, gridHeight;
       if (aspectRatio > 1) {
         gridHeight = 100 * scale;
@@ -651,9 +660,9 @@ export default {
         gridWidth = 100 * scale;
         gridHeight = gridWidth / aspectRatio;
       }
-      
+
       const bottomInset = 50 - gridHeight / 2;
-      
+
       return {
         position: 'absolute',
         bottom: '0',
@@ -667,7 +676,7 @@ export default {
     const redOverlayLeftStyle = computed(() => {
       const scale = gridScale.value;
       const aspectRatio = gridCols.value / gridRows.value;
-      
+
       let gridWidth, gridHeight;
       if (aspectRatio > 1) {
         gridHeight = 100 * scale;
@@ -676,11 +685,11 @@ export default {
         gridWidth = 100 * scale;
         gridHeight = gridWidth / aspectRatio;
       }
-      
+
       const leftInset = 50 - gridWidth / 2;
       const topInset = 50 - gridHeight / 2;
       const bottomInset = 50 - gridHeight / 2;
-      
+
       return {
         position: 'absolute',
         top: `${topInset}%`,
@@ -717,6 +726,7 @@ export default {
     watch([gridRows, gridCols], ([newRows, newCols]) => {
       if (!newRows || newRows < 1) gridRows.value = 1;
       if (!newCols || newCols < 1) gridCols.value = 1;
+      console.log('Grid dimensions changed:', newRows, 'x', newCols);
     });
 
     onMounted(async () => {
