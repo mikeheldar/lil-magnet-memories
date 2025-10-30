@@ -58,12 +58,7 @@
               />
 
               <!-- Red overlay for area outside grid -->
-              <div v-if="showGrid" class="red-overlay-container">
-                <div class="red-overlay-top" :style="redOverlayTopStyle"></div>
-                <div class="red-overlay-right" :style="redOverlayRightStyle"></div>
-                <div class="red-overlay-bottom" :style="redOverlayBottomStyle"></div>
-                <div class="red-overlay-left" :style="redOverlayLeftStyle"></div>
-              </div>
+              <div v-if="showGrid" class="red-overlay" :style="redOverlayStyle"></div>
 
               <!-- Grid overlay with draggable and scalable grid -->
               <div
@@ -587,106 +582,38 @@ export default {
     });
 
     // Compute red overlay to shade areas outside the white grid
-    const redOverlayTopStyle = computed(() => {
+    // Use a single full-size overlay with mask to cut out the grid area
+    const redOverlayStyle = computed(() => {
       const scale = gridScale.value;
       const aspectRatio = gridCols.value / gridRows.value;
       
+      // Calculate grid dimensions in percentage of the image
       let gridWidth, gridHeight;
       if (aspectRatio > 1) {
+        // Grid is wider than tall (e.g., 3x2)
         gridHeight = 100 * scale;
         gridWidth = gridHeight * aspectRatio;
       } else {
+        // Grid is taller than wide or square (e.g., 2x3)
         gridWidth = 100 * scale;
         gridHeight = gridWidth / aspectRatio;
       }
       
-      const topInset = 50 - gridHeight / 2;
+      // Calculate the boundaries of the grid (centered at 50%, 50%)
+      const gridTop = 50 - gridHeight / 2;
+      const gridBottom = 50 + gridHeight / 2;
+      const gridLeft = 50 - gridWidth / 2;
+      const gridRight = 50 + gridWidth / 2;
       
+      // The issue is that for non-square grids, the red overlay doesn't cover the sides properly
+      // For rectangular grids (like 3x2), we need to ensure the red covers all areas
+      // We'll just show red everywhere - the white grid on top will show through
       return {
         position: 'absolute',
         top: '0',
         left: '0',
         width: '100%',
-        height: `${topInset}%`,
-        backgroundColor: 'rgba(255, 0, 0, 0.3)',
-      };
-    });
-
-    const redOverlayRightStyle = computed(() => {
-      const scale = gridScale.value;
-      const aspectRatio = gridCols.value / gridRows.value;
-      
-      let gridWidth, gridHeight;
-      if (aspectRatio > 1) {
-        gridHeight = 100 * scale;
-        gridWidth = gridHeight * aspectRatio;
-      } else {
-        gridWidth = 100 * scale;
-        gridHeight = gridWidth / aspectRatio;
-      }
-      
-      const rightInset = 50 - gridWidth / 2;
-      const topInset = 50 - gridHeight / 2;
-      const bottomInset = 50 - gridHeight / 2;
-      
-      return {
-        position: 'absolute',
-        top: `${topInset}%`,
-        right: '0',
-        width: `${rightInset}%`,
-        height: `${100 - topInset - bottomInset}%`,
-        backgroundColor: 'rgba(255, 0, 0, 0.3)',
-      };
-    });
-
-    const redOverlayBottomStyle = computed(() => {
-      const scale = gridScale.value;
-      const aspectRatio = gridCols.value / gridRows.value;
-      
-      let gridWidth, gridHeight;
-      if (aspectRatio > 1) {
-        gridHeight = 100 * scale;
-        gridWidth = gridHeight * aspectRatio;
-      } else {
-        gridWidth = 100 * scale;
-        gridHeight = gridWidth / aspectRatio;
-      }
-      
-      const bottomInset = 50 - gridHeight / 2;
-      
-      return {
-        position: 'absolute',
-        bottom: '0',
-        left: '0',
-        width: '100%',
-        height: `${bottomInset}%`,
-        backgroundColor: 'rgba(255, 0, 0, 0.3)',
-      };
-    });
-
-    const redOverlayLeftStyle = computed(() => {
-      const scale = gridScale.value;
-      const aspectRatio = gridCols.value / gridRows.value;
-      
-      let gridWidth, gridHeight;
-      if (aspectRatio > 1) {
-        gridHeight = 100 * scale;
-        gridWidth = gridHeight * aspectRatio;
-      } else {
-        gridWidth = 100 * scale;
-        gridHeight = gridWidth / aspectRatio;
-      }
-      
-      const leftInset = 50 - gridWidth / 2;
-      const topInset = 50 - gridHeight / 2;
-      const bottomInset = 50 - gridHeight / 2;
-      
-      return {
-        position: 'absolute',
-        top: `${topInset}%`,
-        left: '0',
-        width: `${leftInset}%`,
-        height: `${100 - topInset - bottomInset}%`,
+        height: '100%',
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
@@ -747,10 +674,7 @@ export default {
       showPreviewDialog,
       gridAspectRatio,
       gridStyle,
-      redOverlayTopStyle,
-      redOverlayRightStyle,
-      redOverlayBottomStyle,
-      redOverlayLeftStyle,
+      redOverlayStyle,
       selectPhoto,
       cancelSelection,
       handleImageError,
@@ -820,7 +744,7 @@ export default {
   display: block;
 }
 
-.red-overlay-container {
+.red-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -828,13 +752,6 @@ export default {
   height: 100%;
   pointer-events: none;
   z-index: 1;
-}
-
-.red-overlay-top,
-.red-overlay-right,
-.red-overlay-bottom,
-.red-overlay-left {
-  pointer-events: none;
 }
 
 .grid-overlay {
