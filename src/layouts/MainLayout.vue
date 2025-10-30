@@ -173,7 +173,21 @@
                 <q-item-label caption>Crop images into squares</q-item-label>
               </q-item-section>
             </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/market-events')">
+              <q-item-section avatar>
+                <q-icon name="event" color="green" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Market Events</q-item-label>
+                <q-item-label caption>Manage market events</q-item-label>
+              </q-item-section>
+            </q-item>
           </template>
+
+          <q-separator class="q-my-md" />
+
+          <q-item-label header class="text-grey-8"> Customer </q-item-label>
 
           <q-item clickable v-ripple @click="navigateTo('/upload')">
             <q-item-section avatar>
@@ -231,16 +245,6 @@
               <q-item-section>
                 <q-item-label>Email Test</q-item-label>
                 <q-item-label caption>Test email functionality</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple @click="navigateTo('/market-events')">
-              <q-item-section avatar>
-                <q-icon name="event" color="green" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Market Events</q-item-label>
-                <q-item-label caption>Manage market events</q-item-label>
               </q-item-section>
             </q-item>
           </template>
