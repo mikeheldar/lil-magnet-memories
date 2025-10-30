@@ -94,7 +94,7 @@
                   :key="`row-${row}`"
                   class="grid-line horizontal"
                   :style="{
-                    top: `${((row) * 100) / gridRows}%`,
+                    top: `${(row * 100) / gridRows}%`,
                   }"
                 ></div>
                 <div
@@ -102,7 +102,7 @@
                   :key="`col-${col}`"
                   class="grid-line vertical"
                   :style="{
-                    left: `${((col) * 100) / gridCols}%`,
+                    left: `${(col * 100) / gridCols}%`,
                   }"
                 ></div>
               </div>
@@ -430,10 +430,10 @@ export default {
             // Each cell must be square, so we find the largest square size that fits
             const imageAspectRatio = imageWidth / imageHeight;
             const gridAspectRatio = gridCols.value / gridRows.value;
-            
+
             let squareSize;
             let offsetX, offsetY;
-            
+
             if (imageAspectRatio > gridAspectRatio) {
               // Image is wider than grid, so height is the limiting factor
               squareSize = imageHeight / gridRows.value;
@@ -573,8 +573,28 @@ export default {
     });
 
     const gridStyle = computed(() => {
+      // Calculate the aspect ratio of the grid (cols/rows)
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Determine the size based on the image container's aspect ratio
+      // We want each cell to be a square, so we set width and height proportionally
+      let width = '100%';
+      let height = '100%';
+      
+      // If we have a 3x2 grid, the grid should be wider than tall
+      // We scale to fit within the image while maintaining the aspect ratio
+      if (aspectRatio > 1) {
+        // Grid is wider than tall
+        height = `${(1 / aspectRatio) * 100}%`;
+      } else if (aspectRatio < 1) {
+        // Grid is taller than wide
+        width = `${aspectRatio * 100}%`;
+      }
+      
       return {
-        transform: `translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${gridScale.value})`,
+        width,
+        height,
+        transform: `translate(-50%, -50%) translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${gridScale.value})`,
         transformOrigin: 'center center',
       };
     });
@@ -782,10 +802,12 @@ export default {
 
 .grid-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Keep the grid within the image bounds */
+  max-width: 100%;
+  max-height: 100%;
   pointer-events: auto;
   cursor: move;
   z-index: 2;
