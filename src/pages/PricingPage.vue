@@ -67,28 +67,28 @@
 
             <div class="text-body2 q-mb-sm">Pricing</div>
             <div
-              v-for="(price, qty, index) in editingProduct.pricing"
+              v-for="(entry, index) in pricingEntries"
               :key="index"
               class="pricing-entry q-mb-md"
             >
-              <div class="row q-col-gutter-sm">
+              <div class="row q-col-gutter-sm items-center">
                 <q-input
-                  v-model.number="qty"
+                  :model-value="entry.qty"
                   label="Quantity"
                   type="number"
                   filled
                   dense
-                  class="col-6"
+                  class="col-5"
                   @update:model-value="updateQuantity(index, $event)"
                 />
                 <q-input
-                  v-model.number="price"
+                  v-model.number="entry.price"
                   label="Price"
                   type="number"
                   prefix="$"
                   filled
                   dense
-                  class="col-6"
+                  class="col-5"
                 />
                 <q-btn
                   flat
@@ -173,6 +173,16 @@ export default {
       loadProducts();
     });
 
+    const pricingEntries = computed(() => {
+      if (!editingProduct.value) return [];
+      
+      // Convert the pricing object to an array for easier editing
+      return Object.entries(editingProduct.value.pricing).map(([qty, price]) => ({
+        qty: Number(qty),
+        price: Number(price),
+      }));
+    });
+
     const loadProducts = () => {
       // For now, use sample data
       products.value = [
@@ -223,9 +233,15 @@ export default {
         return;
       }
 
+      // Rebuild pricing object from entries to ensure it's in sync
+      const pricing = {};
+      pricingEntries.value.forEach(entry => {
+        pricing[entry.qty] = entry.price;
+      });
+
       const product = {
         description: editingProduct.value.description,
-        pricing: editingProduct.value.pricing,
+        pricing,
       };
 
       if (editingProduct.value.index >= 0) {
@@ -266,16 +282,16 @@ export default {
     };
 
     const addPricingTier = () => {
-      const quantities = Object.keys(editingProduct.value.pricing).map(Number);
-      const maxQty = quantities.length > 0 ? Math.max(...quantities) : 0;
+      const entries = pricingEntries.value;
+      const maxQty = entries.length > 0 ? Math.max(...entries.map(e => e.qty)) : 0;
       editingProduct.value.pricing[maxQty + 1] = 0.00;
     };
 
     const removePricing = (index) => {
-      const keys = Object.keys(editingProduct.value.pricing);
-      if (keys.length > 1) {
-        const keyToRemove = keys[index];
-        delete editingProduct.value.pricing[keyToRemove];
+      if (pricingEntries.value.length > 1) {
+        const entries = pricingEntries.value;
+        const qtyToRemove = entries[index].qty;
+        delete editingProduct.value.pricing[qtyToRemove];
         $q.notify({
           type: 'info',
           message: 'Pricing tier removed',
@@ -291,17 +307,18 @@ export default {
     };
 
     const updateQuantity = (index, newQty) => {
-      const keys = Object.keys(editingProduct.value.pricing);
-      const oldKey = keys[index];
-      const value = editingProduct.value.pricing[oldKey];
-      delete editingProduct.value.pricing[oldKey];
-      editingProduct.value.pricing[newQty] = value;
+      const entries = pricingEntries.value;
+      const oldQty = entries[index].qty;
+      const price = entries[index].price;
+      delete editingProduct.value.pricing[oldQty];
+      editingProduct.value.pricing[newQty] = price;
     };
 
     return {
       products,
       editingProduct,
       showDeleteDialog,
+      pricingEntries,
       addProduct,
       editProduct,
       cancelEdit,
