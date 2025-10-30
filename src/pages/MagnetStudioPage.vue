@@ -426,17 +426,27 @@ export default {
             const imageHeight = img.height;
 
             // Calculate square size to ensure all grid boxes are square
-            // The square size should be based on the limiting dimension
-            const maxGrid = Math.max(gridRows.value, gridCols.value);
-            const squareSize = Math.min(imageWidth, imageHeight) / maxGrid;
-
-            // Calculate the total grid dimensions in source image pixels
-            const gridWidth = squareSize * gridCols.value;
-            const gridHeight = squareSize * gridRows.value;
-
-            // Calculate centering offset
-            const offsetX = (imageWidth - gridWidth) / 2;
-            const offsetY = (imageHeight - gridHeight) / 2;
+            // We want to fit the entire grid (rows x cols of squares) within the image
+            // Each cell must be square, so we find the largest square size that fits
+            const imageAspectRatio = imageWidth / imageHeight;
+            const gridAspectRatio = gridCols.value / gridRows.value;
+            
+            let squareSize;
+            let offsetX, offsetY;
+            
+            if (imageAspectRatio > gridAspectRatio) {
+              // Image is wider than grid, so height is the limiting factor
+              squareSize = imageHeight / gridRows.value;
+              const gridWidth = squareSize * gridCols.value;
+              offsetX = (imageWidth - gridWidth) / 2;
+              offsetY = 0;
+            } else {
+              // Image is taller than grid, so width is the limiting factor
+              squareSize = imageWidth / gridCols.value;
+              const gridHeight = squareSize * gridRows.value;
+              offsetX = 0;
+              offsetY = (imageHeight - gridHeight) / 2;
+            }
 
             const squares = [];
 
@@ -547,17 +557,18 @@ export default {
       gridScale.value = 1;
     };
 
-    // Compute grid aspect ratio to maintain square cells
+    // Compute grid size to maintain square cells
+    // The grid can be rectangular (e.g., 3x2) but individual cells are always square
     const gridAspectRatio = computed(() => {
       if (!selectedImage.value) return null;
 
-      const maxGrid = Math.max(gridRows.value, gridCols.value);
-      const gridWidthRatio = gridCols.value / maxGrid;
-      const gridHeightRatio = gridRows.value / maxGrid;
-
       return {
-        width: gridWidthRatio,
-        height: gridHeightRatio,
+        // The grid width is based on number of columns
+        // The grid height is based on number of rows
+        // They can be different (e.g., 3 columns x 2 rows = rectangular grid)
+        // but each individual cell within is square
+        cols: gridCols.value,
+        rows: gridRows.value,
       };
     });
 
@@ -569,24 +580,10 @@ export default {
     });
 
     // Compute red overlay regions to shade areas outside the white grid
+    // Grid can be rectangular (e.g., 3x2) but cells are always square
     const redOverlayTopStyle = computed(() => {
       const scale = gridScale.value;
-      if (!gridAspectRatio.value) {
-        const gridTop = 50 - scale * 50;
-        return {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          width: '100%',
-          height: `${gridTop}%`,
-          backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        };
-      }
-
-      // Grid uses full width/height based on aspect ratio
-      const gridHeight = gridAspectRatio.value.height * scale * 100;
-      const gridTop = 50 - gridHeight / 2;
-
+      const gridTop = 50 - scale * 50;
       return {
         position: 'absolute',
         top: '0',
@@ -599,50 +596,20 @@ export default {
 
     const redOverlayRightStyle = computed(() => {
       const scale = gridScale.value;
-      if (!gridAspectRatio.value) {
-        const gridRight = 50 + scale * 50;
-        return {
-          position: 'absolute',
-          top: `${50 - scale * 50}%`,
-          right: '0',
-          width: `${100 - gridRight}%`,
-          height: `${scale * 100}%`,
-          backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        };
-      }
-
-      const gridWidth = gridAspectRatio.value.width * scale * 100;
-      const gridHeight = gridAspectRatio.value.height * scale * 100;
-      const gridRight = 50 + gridWidth / 2;
-      const gridTop = 50 - gridHeight / 2;
-
+      const gridRight = 50 + scale * 50;
       return {
         position: 'absolute',
-        top: `${gridTop}%`,
+        top: `${50 - scale * 50}%`,
         right: '0',
         width: `${100 - gridRight}%`,
-        height: `${gridHeight}%`,
+        height: `${scale * 100}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
 
     const redOverlayBottomStyle = computed(() => {
       const scale = gridScale.value;
-      if (!gridAspectRatio.value) {
-        const gridBottom = 50 + scale * 50;
-        return {
-          position: 'absolute',
-          bottom: '0',
-          left: '0',
-          width: '100%',
-          height: `${100 - gridBottom}%`,
-          backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        };
-      }
-
-      const gridHeight = gridAspectRatio.value.height * scale * 100;
-      const gridBottom = 50 + gridHeight / 2;
-
+      const gridBottom = 50 + scale * 50;
       return {
         position: 'absolute',
         bottom: '0',
@@ -655,29 +622,13 @@ export default {
 
     const redOverlayLeftStyle = computed(() => {
       const scale = gridScale.value;
-      if (!gridAspectRatio.value) {
-        const gridLeft = 50 - scale * 50;
-        return {
-          position: 'absolute',
-          top: `${50 - scale * 50}%`,
-          left: '0',
-          width: `${gridLeft}%`,
-          height: `${scale * 100}%`,
-          backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        };
-      }
-
-      const gridWidth = gridAspectRatio.value.width * scale * 100;
-      const gridHeight = gridAspectRatio.value.height * scale * 100;
-      const gridLeft = 50 - gridWidth / 2;
-      const gridTop = 50 - gridHeight / 2;
-
+      const gridLeft = 50 - scale * 50;
       return {
         position: 'absolute',
-        top: `${gridTop}%`,
+        top: `${50 - scale * 50}%`,
         left: '0',
         width: `${gridLeft}%`,
-        height: `${gridHeight}%`,
+        height: `${scale * 100}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
