@@ -58,11 +58,16 @@
               />
 
               <!-- Red overlay for area outside grid -->
-              <div
-                v-if="showGrid"
-                class="red-overlay"
-                :style="redOverlayStyle"
-              ></div>
+              <div v-if="showGrid" class="red-overlay-container">
+                <!-- Top red bar -->
+                <div class="red-overlay-top" :style="redOverlayTopStyle"></div>
+                <!-- Right red bar -->
+                <div class="red-overlay-right" :style="redOverlayRightStyle"></div>
+                <!-- Bottom red bar -->
+                <div class="red-overlay-bottom" :style="redOverlayBottomStyle"></div>
+                <!-- Left red bar -->
+                <div class="red-overlay-left" :style="redOverlayLeftStyle"></div>
+              </div>
 
               <!-- Grid overlay with draggable and scalable grid -->
               <div
@@ -526,23 +531,56 @@ export default {
       };
     });
 
-    const redOverlayStyle = computed(() => {
-      // Red overlay with a hole in the middle for the white grid
+    // Compute red overlay regions to shade areas outside the white grid
+    const redOverlayTopStyle = computed(() => {
       const scale = gridScale.value;
-      const gridHalfSize = scale * 50; // Half the size of the grid in percentage
-
-      // Use inset to create a square hole in the center
-      const insetValue = `${50 - gridHalfSize}%`;
-
+      const gridTop = 50 - scale * 50;
       return {
         position: 'absolute',
         top: '0',
         left: '0',
         width: '100%',
-        height: '100%',
+        height: `${gridTop}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        clipPath: `inset(${insetValue})`,
-        WebkitClipPath: `inset(${insetValue})`,
+      };
+    });
+
+    const redOverlayRightStyle = computed(() => {
+      const scale = gridScale.value;
+      const gridRight = 50 + scale * 50;
+      return {
+        position: 'absolute',
+        top: `${50 - scale * 50}%`,
+        right: '0',
+        width: `${100 - gridRight}%`,
+        height: `${scale * 100}%`,
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+      };
+    });
+
+    const redOverlayBottomStyle = computed(() => {
+      const scale = gridScale.value;
+      const gridBottom = 50 + scale * 50;
+      return {
+        position: 'absolute',
+        bottom: '0',
+        left: '0',
+        width: '100%',
+        height: `${100 - gridBottom}%`,
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+      };
+    });
+
+    const redOverlayLeftStyle = computed(() => {
+      const scale = gridScale.value;
+      const gridLeft = 50 - scale * 50;
+      return {
+        position: 'absolute',
+        top: `${50 - scale * 50}%`,
+        left: '0',
+        width: `${gridLeft}%`,
+        height: `${scale * 100}%`,
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
 
@@ -595,7 +633,10 @@ export default {
       showGrid,
       showPreviewDialog,
       gridStyle,
-      redOverlayStyle,
+      redOverlayTopStyle,
+      redOverlayRightStyle,
+      redOverlayBottomStyle,
+      redOverlayLeftStyle,
       selectPhoto,
       cancelSelection,
       handleImageError,
@@ -665,13 +706,20 @@ export default {
   display: block;
 }
 
-.red-overlay {
+.red-overlay-container {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.red-overlay-top,
+.red-overlay-right,
+.red-overlay-bottom,
+.red-overlay-left {
   pointer-events: none;
   z-index: 1;
 }
