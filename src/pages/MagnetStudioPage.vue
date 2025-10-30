@@ -84,13 +84,13 @@
                   v-for="row in gridRows"
                   :key="`row-${row}`"
                   class="grid-line horizontal"
-                  :style="{ top: `${((row - 1) * 100) / gridRows}%` }"
+                  :style="{ top: gridAspectRatio ? `${((row - 1) * 100) / gridRows}%` : `${((row - 1) * 100) / gridRows}%` }"
                 ></div>
                 <div
                   v-for="col in gridCols"
                   :key="`col-${col}`"
                   class="grid-line vertical"
-                  :style="{ left: `${((col - 1) * 100) / gridCols}%` }"
+                  :style="{ left: gridAspectRatio ? `${((col - 1) * 100) / gridCols}%` : `${((col - 1) * 100) / gridCols}%` }"
                 ></div>
               </div>
             </div>
@@ -412,15 +412,25 @@ export default {
             const imageWidth = img.width;
             const imageHeight = img.height;
 
-            const squareWidth = imageWidth / gridCols.value;
-            const squareHeight = imageHeight / gridRows.value;
+            // Calculate square size to ensure all grid boxes are square
+            // The square size should be based on the limiting dimension
+            const maxGrid = Math.max(gridRows.value, gridCols.value);
+            const squareSize = Math.min(imageWidth, imageHeight) / maxGrid;
+            
+            // Calculate the total grid dimensions in source image pixels
+            const gridWidth = squareSize * gridCols.value;
+            const gridHeight = squareSize * gridRows.value;
+            
+            // Calculate centering offset
+            const offsetX = (imageWidth - gridWidth) / 2;
+            const offsetY = (imageHeight - gridHeight) / 2;
 
             const squares = [];
 
             for (let row = 0; row < gridRows.value; row++) {
               for (let col = 0; col < gridCols.value; col++) {
-                const sx = col * squareWidth;
-                const sy = row * squareHeight;
+                const sx = offsetX + col * squareSize;
+                const sy = offsetY + row * squareSize;
 
                 ctx.clearRect(0, 0, cropSize.value, cropSize.value);
 
@@ -428,8 +438,8 @@ export default {
                   img,
                   sx,
                   sy,
-                  squareWidth,
-                  squareHeight,
+                  squareSize,
+                  squareSize,
                   0,
                   0,
                   cropSize.value,
@@ -524,17 +534,59 @@ export default {
       gridScale.value = 1;
     };
 
+    // Compute grid aspect ratio to maintain square cells
+    const gridAspectRatio = computed(() => {
+      if (!selectedImage.value) return null;
+      
+      const maxGrid = Math.max(gridRows.value, gridCols.value);
+      const gridWidthRatio = gridCols.value / maxGrid;
+      const gridHeightRatio = gridRows.value / maxGrid;
+      
+      return {
+        width: gridWidthRatio,
+        height: gridHeightRatio,
+      };
+    });
+
     const gridStyle = computed(() => {
+      if (!gridAspectRatio.value) {
+        return {
+          transform: `translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${gridScale.value})`,
+          transformOrigin: 'center center',
+        };
+      }
+      
+      // Calculate the grid container size to maintain square cells
+      const width = `${gridAspectRatio.value.width * 100}%`;
+      const height = `${gridAspectRatio.value.height * 100}%`;
+      
       return {
         transform: `translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${gridScale.value})`,
         transformOrigin: 'center center',
+        width,
+        height,
+        marginTop: `-${gridAspectRatio.value.height * 50}%`,
+        marginLeft: `-${gridAspectRatio.value.width * 50}%`,
       };
     });
 
     // Compute red overlay regions to shade areas outside the white grid
     const redOverlayTopStyle = computed(() => {
       const scale = gridScale.value;
-      const gridTop = 50 - scale * 50;
+      if (!gridAspectRatio.value) {
+        const gridTop = 50 - scale * 50;
+        return {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: `${gridTop}%`,
+          backgroundColor: 'rgba(255, 0, 0, 0.3)',
+        };
+      }
+      
+      const gridHeight = gridAspectRatio.value.height * scale * 100;
+      const gridTop = 50 - gridHeight / 2;
       return {
         position: 'absolute',
         top: '0',
@@ -547,20 +599,50 @@ export default {
 
     const redOverlayRightStyle = computed(() => {
       const scale = gridScale.value;
-      const gridRight = 50 + scale * 50;
+      if (!gridAspectRatio.value) {
+        const gridRight = 50 + scale * 50;
+        return {
+          position: 'absolute',
+          top: `${50 - scale * 50}%`,
+          right: '0',
+          width: `${100 - gridRight}%`,
+          height: `${scale * 100}%`,
+          backgroundColor: 'rgba(255, 0, 0, 0.3)',
+        };
+      }
+      
+      const gridWidth = gridAspectRatio.value.width * scale * 100;
+      const gridHeight = gridAspectRatio.value.height * scale * 100;
+      const gridRight = 50 + gridWidth / 2;
+      const gridTop = 50 - gridHeight / 2;
+      
       return {
         position: 'absolute',
-        top: `${50 - scale * 50}%`,
+        top: `${gridTop}%`,
         right: '0',
         width: `${100 - gridRight}%`,
-        height: `${scale * 100}%`,
+        height: `${gridHeight}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
 
     const redOverlayBottomStyle = computed(() => {
       const scale = gridScale.value;
-      const gridBottom = 50 + scale * 50;
+      if (!gridAspectRatio.value) {
+        const gridBottom = 50 + scale * 50;
+        return {
+          position: 'absolute',
+          bottom: '0',
+          left: '0',
+          width: '100%',
+          height: `${100 - gridBottom}%`,
+          backgroundColor: 'rgba(255, 0, 0, 0.3)',
+        };
+      }
+      
+      const gridHeight = gridAspectRatio.value.height * scale * 100;
+      const gridBottom = 50 + gridHeight / 2;
+      
       return {
         position: 'absolute',
         bottom: '0',
@@ -573,13 +655,29 @@ export default {
 
     const redOverlayLeftStyle = computed(() => {
       const scale = gridScale.value;
-      const gridLeft = 50 - scale * 50;
+      if (!gridAspectRatio.value) {
+        const gridLeft = 50 - scale * 50;
+        return {
+          position: 'absolute',
+          top: `${50 - scale * 50}%`,
+          left: '0',
+          width: `${gridLeft}%`,
+          height: `${scale * 100}%`,
+          backgroundColor: 'rgba(255, 0, 0, 0.3)',
+        };
+      }
+      
+      const gridWidth = gridAspectRatio.value.width * scale * 100;
+      const gridHeight = gridAspectRatio.value.height * scale * 100;
+      const gridLeft = 50 - gridWidth / 2;
+      const gridTop = 50 - gridHeight / 2;
+      
       return {
         position: 'absolute',
-        top: `${50 - scale * 50}%`,
+        top: `${gridTop}%`,
         left: '0',
         width: `${gridLeft}%`,
-        height: `${scale * 100}%`,
+        height: `${gridHeight}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
@@ -632,6 +730,7 @@ export default {
       generating,
       showGrid,
       showPreviewDialog,
+      gridAspectRatio,
       gridStyle,
       redOverlayTopStyle,
       redOverlayRightStyle,
