@@ -575,12 +575,12 @@ export default {
     const gridStyle = computed(() => {
       // Calculate the aspect ratio of the grid (cols/rows)
       const aspectRatio = gridCols.value / gridRows.value;
-      
+
       // Determine the size based on the image container's aspect ratio
       // We want each cell to be a square, so we set width and height proportionally
       let width = '100%';
       let height = '100%';
-      
+
       // If we have a 3x2 grid, the grid should be wider than tall
       // We scale to fit within the image while maintaining the aspect ratio
       if (aspectRatio > 1) {
@@ -590,7 +590,7 @@ export default {
         // Grid is taller than wide
         width = `${aspectRatio * 100}%`;
       }
-      
+
       return {
         width,
         height,
@@ -603,7 +603,22 @@ export default {
     // Grid can be rectangular (e.g., 3x2) but cells are always square
     const redOverlayTopStyle = computed(() => {
       const scale = gridScale.value;
-      const gridTop = 50 - scale * 50;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Calculate grid dimensions in percentage
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        // Grid is wider than tall
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        // Grid is taller than wide or square
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const gridTop = 50 - gridHeight / 2;
+      
       return {
         position: 'absolute',
         top: '0',
@@ -616,20 +631,47 @@ export default {
 
     const redOverlayRightStyle = computed(() => {
       const scale = gridScale.value;
-      const gridRight = 50 + scale * 50;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Calculate grid dimensions in percentage
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const gridRight = 50 + gridWidth / 2;
+      const gridTop = 50 - gridHeight / 2;
+      
       return {
         position: 'absolute',
-        top: `${50 - scale * 50}%`,
+        top: `${gridTop}%`,
         right: '0',
         width: `${100 - gridRight}%`,
-        height: `${scale * 100}%`,
+        height: `${gridHeight}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
 
     const redOverlayBottomStyle = computed(() => {
       const scale = gridScale.value;
-      const gridBottom = 50 + scale * 50;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Calculate grid dimensions in percentage
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const gridBottom = 50 + gridHeight / 2;
+      
       return {
         position: 'absolute',
         bottom: '0',
@@ -642,13 +684,27 @@ export default {
 
     const redOverlayLeftStyle = computed(() => {
       const scale = gridScale.value;
-      const gridLeft = 50 - scale * 50;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Calculate grid dimensions in percentage
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const gridLeft = 50 - gridWidth / 2;
+      const gridTop = 50 - gridHeight / 2;
+      
       return {
         position: 'absolute',
-        top: `${50 - scale * 50}%`,
+        top: `${gridTop}%`,
         left: '0',
         width: `${gridLeft}%`,
-        height: `${scale * 100}%`,
+        height: `${gridHeight}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
