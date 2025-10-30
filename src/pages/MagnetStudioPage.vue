@@ -163,6 +163,56 @@
         </q-card-section>
       </q-card>
 
+      <!-- Generate Crops Popup -->
+      <q-dialog v-model="showPreviewDialog" maximized>
+        <q-card class="page-preview-card">
+          <q-card-section>
+            <div class="text-h6 q-mb-md">Preview - 8.5" x 11" Page</div>
+            <q-btn
+              close-icon="close"
+              flat
+              round
+              dense
+              v-close-popup
+              class="absolute-top-right q-ma-sm"
+            />
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <div class="page-container">
+              <div class="page-content">
+                <div
+                  v-for="(square, index) in croppedSquares"
+                  :key="index"
+                  class="square-on-page"
+                >
+                  <img
+                    :src="square.dataUrl"
+                    :alt="`Square ${index + 1}`"
+                    class="square-image"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="q-mt-md q-gutter-md">
+              <q-btn
+                color="primary"
+                label="Download All Squares"
+                icon="archive"
+                @click="downloadAllSquares"
+              />
+              <q-btn
+                outline
+                color="grey-8"
+                label="Close"
+                @click="showPreviewDialog = false"
+              />
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+
       <!-- Cropped Squares Preview -->
       <q-card v-if="croppedSquares.length > 0" class="q-mt-md">
         <q-card-section>
@@ -229,6 +279,7 @@ export default {
     const croppedSquares = ref([]);
     const generating = ref(false);
     const showGrid = ref(true);
+    const showPreviewDialog = ref(false);
     const gridScale = ref(1); // Size of grid (0.3 to 2)
     const gridPosition = ref({ x: 0, y: 0 });
     const isDragging = ref(false);
@@ -400,6 +451,9 @@ export default {
               position: 'top',
             });
 
+            // Show the preview dialog
+            showPreviewDialog.value = true;
+
             resolve();
           } catch (error) {
             console.error('Error generating crops:', error);
@@ -475,11 +529,11 @@ export default {
     const redOverlayStyle = computed(() => {
       // Red overlay with a hole in the middle for the white grid
       const scale = gridScale.value;
-      const gridHalfSize = (scale * 50); // Half the size of the grid in percentage
-      
+      const gridHalfSize = scale * 50; // Half the size of the grid in percentage
+
       // Use inset to create a square hole in the center
       const insetValue = `${50 - gridHalfSize}%`;
-      
+
       return {
         position: 'absolute',
         top: '0',
@@ -539,6 +593,7 @@ export default {
       croppedSquares,
       generating,
       showGrid,
+      showPreviewDialog,
       gridStyle,
       redOverlayStyle,
       selectPhoto,
@@ -700,5 +755,60 @@ export default {
   position: absolute;
   top: 4px;
   right: 4px;
+}
+
+/* Page Preview Dialog Styles */
+.page-preview-card {
+  background: white;
+}
+
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  background: #f5f5f5;
+  padding: 20px;
+}
+
+.page-content {
+  width: 8.5in;
+  height: 11in;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 0.5in;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(auto-fill, 1fr);
+  gap: 0.1in;
+  align-content: start;
+}
+
+.square-on-page {
+  width: 2.5in;
+  height: 2.5in;
+  border: 1px solid #ddd;
+  overflow: hidden;
+}
+
+.square-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 1200px) {
+  .page-content {
+    width: 100%;
+    max-width: 8.5in;
+    height: auto;
+    aspect-ratio: 8.5 / 11;
+  }
+
+  .square-on-page {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
 }
 </style>
