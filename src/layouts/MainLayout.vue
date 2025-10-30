@@ -183,6 +183,16 @@
                 <q-item-label caption>Manage market events</q-item-label>
               </q-item-section>
             </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/pricing')">
+              <q-item-section avatar>
+                <q-icon name="attach_money" color="green" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Pricing</q-item-label>
+                <q-item-label caption>Manage product pricing</q-item-label>
+              </q-item-section>
+            </q-item>
           </template>
 
           <q-separator class="q-my-md" />
@@ -334,6 +344,8 @@ export default {
             return 'Admin - Market Events';
           case '/magnet-studio':
             return 'Admin - Magnet Studio';
+          case '/pricing':
+            return 'Admin - Pricing';
           case '/':
           default:
             return 'Lil Magnet Memories';
