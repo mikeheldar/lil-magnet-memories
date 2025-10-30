@@ -90,23 +90,19 @@
 
                 <!-- Grid lines inside -->
                 <div
-                  v-for="row in gridRows"
+                  v-for="row in gridRows - 1"
                   :key="`row-${row}`"
                   class="grid-line horizontal"
                   :style="{
-                    top: gridAspectRatio
-                      ? `${((row - 1) * 100) / gridRows}%`
-                      : `${((row - 1) * 100) / gridRows}%`,
+                    top: `${((row) * 100) / gridRows}%`,
                   }"
                 ></div>
                 <div
-                  v-for="col in gridCols"
+                  v-for="col in gridCols - 1"
                   :key="`col-${col}`"
                   class="grid-line vertical"
                   :style="{
-                    left: gridAspectRatio
-                      ? `${((col - 1) * 100) / gridCols}%`
-                      : `${((col - 1) * 100) / gridCols}%`,
+                    left: `${((col) * 100) / gridCols}%`,
                   }"
                 ></div>
               </div>
@@ -590,7 +586,7 @@ export default {
       // Grid uses full width/height based on aspect ratio
       const gridHeight = gridAspectRatio.value.height * scale * 100;
       const gridTop = 50 - gridHeight / 2;
-      
+
       return {
         position: 'absolute',
         top: '0',
