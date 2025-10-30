@@ -58,7 +58,12 @@
               />
 
               <!-- Red overlay for area outside grid -->
-              <div v-if="showGrid" class="red-overlay" :style="redOverlayStyle"></div>
+              <div v-if="showGrid" class="red-overlay-container">
+                <div class="red-overlay-top" :style="redOverlayTopStyle"></div>
+                <div class="red-overlay-right" :style="redOverlayRightStyle"></div>
+                <div class="red-overlay-bottom" :style="redOverlayBottomStyle"></div>
+                <div class="red-overlay-left" :style="redOverlayLeftStyle"></div>
+              </div>
 
               <!-- Grid overlay with draggable and scalable grid -->
               <div
@@ -582,11 +587,10 @@ export default {
     });
 
     // Compute red overlay to shade areas outside the white grid
-    const redOverlayStyle = computed(() => {
+    const redOverlayTopStyle = computed(() => {
       const scale = gridScale.value;
       const aspectRatio = gridCols.value / gridRows.value;
       
-      // Calculate grid dimensions
       let gridWidth, gridHeight;
       if (aspectRatio > 1) {
         gridHeight = 100 * scale;
@@ -596,24 +600,96 @@ export default {
         gridHeight = gridWidth / aspectRatio;
       }
       
-      // Calculate the inset values to create a hole for the white grid
       const topInset = 50 - gridHeight / 2;
-      const rightInset = 50 - gridWidth / 2;
-      const bottomInset = 50 - gridHeight / 2;
-      const leftInset = 50 - gridWidth / 2;
       
       return {
         position: 'absolute',
         top: '0',
         left: '0',
         width: '100%',
-        height: '100%',
+        height: `${topInset}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        clipPath: `inset(${topInset}% ${rightInset}% ${bottomInset}% ${leftInset}%)`,
-        WebkitClipPath: `inset(${topInset}% ${rightInset}% ${bottomInset}% ${leftInset}%)`,
       };
     });
 
+    const redOverlayRightStyle = computed(() => {
+      const scale = gridScale.value;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const rightInset = 50 - gridWidth / 2;
+      const topInset = 50 - gridHeight / 2;
+      const bottomInset = 50 - gridHeight / 2;
+      
+      return {
+        position: 'absolute',
+        top: `${topInset}%`,
+        right: '0',
+        width: `${rightInset}%`,
+        height: `${100 - topInset - bottomInset}%`,
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+      };
+    });
+
+    const redOverlayBottomStyle = computed(() => {
+      const scale = gridScale.value;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const bottomInset = 50 - gridHeight / 2;
+      
+      return {
+        position: 'absolute',
+        bottom: '0',
+        left: '0',
+        width: '100%',
+        height: `${bottomInset}%`,
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+      };
+    });
+
+    const redOverlayLeftStyle = computed(() => {
+      const scale = gridScale.value;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const leftInset = 50 - gridWidth / 2;
+      const topInset = 50 - gridHeight / 2;
+      const bottomInset = 50 - gridHeight / 2;
+      
+      return {
+        position: 'absolute',
+        top: `${topInset}%`,
+        left: '0',
+        width: `${leftInset}%`,
+        height: `${100 - topInset - bottomInset}%`,
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+      };
+    });
 
     const startDrag = (event) => {
       isDragging.value = true;
@@ -671,7 +747,10 @@ export default {
       showPreviewDialog,
       gridAspectRatio,
       gridStyle,
-      redOverlayStyle,
+      redOverlayTopStyle,
+      redOverlayRightStyle,
+      redOverlayBottomStyle,
+      redOverlayLeftStyle,
       selectPhoto,
       cancelSelection,
       handleImageError,
@@ -741,7 +820,7 @@ export default {
   display: block;
 }
 
-.red-overlay {
+.red-overlay-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -749,6 +828,13 @@ export default {
   height: 100%;
   pointer-events: none;
   z-index: 1;
+}
+
+.red-overlay-top,
+.red-overlay-right,
+.red-overlay-bottom,
+.red-overlay-left {
+  pointer-events: none;
 }
 
 .grid-overlay {
