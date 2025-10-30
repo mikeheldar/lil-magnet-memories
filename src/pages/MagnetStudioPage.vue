@@ -275,7 +275,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
@@ -703,6 +703,12 @@ export default {
     const handleGridLeave = () => {
       isDragging.value = false;
     };
+
+    // Ensure grid dimensions stay valid numbers
+    watch([gridRows, gridCols], ([newRows, newCols]) => {
+      if (!newRows || newRows < 1) gridRows.value = 1;
+      if (!newCols || newCols < 1) gridCols.value = 1;
+    });
 
     onMounted(async () => {
       const hasAccess = await checkAdminAccess();
