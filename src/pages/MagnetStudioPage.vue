@@ -57,6 +57,18 @@
                 @load="initGridOverlay"
               />
 
+              <!-- Red overlay for area outside grid -->
+              <div v-if="showGrid" class="red-overlay-container">
+                <!-- Top red bar -->
+                <div class="red-overlay-top" :style="redOverlayTopStyle"></div>
+                <!-- Right red bar -->
+                <div class="red-overlay-right" :style="redOverlayRightStyle"></div>
+                <!-- Bottom red bar -->
+                <div class="red-overlay-bottom" :style="redOverlayBottomStyle"></div>
+                <!-- Left red bar -->
+                <div class="red-overlay-left" :style="redOverlayLeftStyle"></div>
+              </div>
+
               <!-- Grid overlay with draggable and scalable grid -->
               <div
                 v-if="showGrid"
@@ -64,26 +76,6 @@
                 :style="gridStyle"
                 @mousedown="startDrag"
               >
-                <!-- Red overlay for area outside grid -->
-                <div class="red-overlay-container">
-                  <!-- Top red bar -->
-                  <div class="red-overlay-top" :style="redOverlayTopStyle"></div>
-                  <!-- Right red bar -->
-                  <div
-                    class="red-overlay-right"
-                    :style="redOverlayRightStyle"
-                  ></div>
-                  <!-- Bottom red bar -->
-                  <div
-                    class="red-overlay-bottom"
-                    :style="redOverlayBottomStyle"
-                  ></div>
-                  <!-- Left red bar -->
-                  <div
-                    class="red-overlay-left"
-                    :style="redOverlayLeftStyle"
-                  ></div>
-                </div>
                 <!-- Grid border -->
                 <div class="grid-border"></div>
 
@@ -599,73 +591,108 @@ export default {
     });
 
     // Compute red overlay regions to shade areas outside the white grid
-    // Now that red overlay is inside the grid container, we need to cover the entire image
-    // The grid itself is centered, so we need to shade everything outside the grid bounds
     const redOverlayTopStyle = computed(() => {
+      const scale = gridScale.value;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Calculate grid dimensions
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const gridTop = 50 - gridHeight / 2;
+      
       return {
         position: 'absolute',
         top: '0',
         left: '0',
         width: '100%',
-        height: '50vh',
+        height: `${gridTop}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
 
     const redOverlayRightStyle = computed(() => {
+      const scale = gridScale.value;
       const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Calculate grid dimensions
       let gridWidth, gridHeight;
       if (aspectRatio > 1) {
-        gridHeight = 50;
+        gridHeight = 100 * scale;
         gridWidth = gridHeight * aspectRatio;
       } else {
-        gridWidth = 50;
+        gridWidth = 100 * scale;
         gridHeight = gridWidth / aspectRatio;
       }
       
-      const gridTop = 50 - gridHeight;
-      const gridRight = 50 + gridWidth;
+      const gridRight = 50 + gridWidth / 2;
+      const gridTop = 50 - gridHeight / 2;
       
       return {
         position: 'absolute',
-        top: `${50 + gridTop}vh`,
+        top: `${gridTop}%`,
         right: '0',
-        width: `${50 - gridWidth}vw`,
-        height: `${gridHeight * 2}vh`,
+        width: `${100 - gridRight}%`,
+        height: `${gridHeight}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
 
     const redOverlayBottomStyle = computed(() => {
+      const scale = gridScale.value;
+      const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Calculate grid dimensions
+      let gridWidth, gridHeight;
+      if (aspectRatio > 1) {
+        gridHeight = 100 * scale;
+        gridWidth = gridHeight * aspectRatio;
+      } else {
+        gridWidth = 100 * scale;
+        gridHeight = gridWidth / aspectRatio;
+      }
+      
+      const gridBottom = 50 + gridHeight / 2;
+      
       return {
         position: 'absolute',
         bottom: '0',
         left: '0',
         width: '100%',
-        height: '50vh',
+        height: `${100 - gridBottom}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
 
     const redOverlayLeftStyle = computed(() => {
+      const scale = gridScale.value;
       const aspectRatio = gridCols.value / gridRows.value;
+      
+      // Calculate grid dimensions
       let gridWidth, gridHeight;
       if (aspectRatio > 1) {
-        gridHeight = 50;
+        gridHeight = 100 * scale;
         gridWidth = gridHeight * aspectRatio;
       } else {
-        gridWidth = 50;
+        gridWidth = 100 * scale;
         gridHeight = gridWidth / aspectRatio;
       }
       
-      const gridTop = 50 - gridHeight;
+      const gridLeft = 50 - gridWidth / 2;
+      const gridTop = 50 - gridHeight / 2;
       
       return {
         position: 'absolute',
-        top: `${50 + gridTop}vh`,
+        top: `${gridTop}%`,
         left: '0',
-        width: `${50 - gridWidth}vw`,
-        height: `${gridHeight * 2}vh`,
+        width: `${gridLeft}%`,
+        height: `${gridHeight}%`,
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
       };
     });
@@ -801,13 +828,12 @@ export default {
 
 .red-overlay-container {
   position: absolute;
-  top: -50vh;
-  left: -50vw;
-  width: 200vw;
-  height: 200vh;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 1;
-  overflow: visible;
 }
 
 .red-overlay-top,
