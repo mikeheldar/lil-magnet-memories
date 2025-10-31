@@ -178,37 +178,49 @@
         </div>
         <div class="row q-col-gutter-md">
           <div
-            v-for="(product, index) in products"
+            v-for="product in products"
             :key="product.id"
-            :class="index === 0 ? 'col-12' : 'col-12 col-md-6 col-lg-4'"
+            class="col-12 col-md-6 col-lg-4"
           >
-            <q-card class="product-card" :class="{ 'product-card-large': index === 0 }">
-              <q-img
-                v-if="product.imageUrl"
-                :src="product.imageUrl"
-                :alt="product.description"
-                class="product-image"
-              >
-                <div class="absolute-bottom text-subtitle1 text-center">
-                  {{ product.description }}
+            <q-card class="product-card">
+              <q-card-section class="text-center">
+                <div v-if="product.imageUrl" class="product-image-wrapper">
+                  <img
+                    :src="product.imageUrl"
+                    :alt="product.description"
+                    class="product-image"
+                  />
                 </div>
-              </q-img>
-              <q-card-section v-else>
-                <div class="text-h6 text-center q-mb-md">
+                <div v-else class="product-image-placeholder">
+                  <q-icon name="image" size="64px" color="grey-4" />
+                </div>
+                <div class="text-h6 q-mt-md q-mb-sm">
                   {{ product.description }}
                 </div>
               </q-card-section>
-              <q-card-section v-if="product.detailedDescription">
+              
+              <q-card-section v-if="product.detailedDescription" class="product-description">
                 <div class="text-body2 text-grey-7">
                   {{ product.detailedDescription }}
                 </div>
               </q-card-section>
-              <q-card-section>
+              
+              <q-card-section class="product-pricing">
                 <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
                 <div v-for="(price, qty) in product.pricing" :key="qty" class="text-body2 q-mb-xs">
                   <strong>{{ qty }}x</strong> for <strong class="text-primary">${{ price.toFixed(2) }}</strong>
                 </div>
               </q-card-section>
+
+              <q-card-actions class="q-pa-md">
+                <q-btn
+                  color="primary"
+                  label="Order Now"
+                  icon="shopping_cart"
+                  class="full-width"
+                  @click="goToUpload"
+                />
+              </q-card-actions>
             </q-card>
           </div>
         </div>
@@ -332,6 +344,10 @@ export default {
       router.push('/my-orders');
     };
 
+    const goToUpload = () => {
+      router.push('/upload');
+    };
+
     const loadProducts = async () => {
       try {
         const productsData = await firebaseService.getProducts();
@@ -375,6 +391,7 @@ export default {
       handleGoogleSignIn,
       goToOrdersList,
       goToMyOrders,
+      goToUpload,
     };
   },
 };
@@ -590,6 +607,8 @@ export default {
 .product-card {
   height: 100%;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-4px);
@@ -597,15 +616,42 @@ export default {
   }
 }
 
-.product-image {
-  height: 250px;
-  object-fit: cover;
+.product-image-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.product-card-large {
-  .product-image {
-    height: 400px;
-  }
+.product-image {
+  max-width: 180px;
+  max-height: 180px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.product-image-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.product-description {
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.product-pricing {
+  background: #f9f9f9;
 }
 
 // Mobile responsive adjustments
