@@ -7,6 +7,8 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: () => import('pages/LandingPage.vue') },
       { path: 'upload', component: () => import('pages/UploadPage.vue') },
+      { path: 'cart', component: () => import('pages/CartPage.vue') },
+      { path: 'checkout', component: () => import('pages/CheckoutPage.vue') },
       { path: 'thank-you', component: () => import('pages/ThankYouPage.vue') },
       {
         path: 'firebase-test',

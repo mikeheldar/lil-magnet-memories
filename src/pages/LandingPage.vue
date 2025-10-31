@@ -173,9 +173,7 @@
 
       <!-- Products Section -->
       <div class="products-section" v-if="products.length > 0">
-        <div class="text-h6 text-center q-mb-lg text-primary">
-          Our Products
-        </div>
+        <div class="text-h6 text-center q-mb-lg text-primary">Our Products</div>
         <div class="row q-col-gutter-md">
           <div
             v-for="product in products"
@@ -198,27 +196,35 @@
                   {{ product.description }}
                 </div>
               </q-card-section>
-              
-              <q-card-section v-if="product.detailedDescription" class="product-description">
+
+              <q-card-section
+                v-if="product.detailedDescription"
+                class="product-description"
+              >
                 <div class="text-body2 text-grey-7">
                   {{ product.detailedDescription }}
                 </div>
               </q-card-section>
-              
+
               <q-card-section class="product-pricing">
                 <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                <div v-for="(price, qty) in product.pricing" :key="qty" class="text-body2 q-mb-xs">
-                  <strong>{{ qty }}x</strong> for <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                <div
+                  v-for="(price, qty) in product.pricing"
+                  :key="qty"
+                  class="text-body2 q-mb-xs"
+                >
+                  <strong>{{ qty }}x</strong> for
+                  <strong class="text-primary">${{ price.toFixed(2) }}</strong>
                 </div>
               </q-card-section>
 
               <q-card-actions class="q-pa-md">
                 <q-btn
                   color="primary"
-                  label="Order Now"
-                  icon="shopping_cart"
+                  label="Add to Cart"
+                  icon="add_shopping_cart"
                   class="full-width"
-                  @click="goToUpload"
+                  @click="addProductToCart(product)"
                 />
               </q-card-actions>
             </q-card>
@@ -234,6 +240,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
+import { useCart } from '../composables/useCart.js';
 import { useQuasar } from 'quasar';
 
 export default {
@@ -245,6 +252,7 @@ export default {
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
     const products = ref([]);
+    const { addToCart } = useCart();
 
     const handleGoogleSignIn = async () => {
       signingIn.value = true;
@@ -348,6 +356,18 @@ export default {
       router.push('/upload');
     };
 
+    const addProductToCart = (product) => {
+      addToCart(product, 1);
+      $q.notify({
+        type: 'positive',
+        message: 'Added to cart!',
+        caption: product.description,
+        position: 'top',
+        icon: 'add_shopping_cart',
+        timeout: 2000,
+      });
+    };
+
     const loadProducts = async () => {
       try {
         const productsData = await firebaseService.getProducts();
@@ -392,6 +412,7 @@ export default {
       goToOrdersList,
       goToMyOrders,
       goToUpload,
+      addProductToCart,
     };
   },
 };

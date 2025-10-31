@@ -39,6 +39,24 @@
           <span class="text-h5 text-weight-bold">{{ pageTitle }}</span>
         </q-toolbar-title>
 
+        <!-- Shopping Cart Icon -->
+        <q-btn
+          flat
+          dense
+          icon="shopping_cart"
+          @click="$router.push('/cart')"
+          aria-label="Shopping Cart"
+          class="q-mr-sm"
+        >
+          <q-badge
+            v-if="cartItemCount > 0"
+            color="orange"
+            :label="cartItemCount"
+            floating
+          />
+          <q-tooltip>Shopping Cart</q-tooltip>
+        </q-btn>
+
         <!-- User Profile Dropdown (only when authenticated) -->
         <template v-if="isAuthenticated">
           <q-btn-dropdown flat dense no-caps class="user-profile-dropdown">
@@ -303,6 +321,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
+import { useCart } from '../composables/useCart.js';
 import { useQuasar } from 'quasar';
 import { config } from '../config/environment.js';
 
@@ -315,6 +334,7 @@ export default {
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
     const leftDrawerOpen = ref(false);
+    const { cartItemCount } = useCart();
     const userProfile = ref({
       displayName: null,
       photoURL: null,
@@ -481,6 +501,7 @@ export default {
       navigateTo,
       handleSignIn,
       handleSignOut,
+      cartItemCount,
     };
   },
 };

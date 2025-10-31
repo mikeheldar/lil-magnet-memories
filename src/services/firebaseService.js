@@ -306,7 +306,7 @@ class FirebaseService {
       const productsCollection = collection(db, 'products');
       const q = query(productsCollection, orderBy('description', 'asc'));
       const querySnapshot = await getDocs(q);
-      
+
       const products = [];
       querySnapshot.forEach((doc) => {
         products.push({
@@ -314,7 +314,7 @@ class FirebaseService {
           ...doc.data(),
         });
       });
-      
+
       return products;
     } catch (error) {
       console.error('Error getting products:', error);
@@ -371,6 +371,66 @@ class FirebaseService {
       return downloadURL;
     } catch (error) {
       console.error('Error uploading product image:', error);
+      throw error;
+    }
+  }
+
+  // Save cart-based order to Firestore
+  async saveCartOrder(orderData) {
+    try {
+      // Prepare order document
+      const orderDoc = {
+        orderNumber: orderData.orderNumber,
+        orderType: orderData.orderType || 'product_cart',
+        cartItems: orderData.cartItems || [],
+        customer: orderData.customer,
+        userId: orderData.userId || null,
+        shippingOption: orderData.shippingOption,
+        paymentOption: orderData.paymentOption,
+        subtotal: orderData.subtotal || 0,
+        shipping: orderData.shipping || 0,
+        tax: orderData.tax || 0,
+        totalAmount: orderData.totalAmount || 0,
+        status: orderData.status || 'pending',
+        submissionDate: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      // Add to Firestore with timeout
+      const savePromise = addDoc(collection(db, 'orders'), orderDoc);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Firebase operation timed out')),
+          10000
+        )
+      );
+
+      const docRef = await Promise.race([savePromise, timeoutPromise]);
+      console.log('Cart order saved with ID:', docRef.id);
+
+      // Send email notification for new order (to admin)
+      try {
+        await this.sendOrderEmail({
+          firstName: orderData.customer.firstName,
+          lastName: orderData.customer.lastName,
+          email: orderData.customer.email,
+          phone: orderData.customer.phone || '',
+          specialInstructions: `Order Type: Cart Order\nShipping: ${orderData.shippingOption.type}`,
+          photos: [], // No photos for cart orders
+          quantities: orderData.cartItems.map((item) => item.quantity),
+          orderNumber: orderData.orderNumber,
+          totalMagnets: orderData.cartItems.reduce((sum, item) => sum + item.quantity, 0),
+        });
+        console.log('Order email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send order email:', emailError);
+        // Don't throw error - order was saved successfully
+      }
+
+      return docRef.id;
+    } catch (error) {
+      console.error('Error saving cart order:', error);
       throw error;
     }
   }
