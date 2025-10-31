@@ -178,11 +178,11 @@
         </div>
         <div class="row q-col-gutter-md">
           <div
-            v-for="product in products"
+            v-for="(product, index) in products"
             :key="product.id"
-            class="col-12 col-md-6 col-lg-4"
+            :class="index === 0 ? 'col-12' : 'col-12 col-md-6 col-lg-4'"
           >
-            <q-card class="product-card">
+            <q-card class="product-card" :class="{ 'product-card-large': index === 0 }">
               <q-img
                 v-if="product.imageUrl"
                 :src="product.imageUrl"
@@ -600,6 +600,12 @@ export default {
 .product-image {
   height: 250px;
   object-fit: cover;
+}
+
+.product-card-large {
+  .product-image {
+    height: 400px;
+  }
 }
 
 // Mobile responsive adjustments
