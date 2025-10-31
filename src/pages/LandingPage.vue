@@ -171,50 +171,42 @@
         </q-card>
       </div>
 
-      <!-- Features Section -->
-      <div class="features-section">
+      <!-- Products Section -->
+      <div class="products-section" v-if="products.length > 0">
         <div class="text-h6 text-center q-mb-lg text-primary">
-          What we offer
+          Our Products
         </div>
         <div class="row q-col-gutter-md">
-          <div class="col-12 col-md-4">
-            <q-card class="feature-card">
-              <q-card-section class="text-center">
-                <q-icon
-                  name="camera_alt"
-                  size="48px"
-                  class="text-primary q-mb-md"
-                />
-                <div class="text-h6 q-mb-sm">Photo Upload</div>
-                <div class="text-body2 text-grey-7">
-                  Upload your favorite photos and specify how many magnets you
-                  want for each
+          <div
+            v-for="product in products"
+            :key="product.id"
+            class="col-12 col-md-6 col-lg-4"
+          >
+            <q-card class="product-card">
+              <q-img
+                v-if="product.imageUrl"
+                :src="product.imageUrl"
+                :alt="product.description"
+                class="product-image"
+              >
+                <div class="absolute-bottom text-subtitle1 text-center">
+                  {{ product.description }}
+                </div>
+              </q-img>
+              <q-card-section v-else>
+                <div class="text-h6 text-center q-mb-md">
+                  {{ product.description }}
                 </div>
               </q-card-section>
-            </q-card>
-          </div>
-          <div class="col-12 col-md-4">
-            <q-card class="feature-card">
-              <q-card-section class="text-center">
-                <q-icon name="style" size="48px" class="text-primary q-mb-md" />
-                <div class="text-h6 q-mb-sm">Custom Magnets</div>
+              <q-card-section v-if="product.detailedDescription">
                 <div class="text-body2 text-grey-7">
-                  High-quality custom magnets made from your photos
+                  {{ product.detailedDescription }}
                 </div>
               </q-card-section>
-            </q-card>
-          </div>
-          <div class="col-12 col-md-4">
-            <q-card class="feature-card">
-              <q-card-section class="text-center">
-                <q-icon
-                  name="local_shipping"
-                  size="48px"
-                  class="text-primary q-mb-md"
-                />
-                <div class="text-h6 q-mb-sm">Fast Delivery</div>
-                <div class="text-body2 text-grey-7">
-                  Quick turnaround and shipping for your custom magnets
+              <q-card-section>
+                <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
+                <div v-for="(price, qty) in product.pricing" :key="qty" class="text-body2 q-mb-xs">
+                  <strong>{{ qty }}x</strong> for <strong class="text-primary">${{ price.toFixed(2) }}</strong>
                 </div>
               </q-card-section>
             </q-card>
@@ -229,6 +221,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
+import { firebaseService } from '../services/firebaseService.js';
 import { useQuasar } from 'quasar';
 
 export default {
@@ -239,6 +232,7 @@ export default {
     const signingIn = ref(false);
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
+    const products = ref([]);
 
     const handleGoogleSignIn = async () => {
       signingIn.value = true;
@@ -338,8 +332,18 @@ export default {
       router.push('/my-orders');
     };
 
+    const loadProducts = async () => {
+      try {
+        const productsData = await firebaseService.getProducts();
+        products.value = productsData || [];
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    };
+
     // Check if user is already authenticated
     onMounted(() => {
+      loadProducts();
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
       if (currentAuthUser) {
@@ -367,6 +371,7 @@ export default {
       signingIn,
       isAuthenticated,
       isAdmin,
+      products,
       handleGoogleSignIn,
       goToOrdersList,
       goToMyOrders,
@@ -576,6 +581,25 @@ export default {
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     }
   }
+}
+
+.products-section {
+  margin-bottom: 3rem;
+}
+
+.product-card {
+  height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.product-image {
+  height: 250px;
+  object-fit: cover;
 }
 
 // Mobile responsive adjustments

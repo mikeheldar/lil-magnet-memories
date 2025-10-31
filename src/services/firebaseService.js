@@ -299,6 +299,81 @@ class FirebaseService {
       throw error;
     }
   }
+
+  // Product Management Methods
+  async getProducts() {
+    try {
+      const productsCollection = collection(db, 'products');
+      const q = query(productsCollection, orderBy('description', 'asc'));
+      const querySnapshot = await getDocs(q);
+      
+      const products = [];
+      querySnapshot.forEach((doc) => {
+        products.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      
+      return products;
+    } catch (error) {
+      console.error('Error getting products:', error);
+      throw error;
+    }
+  }
+
+  async addProduct(productData) {
+    try {
+      const productsCollection = collection(db, 'products');
+      const docRef = await addDoc(productsCollection, {
+        ...productData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error('Error adding product:', error);
+      throw error;
+    }
+  }
+
+  async updateProduct(productId, productData) {
+    try {
+      const productDoc = doc(db, 'products', productId);
+      await updateDoc(productDoc, {
+        ...productData,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error updating product:', error);
+      throw error;
+    }
+  }
+
+  async deleteProduct(productId) {
+    try {
+      const productDoc = doc(db, 'products', productId);
+      await deleteDoc(productDoc);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      throw error;
+    }
+  }
+
+  async uploadProductImage(file) {
+    try {
+      const fileName = `products/${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, fileName);
+      
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      return downloadURL;
+    } catch (error) {
+      console.error('Error uploading product image:', error);
+      throw error;
+    }
+  }
 }
 
 export const firebaseService = new FirebaseService();
