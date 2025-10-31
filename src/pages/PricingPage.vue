@@ -137,13 +137,14 @@
                   @update:model-value="updateQuantity(index, $event)"
                 />
                 <q-input
-                  v-model.number="entry.price"
+                  :model-value="entry.price"
                   label="Price"
                   type="number"
                   prefix="$"
                   filled
                   dense
                   class="col-5"
+                  @update:model-value="updatePrice(index, $event)"
                 />
                 <q-btn
                   flat
@@ -281,7 +282,7 @@ export default {
 
     const handleImageSelect = async (file) => {
       if (!file) return;
-      
+
       uploadingImage.value = true;
       try {
         const imageUrl = await firebaseService.uploadProductImage(file);
@@ -336,7 +337,10 @@ export default {
           // Update existing
           const existingProduct = products.value[editingProduct.value.index];
           await firebaseService.updateProduct(existingProduct.id, product);
-          products.value[editingProduct.value.index] = { ...product, id: existingProduct.id };
+          products.value[editingProduct.value.index] = {
+            ...product,
+            id: existingProduct.id,
+          };
           $q.notify({
             type: 'positive',
             message: 'Product updated',
@@ -427,6 +431,12 @@ export default {
       editingProduct.value.pricing[newQty] = price;
     };
 
+    const updatePrice = (index, newPrice) => {
+      const entries = pricingEntries.value;
+      const qty = entries[index].qty;
+      editingProduct.value.pricing[qty] = parseFloat(newPrice) || 0;
+    };
+
     return {
       products,
       editingProduct,
@@ -443,6 +453,7 @@ export default {
       addPricingTier,
       removePricing,
       updateQuantity,
+      updatePrice,
       handleImageSelect,
       removeImage,
     };
