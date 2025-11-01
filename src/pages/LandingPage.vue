@@ -5,8 +5,9 @@
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm" />
         <div class="text-body1 text-white">
-          <strong>Market Event Live!</strong> We're at {{ activeMarketEventName }}. 
-          Order for pickup or pay locally at our tent!
+          <strong>Market Event Live!</strong> We're at
+          {{ activeMarketEventName }}. Order for pickup or pay locally at our
+          tent!
         </div>
       </div>
     </div>
@@ -58,6 +59,18 @@
               class="easel-image"
               :key="easelImageIndex"
             />
+            <!-- Image carousel dots -->
+            <div class="easel-carousel-dots">
+              <q-btn
+                v-for="(image, index) in easelImages"
+                :key="index"
+                :class="['carousel-dot', { 'dot-active': index === easelImageIndex }]"
+                round
+                dense
+                size="sm"
+                @click="goToImage(index)"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -374,6 +387,11 @@ export default {
       () => easelImages[easelImageIndex.value]
     );
 
+    // Navigation function for carousel dots
+    const goToImage = (index) => {
+      easelImageIndex.value = index;
+    };
+
     const handleGoogleSignIn = async () => {
       signingIn.value = true;
 
@@ -613,6 +631,7 @@ export default {
       preDesignedProducts,
       hasActiveEvent,
       activeMarketEventName,
+      easelImages,
       currentEaselImage,
       easelImageIndex,
       showMarketEventDialog,
@@ -625,6 +644,7 @@ export default {
       goToPreDesigned,
       goToMarketEventUpload,
       goToOnlineOrder,
+      goToImage,
     };
   },
 };
@@ -760,6 +780,38 @@ export default {
 
   img {
     display: block;
+  }
+}
+
+// Carousel dots
+.easel-carousel-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: scale(1.2);
+  }
+
+  &.dot-active {
+    background: white;
+    border-color: white;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
   }
 }
 
