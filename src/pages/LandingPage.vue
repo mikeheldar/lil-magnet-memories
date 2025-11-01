@@ -54,8 +54,8 @@
     <div class="landing-container">
       <!-- Custom Products Section -->
       <div class="custom-products-section q-mb-xl">
-        <div class="text-h4 text-center q-mb-lg text-primary">
-          Custom Magnet Products
+        <div class="text-h3 text-center q-mb-lg text-primary">
+          Custom Photo Magnets
         </div>
         <div class="text-body1 text-center text-grey-7 q-mb-xl">
           Create personalized magnets from your own photos
@@ -196,8 +196,8 @@
 
       <!-- Pre-Designed Products Section -->
       <div class="predesigned-products-section">
-        <div class="text-h4 text-center q-mb-lg text-primary">
-          Pre-Designed Magnets
+        <div class="text-h3 text-center q-mb-lg text-primary">
+          Designer (Pre-Designed) Magnets
         </div>
         <div class="text-body1 text-center text-grey-7 q-mb-lg">
           Shop our collection of beautifully designed ready-made magnets
@@ -645,12 +645,12 @@ export default {
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     z-index: 10;
   }
-  
+
   .q-card-section {
     padding-top: 24px;
     padding-bottom: 16px;
   }
-  
+
   .q-icon {
     margin-top: 8px;
   }
