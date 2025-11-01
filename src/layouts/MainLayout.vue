@@ -34,6 +34,18 @@
           TEST
         </q-chip>
 
+        <!-- Market Event Indicator -->
+        <q-chip
+          v-if="isAtMarketEvent"
+          color="green"
+          text-color="white"
+          size="sm"
+          class="q-mr-md"
+          icon="event"
+        >
+          MARKET EVENT
+        </q-chip>
+
         <!-- Page title in center -->
         <q-toolbar-title class="text-center">
           <span class="text-h5 text-weight-bold">{{ pageTitle }}</span>
@@ -324,6 +336,7 @@ import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
 import { useQuasar } from 'quasar';
 import { config } from '../config/environment.js';
+import { marketEventService } from '../services/marketEventService.js';
 
 export default {
   name: 'MainLayout',
@@ -377,6 +390,11 @@ export default {
     });
 
     const isTestEnvironment = computed(() => config.isTest);
+    
+    // Check if customer is at a market event
+    const isAtMarketEvent = computed(() => {
+      return marketEventService.getCheckedInEvent() !== null;
+    });
 
     const toggleLeftDrawer = () => {
       leftDrawerOpen.value = !leftDrawerOpen.value;
@@ -493,6 +511,7 @@ export default {
     return {
       pageTitle,
       isTestEnvironment,
+      isAtMarketEvent,
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,
