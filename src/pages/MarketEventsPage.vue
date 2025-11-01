@@ -325,7 +325,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService';
 
@@ -942,6 +942,11 @@ export default {
     .row {
       flex-direction: column;
       align-items: stretch;
+    }
+
+    // Exception: Keep order stats in a row even on mobile
+    .order-stats .row {
+      flex-direction: row !important;
     }
 
     .col-auto {
