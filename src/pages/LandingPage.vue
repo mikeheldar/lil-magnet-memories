@@ -292,17 +292,24 @@
     </div>
 
     <!-- Market Event Dialog -->
-    <q-dialog v-model="showMarketEventDialog">
+    <q-dialog v-model="showMarketEventDialog" persistent>
       <q-card style="min-width: 350px">
         <q-card-section class="row items-center q-pb-none">
           <div class="text-h6">Market Event Active!</div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+          <q-btn 
+            icon="close" 
+            flat 
+            round 
+            dense 
+            @click="goToOnlineOrder" 
+          />
         </q-card-section>
 
         <q-card-section>
           <div class="text-body1 q-mb-md">
-            We're currently at <strong>{{ activeMarketEvent?.name }}</strong>!
+            We're currently at <strong>{{ activeMarketEvent?.name }}</strong
+            >!
           </div>
           <div class="text-body2 text-grey-7 q-mb-md">
             Are you at the market event and want to pick up your order there?
@@ -315,14 +322,12 @@
             label="Order Online"
             color="grey-8"
             @click="goToOnlineOrder"
-            v-close-popup
           />
           <q-btn
             flat
             label="At Event - Pickup"
             color="primary"
             @click="goToMarketEventUpload"
-            v-close-popup
           />
         </q-card-actions>
       </q-card>
@@ -338,6 +343,7 @@ import { firebaseService } from '../services/firebaseService.js';
 import { useCart } from '../composables/useCart.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useQuasar } from 'quasar';
+import { useCustomerType } from '../composables/useCustomerType.js';
 
 export default {
   name: 'LandingPage',
@@ -349,6 +355,10 @@ export default {
     const isAdmin = ref(false);
     const products = ref([]);
     const { addToCart } = useCart();
+    const { 
+      shouldShowMarketEventPrompt, 
+      setCustomerType
+    } = useCustomerType();
 
     // Easel image rotation
     const easelImages = [
@@ -466,7 +476,7 @@ export default {
     const goToUpload = () => {
       // Check if there's an active market event
       activeMarketEvent.value = marketEventService.getCheckedInEvent();
-      
+
       if (activeMarketEvent.value) {
         // Show popup asking if they're at the event
         showMarketEventDialog.value = true;
@@ -478,11 +488,13 @@ export default {
 
     const goToMarketEventUpload = () => {
       showMarketEventDialog.value = false;
+      setCustomerType('market_customer');
       router.push('/market-event-upload');
     };
 
     const goToOnlineOrder = () => {
       showMarketEventDialog.value = false;
+      setCustomerType('online_customer');
       router.push('/online-order');
     };
 
@@ -538,6 +550,7 @@ export default {
     // Check if user is already authenticated
     onMounted(() => {
       loadProducts();
+      
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
       if (currentAuthUser) {
@@ -547,6 +560,11 @@ export default {
         );
         isAuthenticated.value = true;
         isAdmin.value = authService.isAdmin();
+        
+        // Set customer type based on admin status
+        if (isAdmin.value) {
+          setCustomerType('admin');
+        }
       }
 
       // Listen for auth state changes
@@ -556,9 +574,20 @@ export default {
         if (user) {
           console.log('User is already signed in:', user.email);
           console.log('Is admin:', isAdmin.value);
-          // Don't auto-redirect - let user choose where to go
+          
+          // Set customer type based on admin status
+          if (isAdmin.value) {
+            setCustomerType('admin');
+          }
         }
       });
+
+      // Check if we should show market event prompt on initial load
+      const activeEvent = marketEventService.getCheckedInEvent();
+      if (activeEvent && shouldShowMarketEventPrompt.value) {
+        activeMarketEvent.value = activeEvent;
+        showMarketEventDialog.value = true;
+      }
 
       // Rotate easel images every 5 seconds
       setInterval(() => {
