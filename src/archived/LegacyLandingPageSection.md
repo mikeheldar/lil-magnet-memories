@@ -24,4 +24,3 @@ This section was removed from the main landing page and archived for potential f
   - Hero section with "Start Creating Magnets" button
   - Cart and navigation for orders
   - Reorganized products section
-
