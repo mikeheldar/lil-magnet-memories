@@ -381,7 +381,7 @@ import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 
 export default {
-  name: 'UploadPage',
+  name: 'MarketEventUploadPage',
   setup() {
     const $q = useQuasar();
     const router = useRouter();

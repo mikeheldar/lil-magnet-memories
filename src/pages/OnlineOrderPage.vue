@@ -4,10 +4,10 @@
       <!-- Header -->
       <div class="text-center q-mb-lg">
         <div class="text-h5 text-grey-7">
-          Market Event Magnet Creation
+          Online Order Magnet Creation
         </div>
         <div class="text-body1 text-grey-6 q-mt-sm">
-          Create custom magnets for market event pickup
+          Create custom magnets for home delivery
         </div>
 
         <!-- Login Section for Non-Authenticated Users -->
@@ -381,7 +381,7 @@ import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 
 export default {
-  name: 'UploadPage',
+  name: 'OnlineOrderPage',
   setup() {
     const $q = useQuasar();
     const router = useRouter();
