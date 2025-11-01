@@ -4,10 +4,20 @@
     <div v-if="hasActiveEvent" class="market-event-banner bg-green-5">
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm" />
-        <div class="text-body1 text-white">
-          <strong>Market Event Live!</strong> We're at
-          {{ activeMarketEventName }}. Order for pickup or pay locally at our
-          tent!
+        <div class="text-body1 text-white flex items-center q-gutter-md">
+          <div>
+            <strong>Market Event Live!</strong> We're at
+            {{ activeMarketEventName }}.
+          </div>
+          <q-toggle
+            v-model="isCustomerAtEvent"
+            color="white"
+            checked-icon="check_circle"
+            unchecked-icon="radio_button_unchecked"
+            @update:model-value="toggleCustomerAtEvent"
+          >
+            <span class="text-white text-body2 q-ml-sm">I'm at the event</span>
+          </q-toggle>
         </div>
       </div>
     </div>
@@ -377,6 +387,9 @@ export default {
     const products = ref([]);
     const { addToCart } = useCart();
     const { shouldShowMarketEventPrompt, setCustomerType } = useCustomerType();
+    
+    // Customer at event toggle
+    const isCustomerAtEvent = ref(false);
 
     // Easel image rotation
     const easelImages = [
@@ -565,6 +578,29 @@ export default {
       return event ? event.name : '';
     });
 
+    // Toggle customer at event
+    const toggleCustomerAtEvent = (value) => {
+      if (value) {
+        setCustomerType('market_customer');
+        $q.notify({
+          type: 'positive',
+          message: 'Market event mode enabled!',
+          caption: 'You\'ll see pickup and local payment options',
+          position: 'top',
+          timeout: 3000,
+        });
+      } else {
+        setCustomerType('online_customer');
+        $q.notify({
+          type: 'info',
+          message: 'Switched to online mode',
+          caption: 'You\'ll see shipping options for orders',
+          position: 'top',
+          timeout: 2000,
+        });
+      }
+    };
+
     // Navigation function for pre-designed products
     const goToPreDesigned = () => {
       // TODO: Navigate to pre-designed products page when implemented
@@ -634,6 +670,7 @@ export default {
       preDesignedProducts,
       hasActiveEvent,
       activeMarketEventName,
+      isCustomerAtEvent,
       easelImages,
       currentEaselImage,
       easelImageIndex,
@@ -648,6 +685,7 @@ export default {
       goToMarketEventUpload,
       goToOnlineOrder,
       goToImage,
+      toggleCustomerAtEvent,
     };
   },
 };
