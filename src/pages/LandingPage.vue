@@ -149,7 +149,10 @@
                 <q-card-section class="row items-center q-gutter-md">
                   <!-- Product Image (Left Side) -->
                   <div class="col-auto">
-                    <div v-if="product.imageUrl" class="product-image-wrapper-small">
+                    <div
+                      v-if="product.imageUrl"
+                      class="product-image-wrapper-small"
+                    >
                       <img
                         :src="product.imageUrl"
                         :alt="product.description"
@@ -166,7 +169,7 @@
                     <div class="text-h6 q-mb-sm">
                       {{ product.description }}
                     </div>
-                    
+
                     <div
                       v-if="product.detailedDescription"
                       class="text-body2 text-grey-7 q-mb-sm"
@@ -175,14 +178,18 @@
                     </div>
 
                     <div class="product-pricing-inline q-mb-md">
-                      <div class="text-caption text-grey-8 q-mb-xs">Pricing:</div>
+                      <div class="text-caption text-grey-8 q-mb-xs">
+                        Pricing:
+                      </div>
                       <div
                         v-for="(price, qty) in product.pricing"
                         :key="qty"
                         class="text-body2 q-mb-xs"
                       >
                         <strong>{{ qty }}x</strong> for
-                        <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                        <strong class="text-primary"
+                          >${{ price.toFixed(2) }}</strong
+                        >
                       </div>
                     </div>
 
@@ -283,6 +290,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Market Event Dialog -->
+    <q-dialog v-model="showMarketEventDialog">
+      <q-card style="min-width: 350px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Market Event Active!</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <div class="text-body1 q-mb-md">
+            We're currently at <strong>{{ activeMarketEvent?.name }}</strong>!
+          </div>
+          <div class="text-body2 text-grey-7 q-mb-md">
+            Are you at the market event and want to pick up your order there?
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Order Online"
+            color="grey-8"
+            @click="goToOnlineOrder"
+            v-close-popup
+          />
+          <q-btn
+            flat
+            label="At Event - Pickup"
+            color="primary"
+            @click="goToMarketEventUpload"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -314,7 +358,9 @@ export default {
       '/easel-gallery/image3.jpg',
     ];
     const easelImageIndex = ref(0);
-    const currentEaselImage = computed(() => easelImages[easelImageIndex.value]);
+    const currentEaselImage = computed(
+      () => easelImages[easelImageIndex.value]
+    );
 
     const handleGoogleSignIn = async () => {
       signingIn.value = true;
@@ -414,8 +460,30 @@ export default {
       router.push('/my-orders');
     };
 
+    const showMarketEventDialog = ref(false);
+    const activeMarketEvent = ref(null);
+
     const goToUpload = () => {
-      router.push('/upload');
+      // Check if there's an active market event
+      activeMarketEvent.value = marketEventService.getCheckedInEvent();
+      
+      if (activeMarketEvent.value) {
+        // Show popup asking if they're at the event
+        showMarketEventDialog.value = true;
+      } else {
+        // No active event, go to online order page
+        router.push('/online-order');
+      }
+    };
+
+    const goToMarketEventUpload = () => {
+      showMarketEventDialog.value = false;
+      router.push('/market-event-upload');
+    };
+
+    const goToOnlineOrder = () => {
+      showMarketEventDialog.value = false;
+      router.push('/online-order');
     };
 
     const addProductToCart = (product) => {
@@ -494,7 +562,8 @@ export default {
 
       // Rotate easel images every 5 seconds
       setInterval(() => {
-        easelImageIndex.value = (easelImageIndex.value + 1) % easelImages.length;
+        easelImageIndex.value =
+          (easelImageIndex.value + 1) % easelImages.length;
       }, 5000);
     });
 
@@ -508,12 +577,16 @@ export default {
       hasActiveEvent,
       currentEaselImage,
       easelImageIndex,
+      showMarketEventDialog,
+      activeMarketEvent,
       handleGoogleSignIn,
       goToOrdersList,
       goToMyOrders,
       goToUpload,
       addProductToCart,
       goToPreDesigned,
+      goToMarketEventUpload,
+      goToOnlineOrder,
     };
   },
 };
@@ -630,7 +703,7 @@ export default {
 
 .easel-container {
   position: relative;
-  
+
   img {
     display: block;
   }
