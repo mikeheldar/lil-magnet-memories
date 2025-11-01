@@ -45,7 +45,7 @@
 
           <div class="hero-actions">
             <q-btn
-              @click="$router.push('/upload')"
+              @click="goToUpload"
               color="primary"
               size="xl"
               class="cta-button"
@@ -386,10 +386,15 @@ export default {
     const isAdmin = ref(false);
     const products = ref([]);
     const { addToCart } = useCart();
-    const { shouldShowMarketEventPrompt, setCustomerType } = useCustomerType();
-    
-    // Customer at event toggle
-    const isCustomerAtEvent = ref(false);
+    const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } = useCustomerType();
+ 
+    // Customer at event toggle - sync with customer type
+    const isCustomerAtEvent = computed({
+      get: () => isMarketCustomer(),
+      set: () => {
+        // This is handled by toggleCustomerAtEvent, but we need setter for v-model
+      }
+    });
 
     // Easel image rotation
     const easelImages = [
@@ -514,8 +519,14 @@ export default {
       activeMarketEvent.value = marketEventService.getCheckedInEvent();
 
       if (activeMarketEvent.value) {
-        // Show popup asking if they're at the event
-        showMarketEventDialog.value = true;
+        // Check if user is already set as market customer
+        if (isMarketCustomer()) {
+          // User has already confirmed they're at event, go directly to market event upload
+          router.push('/market-event-upload');
+        } else {
+          // Show popup asking if they're at the event
+          showMarketEventDialog.value = true;
+        }
       } else {
         // No active event, go to online order page
         router.push('/online-order');
@@ -585,7 +596,7 @@ export default {
         $q.notify({
           type: 'positive',
           message: 'Market event mode enabled!',
-          caption: 'You\'ll see pickup and local payment options',
+          caption: "You'll see pickup and local payment options",
           position: 'top',
           timeout: 3000,
         });
@@ -594,7 +605,7 @@ export default {
         $q.notify({
           type: 'info',
           message: 'Switched to online mode',
-          caption: 'You\'ll see shipping options for orders',
+          caption: "You'll see shipping options for orders",
           position: 'top',
           timeout: 2000,
         });
