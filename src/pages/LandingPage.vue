@@ -1,5 +1,16 @@
 <template>
   <q-page class="landing-page">
+    <!-- Market Event Banner -->
+    <div v-if="hasActiveEvent" class="market-event-banner bg-green-5">
+      <div class="market-event-content">
+        <q-icon name="event" size="24px" class="q-mr-sm" />
+        <div class="text-body1 text-white">
+          <strong>Market Event Live!</strong> We're at {{ activeMarketEventName }}. 
+          Order for pickup or pay locally at our tent!
+        </div>
+      </div>
+    </div>
+
     <!-- Hero Section with Big Magnet Images -->
     <div class="hero-section">
       <div class="hero-content">
@@ -55,7 +66,7 @@
     <div class="landing-container">
       <!-- Custom Products Section -->
       <div class="custom-products-section q-mb-xl">
-        <div class="text-h3 text-center q-mb-lg text-primary">
+        <div class="text-h4 text-center q-mb-lg text-primary">
           Custom Photo Magnets
         </div>
         <div class="text-body1 text-center text-grey-7 q-mb-xl">
@@ -209,8 +220,8 @@
 
       <!-- Pre-Designed Products Section -->
       <div class="predesigned-products-section">
-        <div class="text-h3 text-center q-mb-lg text-primary">
-          Designer (Pre-Designed) Magnets
+        <div class="text-h4 text-center q-mb-lg text-primary">
+          Designer Magnets
         </div>
         <div class="text-body1 text-center text-grey-7 q-mb-lg">
           Shop our collection of beautifully designed ready-made magnets
@@ -527,6 +538,12 @@ export default {
       return marketEventService.getCheckedInEvent() !== null;
     });
 
+    // Get the active market event name for display
+    const activeMarketEventName = computed(() => {
+      const event = marketEventService.getCheckedInEvent();
+      return event ? event.name : '';
+    });
+
     // Navigation function for pre-designed products
     const goToPreDesigned = () => {
       // TODO: Navigate to pre-designed products page when implemented
@@ -595,6 +612,7 @@ export default {
       customProducts,
       preDesignedProducts,
       hasActiveEvent,
+      activeMarketEventName,
       currentEaselImage,
       easelImageIndex,
       showMarketEventDialog,
@@ -659,6 +677,22 @@ export default {
 
 .hero-logo-small {
   display: none;
+}
+
+// Market event banner
+.market-event-banner {
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.market-event-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .hero-title {
@@ -971,6 +1005,11 @@ export default {
     text-align: center;
   }
 
+  .hero-logo {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .hero-title {
     font-size: 2.5rem;
   }
@@ -1012,6 +1051,8 @@ export default {
   .hero-logo {
     max-width: 250px;
     margin-bottom: 1rem;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .landing-container {
