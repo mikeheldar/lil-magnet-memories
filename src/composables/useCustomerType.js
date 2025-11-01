@@ -75,8 +75,8 @@ export function useCustomerType() {
     customerType: computed(() => customerType.value),
     shouldShowMarketEventPrompt,
     setCustomerType: (type) => customerTypeService.setCustomerType(type),
-    isOnlineCustomer: () => customerTypeService.isOnlineCustomer(),
-    isMarketCustomer: () => customerTypeService.isMarketCustomer(),
-    isAdminCustomer: () => customerTypeService.isAdminCustomer(),
+    isOnlineCustomer: computed(() => customerTypeService.isOnlineCustomer()),
+    isMarketCustomer: computed(() => customerTypeService.isMarketCustomer()),
+    isAdminCustomer: computed(() => customerTypeService.isAdminCustomer()),
   };
 }

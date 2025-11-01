@@ -386,14 +386,15 @@ export default {
     const isAdmin = ref(false);
     const products = ref([]);
     const { addToCart } = useCart();
-    const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } = useCustomerType();
- 
+    const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
+      useCustomerType();
+
     // Customer at event toggle - sync with customer type
     const isCustomerAtEvent = computed({
-      get: () => isMarketCustomer(),
+      get: () => isMarketCustomer.value,
       set: () => {
         // This is handled by toggleCustomerAtEvent, but we need setter for v-model
-      }
+      },
     });
 
     // Easel image rotation
@@ -520,7 +521,7 @@ export default {
 
       if (activeMarketEvent.value) {
         // Check if user is already set as market customer
-        if (isMarketCustomer()) {
+        if (isMarketCustomer.value) {
           // User has already confirmed they're at event, go directly to market event upload
           router.push('/market-event-upload');
         } else {
