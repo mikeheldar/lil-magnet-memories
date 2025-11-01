@@ -364,10 +364,10 @@ class FirebaseService {
     try {
       const fileName = `products/${Date.now()}_${file.name}`;
       const storageRef = ref(storage, fileName);
-      
+
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
-      
+
       return downloadURL;
     } catch (error) {
       console.error('Error uploading product image:', error);
@@ -420,7 +420,10 @@ class FirebaseService {
           photos: [], // No photos for cart orders
           quantities: orderData.cartItems.map((item) => item.quantity),
           orderNumber: orderData.orderNumber,
-          totalMagnets: orderData.cartItems.reduce((sum, item) => sum + item.quantity, 0),
+          totalMagnets: orderData.cartItems.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          ),
         });
         console.log('Order email sent successfully');
       } catch (emailError) {

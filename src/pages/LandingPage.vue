@@ -52,182 +52,229 @@
     </div>
 
     <div class="landing-container">
-      <!-- Logo Section - Compact for Mobile -->
-      <div class="logo-section">
-        <img
-          src="/assets/lil-magnet-memories-logo.png"
-          alt="Lil Magnet Memories"
-          class="landing-logo"
-        />
-        <h1 class="landing-title">Lil Magnet Memories</h1>
-        <p class="landing-subtitle">
-          Create beautiful custom magnets from your favorite photos
-        </p>
-      </div>
+      <!-- Custom Products Section -->
+      <div class="custom-products-section q-mb-xl">
+        <div class="text-h4 text-center q-mb-lg text-primary">
+          Custom Magnet Products
+        </div>
+        <div class="text-body1 text-center text-grey-7 q-mb-xl">
+          Create personalized magnets from your own photos
+        </div>
 
-      <!-- Upload Photos Section - Most Prominent -->
-      <div class="upload-section">
-        <q-card class="upload-card">
-          <q-card-section class="text-center">
-            <div class="text-h4 q-mb-sm text-primary">
-              <q-icon name="camera_alt" size="32px" class="q-mr-sm" />
-              Upload Your Photos
-            </div>
-            <div class="text-body1 q-mb-md text-grey-7">
-              Get started right away - no sign-in required!
-            </div>
-
-            <q-btn
-              @click="$router.push('/upload')"
-              color="primary"
-              size="lg"
-              class="upload-btn q-px-xl q-py-md"
-            >
-              <q-icon name="camera_alt" size="20px" class="q-mr-sm" />
-              Upload Photos Now
-            </q-btn>
-
-            <div class="text-caption text-grey-6 q-mt-sm">
-              Upload photos and specify magnet quantities
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <!-- Sign In Section -->
-      <div class="signin-section">
-        <q-card class="signin-card">
-          <q-card-section class="text-center">
-            <div class="text-h5 q-mb-md text-primary">
-              <q-icon name="login" size="28px" class="q-mr-sm" />
-              Log In
-            </div>
-            <div class="text-body1 q-mb-lg text-grey-7">
-              Sign in to access your orders and dashboard
-            </div>
-
-            <!-- Only show sign-in button if user is not authenticated -->
-            <div v-if="!isAuthenticated">
-              <q-btn
-                @click="handleGoogleSignIn"
-                color="secondary"
-                size="lg"
-                class="q-px-xl q-py-md"
-                :loading="signingIn"
-                :disable="signingIn"
-              >
-                <q-icon name="login" class="q-mr-sm" />
-                {{ signingIn ? 'Signing in...' : 'Sign in with Google' }}
-              </q-btn>
-
-              <!-- Help text for popup blockers -->
-              <div class="text-caption text-grey-6 q-mt-sm text-center">
-                <q-icon name="info" size="14px" class="q-mr-xs" />
-                If sign-in hangs, check that popups are allowed for this site
-              </div>
-            </div>
-
-            <!-- Show authenticated user message with appropriate links -->
-            <div v-else class="text-center">
-              <q-icon
-                name="check_circle"
-                color="positive"
-                size="32px"
-                class="q-mb-sm"
-              />
-              <div class="text-h6 text-positive q-mb-sm">Welcome back!</div>
-              <div class="text-body2 text-grey-7 q-mb-md">
-                You're signed in and can access your dashboard
-              </div>
-
-              <!-- Show different links based on admin status -->
-              <div class="q-gutter-sm">
-                <!-- Admin users see Orders List -->
-                <q-btn
-                  v-if="isAdmin"
-                  color="primary"
-                  size="md"
-                  class="q-px-lg q-py-sm"
-                  @click="goToOrdersList"
-                >
-                  <q-icon name="list_alt" class="q-mr-sm" />
-                  Orders List
-                </q-btn>
-
-                <!-- Regular users see My Orders -->
-                <q-btn
-                  v-else
-                  color="purple"
-                  size="lg"
-                  class="q-px-xl q-py-md"
-                  @click="goToMyOrders"
-                >
-                  <q-icon name="list_alt" class="q-mr-sm" />
-                  My Orders
-                </q-btn>
-              </div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <!-- Products Section -->
-      <div class="products-section" v-if="products.length > 0">
-        <div class="text-h6 text-center q-mb-lg text-primary">Our Products</div>
-        <div class="row q-col-gutter-md">
-          <div
-            v-for="product in products"
-            :key="product.id"
-            class="col-12 col-md-6 col-lg-4"
-          >
-            <q-card class="product-card">
-              <q-card-section class="text-center">
-                <div v-if="product.imageUrl" class="product-image-wrapper">
-                  <img
-                    :src="product.imageUrl"
-                    :alt="product.description"
-                    class="product-image"
-                  />
-                </div>
-                <div v-else class="product-image-placeholder">
-                  <q-icon name="image" size="64px" color="grey-4" />
-                </div>
-                <div class="text-h6 q-mt-md q-mb-sm">
-                  {{ product.description }}
-                </div>
-              </q-card-section>
-
-              <q-card-section
-                v-if="product.detailedDescription"
-                class="product-description"
-              >
+        <!-- How It Works Steps -->
+        <div class="row q-col-gutter-md q-mb-lg">
+          <div class="col-12 col-sm-6 col-md-4">
+            <q-card class="step-card text-center">
+              <q-card-section>
+                <div class="step-number">1</div>
+                <q-icon name="photo" size="48px" class="text-primary q-mb-md" />
+                <div class="text-h6 q-mb-sm">Select Product Type</div>
                 <div class="text-body2 text-grey-7">
-                  {{ product.detailedDescription }}
+                  Choose your preferred magnet style and size
                 </div>
               </q-card-section>
-
-              <q-card-section class="product-pricing">
-                <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                <div
-                  v-for="(price, qty) in product.pricing"
-                  :key="qty"
-                  class="text-body2 q-mb-xs"
-                >
-                  <strong>{{ qty }}x</strong> for
-                  <strong class="text-primary">${{ price.toFixed(2) }}</strong>
-                </div>
-              </q-card-section>
-
-              <q-card-actions class="q-pa-md">
-                <q-btn
-                  color="primary"
-                  label="Add to Cart"
-                  icon="add_shopping_cart"
-                  class="full-width"
-                  @click="addProductToCart(product)"
-                />
-              </q-card-actions>
             </q-card>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <q-card class="step-card text-center">
+              <q-card-section>
+                <div class="step-number">2</div>
+                <q-icon name="cloud_upload" size="48px" class="text-primary q-mb-md" />
+                <div class="text-h6 q-mb-sm">Upload Photos</div>
+                <div class="text-body2 text-grey-7">
+                  Add your favorite pictures to create magnets from
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <q-card class="step-card text-center">
+              <q-card-section>
+                <div class="step-number">3</div>
+                <q-icon name="calculate" size="48px" class="text-primary q-mb-md" />
+                <div class="text-h6 q-mb-sm">Select Quantity</div>
+                <div class="text-body2 text-grey-7">
+                  Choose amount to unlock best pricing tiers
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <q-card class="step-card text-center">
+              <q-card-section>
+                <div class="step-number">4</div>
+                <q-icon name="payment" size="48px" class="text-primary q-mb-md" />
+                <div class="text-h6 q-mb-sm">Pay Online</div>
+                <div class="text-body2 text-grey-7">
+                  Secure payment processing
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <q-card class="step-card text-center">
+              <q-card-section>
+                <div class="step-number">5</div>
+                <q-icon name="local_shipping" size="48px" class="text-primary q-mb-md" />
+                <div class="text-h6 q-mb-sm">Get Your Magnets</div>
+                <div class="text-body2 text-grey-7">
+                  Shipped to you or pickup at market event
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <q-card class="step-card step-card-featured text-center">
+              <q-card-section>
+                <q-icon name="storefront" size="48px" class="text-positive q-mb-md" />
+                <div class="text-h6 q-mb-sm text-positive">
+                  Market Event?
+                </div>
+                <div class="text-body2 text-grey-7">
+                  <span v-if="hasActiveEvent">
+                    Active event! Choose pickup and pay at tent
+                  </span>
+                  <span v-else>
+                    At market events, pick up your order and pay locally
+                  </span>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+
+        <!-- Custom Products List -->
+        <div v-if="customProducts.length > 0" class="q-mb-xl">
+          <div class="text-h6 text-center q-mb-lg text-primary">
+            Our Custom Products
+          </div>
+          <div class="row q-col-gutter-md">
+            <div
+              v-for="product in customProducts"
+              :key="product.id"
+              class="col-12 col-md-6 col-lg-4"
+            >
+              <q-card class="product-card">
+                <q-card-section class="text-center">
+                  <div v-if="product.imageUrl" class="product-image-wrapper">
+                    <img
+                      :src="product.imageUrl"
+                      :alt="product.description"
+                      class="product-image"
+                    />
+                  </div>
+                  <div v-else class="product-image-placeholder">
+                    <q-icon name="image" size="64px" color="grey-4" />
+                  </div>
+                  <div class="text-h6 q-mt-md q-mb-sm">
+                    {{ product.description }}
+                  </div>
+                </q-card-section>
+                
+                <q-card-section v-if="product.detailedDescription" class="product-description">
+                  <div class="text-body2 text-grey-7">
+                    {{ product.detailedDescription }}
+                  </div>
+                </q-card-section>
+                
+                <q-card-section class="product-pricing">
+                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
+                  <div v-for="(price, qty) in product.pricing" :key="qty" class="text-body2 q-mb-xs">
+                    <strong>{{ qty }}x</strong> for
+                    <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                  </div>
+                </q-card-section>
+
+                <q-card-actions class="q-pa-md">
+                  <q-btn
+                    color="primary"
+                    label="Start Creating Magnets"
+                    icon="camera_alt"
+                    class="full-width"
+                    @click="goToUpload"
+                  />
+                </q-card-actions>
+              </q-card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pre-Designed Products Section -->
+      <div class="predesigned-products-section">
+        <div class="text-h4 text-center q-mb-lg text-primary">
+          Pre-Designed Magnets
+        </div>
+        <div class="text-body1 text-center text-grey-7 q-mb-lg">
+          Shop our collection of beautifully designed ready-made magnets
+        </div>
+        
+        <div class="text-center q-mb-xl">
+          <q-btn
+            color="secondary"
+            size="lg"
+            label="Shop Pre-Designed Magnets"
+            icon="shopping_bag"
+            @click="goToPreDesigned"
+            class="q-px-xl"
+          />
+        </div>
+
+        <!-- Note: Pre-designed products will be shown here when implemented -->
+        <div v-if="preDesignedProducts.length > 0" class="q-mb-xl">
+          <div class="row q-col-gutter-md">
+            <div
+              v-for="product in preDesignedProducts"
+              :key="product.id"
+              class="col-12 col-md-6 col-lg-4"
+            >
+              <q-card class="product-card">
+                <q-card-section class="text-center">
+                  <div v-if="product.imageUrl" class="product-image-wrapper">
+                    <img
+                      :src="product.imageUrl"
+                      :alt="product.description"
+                      class="product-image"
+                    />
+                  </div>
+                  <div v-else class="product-image-placeholder">
+                    <q-icon name="image" size="64px" color="grey-4" />
+                  </div>
+                  <div class="text-h6 q-mt-md q-mb-sm">
+                    {{ product.description }}
+                  </div>
+                </q-card-section>
+                
+                <q-card-section v-if="product.detailedDescription" class="product-description">
+                  <div class="text-body2 text-grey-7">
+                    {{ product.detailedDescription }}
+                  </div>
+                </q-card-section>
+                
+                <q-card-section class="product-pricing">
+                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
+                  <div v-for="(price, qty) in product.pricing" :key="qty" class="text-body2 q-mb-xs">
+                    <strong>{{ qty }}x</strong> for
+                    <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                  </div>
+                </q-card-section>
+
+                <q-card-actions class="q-pa-md">
+                  <q-btn
+                    color="secondary"
+                    label="Add to Cart"
+                    icon="add_shopping_cart"
+                    class="full-width"
+                    @click="addProductToCart(product)"
+                  />
+                </q-card-actions>
+              </q-card>
+            </div>
           </div>
         </div>
       </div>
@@ -236,11 +283,12 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
 import { useCart } from '../composables/useCart.js';
+import { marketEventService } from '../services/marketEventService.js';
 import { useQuasar } from 'quasar';
 
 export default {
@@ -377,6 +425,34 @@ export default {
       }
     };
 
+    // Separate products into custom and pre-designed
+    // For now, all products are custom. Pre-designed products will have a productType field
+    const customProducts = computed(() => {
+      return products.value.filter(
+        (p) => !p.productType || p.productType === 'custom'
+      );
+    });
+
+    const preDesignedProducts = computed(() => {
+      return products.value.filter((p) => p.productType === 'predesigned');
+    });
+
+    // Check if there's an active market event
+    const hasActiveEvent = computed(() => {
+      return marketEventService.getCheckedInEvent() !== null;
+    });
+
+    // Navigation function for pre-designed products
+    const goToPreDesigned = () => {
+      // TODO: Navigate to pre-designed products page when implemented
+      $q.notify({
+        type: 'info',
+        message: 'Coming soon!',
+        caption: 'Pre-designed magnets section coming soon',
+        position: 'top',
+      });
+    };
+
     // Check if user is already authenticated
     onMounted(() => {
       loadProducts();
@@ -408,11 +484,15 @@ export default {
       isAuthenticated,
       isAdmin,
       products,
+      customProducts,
+      preDesignedProducts,
+      hasActiveEvent,
       handleGoogleSignIn,
       goToOrdersList,
       goToMyOrders,
       goToUpload,
       addProductToCart,
+      goToPreDesigned,
     };
   },
 };
@@ -528,17 +608,55 @@ export default {
 }
 
 .landing-container {
-  max-width: 800px;
+  max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 40px 20px;
   background: white;
 }
 
-.landing-container {
-  max-width: 800px;
-  width: 100%;
+.custom-products-section,
+.predesigned-products-section {
+  margin-bottom: 60px;
 }
+
+.step-card {
+  height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  .step-number {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.step-card-featured {
+  border: 2px solid #4caf50;
+  
+  &:hover {
+    border-color: #2e7d32;
+  }
+}
+
 
 .logo-section {
   text-align: center;

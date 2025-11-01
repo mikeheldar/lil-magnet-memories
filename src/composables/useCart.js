@@ -36,19 +36,19 @@ export function useCart() {
   // Calculate price per unit based on quantity and pricing tiers
   const calculatePricePerUnit = (quantity, pricing) => {
     if (!pricing || Object.keys(pricing).length === 0) return 0;
-    
+
     // Sort pricing tiers by quantity (descending)
     const tiers = Object.entries(pricing)
       .map(([qty, price]) => ({ qty: parseInt(qty), price: parseFloat(price) }))
       .sort((a, b) => b.qty - a.qty);
-    
+
     // Find the best pricing tier for this quantity
     for (const tier of tiers) {
       if (quantity >= tier.qty) {
         return tier.price / tier.qty; // Price per unit
       }
     }
-    
+
     // If quantity is less than smallest tier, use smallest tier
     const smallestTier = tiers[tiers.length - 1];
     return smallestTier ? smallestTier.price / smallestTier.qty : 0;
@@ -57,17 +57,17 @@ export function useCart() {
   // Find the best pricing tier for display
   const getBestPricingTier = (quantity, pricing) => {
     if (!pricing || Object.keys(pricing).length === 0) return null;
-    
+
     const tiers = Object.entries(pricing)
       .map(([qty, price]) => ({ qty: parseInt(qty), price: parseFloat(price) }))
       .sort((a, b) => b.qty - a.qty);
-    
+
     for (const tier of tiers) {
       if (quantity >= tier.qty) {
         return tier.qty;
       }
     }
-    
+
     return tiers[tiers.length - 1]?.qty || null;
   };
 
@@ -81,7 +81,7 @@ export function useCart() {
       const newQuantity = cartItems.value[existingIndex].quantity + quantity;
       const pricePerUnit = calculatePricePerUnit(newQuantity, product.pricing);
       const pricingTier = getBestPricingTier(newQuantity, product.pricing);
-      
+
       cartItems.value[existingIndex] = {
         ...cartItems.value[existingIndex],
         quantity: newQuantity,
@@ -93,7 +93,7 @@ export function useCart() {
       // Add new item
       const pricePerUnit = calculatePricePerUnit(quantity, product.pricing);
       const pricingTier = getBestPricingTier(quantity, product.pricing);
-      
+
       cartItems.value.push({
         productId: product.id,
         productName: product.description,
@@ -119,9 +119,12 @@ export function useCart() {
 
     if (itemIndex >= 0) {
       const item = cartItems.value[itemIndex];
-      const pricePerUnit = calculatePricePerUnit(newQuantity, item.productPricing);
+      const pricePerUnit = calculatePricePerUnit(
+        newQuantity,
+        item.productPricing
+      );
       const pricingTier = getBestPricingTier(newQuantity, item.productPricing);
-      
+
       cartItems.value[itemIndex] = {
         ...item,
         quantity: newQuantity,
@@ -168,4 +171,3 @@ export function useCart() {
     getCartItem,
   };
 }
-

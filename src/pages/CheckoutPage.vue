@@ -5,7 +5,12 @@
         <div class="text-h4 q-mb-md">Checkout</div>
 
         <div v-if="cartItems.length === 0" class="text-center q-pa-xl">
-          <q-icon name="shopping_cart" size="64px" color="grey-4" class="q-mb-md" />
+          <q-icon
+            name="shopping_cart"
+            size="64px"
+            color="grey-4"
+            class="q-mb-md"
+          />
           <div class="text-h6 text-grey-6 q-mb-sm">Your cart is empty</div>
           <q-btn
             color="primary"
@@ -30,7 +35,10 @@
                     >
                       <q-item-section avatar>
                         <q-avatar size="60px" square v-if="item.productImage">
-                          <img :src="item.productImage" :alt="item.productName" />
+                          <img
+                            :src="item.productImage"
+                            :alt="item.productName"
+                          />
                         </q-avatar>
                         <q-avatar size="60px" square color="grey-3" v-else>
                           <q-icon name="image" size="24px" color="grey-6" />
@@ -39,8 +47,9 @@
                       <q-item-section>
                         <q-item-label>{{ item.productName }}</q-item-label>
                         <q-item-label caption>
-                          Quantity: {{ item.quantity }} ×
-                          ${{ item.pricePerUnit.toFixed(2) }}
+                          Quantity: {{ item.quantity }} × ${{
+                            item.pricePerUnit.toFixed(2)
+                          }}
                         </q-item-label>
                       </q-item-section>
                       <q-item-section side>
@@ -158,7 +167,8 @@
                   >
                     <q-icon name="info" class="q-mr-sm" />
                     You'll be able to collect your order at
-                    <strong>{{ checkedInEvent.name }}</strong>.
+                    <strong>{{ checkedInEvent.name }}</strong
+                    >.
                   </div>
                 </q-card-section>
               </q-card>
@@ -286,7 +296,7 @@ export default {
     // Check for active market event and check-in status
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
-      
+
       // Pre-fill customer info if user is authenticated
       const currentUser = authService.getCurrentUser();
       if (currentUser) {
@@ -320,7 +330,9 @@ export default {
           {
             label: 'Ship to Address',
             value: 'ship_to_address',
-            description: `Standard shipping - $${shippingCost.value.toFixed(2)}`,
+            description: `Standard shipping - $${shippingCost.value.toFixed(
+              2
+            )}`,
           },
         ];
       } else {
@@ -328,7 +340,9 @@ export default {
           {
             label: 'Ship to Address',
             value: 'ship_to_address',
-            description: `Standard shipping - $${shippingCost.value.toFixed(2)}`,
+            description: `Standard shipping - $${shippingCost.value.toFixed(
+              2
+            )}`,
             required: true,
           },
         ];
@@ -384,8 +398,11 @@ export default {
 
     // Check if order can be placed
     const canPlaceOrder = computed(() => {
-      if (!customerInfo.value.firstName || !customerInfo.value.lastName ||
-          !customerInfo.value.email) {
+      if (
+        !customerInfo.value.firstName ||
+        !customerInfo.value.lastName ||
+        !customerInfo.value.email
+      ) {
         return false;
       }
       if (!selectedShippingOption.value || !selectedPaymentOption.value) {
@@ -552,4 +569,3 @@ export default {
   min-height: 60vh;
 }
 </style>
-
