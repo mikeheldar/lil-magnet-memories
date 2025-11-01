@@ -19,7 +19,7 @@
           size="lg"
           icon="add"
           label="Create New Market Event"
-          @click="showCreateEventDialog = true"
+          @click="openCreateEventDialog"
           class="q-px-xl q-py-md"
         />
       </div>
@@ -150,7 +150,7 @@
                       Event Orders
                     </div>
                     <div class="row q-gutter-md">
-                      <div class="col-6">
+                      <div class="col-4">
                         <q-card flat bordered class="stat-card">
                           <q-card-section class="text-center">
                             <div class="text-h6 text-weight-bold text-primary">
@@ -162,7 +162,7 @@
                           </q-card-section>
                         </q-card>
                       </div>
-                      <div class="col-6">
+                      <div class="col-4">
                         <q-card flat bordered class="stat-card">
                           <q-card-section class="text-center">
                             <div class="text-h6 text-weight-bold text-primary">
@@ -170,6 +170,18 @@
                             </div>
                             <div class="text-caption text-grey-6">
                               Total Magnets
+                            </div>
+                          </q-card-section>
+                        </q-card>
+                      </div>
+                      <div class="col-4">
+                        <q-card flat bordered class="stat-card">
+                          <q-card-section class="text-center">
+                            <div class="text-h6 text-weight-bold text-primary">
+                              ${{ getEventRevenue(event.id).toFixed(2) }}
+                            </div>
+                            <div class="text-caption text-grey-6">
+                              Total Revenue
                             </div>
                           </q-card-section>
                         </q-card>
@@ -335,13 +347,39 @@ export default {
     const showDeleteDialog = ref(false);
     const eventToDelete = ref(null);
 
+    // Helper function to get next whole hour
+    const getNextWholeHour = () => {
+      const now = new Date();
+      now.setHours(now.getHours() + 1, 0, 0, 0); // Next hour, 00 minutes
+      return now;
+    };
+
+    // Format date for datetime-local input
+    const formatDateTimeLocal = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    // Initialize new event with default date/time
+    const initializeNewEvent = () => {
+      const startTime = getNextWholeHour();
+      const endTime = new Date(startTime);
+      endTime.setHours(endTime.getHours() + 3); // Default 3 hour event
+      
+      return {
+        name: '',
+        location: '',
+        startDateTime: formatDateTimeLocal(startTime),
+        endDateTime: formatDateTimeLocal(endTime),
+      };
+    };
+
     // New event form
-    const newEvent = ref({
-      name: '',
-      location: '',
-      startDateTime: '',
-      endDateTime: '',
-    });
+    const newEvent = ref(initializeNewEvent());
 
     // Format date and time for display
     const formatDateTime = (dateTimeString) => {
@@ -508,6 +546,14 @@ export default {
       }, 0);
     };
 
+    // Get total revenue for an event
+    const getEventRevenue = (eventId) => {
+      const eventOrders = getEventOrders(eventId);
+      return eventOrders.reduce((total, order) => {
+        return total + (order.totalAmount || 0);
+      }, 0);
+    };
+
     // Create new event
     const createEvent = async () => {
       if (
@@ -590,15 +636,16 @@ export default {
       }
     };
 
+    // Open create event dialog with fresh defaults
+    const openCreateEventDialog = () => {
+      newEvent.value = initializeNewEvent();
+      showCreateEventDialog.value = true;
+    };
+
     // Cancel create event
     const cancelCreateEvent = () => {
       showCreateEventDialog.value = false;
-      newEvent.value = {
-        name: '',
-        location: '',
-        startDateTime: '',
-        endDateTime: '',
-      };
+      newEvent.value = initializeNewEvent();
     };
 
     // Check in to event
@@ -789,6 +836,8 @@ export default {
       getEventStatusText,
       getEventOrders,
       getEventTotalMagnets,
+      getEventRevenue,
+      openCreateEventDialog,
       createEvent,
       cancelCreateEvent,
       checkInToEvent,
