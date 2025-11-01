@@ -272,10 +272,11 @@
         <q-card-actions align="right">
           <q-btn flat label="Cancel" @click="cancelCreateEvent" />
           <q-btn
+            type="submit"
             color="primary"
             label="Create Event"
-            @click="createEvent"
             :loading="creatingEvent"
+            @click.prevent="createEvent"
           />
         </q-card-actions>
       </q-card>
