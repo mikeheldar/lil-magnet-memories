@@ -39,60 +39,71 @@
       </q-card-section>
     </q-card>
 
-    <!-- Admin Email Management -->
+    <!-- User Role Management -->
     <q-card class="q-mb-md">
       <q-card-section>
         <div class="text-h6 q-mb-md">
-          <q-icon name="email" class="q-mr-sm" />
-          Admin Email Management
+          <q-icon name="people" class="q-mr-sm" />
+          User Role Management
         </div>
 
         <div class="q-mb-md">
-          <div class="text-weight-medium q-mb-sm">Current Admin Emails:</div>
-          <div v-if="adminEmails.length === 0" class="text-grey-6">
-            No admin emails configured
+          <div class="text-weight-medium q-mb-sm">Current Users:</div>
+          <div v-if="allUsers.length === 0" class="text-grey-6">
+            No users configured
           </div>
           <div v-else>
             <div
-              v-for="email in adminEmails"
-              :key="email"
+              v-for="user in allUsers"
+              :key="user.email"
               class="row items-center q-mb-sm"
             >
-              <q-chip color="primary" text-color="white" class="col">
-                {{ email }}
+              <q-chip 
+                :color="getRoleColor(user.role)" 
+                text-color="white" 
+                class="col"
+              >
+                {{ user.email }}
                 <q-icon
-                  v-if="email === currentUser?.email"
+                  v-if="user.email === currentUser?.email"
                   name="person"
                   size="xs"
                   class="q-ml-xs"
                 />
               </q-chip>
+              <q-chip 
+                :color="getRoleBadgeColor(user.role)" 
+                text-color="white" 
+                :icon="getRoleIcon(user.role)"
+              >
+                {{ getRoleLabel(user.role) }}
+              </q-chip>
               <q-btn
-                v-if="email !== currentUser?.email"
+                v-if="user.email !== currentUser?.email"
                 icon="close"
                 size="sm"
                 color="negative"
                 flat
                 round
-                @click="removeAdminEmail(email)"
+                @click="removeUserRole(user.email)"
                 class="q-ml-sm"
               >
-                <q-tooltip>Remove admin access</q-tooltip>
+                <q-tooltip>Remove user role</q-tooltip>
               </q-btn>
             </div>
           </div>
         </div>
 
-        <!-- Add New Admin Email -->
-        <q-form @submit="addAdminEmail" class="q-gutter-md">
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-8">
+        <!-- Add New User with Role -->
+        <q-form @submit="addUserRole" class="q-gutter-md">
+          <div class="row q-col-gutter-md q-mb-md">
+            <div class="col-12 col-md-5">
               <q-input
-                v-model="newAdminEmail"
-                label="Add New Admin Email"
+                v-model="newUserEmail"
+                label="User Email"
                 type="email"
                 filled
-                hint="Enter an email address to grant admin access"
+                hint="Enter an email address"
                 :rules="[
                   (val) => !!val || 'Email is required',
                   (val) => isValidEmail(val) || 'Please enter a valid email',
@@ -100,16 +111,92 @@
               />
             </div>
             <div class="col-12 col-md-4">
+              <q-select
+                v-model="newUserRole"
+                :options="roleOptions"
+                label="Select Role"
+                filled
+                emit-value
+                map-options
+              />
+            </div>
+            <div class="col-12 col-md-3">
               <q-btn
                 type="submit"
                 color="primary"
-                label="Add Admin"
+                label="Add User"
                 class="full-width"
-                :disable="!newAdminEmail || !isValidEmail(newAdminEmail)"
+                :disable="!newUserEmail || !isValidEmail(newUserEmail) || !newUserRole"
+                :loading="addingUser"
               />
             </div>
           </div>
         </q-form>
+
+        <!-- Legacy Admin Email Management (for backward compatibility) -->
+        <q-expansion-item
+          label="Legacy Admin Emails"
+          caption="Traditional email-based admin list"
+          icon="info"
+          class="q-mt-md"
+        >
+          <div class="q-mb-md">
+            <div class="text-weight-medium q-mb-sm">Legacy Admin Emails:</div>
+            <div v-if="adminEmails.length === 0" class="text-grey-6">
+              No admin emails configured
+            </div>
+            <div v-else>
+              <div
+                v-for="email in adminEmails"
+                :key="email"
+                class="row items-center q-mb-sm"
+              >
+                <q-chip color="primary" text-color="white" class="col">
+                  {{ email }}
+                </q-chip>
+                <q-btn
+                  v-if="email !== currentUser?.email"
+                  icon="close"
+                  size="sm"
+                  color="negative"
+                  flat
+                  round
+                  @click="removeAdminEmail(email)"
+                  class="q-ml-sm"
+                >
+                  <q-tooltip>Remove admin access</q-tooltip>
+                </q-btn>
+              </div>
+            </div>
+          </div>
+
+          <q-form @submit="addAdminEmail" class="q-gutter-md">
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-md-8">
+                <q-input
+                  v-model="newAdminEmail"
+                  label="Add New Admin Email"
+                  type="email"
+                  filled
+                  hint="Enter an email address to grant admin access"
+                  :rules="[
+                    (val) => !!val || 'Email is required',
+                    (val) => isValidEmail(val) || 'Please enter a valid email',
+                  ]"
+                />
+              </div>
+              <div class="col-12 col-md-4">
+                <q-btn
+                  type="submit"
+                  color="primary"
+                  label="Add Admin"
+                  class="full-width"
+                  :disable="!newAdminEmail || !isValidEmail(newAdminEmail)"
+                />
+              </div>
+            </div>
+          </q-form>
+        </q-expansion-item>
       </q-card-section>
     </q-card>
 
@@ -185,6 +272,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { authService } from '../services/authService';
 import { ADMIN_CONFIG } from '../config/admin';
+import { USERS_CONFIG, USER_ROLES } from '../config/users';
 import { useQuasar } from 'quasar';
 
 export default {
@@ -195,10 +283,72 @@ export default {
     const isAdmin = ref(false);
     const newAdminEmail = ref('');
     const adminEmails = ref([]);
+    const newUserEmail = ref('');
+    const newUserRole = ref('');
+    const addingUser = ref(false);
+    const allUsers = ref([]);
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(email);
+    };
+
+    const roleOptions = [
+      { label: 'Customer', value: USER_ROLES.CUSTOMER },
+      { label: 'Operator', value: USER_ROLES.OPERATOR },
+      { label: 'Admin', value: USER_ROLES.ADMIN },
+    ];
+
+    const getRoleLabel = (role) => {
+      switch (role) {
+        case USER_ROLES.ADMIN:
+          return 'Admin';
+        case USER_ROLES.OPERATOR:
+          return 'Operator';
+        case USER_ROLES.CUSTOMER:
+          return 'Customer';
+        default:
+          return 'Customer';
+      }
+    };
+
+    const getRoleIcon = (role) => {
+      switch (role) {
+        case USER_ROLES.ADMIN:
+          return 'admin_panel_settings';
+        case USER_ROLES.OPERATOR:
+          return 'work';
+        case USER_ROLES.CUSTOMER:
+          return 'person';
+        default:
+          return 'person';
+      }
+    };
+
+    const getRoleColor = (role) => {
+      switch (role) {
+        case USER_ROLES.ADMIN:
+          return 'purple';
+        case USER_ROLES.OPERATOR:
+          return 'blue';
+        case USER_ROLES.CUSTOMER:
+          return 'grey-7';
+        default:
+          return 'grey-7';
+      }
+    };
+
+    const getRoleBadgeColor = (role) => {
+      switch (role) {
+        case USER_ROLES.ADMIN:
+          return 'purple-7';
+        case USER_ROLES.OPERATOR:
+          return 'blue-7';
+        case USER_ROLES.CUSTOMER:
+          return 'grey-6';
+        default:
+          return 'grey-6';
+      }
     };
 
     const addAdminEmail = async () => {
@@ -268,7 +418,98 @@ export default {
       });
     };
 
-    onMounted(() => {
+    const addUserRole = async () => {
+      if (!newUserEmail.value || !isValidEmail(newUserEmail.value)) {
+        $q.notify({
+          type: 'negative',
+          message: 'Please enter a valid email address',
+          position: 'top',
+        });
+        return;
+      }
+
+      if (!newUserRole.value) {
+        $q.notify({
+          type: 'negative',
+          message: 'Please select a role',
+          position: 'top',
+        });
+        return;
+      }
+
+      addingUser.value = true;
+      try {
+        await USERS_CONFIG.setUserRole(newUserEmail.value, newUserRole.value);
+        await loadAllUsers();
+
+        $q.notify({
+          type: 'positive',
+          message: 'User added successfully',
+          caption: `${newUserEmail.value} is now a ${getRoleLabel(newUserRole.value)}`,
+          position: 'top',
+        });
+
+        newUserEmail.value = '';
+        newUserRole.value = '';
+      } catch (error) {
+        console.error('Error adding user:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to add user',
+          caption: error.message || 'An error occurred',
+          position: 'top',
+        });
+      } finally {
+        addingUser.value = false;
+      }
+    };
+
+    const removeUserRole = async (email) => {
+      $q.dialog({
+        title: 'Remove User Role',
+        message: `Are you sure you want to remove the role from ${email}?`,
+        cancel: true,
+        persistent: true,
+        ok: {
+          label: 'Remove',
+          color: 'negative',
+        },
+      }).onOk(async () => {
+        try {
+          await USERS_CONFIG.removeUserRole(email);
+          await loadAllUsers();
+
+          $q.notify({
+            type: 'positive',
+            message: 'User role removed successfully',
+            caption: `${email} is now a regular customer`,
+            position: 'top',
+          });
+        } catch (error) {
+          console.error('Error removing user role:', error);
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to remove user role',
+            caption: error.message || 'An error occurred',
+            position: 'top',
+          });
+        }
+      });
+    };
+
+    const loadAllUsers = async () => {
+      try {
+        const rolesConfig = await USERS_CONFIG.getAllUsersWithRoles();
+        allUsers.value = Object.entries(rolesConfig).map(([email, role]) => ({
+          email,
+          role,
+        }));
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    };
+
+    onMounted(async () => {
       // Get current user info
       const user = authService.getCurrentUser();
       currentUser.value = user;
@@ -276,6 +517,9 @@ export default {
 
       // Load admin emails
       adminEmails.value = ADMIN_CONFIG.getAdminEmails();
+      
+      // Load all users with roles
+      await loadAllUsers();
     });
 
     return {
@@ -286,6 +530,17 @@ export default {
       isValidEmail,
       addAdminEmail,
       removeAdminEmail,
+      newUserEmail,
+      newUserRole,
+      addingUser,
+      allUsers,
+      roleOptions,
+      getRoleLabel,
+      getRoleIcon,
+      getRoleColor,
+      getRoleBadgeColor,
+      addUserRole,
+      removeUserRole,
     };
   },
 };

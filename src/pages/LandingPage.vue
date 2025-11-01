@@ -64,7 +64,10 @@
               <q-btn
                 v-for="(image, index) in easelImages"
                 :key="index"
-                :class="['carousel-dot', { 'dot-active': index === easelImageIndex }]"
+                :class="[
+                  'carousel-dot',
+                  { 'dot-active': index === easelImageIndex },
+                ]"
                 round
                 dense
                 size="sm"

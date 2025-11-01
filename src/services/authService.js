@@ -6,6 +6,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { ADMIN_CONFIG } from '../config/admin';
+import { USERS_CONFIG, USER_ROLES } from '../config/users';
 
 class AuthService {
   constructor() {
@@ -116,13 +117,14 @@ class AuthService {
     return !!this.user;
   }
 
-  // Check if current user is an admin
+  // Check if current user is an admin (synchronous for backward compatibility)
   isAdmin() {
     if (!this.user || !this.user.email) {
       console.log('isAdmin: No user or email');
       return false;
     }
-    // Always check the current admin list (not cached)
+    // For now, check only the email-based admin list for backward compatibility
+    // Full role system can be added later with async methods
     const isAdmin = ADMIN_CONFIG.isAdminEmail(this.user.email);
     console.log('isAdmin check:', {
       userEmail: this.user.email,
@@ -130,6 +132,39 @@ class AuthService {
       isAdmin: isAdmin,
     });
     return isAdmin;
+  }
+  
+  // Check if current user is an operator (includes admins)
+  async isOperator() {
+    if (!this.user || !this.user.email) {
+      return false;
+    }
+    const isAdminUser = this.isAdmin();
+    if (isAdminUser) {
+      return true; // Admins are also operators
+    }
+    const userRole = await USERS_CONFIG.getUserRole(this.user.email);
+    return userRole === USER_ROLES.OPERATOR;
+  }
+  
+  // Get current user's role
+  async getUserRole() {
+    if (!this.user || !this.user.email) {
+      return null;
+    }
+    // Check if admin first
+    if (this.isAdmin()) {
+      return USER_ROLES.ADMIN;
+    }
+    return await USERS_CONFIG.getUserRole(this.user.email);
+  }
+  
+  // Check if a specific email is admin
+  async isAdminEmailAsync(email) {
+    const isAdminEmail = ADMIN_CONFIG.isAdminEmail(email);
+    if (isAdminEmail) return true;
+    const userRole = await USERS_CONFIG.getUserRole(email);
+    return userRole === USER_ROLES.ADMIN;
   }
 
   // Refresh admin status and notify listeners
