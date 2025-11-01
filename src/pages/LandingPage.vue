@@ -42,9 +42,10 @@
         <div class="hero-images">
           <div class="easel-container">
             <img
-              src="/magnetboard.png"
+              :src="currentEaselImage"
               alt="Custom photo magnets on easel display"
               class="easel-image"
+              :key="easelImageIndex"
             />
           </div>
         </div>
@@ -130,64 +131,69 @@
 
         <!-- Custom Products List -->
         <div v-if="customProducts.length > 0" class="q-mb-xl">
-          <div class="text-h6 text-center q-mb-lg text-primary">
-            Our Custom Products
+          <div class="custom-products-header text-center q-mb-lg">
+            <div class="text-h5 text-weight-bold text-primary q-mb-xs">
+              Our Custom Products
+            </div>
+            <div class="text-subtitle1 text-grey-6">
+              Choose your style and create personalized magnets
+            </div>
           </div>
-          <div class="row q-col-gutter-md">
+          <div class="q-col-gutter-md">
             <div
               v-for="product in customProducts"
               :key="product.id"
-              class="col-12 col-md-6 col-lg-4"
+              class="q-mb-md"
             >
-              <q-card class="product-card">
-                <q-card-section class="text-center">
-                  <div v-if="product.imageUrl" class="product-image-wrapper">
-                    <img
-                      :src="product.imageUrl"
-                      :alt="product.description"
-                      class="product-image"
+              <q-card class="product-card-row">
+                <q-card-section class="row items-center q-gutter-md">
+                  <!-- Product Image (Left Side) -->
+                  <div class="col-auto">
+                    <div v-if="product.imageUrl" class="product-image-wrapper-small">
+                      <img
+                        :src="product.imageUrl"
+                        :alt="product.description"
+                        class="product-image-small"
+                      />
+                    </div>
+                    <div v-else class="product-image-placeholder-small">
+                      <q-icon name="image" size="48px" color="grey-4" />
+                    </div>
+                  </div>
+
+                  <!-- Product Info (Right Side) -->
+                  <div class="col">
+                    <div class="text-h6 q-mb-sm">
+                      {{ product.description }}
+                    </div>
+                    
+                    <div
+                      v-if="product.detailedDescription"
+                      class="text-body2 text-grey-7 q-mb-sm"
+                    >
+                      {{ product.detailedDescription }}
+                    </div>
+
+                    <div class="product-pricing-inline q-mb-md">
+                      <div class="text-caption text-grey-8 q-mb-xs">Pricing:</div>
+                      <div
+                        v-for="(price, qty) in product.pricing"
+                        :key="qty"
+                        class="text-body2 q-mb-xs"
+                      >
+                        <strong>{{ qty }}x</strong> for
+                        <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                      </div>
+                    </div>
+
+                    <q-btn
+                      color="primary"
+                      label="Start Creating Magnets"
+                      icon="camera_alt"
+                      @click="goToUpload"
                     />
                   </div>
-                  <div v-else class="product-image-placeholder">
-                    <q-icon name="image" size="64px" color="grey-4" />
-                  </div>
-                  <div class="text-h6 q-mt-md q-mb-sm">
-                    {{ product.description }}
-                  </div>
                 </q-card-section>
-
-                <q-card-section
-                  v-if="product.detailedDescription"
-                  class="product-description"
-                >
-                  <div class="text-body2 text-grey-7">
-                    {{ product.detailedDescription }}
-                  </div>
-                </q-card-section>
-
-                <q-card-section class="product-pricing">
-                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                  <div
-                    v-for="(price, qty) in product.pricing"
-                    :key="qty"
-                    class="text-body2 q-mb-xs"
-                  >
-                    <strong>{{ qty }}x</strong> for
-                    <strong class="text-primary"
-                      >${{ price.toFixed(2) }}</strong
-                    >
-                  </div>
-                </q-card-section>
-
-                <q-card-actions class="q-pa-md">
-                  <q-btn
-                    color="primary"
-                    label="Start Creating Magnets"
-                    icon="camera_alt"
-                    class="full-width"
-                    @click="goToUpload"
-                  />
-                </q-card-actions>
               </q-card>
             </div>
           </div>
@@ -299,6 +305,16 @@ export default {
     const isAdmin = ref(false);
     const products = ref([]);
     const { addToCart } = useCart();
+
+    // Easel image rotation
+    const easelImages = [
+      '/magnetboard.png',
+      '/easel-gallery/image1.jpg',
+      '/easel-gallery/image2.jpg',
+      '/easel-gallery/image3.jpg',
+    ];
+    const easelImageIndex = ref(0);
+    const currentEaselImage = computed(() => easelImages[easelImageIndex.value]);
 
     const handleGoogleSignIn = async () => {
       signingIn.value = true;
@@ -475,6 +491,11 @@ export default {
           // Don't auto-redirect - let user choose where to go
         }
       });
+
+      // Rotate easel images every 5 seconds
+      setInterval(() => {
+        easelImageIndex.value = (easelImageIndex.value + 1) % easelImages.length;
+      }, 5000);
     });
 
     return {
@@ -485,6 +506,8 @@ export default {
       customProducts,
       preDesignedProducts,
       hasActiveEvent,
+      currentEaselImage,
+      easelImageIndex,
       handleGoogleSignIn,
       goToOrdersList,
       goToMyOrders,
@@ -597,11 +620,19 @@ export default {
   object-fit: contain;
   border-radius: 20px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  transition: all 0.4s ease;
+  transition: opacity 0.8s ease, transform 0.4s ease;
 
   &:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.easel-container {
+  position: relative;
+  
+  img {
+    display: block;
   }
 }
 
@@ -741,6 +772,12 @@ export default {
   margin-bottom: 3rem;
 }
 
+.custom-products-header {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+}
+
 .product-card {
   height: 100%;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -750,6 +787,17 @@ export default {
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.product-card-row {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -769,6 +817,21 @@ export default {
   border-radius: 8px;
 }
 
+.product-image-wrapper-small {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.product-image-small {
+  max-width: 120px;
+  max-height: 120px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
 .product-image-placeholder {
   display: flex;
   justify-content: center;
@@ -776,6 +839,16 @@ export default {
   width: 180px;
   height: 180px;
   margin: 0 auto 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.product-image-placeholder-small {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 120px;
+  height: 120px;
   background: #f5f5f5;
   border-radius: 8px;
 }
@@ -789,6 +862,12 @@ export default {
 
 .product-pricing {
   background: #f9f9f9;
+}
+
+.product-pricing-inline {
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
 }
 
 // Mobile responsive adjustments
