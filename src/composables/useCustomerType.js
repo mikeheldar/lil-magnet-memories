@@ -13,7 +13,9 @@ export const CUSTOMER_TYPES = {
 const STORAGE_KEY = 'lil-magnet-customer-type';
 
 // Initialize customer type from localStorage or default to online
-const customerType = ref(localStorage.getItem(STORAGE_KEY) || CUSTOMER_TYPES.ONLINE);
+const customerType = ref(
+  localStorage.getItem(STORAGE_KEY) || CUSTOMER_TYPES.ONLINE
+);
 
 class CustomerTypeService {
   setCustomerType(type) {
@@ -65,7 +67,7 @@ export function useCustomerType() {
     const notMarketCustomer = !customerTypeService.isMarketCustomer();
     const notAdmin = !customerTypeService.isAdminCustomer();
     const onMobile = isMobileDevice();
-    
+
     return hasActiveEvent && notMarketCustomer && notAdmin && onMobile;
   });
 
@@ -78,4 +80,3 @@ export function useCustomerType() {
     isAdminCustomer: () => customerTypeService.isAdminCustomer(),
   };
 }
-

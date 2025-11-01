@@ -297,13 +297,7 @@
         <q-card-section class="row items-center q-pb-none">
           <div class="text-h6">Market Event Active!</div>
           <q-space />
-          <q-btn 
-            icon="close" 
-            flat 
-            round 
-            dense 
-            @click="goToOnlineOrder" 
-          />
+          <q-btn icon="close" flat round dense @click="goToOnlineOrder" />
         </q-card-section>
 
         <q-card-section>
@@ -355,10 +349,7 @@ export default {
     const isAdmin = ref(false);
     const products = ref([]);
     const { addToCart } = useCart();
-    const { 
-      shouldShowMarketEventPrompt, 
-      setCustomerType
-    } = useCustomerType();
+    const { shouldShowMarketEventPrompt, setCustomerType } = useCustomerType();
 
     // Easel image rotation
     const easelImages = [
@@ -550,7 +541,7 @@ export default {
     // Check if user is already authenticated
     onMounted(() => {
       loadProducts();
-      
+
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
       if (currentAuthUser) {
@@ -560,7 +551,7 @@ export default {
         );
         isAuthenticated.value = true;
         isAdmin.value = authService.isAdmin();
-        
+
         // Set customer type based on admin status
         if (isAdmin.value) {
           setCustomerType('admin');
@@ -574,7 +565,7 @@ export default {
         if (user) {
           console.log('User is already signed in:', user.email);
           console.log('Is admin:', isAdmin.value);
-          
+
           // Set customer type based on admin status
           if (isAdmin.value) {
             setCustomerType('admin');

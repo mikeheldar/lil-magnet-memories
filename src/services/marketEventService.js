@@ -33,34 +33,48 @@ class MarketEventService {
   }
 
   // Check if user is checked into an event
+  // This checks the event object's checkedIn property directly
   isUserCheckedIn(eventId) {
     try {
-      const stored = localStorage.getItem(`checkedIn_${eventId}`);
-      return stored === 'true';
+      const events = this.getEvents();
+      const event = events.find((e) => e.id === eventId);
+      return event ? event.checkedIn === true : false;
     } catch (error) {
       console.error('Error checking check-in status:', error);
       return false;
     }
   }
 
-  // Set user as checked into an event
+  // Set user as checked into an event (legacy method, kept for compatibility)
   checkInToEvent(eventId) {
     try {
-      localStorage.setItem(`checkedIn_${eventId}`, 'true');
-      localStorage.setItem(`checkedInAt_${eventId}`, new Date().toISOString());
-      return true;
+      const events = this.getEvents();
+      const event = events.find((e) => e.id === eventId);
+      if (event) {
+        event.checkedIn = true;
+        event.checkedInAt = new Date().toISOString();
+        localStorage.setItem('marketEvents', JSON.stringify(events));
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Error checking in:', error);
       return false;
     }
   }
 
-  // Check out of an event
+  // Check out of an event (legacy method, kept for compatibility)
   checkOutOfEvent(eventId) {
     try {
-      localStorage.removeItem(`checkedIn_${eventId}`);
-      localStorage.removeItem(`checkedInAt_${eventId}`);
-      return true;
+      const events = this.getEvents();
+      const event = events.find((e) => e.id === eventId);
+      if (event) {
+        event.checkedOut = true;
+        event.checkedOutAt = new Date().toISOString();
+        localStorage.setItem('marketEvents', JSON.stringify(events));
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Error checking out:', error);
       return false;
@@ -75,12 +89,19 @@ class MarketEventService {
   }
 
   // Get the event the user is currently checked into (if any)
+  // An event is "live" only if:
+  // 1. It's within the start and end time window, AND
+  // 2. An admin has checked into it (checkedIn === true), AND
+  // 3. The admin has NOT checked out yet (checkedOut !== true)
   getCheckedInEvent() {
     const activeEvent = this.getActiveEvent();
     if (!activeEvent) return null;
-    if (this.isUserCheckedIn(activeEvent.id)) {
+    
+    // Check if admin is checked in and not checked out
+    if (activeEvent.checkedIn === true && activeEvent.checkedOut !== true) {
       return activeEvent;
     }
+    
     return null;
   }
 }
