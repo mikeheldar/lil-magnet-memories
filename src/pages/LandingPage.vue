@@ -69,19 +69,14 @@
               class="easel-image"
               :key="easelImageIndex"
             />
-            <!-- Image carousel dots -->
-            <div class="easel-carousel-dots">
-              <q-btn
+            <!-- Image carousel dots (only show if more than 1 image) -->
+            <div v-if="easelImages.length > 1" class="easel-carousel-dots">
+              <button
                 v-for="(image, index) in easelImages"
                 :key="index"
-                :class="[
-                  'carousel-dot',
-                  { 'dot-active': index === easelImageIndex },
-                ]"
-                round
-                dense
-                size="sm"
+                :class="['carousel-dot', { 'dot-active': index === easelImageIndex }]"
                 @click="goToImage(index)"
+                aria-label="Go to image"
               />
             </div>
           </div>
@@ -397,12 +392,10 @@ export default {
       },
     });
 
-    // Easel image rotation
+    // Easel image rotation - only include images that exist
     const easelImages = [
       '/magnetboard.png',
-      '/easel-gallery/image1.jpg',
-      '/easel-gallery/image2.jpg',
-      '/easel-gallery/image3.jpg',
+      // Add more images to /easel-gallery/ folder as needed
     ];
     const easelImageIndex = ref(0);
     const currentEaselImage = computed(
@@ -666,11 +659,13 @@ export default {
         showMarketEventDialog.value = true;
       }
 
-      // Rotate easel images every 5 seconds
-      setInterval(() => {
-        easelImageIndex.value =
-          (easelImageIndex.value + 1) % easelImages.length;
-      }, 5000);
+      // Rotate easel images every 5 seconds (only if more than 1 image)
+      if (easelImages.length > 1) {
+        setInterval(() => {
+          easelImageIndex.value =
+            (easelImageIndex.value + 1) % easelImages.length;
+        }, 5000);
+      }
     });
 
     return {
@@ -848,17 +843,21 @@ export default {
 }
 
 .carousel-dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.5);
   border: 2px solid rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
   cursor: pointer;
+  padding: 0;
+  margin: 0;
 
   &:hover {
     background: rgba(255, 255, 255, 0.8);
-    transform: scale(1.2);
+    transform: scale(1.1);
   }
 
   &.dot-active {

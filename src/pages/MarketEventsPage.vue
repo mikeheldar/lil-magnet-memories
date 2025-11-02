@@ -369,7 +369,7 @@ export default {
       const startTime = getNextWholeHour();
       const endTime = new Date(startTime);
       endTime.setHours(endTime.getHours() + 3); // Default 3 hour event
-      
+
       return {
         name: '',
         location: '',
