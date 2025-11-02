@@ -817,32 +817,29 @@ export default {
 .easel-container {
   max-width: 500px;
   width: 100%;
+  height: 600px;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.easel-image {
-  width: 100%;
-  height: auto;
-  max-height: 600px;
-  object-fit: contain;
-  border-radius: 20px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  transition: opacity 0.8s ease, transform 0.4s ease;
-
-  &:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  }
-}
-
-.easel-container {
   position: relative;
 
   img {
     display: block;
   }
+}
+
+.easel-image {
+  width: 100%;
+  max-height: 600px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.5s ease;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 // Carousel dots
@@ -1138,6 +1135,7 @@ export default {
 
   .easel-container {
     max-width: 350px;
+    height: 400px;
   }
 
   .easel-image {
