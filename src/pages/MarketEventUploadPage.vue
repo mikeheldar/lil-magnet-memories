@@ -208,9 +208,20 @@
                   <q-icon name="style" class="q-mr-sm" />
                   Total Magnets: {{ totalMagnets }}
                 </div>
-                <div v-if="totalCost > 0" class="text-h6 text-center text-primary q-mt-sm">
-                  <q-icon name="attach_money" class="q-mr-sm" />
-                  Total Cost: ${{ totalCost.toFixed(2) }}
+                <div v-if="totalCost.total > 0" class="q-mt-sm">
+                  <div v-if="totalCost.breakdown.length > 0" class="text-center q-mb-xs">
+                    <div
+                      v-for="(item, index) in totalCost.breakdown"
+                      :key="index"
+                      class="text-caption text-grey-7"
+                    >
+                      {{ item.count }} × ({{ item.qty }} for ${{ (item.price / item.count).toFixed(2) }})
+                    </div>
+                  </div>
+                  <div class="text-h6 text-center text-primary q-mt-xs">
+                    <q-icon name="attach_money" class="q-mr-sm" />
+                    Total Cost: ${{ totalCost.total.toFixed(2) }}
+                  </div>
                 </div>
               </q-card>
             </div>
@@ -417,29 +428,41 @@ export default {
 
     const totalCost = computed(() => {
       if (!selectedProduct.value || !selectedProduct.value.pricing || totalMagnets.value === 0) {
-        return 0;
+        return { total: 0, breakdown: [] };
       }
 
       const pricing = selectedProduct.value.pricing;
       const totalQty = totalMagnets.value;
 
-      // Find the best pricing tier
+      // Sort tiers from largest to smallest
       const sortedTiers = Object.keys(pricing)
         .map(Number)
         .sort((a, b) => b - a);
 
-      // Find the highest tier that applies
+      let remainingQty = totalQty;
+      let totalCost = 0;
+      const breakdown = [];
+
+      // Use a greedy algorithm to find the best combination
       for (const tier of sortedTiers) {
-        if (totalQty >= tier) {
-          const pricePerUnit = pricing[tier] / tier;
-          return pricePerUnit * totalQty;
+        const count = Math.floor(remainingQty / tier);
+        if (count > 0) {
+          const tierPrice = pricing[tier] * count;
+          totalCost += tierPrice;
+          breakdown.push({ qty: tier, count, price: tierPrice });
+          remainingQty -= tier * count;
         }
       }
 
-      // If no tier matches, use the lowest tier
-      const lowestTier = Math.min(...Object.keys(pricing).map(Number));
-      const pricePerUnit = pricing[lowestTier] / lowestTier;
-      return pricePerUnit * totalQty;
+      // Handle any remaining items with the smallest tier
+      if (remainingQty > 0 && sortedTiers.length > 0) {
+        const smallestTier = sortedTiers[sortedTiers.length - 1];
+        const remainingPrice = (pricing[smallestTier] / smallestTier) * remainingQty;
+        totalCost += remainingPrice;
+        breakdown.push({ qty: remainingQty, count: 1, price: remainingPrice });
+      }
+
+      return { total: totalCost, breakdown };
     });
 
     const canSubmit = computed(() => {
@@ -839,3 +862,4 @@ export default {
   }
 }
 </style>
+
