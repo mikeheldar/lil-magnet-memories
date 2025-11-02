@@ -74,7 +74,10 @@
               <button
                 v-for="(image, index) in easelImages"
                 :key="index"
-                :class="['carousel-dot', { 'dot-active': index === easelImageIndex }]"
+                :class="[
+                  'carousel-dot',
+                  { 'dot-active': index === easelImageIndex },
+                ]"
                 @click="goToImage(index)"
                 aria-label="Go to image"
               />
@@ -392,10 +395,21 @@ export default {
       },
     });
 
-    // Easel image rotation - only include images that exist
+    // Easel image rotation
     const easelImages = [
       '/magnetboard.png',
-      // Add more images to /easel-gallery/ folder as needed
+      '/easel-gallery/0042F3E9-FEC0-4DE4-8AEB-2F3E0AA3ED01_1_105_c.jpeg',
+      '/easel-gallery/1763CFC3-43BD-42A1-863F-48321A24C345_1_105_c.jpeg',
+      '/easel-gallery/2BFB5E47-D6E7-4455-B35B-349E465B2DE8_1_105_c.jpeg',
+      '/easel-gallery/3BA43977-727C-42F1-B2CB-1038CEF467B5_1_105_c.jpeg',
+      '/easel-gallery/44CB83DA-24D2-4FA2-8C23-972607D3D8B0_1_105_c.jpeg',
+      '/easel-gallery/49965978-B29E-4978-A194-94A9FE037F63_1_105_c.jpeg',
+      '/easel-gallery/4DEB76BA-4D82-4894-A5BE-AB981B5A7F52_1_105_c.jpeg',
+      '/easel-gallery/9E45E770-52EE-4A8A-B8E0-F0BF583C2B79_1_105_c.jpeg',
+      '/easel-gallery/A34A11CE-C98C-43B7-83CF-7A372D1ECDA5_1_105_c.jpeg',
+      '/easel-gallery/A8D8FCA6-9449-4759-9F96-0CCA3D972047_1_102_o.jpeg',
+      '/easel-gallery/B8861A01-AF23-42A5-B84A-C7B1A17A7990_4_5005_c.jpeg',
+      '/easel-gallery/C374BFFD-1749-4450-89D4-A87D1561EAF4_1_105_c.jpeg',
     ];
     const easelImageIndex = ref(0);
     const currentEaselImage = computed(
