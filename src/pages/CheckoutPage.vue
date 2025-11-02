@@ -50,7 +50,7 @@
                                 />
                               </div>
                             </div>
-                            
+
                             <!-- Photo details -->
                             <div class="text-caption text-grey-7 q-mb-xs">
                               <div
@@ -64,7 +64,8 @@
                             <!-- Cost Breakdown -->
                             <div
                               v-if="
-                                item.costBreakdown && item.costBreakdown.length > 0
+                                item.costBreakdown &&
+                                item.costBreakdown.length > 0
                               "
                               class="text-caption text-grey-7 q-mb-xs"
                             >
@@ -72,8 +73,11 @@
                                 v-for="(breakdown, index) in item.costBreakdown"
                                 :key="index"
                               >
-                                {{ breakdown.count }} × ({{ breakdown.qty }} for ${{
-                                  (breakdown.price / breakdown.count).toFixed(2)
+                                {{ breakdown.count }} × ({{ breakdown.qty }} for
+                                ${{
+                                  (breakdown.price / breakdown.count).toFixed(
+                                    2
+                                  )
                                 }})
                               </div>
                             </div>
@@ -83,7 +87,8 @@
                               v-if="item.specialInstructions"
                               class="text-caption text-grey-7 q-mt-xs"
                             >
-                              <strong>Notes:</strong> {{ item.specialInstructions }}
+                              <strong>Notes:</strong>
+                              {{ item.specialInstructions }}
                             </div>
                           </q-item-label>
                         </q-item-section>
@@ -92,7 +97,9 @@
                             ${{ item.totalCost?.total?.toFixed(2) || '0.00' }}
                           </q-item-label>
                           <q-item-label caption class="text-right">
-                            {{ item.quantity }} magnet{{ item.quantity > 1 ? 's' : '' }}
+                            {{ item.quantity }} magnet{{
+                              item.quantity > 1 ? 's' : ''
+                            }}
                           </q-item-label>
                         </q-item-section>
                       </q-item>
@@ -233,14 +240,21 @@
                     class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
                   >
                     <div class="row items-center q-mb-sm">
-                      <q-icon name="event" class="q-mr-sm" color="primary" size="24px" />
+                      <q-icon
+                        name="event"
+                        class="q-mr-sm"
+                        color="primary"
+                        size="24px"
+                      />
                       <div class="text-weight-medium">
                         Market Event Pickup Available
                       </div>
                     </div>
                     <div class="text-body2">
-                      Since you're in the area, you can pick up your order at <strong>{{ checkedInEvent.name }}</strong> for free! 
-                      Just let us know you're at the event and we'll have your magnets ready.
+                      Since you're in the area, you can pick up your order at
+                      <strong>{{ checkedInEvent.name }}</strong> for free! Just
+                      let us know you're at the event and we'll have your
+                      magnets ready.
                     </div>
                   </div>
                 </q-card-section>
@@ -382,12 +396,18 @@ export default {
       }
 
       // Pre-fill customer info from custom upload form data if available
-      const customUploadItem = cartItems.value.find(item => item.isCustomUpload && item.formData);
+      const customUploadItem = cartItems.value.find(
+        (item) => item.isCustomUpload && item.formData
+      );
       if (customUploadItem?.formData) {
-        customerInfo.value.firstName = customUploadItem.formData.firstName || customerInfo.value.firstName;
-        customerInfo.value.lastName = customUploadItem.formData.lastName || customerInfo.value.lastName;
-        customerInfo.value.email = customUploadItem.formData.email || customerInfo.value.email;
-        customerInfo.value.phone = customUploadItem.formData.phone || customerInfo.value.phone;
+        customerInfo.value.firstName =
+          customUploadItem.formData.firstName || customerInfo.value.firstName;
+        customerInfo.value.lastName =
+          customUploadItem.formData.lastName || customerInfo.value.lastName;
+        customerInfo.value.email =
+          customUploadItem.formData.email || customerInfo.value.email;
+        customerInfo.value.phone =
+          customUploadItem.formData.phone || customerInfo.value.phone;
       }
 
       // Auto-select shipping option based on check-in status

@@ -353,7 +353,7 @@ export default {
       photoURL: null,
       email: null,
     });
-    
+
     // Create a ref that gets updated periodically to trigger reactivity
     const marketEventCheckTrigger = ref(0);
     let marketEventCheckInterval = null;
