@@ -246,144 +246,14 @@
                 :disable="!canSubmit"
                 class="q-px-xl"
               >
-                <q-icon name="send" class="q-mr-sm" />
-                Submit Photos for Magnet Creation
+                <q-icon name="add_shopping_cart" class="q-mr-sm" />
+                Add to Cart
               </q-btn>
             </div>
           </q-form>
         </q-card-section>
       </q-card>
 
-      <!-- Order Summary Dialog -->
-      <q-dialog v-model="showOrderSummary" persistent>
-        <q-card style="min-width: 400px">
-          <q-card-section class="row items-center">
-            <q-avatar icon="assignment" color="primary" text-color="white" />
-            <span class="q-ml-sm text-h6">Order Summary</span>
-          </q-card-section>
-
-          <q-card-section>
-            <div class="q-mb-md">
-              <div class="text-h6 text-primary">Order #{{ orderNumber }}</div>
-              <div class="text-caption text-grey-6">
-                {{ formatDate(new Date()) }}
-              </div>
-            </div>
-
-            <div class="q-mb-md">
-              <div class="text-subtitle1 text-weight-medium">
-                Customer Information
-              </div>
-              <div>
-                <strong>Name:</strong> {{ formData.firstName }}
-                {{ formData.lastName }}
-              </div>
-              <div><strong>Email:</strong> {{ formData.email }}</div>
-              <div v-if="formData.phone">
-                <strong>Phone:</strong> {{ formData.phone }}
-              </div>
-              <div v-if="formData.specialInstructions">
-                <strong>Special Instructions:</strong>
-                <div class="text-grey-7 q-mt-xs">
-                  {{ formData.specialInstructions }}
-                </div>
-              </div>
-            </div>
-
-            <div class="q-mb-md">
-              <div class="text-subtitle1 text-weight-medium">Order Details</div>
-              <div class="row q-col-gutter-sm">
-                <div
-                  v-for="(file, index) in selectedFiles"
-                  :key="index"
-                  class="col-6"
-                >
-                  <q-img
-                    :src="getFilePreview(file)"
-                    style="height: 60px"
-                    class="rounded-borders q-mb-xs"
-                  />
-                  <div class="text-caption">{{ file.name }}</div>
-                  <div class="text-caption text-primary">
-                    <q-icon name="style" size="12px" class="q-mr-xs" />
-                    {{ fileQuantities[index] }} magnet{{
-                      fileQuantities[index] > 1 ? 's' : ''
-                    }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <q-separator class="q-mb-md" />
-
-            <div class="text-center">
-              <div class="text-h6 text-primary">
-                <q-icon name="style" class="q-mr-sm" />
-                Total: {{ totalMagnets }} Magnets
-              </div>
-            </div>
-          </q-card-section>
-
-          <q-card-actions align="right">
-            <q-btn
-              flat
-              label="Cancel"
-              color="grey"
-              @click="showOrderSummary = false"
-            />
-            <q-btn
-              label="Confirm Order"
-              color="primary"
-              @click="confirmOrder"
-            />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-
-      <!-- Information Card -->
-      <q-card class="q-mt-md q-pa-md bg-grey-1">
-        <q-card-section>
-          <div class="text-h6 text-weight-medium q-mb-sm text-primary">
-            <q-icon name="info" class="q-mr-sm" />
-            What Happens Next?
-          </div>
-          <q-list dense>
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="check_circle" color="positive" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  >We'll review your photos and contact you within 24
-                  hours</q-item-label
-                >
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="check_circle" color="positive" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  >We'll provide a quote and timeline for your custom
-                  magnets</q-item-label
-                >
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="check_circle" color="positive" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  >Once approved, we'll create your beautiful custom
-                  magnets!</q-item-label
-                >
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-      </q-card>
     </div>
   </q-page>
 </template>
@@ -394,12 +264,14 @@ import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
+import { useCart } from '../composables/useCart.js';
 
 export default {
   name: 'OnlineOrderPage',
   setup() {
     const $q = useQuasar();
     const router = useRouter();
+    const { addCustomUploadToCart } = useCart();
 
     const formData = ref({
       firstName: '',
@@ -412,8 +284,6 @@ export default {
     const selectedFiles = ref([]);
     const fileQuantities = ref([]);
     const submitting = ref(false);
-    const showOrderSummary = ref(false);
-    const orderNumber = ref('');
     const products = ref([]);
     const selectedProduct = ref(null);
 
@@ -511,123 +381,53 @@ export default {
       fileQuantities.value.splice(index, 1);
     };
 
-    const generateOrderNumber = () => {
-      const now = new Date();
-      const year = now.getFullYear().toString().slice(-2);
-      const month = (now.getMonth() + 1).toString().padStart(2, '0');
-      const day = now.getDate().toString().padStart(2, '0');
-      const time = now.getTime().toString().slice(-4);
-      return `LMM-${year}${month}${day}-${time}`;
-    };
-
-    const formatDate = (date) => {
-      return new Date(date).toLocaleString();
-    };
-
-    const confirmOrder = async () => {
-      showOrderSummary.value = false;
-      submitting.value = true;
-
-      try {
-        // Prepare customer data
-        const customerData = {
+    const onSubmit = () => {
+      // Add to cart instead of submitting order
+      const photos = selectedFiles.value.map((file, index) => ({
+        name: file.name,
+        preview: getFilePreview(file),
+        quantity: fileQuantities.value[index],
+      }));
+      
+      addCustomUploadToCart({
+        productName: selectedProduct.value?.description || 'Custom Photo Magnets',
+        photos: photos,
+        quantities: fileQuantities.value,
+        specialInstructions: formData.value.specialInstructions,
+        totalMagnets: totalMagnets.value,
+        totalCost: totalCost.value,
+        costBreakdown: totalCost.value.breakdown,
+        pricing: selectedProduct.value?.pricing || {},
+        formData: {
           firstName: formData.value.firstName,
           lastName: formData.value.lastName,
           email: formData.value.email,
           phone: formData.value.phone,
-          specialInstructions: formData.value.specialInstructions,
-          photos: selectedFiles.value,
-          quantities: fileQuantities.value,
-          orderNumber: orderNumber.value,
-          totalMagnets: totalMagnets.value,
-          userId: currentUser.value?.uid || null,
-        };
+        },
+      });
 
-        console.log('Submitting order with userId:', customerData.userId);
-        console.log('Current user:', currentUser.value);
-        console.log('Customer data:', customerData);
+      // Show success notification and redirect to cart
+      $q.notify({
+        type: 'positive',
+        message: 'Added to cart!',
+        caption: `${totalMagnets.value} magnets added to your cart`,
+        position: 'top',
+        timeout: 3000,
+      });
 
-        let savedOrder = null;
+      // Reset form
+      formData.value = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        specialInstructions: '',
+      };
+      selectedFiles.value = [];
+      fileQuantities.value = [];
 
-        // Save to Firebase
-        try {
-          console.log('Attempting to save order to Firebase...');
-          savedOrder = await firebaseService.saveOrder(customerData);
-          console.log('Order saved to Firebase successfully:', savedOrder);
-        } catch (error) {
-          console.error('Firebase save failed:', error);
-          throw error; // Re-throw to show error to user
-        }
-
-        // Prepare order data for thank you page
-        const orderData = {
-          orderNumber: orderNumber.value,
-          customerName: `${formData.value.firstName} ${formData.value.lastName}`,
-          customerEmail: formData.value.email,
-          totalMagnets: totalMagnets.value,
-        };
-
-        // Store in localStorage as backup
-        localStorage.setItem('lastOrderData', JSON.stringify(orderData));
-
-        // Reset form
-        formData.value = {
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          specialInstructions: '',
-        };
-        selectedFiles.value = [];
-        fileQuantities.value = [];
-
-        // Show success notification
-        try {
-          if (typeof $q !== 'undefined' && $q.notify) {
-            $q.notify({
-              type: 'positive',
-              message: 'Order submitted successfully!',
-              caption:
-                'Your order has been saved and we will contact you soon.',
-              position: 'top',
-            });
-          }
-        } catch (notifyError) {
-          console.log('Notification error (non-critical):', notifyError);
-        }
-
-        // Redirect to thank you page with order details
-        try {
-          router.push({
-            path: '/thank-you',
-            query: orderData,
-          });
-        } catch (routerError) {
-          console.error('Router error:', routerError);
-          // Fallback: redirect using window.location
-          const queryString = new URLSearchParams(orderData).toString();
-          window.location.href = `/thank-you?${queryString}`;
-        }
-      } catch (error) {
-        console.error('Order submission error:', error);
-        // Only show notification if $q is available
-        if (typeof $q !== 'undefined' && $q.notify) {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to submit order',
-            caption: 'Please try again or contact us directly.',
-            position: 'top',
-          });
-        }
-      } finally {
-        submitting.value = false;
-      }
-    };
-
-    const onSubmit = () => {
-      // Generate order number and show summary dialog
-      orderNumber.value = generateOrderNumber();
-      showOrderSummary.value = true;
+      // Navigate to cart
+      router.push('/cart');
     };
 
     // Authentication state
@@ -819,8 +619,6 @@ export default {
       canSubmit,
       totalMagnets,
       totalCost,
-      showOrderSummary,
-      orderNumber,
       isAuthenticated,
       currentUser,
       signingIn,
@@ -831,9 +629,6 @@ export default {
       increaseQuantity,
       decreaseQuantity,
       removeFile,
-      generateOrderNumber,
-      formatDate,
-      confirmOrder,
       onSubmit,
       handleGoogleSignIn,
     };

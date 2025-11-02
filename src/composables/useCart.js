@@ -73,7 +73,7 @@ export function useCart() {
 
   const addToCart = (product, quantity = 1) => {
     const existingIndex = cartItems.value.findIndex(
-      (item) => item.productId === product.id
+      (item) => item.productId === product.id && !item.isCustomUpload
     );
 
     if (existingIndex >= 0) {
@@ -105,6 +105,22 @@ export function useCart() {
         productPricing: product.pricing, // Store full pricing structure for recalculation
       });
     }
+  };
+
+  const addCustomUploadToCart = (uploadData) => {
+    // Add custom upload item with photos
+    cartItems.value.push({
+      isCustomUpload: true,
+      productId: `custom-upload-${Date.now()}`, // Unique ID for custom uploads
+      productName: uploadData.productName || 'Custom Photo Magnets',
+      photos: uploadData.photos,
+      photoQuantities: uploadData.quantities,
+      specialInstructions: uploadData.specialInstructions,
+      quantity: uploadData.totalMagnets,
+      totalCost: uploadData.totalCost,
+      costBreakdown: uploadData.costBreakdown,
+      pricing: uploadData.pricing,
+    });
   };
 
   const updateQuantity = (productId, newQuantity) => {
@@ -153,7 +169,13 @@ export function useCart() {
   });
 
   const cartSubtotal = computed(() => {
-    return cartItems.value.reduce((total, item) => total + item.totalPrice, 0);
+    return cartItems.value.reduce((total, item) => {
+      // Handle both regular products and custom uploads
+      if (item.isCustomUpload) {
+        return total + (item.totalCost?.total || 0);
+      }
+      return total + (item.totalPrice || 0);
+    }, 0);
   });
 
   const getCartItem = (productId) => {
@@ -165,6 +187,7 @@ export function useCart() {
     cartItemCount,
     cartSubtotal,
     addToCart,
+    addCustomUploadToCart,
     updateQuantity,
     removeFromCart,
     clearCart,
