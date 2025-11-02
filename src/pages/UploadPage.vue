@@ -203,10 +203,14 @@
 
             <!-- Order Summary -->
             <div v-if="totalMagnets > 0" class="q-mb-md">
-              <q-card class="bg-primary text-white q-pa-md">
-                <div class="text-h6 text-center">
+              <q-card class="q-pa-md">
+                <div class="text-h6 text-center text-primary">
                   <q-icon name="style" class="q-mr-sm" />
                   Total Magnets: {{ totalMagnets }}
+                </div>
+                <div v-if="totalCost > 0" class="text-h6 text-center text-primary q-mt-sm">
+                  <q-icon name="attach_money" class="q-mr-sm" />
+                  Total Cost: ${{ totalCost.toFixed(2) }}
                 </div>
               </q-card>
             </div>
@@ -399,6 +403,8 @@ export default {
     const submitting = ref(false);
     const showOrderSummary = ref(false);
     const orderNumber = ref('');
+    const products = ref([]);
+    const selectedProduct = ref(null);
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -407,6 +413,33 @@ export default {
 
     const totalMagnets = computed(() => {
       return fileQuantities.value.reduce((sum, qty) => sum + qty, 0);
+    });
+
+    const totalCost = computed(() => {
+      if (!selectedProduct.value || !selectedProduct.value.pricing || totalMagnets.value === 0) {
+        return 0;
+      }
+
+      const pricing = selectedProduct.value.pricing;
+      const totalQty = totalMagnets.value;
+
+      // Find the best pricing tier
+      const sortedTiers = Object.keys(pricing)
+        .map(Number)
+        .sort((a, b) => b - a);
+
+      // Find the highest tier that applies
+      for (const tier of sortedTiers) {
+        if (totalQty >= tier) {
+          const pricePerUnit = pricing[tier] / tier;
+          return pricePerUnit * totalQty;
+        }
+      }
+
+      // If no tier matches, use the lowest tier
+      const lowestTier = Math.min(...Object.keys(pricing).map(Number));
+      const pricePerUnit = pricing[lowestTier] / lowestTier;
+      return pricePerUnit * totalQty;
     });
 
     const canSubmit = computed(() => {
@@ -711,6 +744,22 @@ export default {
       }
     };
 
+    const loadProducts = async () => {
+      try {
+        const productsData = await firebaseService.getProducts();
+        products.value = productsData || [];
+        // Select the first custom product by default
+        if (products.value.length > 0) {
+          const customProduct = products.value.find(p => !p.productType || p.productType === 'custom');
+          if (customProduct) {
+            selectedProduct.value = customProduct;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    };
+
     onMounted(() => {
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
@@ -734,6 +783,9 @@ export default {
           fillFormWithUserData(user);
         }
       });
+
+      // Load products
+      loadProducts();
     });
 
     return {
@@ -743,6 +795,7 @@ export default {
       submitting,
       canSubmit,
       totalMagnets,
+      totalCost,
       showOrderSummary,
       orderNumber,
       isAuthenticated,
