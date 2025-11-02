@@ -292,28 +292,56 @@
 
                 <!-- Payment Options -->
                 <q-card-section v-if="selectedShippingOption">
-                  <div class="text-h6 q-mb-md">Payment</div>
-                  <q-option-group
-                    v-model="selectedPaymentOption"
-                    :options="paymentOptions"
-                    color="primary"
-                  />
+                  <div class="text-h6 q-mb-md">Payment Method</div>
+                  <div class="q-gutter-sm">
+                    <q-radio
+                      v-for="option in paymentOptions"
+                      :key="option.value"
+                      v-model="selectedPaymentOption"
+                      :val="option.value"
+                      :label="option.label"
+                      color="primary"
+                    >
+                      <template v-slot:label>
+                        <div class="row items-center q-gutter-sm">
+                          <q-icon :name="getPaymentIcon(option.value)" size="24px" />
+                          <div>
+                            <div class="text-weight-medium">{{ option.label }}</div>
+                            <div class="text-caption text-grey-7">{{ option.description }}</div>
+                          </div>
+                        </div>
+                      </template>
+                    </q-radio>
+                  </div>
                 </q-card-section>
 
-                <!-- Payment Form (if paying online) -->
+                <!-- Square Payment Form (Apple Pay, Google Pay, Credit Card) -->
                 <q-card-section
-                  v-if="selectedPaymentOption === 'online'"
+                  v-if="['apple_pay', 'google_pay', 'square_card'].includes(selectedPaymentOption)"
                   class="q-pt-none"
                 >
                   <div class="text-caption text-grey-7 q-mb-sm">
-                    Payment will be processed securely
+                    Payment will be processed securely via Square
                   </div>
-                  <!-- Square payment form will go here -->
+                  <!-- Square payment form container -->
                   <div id="square-payment-form" class="q-mt-md">
                     <div class="text-body2 text-grey-6">
-                      Payment integration coming soon
+                      <q-spinner size="24px" class="q-mr-sm" />
+                      Loading secure payment form...
                     </div>
                   </div>
+                </q-card-section>
+
+                <!-- PayPal Payment Form -->
+                <q-card-section
+                  v-if="selectedPaymentOption === 'paypal'"
+                  class="q-pt-none"
+                >
+                  <div class="text-caption text-grey-7 q-mb-sm">
+                    You will be redirected to PayPal to complete your payment
+                  </div>
+                  <!-- PayPal button container -->
+                  <div id="paypal-button-container" class="q-mt-md"></div>
                 </q-card-section>
 
                 <q-card-actions vertical class="q-pa-md">
@@ -464,23 +492,61 @@ export default {
       ) {
         return [
           {
-            label: 'Pay Online Now',
-            value: 'online',
-            description: 'Pay securely with Square',
+            label: 'Apple Pay',
+            value: 'apple_pay',
+            description: 'Fast and secure payment',
+            icon: 'apple',
+          },
+          {
+            label: 'Google Pay',
+            value: 'google_pay',
+            description: 'Quick checkout',
+            icon: 'google',
+          },
+          {
+            label: 'Credit Card',
+            value: 'square_card',
+            description: 'Pay with Visa, Mastercard, etc.',
+            icon: 'credit_card',
+          },
+          {
+            label: 'PayPal',
+            value: 'paypal',
+            description: 'Pay with your PayPal account',
+            icon: 'paypal',
           },
           {
             label: 'Pay at Pop-up Station',
             value: 'pay_at_event',
             description: 'Pay when you collect your order',
+            icon: 'atm',
           },
         ];
       } else {
         return [
           {
-            label: 'Pay Online',
-            value: 'online',
-            description: 'Pay securely with Square',
-            required: true,
+            label: 'Apple Pay',
+            value: 'apple_pay',
+            description: 'Fast and secure payment',
+            icon: 'apple',
+          },
+          {
+            label: 'Google Pay',
+            value: 'google_pay',
+            description: 'Quick checkout',
+            icon: 'google',
+          },
+          {
+            label: 'Credit Card',
+            value: 'square_card',
+            description: 'Pay with Visa, Mastercard, etc.',
+            icon: 'credit_card',
+          },
+          {
+            label: 'PayPal',
+            value: 'paypal',
+            description: 'Pay with your PayPal account',
+            icon: 'paypal',
           },
         ];
       }
@@ -527,6 +593,24 @@ export default {
       const day = now.getDate().toString().padStart(2, '0');
       const time = now.getTime().toString().slice(-4);
       return `LMM-${year}${month}${day}-${time}`;
+    };
+
+    // Helper function to get payment icon
+    const getPaymentIcon = (paymentType) => {
+      switch (paymentType) {
+        case 'apple_pay':
+          return 'apple';
+        case 'google_pay':
+          return 'account_balance_wallet';
+        case 'square_card':
+          return 'credit_card';
+        case 'paypal':
+          return 'account_balance_wallet';
+        case 'pay_at_event':
+          return 'atm';
+        default:
+          return 'payment';
+      }
     };
 
     const placeOrder = async () => {
@@ -654,6 +738,7 @@ export default {
       submitting,
       checkedInEvent,
       placeOrder,
+      getPaymentIcon,
     };
   },
 };
@@ -669,3 +754,4 @@ export default {
   min-height: 60vh;
 }
 </style>
+
