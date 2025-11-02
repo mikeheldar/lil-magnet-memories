@@ -5,7 +5,12 @@
         <div class="text-h4 q-mb-md">Shopping Cart</div>
 
         <div v-if="cartItems.length === 0" class="text-center q-pa-xl">
-          <q-icon name="shopping_cart" size="64px" color="grey-4" class="q-mb-md" />
+          <q-icon
+            name="shopping_cart"
+            size="64px"
+            color="grey-4"
+            class="q-mb-md"
+          />
           <div class="text-h6 text-grey-6 q-mb-sm">Your cart is empty</div>
           <div class="text-body2 text-grey-6 q-mb-lg">
             Add some products to get started!
@@ -25,7 +30,9 @@
                 <!-- Custom Upload Item -->
                 <q-item v-if="item.isCustomUpload" class="cart-item">
                   <q-item-section>
-                    <q-item-label class="text-h6">{{ item.productName }}</q-item-label>
+                    <q-item-label class="text-h6">{{
+                      item.productName
+                    }}</q-item-label>
                     <q-item-label caption>
                       <div class="q-mt-sm">
                         <!-- Photo Previews -->
@@ -42,7 +49,7 @@
                             />
                           </div>
                         </div>
-                        
+
                         <!-- Photo names and quantities -->
                         <div class="text-caption text-grey-7 q-mb-xs">
                           <div
@@ -54,17 +61,27 @@
                         </div>
 
                         <!-- Cost Breakdown -->
-                        <div v-if="item.costBreakdown && item.costBreakdown.length > 0" class="text-caption text-grey-7 q-mb-xs">
+                        <div
+                          v-if="
+                            item.costBreakdown && item.costBreakdown.length > 0
+                          "
+                          class="text-caption text-grey-7 q-mb-xs"
+                        >
                           <div
                             v-for="(breakdown, index) in item.costBreakdown"
                             :key="index"
                           >
-                            {{ breakdown.count }} × ({{ breakdown.qty }} for ${{ (breakdown.price / breakdown.count).toFixed(2) }})
+                            {{ breakdown.count }} × ({{ breakdown.qty }} for ${{
+                              (breakdown.price / breakdown.count).toFixed(2)
+                            }})
                           </div>
                         </div>
 
                         <!-- Special Instructions -->
-                        <div v-if="item.specialInstructions" class="text-caption text-grey-7 q-mt-xs">
+                        <div
+                          v-if="item.specialInstructions"
+                          class="text-caption text-grey-7 q-mt-xs"
+                        >
                           <strong>Notes:</strong> {{ item.specialInstructions }}
                         </div>
                       </div>
@@ -76,7 +93,9 @@
                       ${{ item.totalCost?.total?.toFixed(2) || '0.00' }}
                     </div>
                     <div class="text-caption text-grey-6 q-mb-xs">
-                      {{ item.quantity }} magnet{{ item.quantity > 1 ? 's' : '' }}
+                      {{ item.quantity }} magnet{{
+                        item.quantity > 1 ? 's' : ''
+                      }}
                     </div>
                     <q-btn
                       flat
@@ -101,7 +120,9 @@
                   </q-item-section>
 
                   <q-item-section>
-                    <q-item-label class="text-h6">{{ item.productName }}</q-item-label>
+                    <q-item-label class="text-h6">{{
+                      item.productName
+                    }}</q-item-label>
                     <q-item-label caption>
                       <div v-if="item.pricingTier && item.pricingTier > 1">
                         {{ item.pricingTier }}x pricing tier
@@ -121,7 +142,9 @@
                         dense
                         filled
                         style="width: 80px"
-                        @update:model-value="updateQuantity(item.productId, $event)"
+                        @update:model-value="
+                          updateQuantity(item.productId, $event)
+                        "
                       />
                       <div class="text-h6 text-primary">
                         ${{ item.totalPrice.toFixed(2) }}
@@ -182,12 +205,8 @@ export default {
   name: 'CartPage',
   setup() {
     const router = useRouter();
-    const {
-      cartItems,
-      cartSubtotal,
-      updateQuantity,
-      removeFromCart,
-    } = useCart();
+    const { cartItems, cartSubtotal, updateQuantity, removeFromCart } =
+      useCart();
 
     const goToCheckout = () => {
       router.push('/checkout');
@@ -213,4 +232,3 @@ export default {
   min-height: 60vh;
 }
 </style>
-

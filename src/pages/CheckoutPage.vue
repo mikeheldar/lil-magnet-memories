@@ -28,36 +28,103 @@
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Order Summary</div>
                   <q-list>
-                    <q-item
-                      v-for="item in cartItems"
-                      :key="item.productId"
-                      class="q-px-none"
-                    >
-                      <q-item-section avatar>
-                        <q-avatar size="60px" square v-if="item.productImage">
-                          <img
-                            :src="item.productImage"
-                            :alt="item.productName"
-                          />
-                        </q-avatar>
-                        <q-avatar size="60px" square color="grey-3" v-else>
-                          <q-icon name="image" size="24px" color="grey-6" />
-                        </q-avatar>
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label>{{ item.productName }}</q-item-label>
-                        <q-item-label caption>
-                          Quantity: {{ item.quantity }} × ${{
-                            item.pricePerUnit.toFixed(2)
-                          }}
-                        </q-item-label>
-                      </q-item-section>
-                      <q-item-section side>
-                        <q-item-label class="text-primary">
-                          ${{ item.totalPrice.toFixed(2) }}
-                        </q-item-label>
-                      </q-item-section>
-                    </q-item>
+                    <template v-for="item in cartItems" :key="item.productId">
+                      <!-- Custom Upload Item -->
+                      <q-item v-if="item.isCustomUpload" class="q-px-none">
+                        <q-item-section>
+                          <q-item-label class="text-h6">{{
+                            item.productName
+                          }}</q-item-label>
+                          <q-item-label caption>
+                            <!-- Photo Previews -->
+                            <div class="row q-col-gutter-xs q-mt-sm q-mb-sm">
+                              <div
+                                v-for="(photo, photoIndex) in item.photos"
+                                :key="photoIndex"
+                                class="col-auto"
+                              >
+                                <q-img
+                                  :src="photo.preview"
+                                  style="height: 60px; width: 60px"
+                                  class="rounded-borders"
+                                />
+                              </div>
+                            </div>
+                            
+                            <!-- Photo details -->
+                            <div class="text-caption text-grey-7 q-mb-xs">
+                              <div
+                                v-for="(photo, photoIndex) in item.photos"
+                                :key="photoIndex"
+                              >
+                                {{ photo.name }} ({{ photo.quantity }}x)
+                              </div>
+                            </div>
+
+                            <!-- Cost Breakdown -->
+                            <div
+                              v-if="
+                                item.costBreakdown && item.costBreakdown.length > 0
+                              "
+                              class="text-caption text-grey-7 q-mb-xs"
+                            >
+                              <div
+                                v-for="(breakdown, index) in item.costBreakdown"
+                                :key="index"
+                              >
+                                {{ breakdown.count }} × ({{ breakdown.qty }} for ${{
+                                  (breakdown.price / breakdown.count).toFixed(2)
+                                }})
+                              </div>
+                            </div>
+
+                            <!-- Special Instructions -->
+                            <div
+                              v-if="item.specialInstructions"
+                              class="text-caption text-grey-7 q-mt-xs"
+                            >
+                              <strong>Notes:</strong> {{ item.specialInstructions }}
+                            </div>
+                          </q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                          <q-item-label class="text-primary">
+                            ${{ item.totalCost?.total?.toFixed(2) || '0.00' }}
+                          </q-item-label>
+                          <q-item-label caption class="text-right">
+                            {{ item.quantity }} magnet{{ item.quantity > 1 ? 's' : '' }}
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+
+                      <!-- Regular Product Item -->
+                      <q-item v-else class="q-px-none">
+                        <q-item-section avatar>
+                          <q-avatar size="60px" square v-if="item.productImage">
+                            <img
+                              :src="item.productImage"
+                              :alt="item.productName"
+                            />
+                          </q-avatar>
+                          <q-avatar size="60px" square color="grey-3" v-else>
+                            <q-icon name="image" size="24px" color="grey-6" />
+                          </q-avatar>
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label>{{ item.productName }}</q-item-label>
+                          <q-item-label caption>
+                            Quantity: {{ item.quantity }} × ${{
+                              item.pricePerUnit.toFixed(2)
+                            }}
+                          </q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                          <q-item-label class="text-primary">
+                            ${{ item.totalPrice.toFixed(2) }}
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </template>
                   </q-list>
                 </q-card-section>
               </q-card>
@@ -165,10 +232,16 @@
                     "
                     class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
                   >
-                    <q-icon name="info" class="q-mr-sm" />
-                    You'll be able to collect your order at
-                    <strong>{{ checkedInEvent.name }}</strong
-                    >.
+                    <div class="row items-center q-mb-sm">
+                      <q-icon name="event" class="q-mr-sm" color="primary" size="24px" />
+                      <div class="text-weight-medium">
+                        Market Event Pickup Available
+                      </div>
+                    </div>
+                    <div class="text-body2">
+                      Since you're in the area, you can pick up your order at <strong>{{ checkedInEvent.name }}</strong> for free! 
+                      Just let us know you're at the event and we'll have your magnets ready.
+                    </div>
                   </div>
                 </q-card-section>
               </q-card>
@@ -301,6 +374,20 @@ export default {
       const currentUser = authService.getCurrentUser();
       if (currentUser) {
         customerInfo.value.email = currentUser.email || '';
+        if (currentUser.displayName) {
+          const nameParts = currentUser.displayName.split(' ');
+          customerInfo.value.firstName = nameParts[0] || '';
+          customerInfo.value.lastName = nameParts.slice(1).join(' ') || '';
+        }
+      }
+
+      // Pre-fill customer info from custom upload form data if available
+      const customUploadItem = cartItems.value.find(item => item.isCustomUpload && item.formData);
+      if (customUploadItem?.formData) {
+        customerInfo.value.firstName = customUploadItem.formData.firstName || customerInfo.value.firstName;
+        customerInfo.value.lastName = customUploadItem.formData.lastName || customerInfo.value.lastName;
+        customerInfo.value.email = customUploadItem.formData.email || customerInfo.value.email;
+        customerInfo.value.phone = customUploadItem.formData.phone || customerInfo.value.phone;
       }
 
       // Auto-select shipping option based on check-in status
@@ -378,13 +465,6 @@ export default {
         ];
       }
     });
-
-    // Auto-select payment option when shipping changes
-    const watchShippingOption = () => {
-      if (paymentOptions.value.length > 0) {
-        selectedPaymentOption.value = paymentOptions.value[0].value;
-      }
-    };
 
     // Calculate order total
     const orderTotal = computed(() => {

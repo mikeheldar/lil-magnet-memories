@@ -3,9 +3,7 @@
     <div class="col-12 col-md-8 col-lg-6 q-pa-md">
       <!-- Header -->
       <div class="text-center q-mb-lg">
-        <div class="text-h5 text-grey-7">
-          Online Order Magnet Creation
-        </div>
+        <div class="text-h5 text-grey-7">Online Order Magnet Creation</div>
         <div class="text-body1 text-grey-6 q-mt-sm">
           Create custom magnets for home delivery
         </div>
@@ -209,13 +207,18 @@
                   Total Magnets: {{ totalMagnets }}
                 </div>
                 <div v-if="totalCost.total > 0" class="q-mt-sm">
-                  <div v-if="totalCost.breakdown.length > 0" class="text-center q-mb-xs">
+                  <div
+                    v-if="totalCost.breakdown.length > 0"
+                    class="text-center q-mb-xs"
+                  >
                     <div
                       v-for="(item, index) in totalCost.breakdown"
                       :key="index"
                       class="text-caption text-grey-7"
                     >
-                      {{ item.count }} × ({{ item.qty }} for ${{ (item.price / item.count).toFixed(2) }})
+                      {{ item.count }} × ({{ item.qty }} for ${{
+                        (item.price / item.count).toFixed(2)
+                      }})
                     </div>
                   </div>
                   <div class="text-h6 text-center text-primary q-mt-xs">
@@ -253,7 +256,6 @@
           </q-form>
         </q-card-section>
       </q-card>
-
     </div>
   </q-page>
 </template>
@@ -297,7 +299,11 @@ export default {
     });
 
     const totalCost = computed(() => {
-      if (!selectedProduct.value || !selectedProduct.value.pricing || totalMagnets.value === 0) {
+      if (
+        !selectedProduct.value ||
+        !selectedProduct.value.pricing ||
+        totalMagnets.value === 0
+      ) {
         return { total: 0, breakdown: [] };
       }
 
@@ -327,7 +333,8 @@ export default {
       // Handle any remaining items with the smallest tier
       if (remainingQty > 0 && sortedTiers.length > 0) {
         const smallestTier = sortedTiers[sortedTiers.length - 1];
-        const remainingPrice = (pricing[smallestTier] / smallestTier) * remainingQty;
+        const remainingPrice =
+          (pricing[smallestTier] / smallestTier) * remainingQty;
         totalCost += remainingPrice;
         breakdown.push({ qty: remainingQty, count: 1, price: remainingPrice });
       }
@@ -388,9 +395,10 @@ export default {
         preview: getFilePreview(file),
         quantity: fileQuantities.value[index],
       }));
-      
+
       addCustomUploadToCart({
-        productName: selectedProduct.value?.description || 'Custom Photo Magnets',
+        productName:
+          selectedProduct.value?.description || 'Custom Photo Magnets',
         photos: photos,
         quantities: fileQuantities.value,
         specialInstructions: formData.value.specialInstructions,
@@ -573,7 +581,9 @@ export default {
         products.value = productsData || [];
         // Select the first custom product by default
         if (products.value.length > 0) {
-          const customProduct = products.value.find(p => !p.productType || p.productType === 'custom');
+          const customProduct = products.value.find(
+            (p) => !p.productType || p.productType === 'custom'
+          );
           if (customProduct) {
             selectedProduct.value = customProduct;
           }
@@ -657,4 +667,3 @@ export default {
   }
 }
 </style>
-

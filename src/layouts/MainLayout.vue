@@ -330,7 +330,7 @@
 </template>
 
 <script>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
@@ -353,6 +353,10 @@ export default {
       photoURL: null,
       email: null,
     });
+    
+    // Create a ref that gets updated periodically to trigger reactivity
+    const marketEventCheckTrigger = ref(0);
+    let marketEventCheckInterval = null;
 
     const pageTitle = computed(() => {
       const baseTitle = (() => {
@@ -390,9 +394,11 @@ export default {
     });
 
     const isTestEnvironment = computed(() => config.isTest);
-    
-    // Check if customer is at a market event
+
+    // Check if customer is at a market event (periodically refresh)
     const isAtMarketEvent = computed(() => {
+      // This computed will re-run when marketEventCheckTrigger changes
+      marketEventCheckTrigger.value;
       return marketEventService.getCheckedInEvent() !== null;
     });
 
@@ -506,6 +512,20 @@ export default {
           isAdmin.value = false;
         }
       });
+
+      // Set up periodic check for market event status
+      // This will automatically hide the indicator when events end
+      marketEventCheckInterval = setInterval(() => {
+        marketEventCheckTrigger.value++;
+      }, 60000); // Check every minute
+    });
+
+    onUnmounted(() => {
+      // Clean up interval when component unmounts
+      if (marketEventCheckInterval) {
+        clearInterval(marketEventCheckInterval);
+        marketEventCheckInterval = null;
+      }
     });
 
     return {
