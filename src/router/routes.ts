@@ -7,6 +7,10 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: () => import('pages/LandingPage.vue') },
       { path: 'upload', component: () => import('pages/UploadPage.vue') },
+      { path: 'market-event-upload', component: () => import('pages/MarketEventUploadPage.vue') },
+      { path: 'online-order', component: () => import('pages/OnlineOrderPage.vue') },
+      { path: 'cart', component: () => import('pages/CartPage.vue') },
+      { path: 'checkout', component: () => import('pages/CheckoutPage.vue') },
       { path: 'thank-you', component: () => import('pages/ThankYouPage.vue') },
       {
         path: 'firebase-test',
@@ -15,6 +19,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'orders',
         component: () => import('pages/OrderList.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
+        path: 'print-template',
+        name: 'print-template',
+        component: () => import('pages/PrintTemplatePage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
@@ -40,6 +50,16 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'market-events',
         component: () => import('pages/MarketEventsPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
+        path: 'magnet-studio',
+        component: () => import('pages/MagnetStudioPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
+        path: 'pricing',
+        component: () => import('pages/PricingPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },
       },
     ],

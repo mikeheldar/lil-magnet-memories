@@ -138,6 +138,14 @@
                 >
                   <q-tooltip>Delete Order</q-tooltip>
                 </q-btn>
+                <q-btn
+                  icon="print"
+                  color="purple"
+                  size="sm"
+                  @click="openPrintTemplate(order)"
+                >
+                  <q-tooltip>Print Template</q-tooltip>
+                </q-btn>
               </q-btn-group>
             </div>
           </div>
@@ -283,6 +291,7 @@
 
 <script>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { useQuasar } from 'quasar';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
@@ -297,6 +306,7 @@ export default {
     const hideCompleted = ref(false);
     const showCompletedDialog = ref(false);
     const $q = useQuasar();
+    const router = useRouter();
     let unsubscribeOrders = null;
 
     const setupRealtimeListener = () => {
@@ -495,6 +505,19 @@ export default {
       });
     };
 
+    const openPrintTemplate = (order) => {
+      // Navigate to print template page with order data
+      router.push({
+        name: 'print-template',
+        params: { orderId: order.id },
+        query: {
+          orderNumber: order.orderNumber,
+          photos: JSON.stringify(order.photos),
+          quantities: JSON.stringify(order.quantities),
+        },
+      });
+    };
+
     onMounted(() => {
       setupRealtimeListener();
     });
@@ -521,6 +544,7 @@ export default {
       updateOrderStatus,
       resetOrderStatus,
       confirmDeleteOrder,
+      openPrintTemplate,
     };
   },
 };

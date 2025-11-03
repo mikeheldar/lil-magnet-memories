@@ -3,8 +3,11 @@
     <div class="col-12 col-md-8 col-lg-6 q-pa-md">
       <!-- Header -->
       <div class="text-center q-mb-lg">
-        <div class="text-h6 text-grey-7">
-          Upload your photos to create custom magnets!
+        <div class="text-h5 text-grey-7">
+          Market Event Magnet Creation
+        </div>
+        <div class="text-body1 text-grey-6 q-mt-sm">
+          Create custom magnets for market event pickup
         </div>
 
         <!-- Login Section for Non-Authenticated Users -->
@@ -200,10 +203,25 @@
 
             <!-- Order Summary -->
             <div v-if="totalMagnets > 0" class="q-mb-md">
-              <q-card class="bg-primary text-white q-pa-md">
-                <div class="text-h6 text-center">
+              <q-card class="q-pa-md">
+                <div class="text-h6 text-center text-primary">
                   <q-icon name="style" class="q-mr-sm" />
                   Total Magnets: {{ totalMagnets }}
+                </div>
+                <div v-if="totalCost.total > 0" class="q-mt-sm">
+                  <div v-if="totalCost.breakdown.length > 0" class="text-center q-mb-xs">
+                    <div
+                      v-for="(item, index) in totalCost.breakdown"
+                      :key="index"
+                      class="text-caption text-grey-7"
+                    >
+                      {{ item.count }} × ({{ item.qty }} for ${{ (item.price / item.count).toFixed(2) }})
+                    </div>
+                  </div>
+                  <div class="text-h6 text-center text-primary q-mt-xs">
+                    <q-icon name="attach_money" class="q-mr-sm" />
+                    Total Cost: ${{ totalCost.total.toFixed(2) }}
+                  </div>
                 </div>
               </q-card>
             </div>
@@ -396,6 +414,8 @@ export default {
     const submitting = ref(false);
     const showOrderSummary = ref(false);
     const orderNumber = ref('');
+    const products = ref([]);
+    const selectedProduct = ref(null);
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -404,6 +424,45 @@ export default {
 
     const totalMagnets = computed(() => {
       return fileQuantities.value.reduce((sum, qty) => sum + qty, 0);
+    });
+
+    const totalCost = computed(() => {
+      if (!selectedProduct.value || !selectedProduct.value.pricing || totalMagnets.value === 0) {
+        return { total: 0, breakdown: [] };
+      }
+
+      const pricing = selectedProduct.value.pricing;
+      const totalQty = totalMagnets.value;
+
+      // Sort tiers from largest to smallest
+      const sortedTiers = Object.keys(pricing)
+        .map(Number)
+        .sort((a, b) => b - a);
+
+      let remainingQty = totalQty;
+      let totalCost = 0;
+      const breakdown = [];
+
+      // Use a greedy algorithm to find the best combination
+      for (const tier of sortedTiers) {
+        const count = Math.floor(remainingQty / tier);
+        if (count > 0) {
+          const tierPrice = pricing[tier] * count;
+          totalCost += tierPrice;
+          breakdown.push({ qty: tier, count, price: tierPrice });
+          remainingQty -= tier * count;
+        }
+      }
+
+      // Handle any remaining items with the smallest tier
+      if (remainingQty > 0 && sortedTiers.length > 0) {
+        const smallestTier = sortedTiers[sortedTiers.length - 1];
+        const remainingPrice = (pricing[smallestTier] / smallestTier) * remainingQty;
+        totalCost += remainingPrice;
+        breakdown.push({ qty: remainingQty, count: 1, price: remainingPrice });
+      }
+
+      return { total: totalCost, breakdown };
     });
 
     const canSubmit = computed(() => {
@@ -708,6 +767,22 @@ export default {
       }
     };
 
+    const loadProducts = async () => {
+      try {
+        const productsData = await firebaseService.getProducts();
+        products.value = productsData || [];
+        // Select the first custom product by default
+        if (products.value.length > 0) {
+          const customProduct = products.value.find(p => !p.productType || p.productType === 'custom');
+          if (customProduct) {
+            selectedProduct.value = customProduct;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    };
+
     onMounted(() => {
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
@@ -731,6 +806,9 @@ export default {
           fillFormWithUserData(user);
         }
       });
+
+      // Load products
+      loadProducts();
     });
 
     return {
@@ -740,6 +818,7 @@ export default {
       submitting,
       canSubmit,
       totalMagnets,
+      totalCost,
       showOrderSummary,
       orderNumber,
       isAuthenticated,
@@ -783,3 +862,4 @@ export default {
   }
 }
 </style>
+

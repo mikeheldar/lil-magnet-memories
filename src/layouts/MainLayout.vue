@@ -15,17 +15,59 @@
         <!-- Logo on the left -->
         <q-btn flat dense @click="$router.push('/')" class="q-mr-md">
           <img
-            src="/lil-magnet-memories-logo.png"
+            src="/assets/lil-magnet-memories-logo.png"
             alt="Lil Magnet Memories"
             class="logo-header"
             style="height: 40px; width: auto"
           />
         </q-btn>
 
+        <!-- Test Environment Indicator -->
+        <q-chip
+          v-if="isTestEnvironment"
+          color="orange"
+          text-color="white"
+          size="sm"
+          class="q-mr-md"
+          icon="bug_report"
+        >
+          TEST
+        </q-chip>
+
+        <!-- Market Event Indicator -->
+        <q-chip
+          v-if="isAtMarketEvent"
+          color="green"
+          text-color="white"
+          size="sm"
+          class="q-mr-md"
+          icon="event"
+        >
+          MARKET EVENT
+        </q-chip>
+
         <!-- Page title in center -->
         <q-toolbar-title class="text-center">
           <span class="text-h5 text-weight-bold">{{ pageTitle }}</span>
         </q-toolbar-title>
+
+        <!-- Shopping Cart Icon -->
+        <q-btn
+          flat
+          dense
+          icon="shopping_cart"
+          @click="$router.push('/cart')"
+          aria-label="Shopping Cart"
+          class="q-mr-sm"
+        >
+          <q-badge
+            v-if="cartItemCount > 0"
+            color="orange"
+            :label="cartItemCount"
+            floating
+          />
+          <q-tooltip>Shopping Cart</q-tooltip>
+        </q-btn>
 
         <!-- User Profile Dropdown (only when authenticated) -->
         <template v-if="isAuthenticated">
@@ -151,7 +193,41 @@
                 <q-item-label caption>View all customers</q-item-label>
               </q-item-section>
             </q-item>
+
+            <q-item clickable v-ripple to="/magnet-studio">
+              <q-item-section avatar>
+                <q-icon name="apps" color="purple" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Magnet Studio</q-item-label>
+                <q-item-label caption>Crop images into squares</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/market-events')">
+              <q-item-section avatar>
+                <q-icon name="event" color="green" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Market Events</q-item-label>
+                <q-item-label caption>Manage market events</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/pricing')">
+              <q-item-section avatar>
+                <q-icon name="attach_money" color="green" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Pricing</q-item-label>
+                <q-item-label caption>Manage product pricing</q-item-label>
+              </q-item-section>
+            </q-item>
           </template>
+
+          <q-separator class="q-my-md" />
+
+          <q-item-label header class="text-grey-8"> Customer </q-item-label>
 
           <q-item clickable v-ripple @click="navigateTo('/upload')">
             <q-item-section avatar>
@@ -211,16 +287,6 @@
                 <q-item-label caption>Test email functionality</q-item-label>
               </q-item-section>
             </q-item>
-
-            <q-item clickable v-ripple @click="navigateTo('/market-events')">
-              <q-item-section avatar>
-                <q-icon name="event" color="green" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Market Events</q-item-label>
-                <q-item-label caption>Manage market events</q-item-label>
-              </q-item-section>
-            </q-item>
           </template>
         </template>
 
@@ -264,10 +330,13 @@
 </template>
 
 <script>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
+import { useCart } from '../composables/useCart.js';
 import { useQuasar } from 'quasar';
+import { config } from '../config/environment.js';
+import { marketEventService } from '../services/marketEventService.js';
 
 export default {
   name: 'MainLayout',
@@ -278,36 +347,59 @@ export default {
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
     const leftDrawerOpen = ref(false);
+    const { cartItemCount } = useCart();
     const userProfile = ref({
       displayName: null,
       photoURL: null,
       email: null,
     });
 
+    // Create a ref that gets updated periodically to trigger reactivity
+    const marketEventCheckTrigger = ref(0);
+    let marketEventCheckInterval = null;
+
     const pageTitle = computed(() => {
-      switch (route.path) {
-        case '/orders':
-          return 'Admin - Order List';
-        case '/customers':
-          return 'Admin - Customer List';
-        case '/upload':
-          return 'Upload Photos';
-        case '/my-orders':
-          return 'My Orders';
-        case '/thank-you':
-          return 'Order Confirmation';
-        case '/firebase-test':
-          return 'Firebase Diagnostic';
-        case '/admin':
-          return 'Admin Settings';
-        case '/email-test':
-          return 'Admin - Email Test';
-        case '/market-events':
-          return 'Admin - Market Events';
-        case '/':
-        default:
-          return 'Lil Magnet Memories';
-      }
+      const baseTitle = (() => {
+        switch (route.path) {
+          case '/orders':
+            return 'Admin - Order List';
+          case '/customers':
+            return 'Admin - Customer List';
+          case '/upload':
+            return 'Upload Photos';
+          case '/my-orders':
+            return 'My Orders';
+          case '/thank-you':
+            return 'Order Confirmation';
+          case '/firebase-test':
+            return 'Firebase Diagnostic';
+          case '/admin':
+            return 'Admin Settings';
+          case '/email-test':
+            return 'Admin - Email Test';
+          case '/market-events':
+            return 'Admin - Market Events';
+          case '/magnet-studio':
+            return 'Admin - Magnet Studio';
+          case '/pricing':
+            return 'Admin - Pricing';
+          case '/':
+          default:
+            return 'Lil Magnet Memories';
+        }
+      })();
+
+      // Add test environment indicator
+      return config.isTest ? `${baseTitle} (TEST)` : baseTitle;
+    });
+
+    const isTestEnvironment = computed(() => config.isTest);
+
+    // Check if customer is at a market event (periodically refresh)
+    const isAtMarketEvent = computed(() => {
+      // This computed will re-run when marketEventCheckTrigger changes
+      marketEventCheckTrigger.value;
+      return marketEventService.getCheckedInEvent() !== null;
     });
 
     const toggleLeftDrawer = () => {
@@ -420,10 +512,26 @@ export default {
           isAdmin.value = false;
         }
       });
+
+      // Set up periodic check for market event status
+      // This will automatically hide the indicator when events end
+      marketEventCheckInterval = setInterval(() => {
+        marketEventCheckTrigger.value++;
+      }, 60000); // Check every minute
+    });
+
+    onUnmounted(() => {
+      // Clean up interval when component unmounts
+      if (marketEventCheckInterval) {
+        clearInterval(marketEventCheckInterval);
+        marketEventCheckInterval = null;
+      }
     });
 
     return {
       pageTitle,
+      isTestEnvironment,
+      isAtMarketEvent,
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,
@@ -432,6 +540,7 @@ export default {
       navigateTo,
       handleSignIn,
       handleSignOut,
+      cartItemCount,
     };
   },
 };
