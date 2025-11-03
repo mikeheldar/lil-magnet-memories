@@ -293,14 +293,16 @@
                 <!-- Payment Options -->
                 <q-card-section v-if="selectedShippingOption">
                   <div class="text-h6 q-mb-md">Payment Method</div>
-                  
+
                   <!-- Apple Pay Button -->
                   <q-card
                     v-if="availablePaymentMethods.applePay"
                     flat
                     bordered
                     class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{ 'payment-selected': selectedPaymentOption === 'apple_pay' }"
+                    :class="{
+                      'payment-selected': selectedPaymentOption === 'apple_pay',
+                    }"
                     @click="selectedPaymentOption = 'apple_pay'"
                   >
                     <q-card-section horizontal>
@@ -309,7 +311,9 @@
                           <q-icon name="apple" size="32px" class="q-mr-md" />
                           <div>
                             <div class="text-weight-bold">Apple Pay</div>
-                            <div class="text-caption text-grey-7">Fast and secure payment</div>
+                            <div class="text-caption text-grey-7">
+                              Fast and secure payment
+                            </div>
                           </div>
                         </div>
                       </q-card-section>
@@ -320,7 +324,11 @@
                           color="primary"
                           size="24px"
                         />
-                        <q-icon v-else name="radio_button_unchecked" size="24px" />
+                        <q-icon
+                          v-else
+                          name="radio_button_unchecked"
+                          size="24px"
+                        />
                       </q-card-actions>
                     </q-card-section>
                   </q-card>
@@ -331,16 +339,25 @@
                     flat
                     bordered
                     class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{ 'payment-selected': selectedPaymentOption === 'google_pay' }"
+                    :class="{
+                      'payment-selected':
+                        selectedPaymentOption === 'google_pay',
+                    }"
                     @click="selectedPaymentOption = 'google_pay'"
                   >
                     <q-card-section horizontal>
                       <q-card-section>
                         <div class="row items-center">
-                          <q-icon name="account_balance_wallet" size="32px" class="q-mr-md" />
+                          <q-icon
+                            name="account_balance_wallet"
+                            size="32px"
+                            class="q-mr-md"
+                          />
                           <div>
                             <div class="text-weight-bold">Google Pay</div>
-                            <div class="text-caption text-grey-7">Quick checkout</div>
+                            <div class="text-caption text-grey-7">
+                              Quick checkout
+                            </div>
                           </div>
                         </div>
                       </q-card-section>
@@ -351,7 +368,11 @@
                           color="primary"
                           size="24px"
                         />
-                        <q-icon v-else name="radio_button_unchecked" size="24px" />
+                        <q-icon
+                          v-else
+                          name="radio_button_unchecked"
+                          size="24px"
+                        />
                       </q-card-actions>
                     </q-card-section>
                   </q-card>
@@ -361,16 +382,27 @@
                     flat
                     bordered
                     class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{ 'payment-selected': selectedPaymentOption === 'square_card' }"
+                    :class="{
+                      'payment-selected':
+                        selectedPaymentOption === 'square_card',
+                    }"
                     @click="selectedPaymentOption = 'square_card'"
                   >
                     <q-card-section horizontal>
                       <q-card-section>
                         <div class="row items-center">
-                          <q-icon name="credit_card" size="32px" class="q-mr-md" />
+                          <q-icon
+                            name="credit_card"
+                            size="32px"
+                            class="q-mr-md"
+                          />
                           <div>
-                            <div class="text-weight-bold">Credit/Debit Card</div>
-                            <div class="text-caption text-grey-7">Pay with Visa, Mastercard, etc.</div>
+                            <div class="text-weight-bold">
+                              Credit/Debit Card
+                            </div>
+                            <div class="text-caption text-grey-7">
+                              Pay with Visa, Mastercard, etc.
+                            </div>
                           </div>
                         </div>
                       </q-card-section>
@@ -381,7 +413,11 @@
                           color="primary"
                           size="24px"
                         />
-                        <q-icon v-else name="radio_button_unchecked" size="24px" />
+                        <q-icon
+                          v-else
+                          name="radio_button_unchecked"
+                          size="24px"
+                        />
                       </q-card-actions>
                     </q-card-section>
                   </q-card>
@@ -392,16 +428,24 @@
                     flat
                     bordered
                     class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{ 'payment-selected': selectedPaymentOption === 'paypal' }"
+                    :class="{
+                      'payment-selected': selectedPaymentOption === 'paypal',
+                    }"
                     @click="selectedPaymentOption = 'paypal'"
                   >
                     <q-card-section horizontal>
                       <q-card-section>
                         <div class="row items-center">
-                          <q-icon name="account_balance_wallet" size="32px" class="q-mr-md" />
+                          <q-icon
+                            name="account_balance_wallet"
+                            size="32px"
+                            class="q-mr-md"
+                          />
                           <div>
                             <div class="text-weight-bold">PayPal</div>
-                            <div class="text-caption text-grey-7">Pay with your PayPal account</div>
+                            <div class="text-caption text-grey-7">
+                              Pay with your PayPal account
+                            </div>
                           </div>
                         </div>
                       </q-card-section>
@@ -412,7 +456,11 @@
                           color="primary"
                           size="24px"
                         />
-                        <q-icon v-else name="radio_button_unchecked" size="24px" />
+                        <q-icon
+                          v-else
+                          name="radio_button_unchecked"
+                          size="24px"
+                        />
                       </q-card-actions>
                     </q-card-section>
                   </q-card>
@@ -423,7 +471,10 @@
                     flat
                     bordered
                     class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{ 'payment-selected': selectedPaymentOption === 'pay_at_event' }"
+                    :class="{
+                      'payment-selected':
+                        selectedPaymentOption === 'pay_at_event',
+                    }"
                     @click="selectedPaymentOption = 'pay_at_event'"
                   >
                     <q-card-section horizontal>
@@ -431,8 +482,12 @@
                         <div class="row items-center">
                           <q-icon name="atm" size="32px" class="q-mr-md" />
                           <div>
-                            <div class="text-weight-bold">Pay at Pop-up Station</div>
-                            <div class="text-caption text-grey-7">Pay when you collect your order</div>
+                            <div class="text-weight-bold">
+                              Pay at Pop-up Station
+                            </div>
+                            <div class="text-caption text-grey-7">
+                              Pay when you collect your order
+                            </div>
                           </div>
                         </div>
                       </q-card-section>
@@ -443,7 +498,11 @@
                           color="primary"
                           size="24px"
                         />
-                        <q-icon v-else name="radio_button_unchecked" size="24px" />
+                        <q-icon
+                          v-else
+                          name="radio_button_unchecked"
+                          size="24px"
+                        />
                       </q-card-actions>
                     </q-card-section>
                   </q-card>
@@ -574,6 +633,11 @@ export default {
       } else {
         selectedShippingOption.value = 'ship_to_address';
       }
+
+      // Initialize Square payments after a short delay to ensure SDK is loaded
+      setTimeout(() => {
+        initializeSquarePayments();
+      }, 500);
     });
 
     // Auto-select payment option when shipping option changes
@@ -618,9 +682,11 @@ export default {
     const availablePaymentMethods = computed(() => {
       const isAppleDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       const isAndroidDevice = /Android/i.test(navigator.userAgent);
-      
-      const hasEvent = selectedShippingOption.value === 'collect_at_event' && checkedInEvent.value;
-      
+
+      const hasEvent =
+        selectedShippingOption.value === 'collect_at_event' &&
+        checkedInEvent.value;
+
       return {
         applePay: isAppleDevice || navigator.userAgent.includes('Safari'),
         googlePay: isAndroidDevice || navigator.userAgent.includes('Chrome'),
@@ -687,6 +753,34 @@ export default {
           return 'atm';
         default:
           return 'payment';
+      }
+    };
+
+    // Square payment initialization
+    const initializeSquarePayments = async () => {
+      try {
+        const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+        const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
+
+        if (!window.Square) {
+          console.warn('Square SDK not loaded yet');
+          return;
+        }
+
+        if (!applicationId || !locationId) {
+          console.warn('Square credentials not configured. See SQUARE_PAYMENT_SETUP.md');
+          return;
+        }
+
+        const payments = window.Square.payments(applicationId, locationId);
+
+        // Initialize credit card form
+        const card = await payments.card();
+        await card.attach('#square-payment-form');
+
+        console.log('✅ Square payments initialized successfully');
+      } catch (error) {
+        console.error('Error initializing Square payments:', error);
       }
     };
 
@@ -849,4 +943,3 @@ export default {
   margin-top: 16px;
 }
 </style>
-
