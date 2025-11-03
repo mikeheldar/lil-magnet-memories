@@ -136,7 +136,7 @@ export default {
     height: 11in;
     page-break-after: always;
     margin: 0;
-    padding: 0.5in;
+    padding: 1in;
     background: white;
     border: none;
     display: flex;
@@ -145,15 +145,16 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 0.2in;
+    grid-template-columns: repeat(2, 2.6in);
+    grid-template-rows: repeat(3, 2.6in);
+    gap: 0.55in;
+    justify-content: center;
     flex: 1;
   }
 
   .print-square {
-    width: 100%;
-    height: 100%;
+    width: 2.6in;
+    height: 2.6in;
     border: 1px solid #333;
     display: flex;
     align-items: center;
@@ -193,20 +194,23 @@ export default {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 0.5in;
+    padding: 1in;
     border: 1px solid #ddd;
   }
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 0.2in;
+    grid-template-columns: repeat(2, 2.6in);
+    grid-template-rows: repeat(3, 2.6in);
+    gap: 0.55in;
+    justify-content: center;
     flex: 1;
     min-height: 0;
   }
 
   .print-square {
+    width: 2.6in;
+    height: 2.6in;
     border: 1px solid #333;
     display: flex;
     align-items: center;
