@@ -506,14 +506,39 @@ export default {
     };
 
     const openPrintTemplate = (order) => {
+      let photos = [];
+      let quantities = [];
+
+      // Handle different order types
+      if (order.photos && order.quantities) {
+        // Legacy photo-based orders (UploadPage)
+        photos = order.photos;
+        quantities = order.quantities;
+      } else if (order.cartItems && order.cartItems.length > 0) {
+        // Cart-based orders - extract photos from custom upload items
+        const customUploadItems = order.cartItems.filter(item => item.isCustomUpload);
+        if (customUploadItems.length > 0) {
+          // Extract all photos from custom upload items
+          customUploadItems.forEach(item => {
+            if (item.photos && item.photos.length > 0) {
+              item.photos.forEach(photo => {
+                photos.push(photo);
+                // Use the quantity from photoQuantities
+                quantities.push(photo.quantity || 1);
+              });
+            }
+          });
+        }
+      }
+
       // Navigate to print template page with order data
       router.push({
         name: 'print-template',
         params: { orderId: order.id },
         query: {
           orderNumber: order.orderNumber,
-          photos: JSON.stringify(order.photos),
-          quantities: JSON.stringify(order.quantities),
+          photos: JSON.stringify(photos),
+          quantities: JSON.stringify(quantities),
         },
       });
     };
