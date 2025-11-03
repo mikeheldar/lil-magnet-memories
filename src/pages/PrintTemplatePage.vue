@@ -63,15 +63,26 @@ export default {
         const photosParam = route.query.photos;
         const quantitiesParam = route.query.quantities;
 
-        if (photosParam) {
-          photos.value = JSON.parse(photosParam);
-        }
+        const parsedPhotos = photosParam ? JSON.parse(photosParam) : [];
+        const parsedQuantities = quantitiesParam ? JSON.parse(quantitiesParam) : [];
+
+        // Expand photos based on quantities
+        const expandedPhotos = [];
+        parsedPhotos.forEach((photo, index) => {
+          const quantity = parsedQuantities[index] || 1;
+          // Add the photo the number of times specified by quantity
+          for (let i = 0; i < quantity; i++) {
+            expandedPhotos.push(photo);
+          }
+        });
+
+        photos.value = expandedPhotos;
 
         if (route.query.orderNumber) {
           orderNumber.value = route.query.orderNumber;
         }
 
-        console.log('Parsed photos:', photos.value);
+        console.log('Parsed photos (expanded):', photos.value.length, 'total photos');
       } catch (error) {
         console.error('Error parsing order data:', error);
       }
