@@ -768,7 +768,9 @@ export default {
         }
 
         if (!applicationId || !locationId) {
-          console.warn('Square credentials not configured. See SQUARE_PAYMENT_SETUP.md');
+          console.warn(
+            'Square credentials not configured. See SQUARE_PAYMENT_SETUP.md'
+          );
           return;
         }
 

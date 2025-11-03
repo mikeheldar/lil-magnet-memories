@@ -5,10 +5,12 @@
 ### Step 1: Get Your Square Sandbox Credentials
 
 1. **Sign up for a Square Developer Account**
+
    - Go to: https://developer.squareup.com/signup
    - Create a free account
 
 2. **Get Your Application ID and Location ID**
+
    - After signing up, go to: https://developer.squareup.com/apps
    - Click "Create Application"
    - Name it: "Lil Magnet Memories"
@@ -22,6 +24,7 @@
 ### Step 2: Enable Apple Pay (If Using Apple Pay)
 
 1. **Register Your Domain with Apple**
+
    - In Square Dashboard → Apple Pay
    - Add your domain: `www.lilmagnetmemories.com` and `test.lilmagnetmemories.com`
    - Download the verification file
@@ -34,12 +37,14 @@
 ### Step 3: Add Credentials to Your Project
 
 1. **Update `.env` file:**
+
    ```
    VITE_SQUARE_APPLICATION_ID=sandbox-sq0idb-YOUR-ID-HERE
    VITE_SQUARE_LOCATION_ID=YOUR-LOCATION-ID-HERE
    ```
 
 2. **Add PayPal Credentials (Optional)**
+
    ```
    VITE_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID
    ```
@@ -49,6 +54,7 @@
 ### Step 4: Initialize in Checkout Page
 
 The code will automatically:
+
 - Load Square SDK (already in `index.html`)
 - Initialize payments when checkout page loads
 - Show Apple Pay button if device supports it
@@ -65,6 +71,7 @@ The code will automatically:
 ### Step 6: Go Live
 
 1. **Switch from Sandbox to Production**
+
    - Update `index.html` line 30: change `sandbox.web.squarecdn.com` to `web.squarecdn.com`
    - Update your `.env` with **production** Application ID and Location ID
 
@@ -81,12 +88,14 @@ The code will automatically:
 
 ## Troubleshooting
 
-- **Apple Pay not showing?** 
+- **Apple Pay not showing?**
+
   - Device must be on Apple device with Safari or Chrome
   - Must have Apple Pay set up on device
   - Domain must be registered with Square
-  
+
 - **Payment button not working?**
+
   - Check browser console for errors
   - Verify Application ID and Location ID are correct
   - Make sure you're on HTTPS (localhost OK for testing)
@@ -94,4 +103,3 @@ The code will automatically:
 - **Need to test without real device?**
   - Use "Credit Card" option instead
   - It works on all devices
-
