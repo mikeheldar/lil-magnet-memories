@@ -142,12 +142,39 @@ export default {
       }
     };
 
+    // Check if touch point is within any image wrapper's bounding box
+    const isTouchOverImageArea = (clientX, clientY) => {
+      const imageWrappers = document.querySelectorAll('.image-wrapper');
+      for (const wrapper of imageWrappers) {
+        const rect = wrapper.getBoundingClientRect();
+        // Add a small buffer (20px) around the wrapper for easier dragging
+        const buffer = 20;
+        if (
+          clientX >= rect.left - buffer &&
+          clientX <= rect.right + buffer &&
+          clientY >= rect.top - buffer &&
+          clientY <= rect.bottom + buffer
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+
     // Document-level drag handlers (touch)
     const handleDocumentTouchMove = (event) => {
       if (isDragging.value && dragPhoto.value && event.touches.length === 1) {
-        // Only handle single-touch drag (multi-touch is for pinch zoom)
-        handleDrag(event.touches[0], dragPhoto.value);
-        event.preventDefault(); // Prevent scrolling while dragging
+        const touch = event.touches[0];
+        const isOverImage = isTouchOverImageArea(touch.clientX, touch.clientY);
+        
+        // Only prevent scrolling if touch is over an image wrapper area
+        if (isOverImage) {
+          handleDrag(event.touches[0], dragPhoto.value);
+          event.preventDefault(); // Prevent scrolling while dragging over image
+        } else {
+          // Touch moved outside image area - allow scrolling and end drag
+          endDrag();
+        }
       }
     };
 
@@ -172,11 +199,13 @@ export default {
       isDragging.value = true;
       dragPhoto.value = photo;
       dragPhotoUrl.value = getPhotoKey(photo);
-      
+
       // Get coordinates from either mouse or touch event
-      const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-      const clientY = event.clientY || (event.touches && event.touches[0].clientY);
-      
+      const clientX =
+        event.clientX || (event.touches && event.touches[0].clientX);
+      const clientY =
+        event.clientY || (event.touches && event.touches[0].clientY);
+
       dragStartX.value = clientX;
       dragStartY.value = clientY;
       const transform = getTransform(photo);
@@ -187,7 +216,9 @@ export default {
         document.addEventListener('mousemove', handleDocumentMouseMove);
         document.addEventListener('mouseup', handleDocumentMouseUp);
       } else if (event.type === 'touchstart') {
-        document.addEventListener('touchmove', handleDocumentTouchMove, { passive: false });
+        document.addEventListener('touchmove', handleDocumentTouchMove, {
+          passive: false,
+        });
         document.addEventListener('touchend', handleDocumentTouchEnd);
       }
 
@@ -212,7 +243,7 @@ export default {
       if (!isDragging.value || !photo || !dragPhoto.value) {
         return;
       }
-      
+
       // Verify we're dragging the correct photo
       if (getPhotoKey(photo) !== dragPhotoUrl.value) {
         return;
@@ -222,7 +253,7 @@ export default {
       // Both have clientX/clientY directly
       const clientX = eventOrTouch.clientX;
       const clientY = eventOrTouch.clientY;
-      
+
       if (clientX === undefined || clientY === undefined) {
         return;
       }
