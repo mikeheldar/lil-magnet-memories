@@ -25,7 +25,8 @@
         />
       </div>
       <div class="q-mt-sm text-caption text-grey-7">
-        Click and drag to pan, scroll to zoom. Changes apply to all copies of the same image.
+        Click and drag to pan, scroll to zoom. Changes apply to all copies of
+        the same image.
       </div>
     </div>
 
@@ -38,9 +39,9 @@
         class="print-page"
       >
         <div class="print-grid">
-          <div 
-            v-for="(photo, gridIndex) in 6" 
-            :key="`${pageIndex}-${gridIndex}`" 
+          <div
+            v-for="(photo, gridIndex) in 6"
+            :key="`${pageIndex}-${gridIndex}`"
             class="print-square"
           >
             <div
@@ -48,10 +49,8 @@
               class="image-wrapper"
               :style="getImageStyle(page[gridIndex])"
               @mousedown="startDrag($event, page[gridIndex])"
+              @touchstart.prevent="startDrag($event, page[gridIndex])"
               @wheel.prevent="handleWheel($event, page[gridIndex])"
-              @mousemove="handleDrag($event, page[gridIndex])"
-              @mouseup="endDrag"
-              @mouseleave="endDrag"
             >
               <img
                 :src="page[gridIndex].url"
@@ -63,7 +62,8 @@
           </div>
         </div>
         <div class="print-footer">
-          Order #{{ orderNumber }} - Page {{ pageIndex + 1 }} of {{ pages.length }}
+          Order #{{ orderNumber }} - Page {{ pageIndex + 1 }} of
+          {{ pages.length }}
         </div>
       </div>
     </div>
@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 export default {
@@ -80,12 +80,13 @@ export default {
     const route = useRoute();
     const photos = ref([]);
     const orderNumber = ref('');
-    
+
     // Transformation tracking: map photo URL to transform state
     const photoTransforms = ref({});
-    
+
     // Drag state
     const isDragging = ref(false);
+    const dragPhoto = ref(null); // Store the photo object being dragged
     const dragPhotoUrl = ref(null);
     const dragStartX = ref(0);
     const dragStartY = ref(0);
@@ -128,15 +129,68 @@ export default {
       };
     };
 
+    // Document-level drag handlers (mouse)
+    const handleDocumentMouseMove = (event) => {
+      if (isDragging.value && dragPhoto.value) {
+        handleDrag(event, dragPhoto.value);
+      }
+    };
+
+    const handleDocumentMouseUp = () => {
+      if (isDragging.value) {
+        endDrag();
+      }
+    };
+
+    // Document-level drag handlers (touch)
+    const handleDocumentTouchMove = (event) => {
+      if (isDragging.value && dragPhoto.value && event.touches.length === 1) {
+        // Only handle single-touch drag (multi-touch is for pinch zoom)
+        handleDrag(event.touches[0], dragPhoto.value);
+        event.preventDefault(); // Prevent scrolling while dragging
+      }
+    };
+
+    const handleDocumentTouchEnd = () => {
+      if (isDragging.value) {
+        endDrag();
+      }
+    };
+
     // Start dragging
     const startDrag = (event, photo) => {
-      if (event.button !== 0) return; // Only left mouse button
+      // Handle mouse events - only left button
+      if (event.type === 'mousedown' && event.button !== 0) {
+        return;
+      }
+
+      // For touch events, only handle single touch (multi-touch is for pinch zoom)
+      if (event.type === 'touchstart' && event.touches.length !== 1) {
+        return;
+      }
+
       isDragging.value = true;
+      dragPhoto.value = photo;
       dragPhotoUrl.value = getPhotoKey(photo);
-      dragStartX.value = event.clientX;
-      dragStartY.value = event.clientY;
+      
+      // Get coordinates from either mouse or touch event
+      const clientX = event.clientX || (event.touches && event.touches[0].clientX);
+      const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+      
+      dragStartX.value = clientX;
+      dragStartY.value = clientY;
       const transform = getTransform(photo);
       dragStartTransform.value = { ...transform };
+
+      // Attach document-level listeners for smooth dragging
+      if (event.type === 'mousedown') {
+        document.addEventListener('mousemove', handleDocumentMouseMove);
+        document.addEventListener('mouseup', handleDocumentMouseUp);
+      } else if (event.type === 'touchstart') {
+        document.addEventListener('touchmove', handleDocumentTouchMove, { passive: false });
+        document.addEventListener('touchend', handleDocumentTouchEnd);
+      }
+
       event.preventDefault();
     };
 
@@ -144,33 +198,64 @@ export default {
     // Container is 2.6in = ~249.6px at 96dpi
     const getMaxTranslate = (scale) => {
       const containerSize = 249.6; // 2.6in in pixels at 96dpi
-      // Allow movement proportional to how much larger the image is than the container
-      // At scale 1, minimal movement. At scale 2, allow up to containerSize/2 movement
-      return Math.max(0, (containerSize / 2) * (scale - 1));
+      // Allow base movement of 100px even at scale 1, and more as we zoom in
+      // At scale 1: 100px movement (allows panning even when not zoomed)
+      // At scale 2: 100 + 124.8 = ~225px movement
+      // At scale 3: 100 + 249.6 = ~350px movement
+      const baseMovement = 100;
+      const scaleBasedMovement = (containerSize / 2) * (scale - 1);
+      return baseMovement + Math.max(0, scaleBasedMovement);
     };
 
-    // Handle dragging
-    const handleDrag = (event, photo) => {
-      if (!isDragging.value || dragPhotoUrl.value !== getPhotoKey(photo)) {
+    // Handle dragging (works with both mouse events and touch objects)
+    const handleDrag = (eventOrTouch, photo) => {
+      if (!isDragging.value || !photo || !dragPhoto.value) {
         return;
       }
       
-      const deltaX = event.clientX - dragStartX.value;
-      const deltaY = event.clientY - dragStartY.value;
+      // Verify we're dragging the correct photo
+      if (getPhotoKey(photo) !== dragPhotoUrl.value) {
+        return;
+      }
+
+      // Get coordinates from either mouse event or touch object
+      // Both have clientX/clientY directly
+      const clientX = eventOrTouch.clientX;
+      const clientY = eventOrTouch.clientY;
       
+      if (clientX === undefined || clientY === undefined) {
+        return;
+      }
+
+      const deltaX = clientX - dragStartX.value;
+      const deltaY = clientY - dragStartY.value;
+
       const transform = dragStartTransform.value;
       const maxTranslate = getMaxTranslate(transform.scale);
-      
+
       // Clamp translation to keep image within bounds
-      const newX = Math.max(-maxTranslate, Math.min(maxTranslate, transform.x + deltaX));
-      const newY = Math.max(-maxTranslate, Math.min(maxTranslate, transform.y + deltaY));
-      
+      const newX = Math.max(
+        -maxTranslate,
+        Math.min(maxTranslate, transform.x + deltaX)
+      );
+      const newY = Math.max(
+        -maxTranslate,
+        Math.min(maxTranslate, transform.y + deltaY)
+      );
+
       updateTransform(photo, { x: newX, y: newY });
     };
 
     // End dragging
     const endDrag = () => {
+      // Remove document-level listeners (both mouse and touch)
+      document.removeEventListener('mousemove', handleDocumentMouseMove);
+      document.removeEventListener('mouseup', handleDocumentMouseUp);
+      document.removeEventListener('touchmove', handleDocumentTouchMove);
+      document.removeEventListener('touchend', handleDocumentTouchEnd);
+
       isDragging.value = false;
+      dragPhoto.value = null;
       dragPhotoUrl.value = null;
     };
 
@@ -180,24 +265,24 @@ export default {
       const delta = event.deltaY > 0 ? -0.1 : 0.1;
       const transform = getTransform(photo);
       const newScale = Math.max(0.5, Math.min(3, transform.scale + delta));
-      
+
       // When zooming, adjust position to zoom toward cursor
       const rect = event.currentTarget.getBoundingClientRect();
       const x = event.clientX - rect.left - rect.width / 2;
       const y = event.clientY - rect.top - rect.height / 2;
-      
+
       // Calculate new position to zoom toward cursor
       // The factor of 0.3 provides smooth zoom-to-cursor behavior
       const scaleDiff = newScale - transform.scale;
-      const newX = transform.x - (x * scaleDiff * 0.3);
-      const newY = transform.y - (y * scaleDiff * 0.3);
-      
+      const newX = transform.x - x * scaleDiff * 0.3;
+      const newY = transform.y - y * scaleDiff * 0.3;
+
       // Clamp position using the new scale
       const maxTranslate = getMaxTranslate(newScale);
       const clampedX = Math.max(-maxTranslate, Math.min(maxTranslate, newX));
       const clampedY = Math.max(-maxTranslate, Math.min(maxTranslate, newY));
-      
-      updateTransform(photo, { 
+
+      updateTransform(photo, {
         scale: newScale,
         x: clampedX,
         y: clampedY,
@@ -216,7 +301,9 @@ export default {
         const quantitiesParam = route.query.quantities;
 
         const parsedPhotos = photosParam ? JSON.parse(photosParam) : [];
-        const parsedQuantities = quantitiesParam ? JSON.parse(quantitiesParam) : [];
+        const parsedQuantities = quantitiesParam
+          ? JSON.parse(quantitiesParam)
+          : [];
 
         // Expand photos based on quantities
         const expandedPhotos = [];
@@ -234,7 +321,11 @@ export default {
           orderNumber.value = route.query.orderNumber;
         }
 
-        console.log('Parsed photos (expanded):', photos.value.length, 'total photos');
+        console.log(
+          'Parsed photos (expanded):',
+          photos.value.length,
+          'total photos'
+        );
       } catch (error) {
         console.error('Error parsing order data:', error);
       }
@@ -259,6 +350,16 @@ export default {
 
     onMounted(() => {
       parseOrderData();
+    });
+
+    onUnmounted(() => {
+      // Clean up document listeners if component unmounts while dragging
+      if (isDragging.value) {
+        document.removeEventListener('mousemove', handleDocumentMouseMove);
+        document.removeEventListener('mouseup', handleDocumentMouseUp);
+        document.removeEventListener('touchmove', handleDocumentTouchMove);
+        document.removeEventListener('touchend', handleDocumentTouchEnd);
+      }
     });
 
     return {
@@ -345,6 +446,7 @@ export default {
     justify-content: center;
     cursor: grab;
     user-select: none;
+    touch-action: none;
   }
 
   .image-wrapper:active {
@@ -421,6 +523,7 @@ export default {
     justify-content: center;
     cursor: grab;
     user-select: none;
+    touch-action: none;
   }
 
   .image-wrapper:active {
@@ -445,4 +548,3 @@ export default {
   }
 }
 </style>
-
