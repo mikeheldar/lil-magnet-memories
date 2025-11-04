@@ -17,6 +17,15 @@
           @click="$router.push('/orders')"
           class="q-ml-sm"
         />
+        <q-btn
+          flat
+          label="Reset All Images"
+          @click="resetAllTransforms"
+          class="q-ml-sm"
+        />
+      </div>
+      <div class="q-mt-sm text-caption text-grey-7">
+        Click and drag to pan, scroll to zoom. Changes apply to all copies of the same image.
       </div>
     </div>
 
@@ -29,13 +38,28 @@
         class="print-page"
       >
         <div class="print-grid">
-          <div v-for="(photoIndex, gridIndex) in 6" :key="gridIndex" class="print-square">
-            <img
+          <div 
+            v-for="(photo, gridIndex) in 6" 
+            :key="`${pageIndex}-${gridIndex}`" 
+            class="print-square"
+          >
+            <div
               v-if="page[gridIndex]"
-              :src="page[gridIndex].url"
-              :alt="page[gridIndex].name || `Photo ${photoIndex + 1}`"
-              class="print-image"
-            />
+              class="image-wrapper"
+              :style="getImageStyle(page[gridIndex])"
+              @mousedown="startDrag($event, page[gridIndex])"
+              @wheel.prevent="handleWheel($event, page[gridIndex])"
+              @mousemove="handleDrag($event, page[gridIndex])"
+              @mouseup="endDrag"
+              @mouseleave="endDrag"
+            >
+              <img
+                :src="page[gridIndex].url"
+                :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
+                class="print-image"
+                draggable="false"
+              />
+            </div>
           </div>
         </div>
         <div class="print-footer">
@@ -56,6 +80,134 @@ export default {
     const route = useRoute();
     const photos = ref([]);
     const orderNumber = ref('');
+    
+    // Transformation tracking: map photo URL to transform state
+    const photoTransforms = ref({});
+    
+    // Drag state
+    const isDragging = ref(false);
+    const dragPhotoUrl = ref(null);
+    const dragStartX = ref(0);
+    const dragStartY = ref(0);
+    const dragStartTransform = ref({ scale: 1, x: 0, y: 0 });
+
+    // Get unique photo identifier
+    const getPhotoKey = (photo) => {
+      return photo.url || photo.name || 'unknown';
+    };
+
+    // Initialize transform for a photo if not exists
+    const getTransform = (photo) => {
+      const key = getPhotoKey(photo);
+      if (!photoTransforms.value[key]) {
+        photoTransforms.value[key] = {
+          scale: 1,
+          x: 0,
+          y: 0,
+        };
+      }
+      return photoTransforms.value[key];
+    };
+
+    // Apply transform to all instances of this photo
+    const updateTransform = (photo, updates) => {
+      const key = getPhotoKey(photo);
+      if (!photoTransforms.value[key]) {
+        photoTransforms.value[key] = { scale: 1, x: 0, y: 0 };
+      }
+      Object.assign(photoTransforms.value[key], updates);
+    };
+
+    // Get CSS transform style for an image
+    const getImageStyle = (photo) => {
+      const transform = getTransform(photo);
+      return {
+        transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+        transformOrigin: 'center center',
+        transition: isDragging.value ? 'none' : 'transform 0.1s ease-out',
+      };
+    };
+
+    // Start dragging
+    const startDrag = (event, photo) => {
+      if (event.button !== 0) return; // Only left mouse button
+      isDragging.value = true;
+      dragPhotoUrl.value = getPhotoKey(photo);
+      dragStartX.value = event.clientX;
+      dragStartY.value = event.clientY;
+      const transform = getTransform(photo);
+      dragStartTransform.value = { ...transform };
+      event.preventDefault();
+    };
+
+    // Calculate max translation based on scale and container size
+    // Container is 2.6in = ~249.6px at 96dpi
+    const getMaxTranslate = (scale) => {
+      const containerSize = 249.6; // 2.6in in pixels at 96dpi
+      // Allow movement proportional to how much larger the image is than the container
+      // At scale 1, minimal movement. At scale 2, allow up to containerSize/2 movement
+      return Math.max(0, (containerSize / 2) * (scale - 1));
+    };
+
+    // Handle dragging
+    const handleDrag = (event, photo) => {
+      if (!isDragging.value || dragPhotoUrl.value !== getPhotoKey(photo)) {
+        return;
+      }
+      
+      const deltaX = event.clientX - dragStartX.value;
+      const deltaY = event.clientY - dragStartY.value;
+      
+      const transform = dragStartTransform.value;
+      const maxTranslate = getMaxTranslate(transform.scale);
+      
+      // Clamp translation to keep image within bounds
+      const newX = Math.max(-maxTranslate, Math.min(maxTranslate, transform.x + deltaX));
+      const newY = Math.max(-maxTranslate, Math.min(maxTranslate, transform.y + deltaY));
+      
+      updateTransform(photo, { x: newX, y: newY });
+    };
+
+    // End dragging
+    const endDrag = () => {
+      isDragging.value = false;
+      dragPhotoUrl.value = null;
+    };
+
+    // Handle wheel zoom
+    const handleWheel = (event, photo) => {
+      event.preventDefault();
+      const delta = event.deltaY > 0 ? -0.1 : 0.1;
+      const transform = getTransform(photo);
+      const newScale = Math.max(0.5, Math.min(3, transform.scale + delta));
+      
+      // When zooming, adjust position to zoom toward cursor
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = event.clientX - rect.left - rect.width / 2;
+      const y = event.clientY - rect.top - rect.height / 2;
+      
+      // Calculate new position to zoom toward cursor
+      // The factor of 0.3 provides smooth zoom-to-cursor behavior
+      const scaleDiff = newScale - transform.scale;
+      const newX = transform.x - (x * scaleDiff * 0.3);
+      const newY = transform.y - (y * scaleDiff * 0.3);
+      
+      // Clamp position using the new scale
+      const maxTranslate = getMaxTranslate(newScale);
+      const clampedX = Math.max(-maxTranslate, Math.min(maxTranslate, newX));
+      const clampedY = Math.max(-maxTranslate, Math.min(maxTranslate, newY));
+      
+      updateTransform(photo, { 
+        scale: newScale,
+        x: clampedX,
+        y: clampedY,
+      });
+    };
+
+    // Reset all transformations
+    const resetAllTransforms = () => {
+      photoTransforms.value = {};
+    };
 
     // Parse photos and quantities from query parameters
     const parseOrderData = () => {
@@ -113,6 +265,14 @@ export default {
       photos,
       orderNumber,
       pages,
+      photoTransforms,
+      isDragging,
+      getImageStyle,
+      startDrag,
+      handleDrag,
+      endDrag,
+      handleWheel,
+      resetAllTransforms,
     };
   },
 };
@@ -147,7 +307,7 @@ export default {
     height: 11in;
     page-break-after: always;
     margin: 0;
-    padding: 1in;
+    padding: 0.75in 1in 1in 1in;
     background: white;
     border: none;
     display: flex;
@@ -160,7 +320,9 @@ export default {
     grid-template-rows: repeat(3, 2.6in);
     gap: 0.55in;
     justify-content: center;
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-bottom: 0.3in;
   }
 
   .print-square {
@@ -172,19 +334,38 @@ export default {
     justify-content: center;
     overflow: hidden;
     background: white;
+    position: relative;
+  }
+
+  .image-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .image-wrapper:active {
+    cursor: grabbing;
   }
 
   .print-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    pointer-events: none;
   }
 
   .print-footer {
     text-align: center;
-    padding-top: 0.3in;
+    padding-top: 0.4in;
     font-size: 10pt;
     color: #666;
+    border-top: 1px solid #ccc;
+    margin-top: 0.2in;
+    flex-shrink: 0;
   }
 }
 
@@ -205,7 +386,7 @@ export default {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 1in;
+    padding: 0.75in 1in 1in 1in;
     border: 1px solid #ddd;
   }
 
@@ -215,8 +396,9 @@ export default {
     grid-template-rows: repeat(3, 2.6in);
     gap: 0.55in;
     justify-content: center;
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 0;
+    margin-bottom: 0.3in;
   }
 
   .print-square {
@@ -228,22 +410,38 @@ export default {
     justify-content: center;
     overflow: hidden;
     background: white;
-    min-height: 0;
+    position: relative;
+  }
+
+  .image-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .image-wrapper:active {
+    cursor: grabbing;
   }
 
   .print-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    pointer-events: none;
   }
 
   .print-footer {
     text-align: center;
-    padding-top: 0.3in;
+    padding-top: 0.4in;
     font-size: 10pt;
     color: #666;
     border-top: 1px solid #ddd;
-    margin-top: 0.3in;
+    margin-top: 0.2in;
+    flex-shrink: 0;
   }
 }
 </style>
