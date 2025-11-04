@@ -44,9 +44,13 @@
             :key="`${pageIndex}-${gridIndex}`"
             class="print-square"
           >
+            <!-- Outer cutting square template -->
+            <div class="outer-cut-template"></div>
+            
+            <!-- Octagon image container -->
             <div
               v-if="page[gridIndex]"
-              class="image-wrapper"
+              class="image-wrapper octagon"
               :style="getImageStyle(page[gridIndex])"
               @mousedown="startDrag($event, page[gridIndex])"
               @touchstart="startDrag($event, page[gridIndex])"
@@ -91,7 +95,6 @@ export default {
     const dragStartX = ref(0);
     const dragStartY = ref(0);
     const dragStartTransform = ref({ scale: 1, x: 0, y: 0 });
-    const hasMoved = ref(false); // Track if touch has moved (to distinguish drag from scroll attempt)
 
     // Get unique photo identifier
     const getPhotoKey = (photo) => {
@@ -168,24 +171,13 @@ export default {
         const touch = event.touches[0];
         const isOverImage = isTouchOverImageArea(touch.clientX, touch.clientY);
 
-        // Check if touch has moved enough to be considered a drag (vs a scroll)
-        const deltaX = touch.clientX - dragStartX.value;
-        const deltaY = touch.clientY - dragStartY.value;
-        const movement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        
-        // Only consider it a drag if moved more than 5px
-        if (movement > 5) {
-          hasMoved.value = true;
-        }
-
-        // Only prevent scrolling if touch is over an image wrapper area AND we've detected movement
-        if (isOverImage && hasMoved.value) {
+        // Only prevent scrolling if touch is over an image wrapper area
+        if (isOverImage) {
           handleDrag(event.touches[0], dragPhoto.value);
           event.preventDefault(); // Prevent scrolling while dragging over image
         } else {
-          // Touch moved outside image area or not enough movement yet - allow scrolling
-          // Don't end drag here - keep it active in case they come back over an image
-          // The drag will end naturally on touchend
+          // Touch moved outside image area - allow scrolling and end drag
+          endDrag();
         }
       }
     };
@@ -209,7 +201,6 @@ export default {
       }
 
       isDragging.value = true;
-      hasMoved.value = false;
       dragPhoto.value = photo;
       dragPhotoUrl.value = getPhotoKey(photo);
 
@@ -228,15 +219,14 @@ export default {
       if (event.type === 'mousedown') {
         document.addEventListener('mousemove', handleDocumentMouseMove);
         document.addEventListener('mouseup', handleDocumentMouseUp);
-        event.preventDefault(); // Prevent default for mouse
       } else if (event.type === 'touchstart') {
         document.addEventListener('touchmove', handleDocumentTouchMove, {
           passive: false,
         });
         document.addEventListener('touchend', handleDocumentTouchEnd);
-        // Don't prevent default on touchstart - let scrolling work naturally
-        // We'll only prevent default on touchmove if actually dragging over image
       }
+
+      event.preventDefault();
     };
 
     // Calculate max translation based on scale and container size
@@ -300,7 +290,6 @@ export default {
       document.removeEventListener('touchend', handleDocumentTouchEnd);
 
       isDragging.value = false;
-      hasMoved.value = false;
       dragPhoto.value = null;
       dragPhotoUrl.value = null;
     };
@@ -463,9 +452,9 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 2.6in);
-    grid-template-rows: repeat(3, 2.6in);
-    gap: 0.55in;
+    grid-template-columns: repeat(2, 3.0in);
+    grid-template-rows: repeat(3, 3.0in);
+    gap: 0.4in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
@@ -473,26 +462,61 @@ export default {
   }
 
   .print-square {
-    width: 2.6in;
-    height: 2.6in;
-    border: 1px solid #333;
+    width: 3.0in;
+    height: 3.0in;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     background: white;
     position: relative;
   }
 
+  /* Outer cutting square template - dashed border */
+  .outer-cut-template {
+    position: absolute;
+    width: 3.0in;
+    height: 3.0in;
+    border: 1px dashed #333;
+    pointer-events: none;
+    z-index: 1;
+  }
+
   .image-wrapper {
-    width: 100%;
-    height: 100%;
+    width: 2.6in;
+    height: 2.6in;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: grab;
     user-select: none;
     touch-action: none;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Octagon shape using clip-path */
+  .image-wrapper.octagon {
+    clip-path: polygon(
+      15% 0%,
+      85% 0%,
+      100% 15%,
+      100% 85%,
+      85% 100%,
+      15% 100%,
+      0% 85%,
+      0% 15%
+    );
+    -webkit-clip-path: polygon(
+      15% 0%,
+      85% 0%,
+      100% 15%,
+      100% 85%,
+      85% 100%,
+      15% 100%,
+      0% 85%,
+      0% 15%
+    );
   }
 
   .image-wrapper:active {
@@ -540,9 +564,9 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 2.6in);
-    grid-template-rows: repeat(3, 2.6in);
-    gap: 0.55in;
+    grid-template-columns: repeat(2, 3.0in);
+    grid-template-rows: repeat(3, 3.0in);
+    gap: 0.4in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
@@ -550,26 +574,61 @@ export default {
   }
 
   .print-square {
-    width: 2.6in;
-    height: 2.6in;
-    border: 1px solid #333;
+    width: 3.0in;
+    height: 3.0in;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     background: white;
     position: relative;
   }
 
+  /* Outer cutting square template - dashed border */
+  .outer-cut-template {
+    position: absolute;
+    width: 3.0in;
+    height: 3.0in;
+    border: 1px dashed #333;
+    pointer-events: none;
+    z-index: 1;
+  }
+
   .image-wrapper {
-    width: 100%;
-    height: 100%;
+    width: 2.6in;
+    height: 2.6in;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: grab;
     user-select: none;
     touch-action: none;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Octagon shape using clip-path */
+  .image-wrapper.octagon {
+    clip-path: polygon(
+      15% 0%,
+      85% 0%,
+      100% 15%,
+      100% 85%,
+      85% 100%,
+      15% 100%,
+      0% 85%,
+      0% 15%
+    );
+    -webkit-clip-path: polygon(
+      15% 0%,
+      85% 0%,
+      100% 15%,
+      100% 85%,
+      85% 100%,
+      15% 100%,
+      0% 85%,
+      0% 15%
+    );
   }
 
   .image-wrapper:active {
