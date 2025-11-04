@@ -49,7 +49,7 @@
               class="image-wrapper"
               :style="getImageStyle(page[gridIndex])"
               @mousedown="startDrag($event, page[gridIndex])"
-              @touchstart.prevent="startDrag($event, page[gridIndex])"
+              @touchstart="startDrag($event, page[gridIndex])"
               @wheel.prevent="handleWheel($event, page[gridIndex])"
             >
               <img
@@ -91,6 +91,7 @@ export default {
     const dragStartX = ref(0);
     const dragStartY = ref(0);
     const dragStartTransform = ref({ scale: 1, x: 0, y: 0 });
+    const hasMoved = ref(false); // Track if touch has moved (to distinguish drag from scroll attempt)
 
     // Get unique photo identifier
     const getPhotoKey = (photo) => {
@@ -166,14 +167,25 @@ export default {
       if (isDragging.value && dragPhoto.value && event.touches.length === 1) {
         const touch = event.touches[0];
         const isOverImage = isTouchOverImageArea(touch.clientX, touch.clientY);
+
+        // Check if touch has moved enough to be considered a drag (vs a scroll)
+        const deltaX = touch.clientX - dragStartX.value;
+        const deltaY = touch.clientY - dragStartY.value;
+        const movement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         
-        // Only prevent scrolling if touch is over an image wrapper area
-        if (isOverImage) {
+        // Only consider it a drag if moved more than 5px
+        if (movement > 5) {
+          hasMoved.value = true;
+        }
+
+        // Only prevent scrolling if touch is over an image wrapper area AND we've detected movement
+        if (isOverImage && hasMoved.value) {
           handleDrag(event.touches[0], dragPhoto.value);
           event.preventDefault(); // Prevent scrolling while dragging over image
         } else {
-          // Touch moved outside image area - allow scrolling and end drag
-          endDrag();
+          // Touch moved outside image area or not enough movement yet - allow scrolling
+          // Don't end drag here - keep it active in case they come back over an image
+          // The drag will end naturally on touchend
         }
       }
     };
@@ -197,6 +209,7 @@ export default {
       }
 
       isDragging.value = true;
+      hasMoved.value = false;
       dragPhoto.value = photo;
       dragPhotoUrl.value = getPhotoKey(photo);
 
@@ -215,14 +228,15 @@ export default {
       if (event.type === 'mousedown') {
         document.addEventListener('mousemove', handleDocumentMouseMove);
         document.addEventListener('mouseup', handleDocumentMouseUp);
+        event.preventDefault(); // Prevent default for mouse
       } else if (event.type === 'touchstart') {
         document.addEventListener('touchmove', handleDocumentTouchMove, {
           passive: false,
         });
         document.addEventListener('touchend', handleDocumentTouchEnd);
+        // Don't prevent default on touchstart - let scrolling work naturally
+        // We'll only prevent default on touchmove if actually dragging over image
       }
-
-      event.preventDefault();
     };
 
     // Calculate max translation based on scale and container size
@@ -286,6 +300,7 @@ export default {
       document.removeEventListener('touchend', handleDocumentTouchEnd);
 
       isDragging.value = false;
+      hasMoved.value = false;
       dragPhoto.value = null;
       dragPhotoUrl.value = null;
     };
