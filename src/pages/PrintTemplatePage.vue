@@ -9,7 +9,7 @@
           color="primary"
           icon="print"
           label="Print"
-          @click="window.print()"
+          @click="handlePrint"
         />
         <q-btn
           flat
@@ -50,6 +50,8 @@
             <!-- Corner triangles for cutting alignment -->
             <div class="corner-triangle corner-triangle-top-left"></div>
             <div class="corner-triangle corner-triangle-top-right"></div>
+            <div class="corner-triangle corner-triangle-bottom-left"></div>
+            <div class="corner-triangle corner-triangle-bottom-right"></div>
 
             <!-- Inner square frame for image -->
             <div class="print-square">
@@ -351,6 +353,11 @@ export default {
       photoTransforms.value = {};
     };
 
+    // Handle print button click - open system print dialog
+    const handlePrint = () => {
+      window.print();
+    };
+
     // Parse photos and quantities from query parameters
     const parseOrderData = () => {
       try {
@@ -431,6 +438,7 @@ export default {
       endDrag,
       handleWheel,
       resetAllTransforms,
+      handlePrint,
     };
   },
 };
@@ -530,6 +538,24 @@ export default {
     border-right: 0.15in solid #333;
     border-left: 0.15in solid transparent;
     border-bottom: 0.15in solid transparent;
+  }
+
+  .corner-triangle-bottom-left {
+    bottom: 0;
+    left: 0;
+    border-bottom: 0.15in solid #333;
+    border-left: 0.15in solid #333;
+    border-right: 0.15in solid transparent;
+    border-top: 0.15in solid transparent;
+  }
+
+  .corner-triangle-bottom-right {
+    bottom: 0;
+    right: 0;
+    border-bottom: 0.15in solid #333;
+    border-right: 0.15in solid #333;
+    border-left: 0.15in solid transparent;
+    border-top: 0.15in solid transparent;
   }
 
   .print-square {
@@ -656,6 +682,24 @@ export default {
     border-right: 0.15in solid #333;
     border-left: 0.15in solid transparent;
     border-bottom: 0.15in solid transparent;
+  }
+
+  .corner-triangle-bottom-left {
+    bottom: 0;
+    left: 0;
+    border-bottom: 0.15in solid #333;
+    border-left: 0.15in solid #333;
+    border-right: 0.15in solid transparent;
+    border-top: 0.15in solid transparent;
+  }
+
+  .corner-triangle-bottom-right {
+    bottom: 0;
+    right: 0;
+    border-bottom: 0.15in solid #333;
+    border-right: 0.15in solid #333;
+    border-left: 0.15in solid transparent;
+    border-top: 0.15in solid transparent;
   }
 
   .print-square {
