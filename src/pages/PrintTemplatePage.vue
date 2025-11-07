@@ -46,7 +46,11 @@
           >
             <!-- Outer cutting square template -->
             <div class="outer-cut-template"></div>
-            
+
+            <!-- Corner triangles for cutting alignment -->
+            <div class="corner-triangle corner-triangle-top-left"></div>
+            <div class="corner-triangle corner-triangle-top-right"></div>
+
             <!-- Inner square frame for image -->
             <div class="print-square">
               <div
@@ -57,16 +61,17 @@
                 @touchstart="startDrag($event, page[gridIndex])"
                 @wheel.prevent="handleWheel($event, page[gridIndex])"
               >
-              <img
-                :src="page[gridIndex].url"
-                :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
-                class="print-image"
-                draggable="false"
-              />
+                <img
+                  :src="page[gridIndex].url"
+                  :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
+                  class="print-image"
+                  draggable="false"
+                />
               </div>
             </div>
           </div>
         </div>
+        <!-- Footer positioned below page content -->
         <div class="print-footer">
           Order #{{ orderNumber }} - Page {{ pageIndex + 1 }} of
           {{ pages.length }}
@@ -178,7 +183,7 @@ export default {
         const deltaX = touch.clientX - dragStartX.value;
         const deltaY = touch.clientY - dragStartY.value;
         const movement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        
+
         // Only consider it a drag if moved more than 5px
         if (movement > 5) {
           hasMoved.value = true;
@@ -460,7 +465,7 @@ export default {
     height: 11in;
     page-break-after: always;
     margin: 0;
-    padding: 0.75in 1in 1in 1in;
+    padding: 0.75in 1in 0.5in 1in;
     background: white;
     border: none;
     display: flex;
@@ -469,18 +474,18 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 3.0in);
-    grid-template-rows: repeat(3, 3.0in);
+    grid-template-columns: repeat(2, 3in);
+    grid-template-rows: repeat(3, 3in);
     gap: 0.4in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
-    margin-bottom: 0.3in;
+    margin-bottom: 0;
   }
 
   .print-square-container {
-    width: 3.0in;
-    height: 3.0in;
+    width: 3in;
+    height: 3in;
     position: relative;
     display: flex;
     align-items: center;
@@ -490,14 +495,41 @@ export default {
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-cut-template {
     position: absolute;
-    width: 3.0in;
-    height: 3.0in;
+    width: 3in;
+    height: 3in;
     border: 1px dashed #333;
     pointer-events: none;
     z-index: 1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  /* Corner triangles for cutting alignment - upper corners */
+  .corner-triangle {
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .corner-triangle-top-left {
+    top: 0;
+    left: 0;
+    border-top: 0.15in solid #333;
+    border-left: 0.15in solid #333;
+    border-right: 0.15in solid transparent;
+    border-bottom: 0.15in solid transparent;
+  }
+
+  .corner-triangle-top-right {
+    top: 0;
+    right: 0;
+    border-top: 0.15in solid #333;
+    border-right: 0.15in solid #333;
+    border-left: 0.15in solid transparent;
+    border-bottom: 0.15in solid transparent;
   }
 
   .print-square {
@@ -537,11 +569,10 @@ export default {
 
   .print-footer {
     text-align: center;
-    padding-top: 0.4in;
+    padding-top: 0.3in;
     font-size: 10pt;
     color: #666;
-    border-top: 1px solid #ccc;
-    margin-top: 0.2in;
+    margin-top: 0.3in;
     flex-shrink: 0;
   }
 }
@@ -563,24 +594,24 @@ export default {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 0.75in 1in 1in 1in;
+    padding: 0.75in 1in 0.5in 1in;
     border: 1px solid #ddd;
   }
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 3.0in);
-    grid-template-rows: repeat(3, 3.0in);
+    grid-template-columns: repeat(2, 3in);
+    grid-template-rows: repeat(3, 3in);
     gap: 0.4in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
-    margin-bottom: 0.3in;
+    margin-bottom: 0;
   }
 
   .print-square-container {
-    width: 3.0in;
-    height: 3.0in;
+    width: 3in;
+    height: 3in;
     position: relative;
     display: flex;
     align-items: center;
@@ -590,14 +621,41 @@ export default {
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-cut-template {
     position: absolute;
-    width: 3.0in;
-    height: 3.0in;
+    width: 3in;
+    height: 3in;
     border: 1px dashed #333;
     pointer-events: none;
     z-index: 1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  /* Corner triangles for cutting alignment - upper corners */
+  .corner-triangle {
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .corner-triangle-top-left {
+    top: 0;
+    left: 0;
+    border-top: 0.15in solid #333;
+    border-left: 0.15in solid #333;
+    border-right: 0.15in solid transparent;
+    border-bottom: 0.15in solid transparent;
+  }
+
+  .corner-triangle-top-right {
+    top: 0;
+    right: 0;
+    border-top: 0.15in solid #333;
+    border-right: 0.15in solid #333;
+    border-left: 0.15in solid transparent;
+    border-bottom: 0.15in solid transparent;
   }
 
   .print-square {
@@ -637,11 +695,10 @@ export default {
 
   .print-footer {
     text-align: center;
-    padding-top: 0.4in;
+    padding-top: 0.3in;
     font-size: 10pt;
     color: #666;
-    border-top: 1px solid #ddd;
-    margin-top: 0.2in;
+    margin-top: 0.3in;
     flex-shrink: 0;
   }
 }
