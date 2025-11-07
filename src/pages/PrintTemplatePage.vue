@@ -42,22 +42,28 @@
           <div
             v-for="(photo, gridIndex) in 6"
             :key="`${pageIndex}-${gridIndex}`"
-            class="print-square"
+            class="print-square-container"
           >
-            <div
-              v-if="page[gridIndex]"
-              class="image-wrapper"
-              :style="getImageStyle(page[gridIndex])"
-              @mousedown="startDrag($event, page[gridIndex])"
-              @touchstart="startDrag($event, page[gridIndex])"
-              @wheel.prevent="handleWheel($event, page[gridIndex])"
-            >
+            <!-- Outer cutting square template -->
+            <div class="outer-cut-template"></div>
+            
+            <!-- Inner square frame for image -->
+            <div class="print-square">
+              <div
+                v-if="page[gridIndex]"
+                class="image-wrapper"
+                :style="getImageStyle(page[gridIndex])"
+                @mousedown="startDrag($event, page[gridIndex])"
+                @touchstart="startDrag($event, page[gridIndex])"
+                @wheel.prevent="handleWheel($event, page[gridIndex])"
+              >
               <img
                 :src="page[gridIndex].url"
                 :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
                 class="print-image"
                 draggable="false"
               />
+              </div>
             </div>
           </div>
         </div>
@@ -463,13 +469,35 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 2.6in);
-    grid-template-rows: repeat(3, 2.6in);
-    gap: 0.55in;
+    grid-template-columns: repeat(2, 3.0in);
+    grid-template-rows: repeat(3, 3.0in);
+    gap: 0.4in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
     margin-bottom: 0.3in;
+  }
+
+  .print-square-container {
+    width: 3.0in;
+    height: 3.0in;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Outer cutting square template - dashed border for cutting guide */
+  .outer-cut-template {
+    position: absolute;
+    width: 3.0in;
+    height: 3.0in;
+    border: 1px dashed #333;
+    pointer-events: none;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   .print-square {
@@ -482,6 +510,7 @@ export default {
     overflow: hidden;
     background: white;
     position: relative;
+    z-index: 2;
   }
 
   .image-wrapper {
@@ -540,13 +569,35 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 2.6in);
-    grid-template-rows: repeat(3, 2.6in);
-    gap: 0.55in;
+    grid-template-columns: repeat(2, 3.0in);
+    grid-template-rows: repeat(3, 3.0in);
+    gap: 0.4in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
     margin-bottom: 0.3in;
+  }
+
+  .print-square-container {
+    width: 3.0in;
+    height: 3.0in;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Outer cutting square template - dashed border for cutting guide */
+  .outer-cut-template {
+    position: absolute;
+    width: 3.0in;
+    height: 3.0in;
+    border: 1px dashed #333;
+    pointer-events: none;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   .print-square {
@@ -559,6 +610,7 @@ export default {
     overflow: hidden;
     background: white;
     position: relative;
+    z-index: 2;
   }
 
   .image-wrapper {
