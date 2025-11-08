@@ -424,17 +424,6 @@ export default {
         timeout: 3000,
       });
 
-      // Reset form
-      formData.value = {
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        specialInstructions: '',
-      };
-      selectedFiles.value = [];
-      fileQuantities.value = [];
-
       // Navigate to cart
       try {
         await router.push('/cart');

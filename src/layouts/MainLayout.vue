@@ -194,7 +194,9 @@
             </q-item-section>
             <q-item-section>
               <q-item-label>About</q-item-label>
-              <q-item-label caption>Get to know Li'l Magnet Memories</q-item-label>
+              <q-item-label caption
+                >Get to know Li'l Magnet Memories</q-item-label
+              >
             </q-item-section>
           </q-item>
         </template>
