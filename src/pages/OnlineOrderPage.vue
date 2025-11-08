@@ -242,12 +242,13 @@
             <!-- Submit Button -->
             <div class="text-center q-mt-lg">
               <q-btn
-                type="submit"
+                type="button"
                 color="primary"
                 size="lg"
                 :loading="submitting"
                 :disable="!canSubmit"
                 class="q-px-xl"
+                @click.prevent.stop="onSubmit"
               >
                 <q-icon name="add_shopping_cart" class="q-mr-sm" />
                 Add to Cart
