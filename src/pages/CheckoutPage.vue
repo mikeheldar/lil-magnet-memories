@@ -561,7 +561,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useCart } from '../composables/useCart.js';
@@ -580,6 +580,21 @@ export default {
     const checkedInEvent = ref(null);
     const selectedShippingOption = ref(null);
     const selectedPaymentOption = ref(null);
+    const squareInitialized = ref(false);
+    const squarePayments = ref(null);
+    const squarePaymentRequest = ref(null);
+    const squareCard = ref(null);
+    const squareApplePay = ref(null);
+    const squareGooglePay = ref(null);
+    const applePayReady = ref(false);
+    const googlePayReady = ref(false);
+    const applePayAttached = ref(false);
+    const googlePayAttached = ref(false);
+    const squareCardMounted = ref(false);
+    const squareInitError = ref(null);
+    const applePayError = ref(null);
+    const googlePayError = ref(null);
+    const squareProcessing = ref(false);
 
     const customerInfo = ref({
       firstName: '',
@@ -647,6 +662,16 @@ export default {
       }
     });
 
+    watch(
+      paymentOptions,
+      (options) => {
+        if (!options.find((option) => option.value === selectedPaymentOption.value)) {
+          selectedPaymentOption.value = options.length > 0 ? options[0].value : null;
+        }
+      },
+      { immediate: true }
+    );
+
     // Shipping options based on check-in status
     const shippingOptions = computed(() => {
       if (checkedInEvent.value) {
@@ -678,21 +703,62 @@ export default {
       }
     });
 
-    // Available payment methods based on device and context
+    // Available payment methods based on Square readiness and context
     const availablePaymentMethods = computed(() => {
-      const isAppleDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isAndroidDevice = /Android/i.test(navigator.userAgent);
-
       const hasEvent =
         selectedShippingOption.value === 'collect_at_event' &&
         checkedInEvent.value;
 
       return {
-        applePay: isAppleDevice || navigator.userAgent.includes('Safari'),
-        googlePay: isAndroidDevice || navigator.userAgent.includes('Chrome'),
+        applePay: applePayReady.value,
+        googlePay: googlePayReady.value,
         paypal: true, // PayPal available everywhere
         payAtEvent: hasEvent,
       };
+    });
+
+    const paymentOptions = computed(() => {
+      const options = [];
+
+      if (availablePaymentMethods.value.applePay) {
+        options.push({
+          label: 'Apple Pay',
+          value: 'apple_pay',
+          disable: false,
+        });
+      }
+
+      if (availablePaymentMethods.value.googlePay) {
+        options.push({
+          label: 'Google Pay',
+          value: 'google_pay',
+          disable: false,
+        });
+      }
+
+      options.push({
+        label: 'Credit/Debit Card',
+        value: 'square_card',
+        disable: !squareInitialized.value,
+      });
+
+      if (availablePaymentMethods.value.paypal) {
+        options.push({
+          label: 'PayPal',
+          value: 'paypal',
+          disable: false,
+        });
+      }
+
+      if (availablePaymentMethods.value.payAtEvent) {
+        options.push({
+          label: 'Pay at Event',
+          value: 'pay_at_event',
+          disable: false,
+        });
+      }
+
+      return options;
     });
 
     // Calculate order total
@@ -756,9 +822,94 @@ export default {
       }
     };
 
+    const mountSquareCard = async () => {
+      if (!squareCard.value) {
+        return;
+      }
+      await nextTick();
+      const container = document.getElementById('square-payment-form');
+      if (!container) {
+        return;
+      }
+      if (!squareCardMounted.value) {
+        container.innerHTML = '';
+        await squareCard.value.attach('#square-payment-form');
+        squareCardMounted.value = true;
+      }
+    };
+
+    const renderApplePayButton = async () => {
+      if (!squareApplePay.value) {
+        return;
+      }
+      await nextTick();
+      const container = document.getElementById('square-apple-pay-button');
+      if (!container) {
+        return;
+      }
+      if (applePayAttached.value) {
+        return;
+      }
+      container.innerHTML = '';
+      try {
+        await squareApplePay.value.attach('#square-apple-pay-button');
+        applePayAttached.value = true;
+      } catch (error) {
+        applePayError.value = error;
+        console.error('Error attaching Apple Pay button:', error);
+      }
+    };
+
+    const renderGooglePayButton = async () => {
+      if (!squareGooglePay.value) {
+        return;
+      }
+      await nextTick();
+      const container = document.getElementById('square-google-pay-button');
+      if (!container) {
+        return;
+      }
+      if (googlePayAttached.value) {
+        return;
+      }
+      container.innerHTML = '';
+      try {
+        await squareGooglePay.value.attach('#square-google-pay-button');
+        googlePayAttached.value = true;
+      } catch (error) {
+        googlePayError.value = error;
+        console.error('Error attaching Google Pay button:', error);
+      }
+    };
+
+    const updateSquarePaymentRequest = async () => {
+      if (!squarePaymentRequest.value) {
+        return;
+      }
+      try {
+        await squarePaymentRequest.value.update({
+          total: {
+            amount: orderTotal.value.toFixed(2),
+            label: 'Lil Magnet Memories',
+          },
+          requestShippingContact:
+            selectedShippingOption.value === 'ship_to_address',
+        });
+      } catch (error) {
+        console.warn('Failed to update Square payment request:', error);
+      }
+    };
+
     // Square payment initialization
     const initializeSquarePayments = async () => {
       try {
+        squareInitError.value = null;
+        squareCardMounted.value = false;
+        applePayReady.value = false;
+        googlePayReady.value = false;
+        applePayAttached.value = false;
+        googlePayAttached.value = false;
+
         const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
         const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
@@ -775,13 +926,71 @@ export default {
         }
 
         const payments = window.Square.payments(applicationId, locationId);
+        squarePayments.value = payments;
 
-        // Initialize credit card form
+        const paymentRequest = payments.paymentRequest({
+          countryCode: 'US',
+          currencyCode: 'USD',
+          total: {
+            amount: orderTotal.value.toFixed(2),
+            label: 'Lil Magnet Memories',
+          },
+          requestBillingContact: true,
+          requestShippingContact:
+            selectedShippingOption.value === 'ship_to_address',
+        });
+        squarePaymentRequest.value = paymentRequest;
+
+        try {
+          const applePay = await payments.applePay(paymentRequest);
+          const canMakePayment = await applePay.canMakePayment();
+          if (canMakePayment) {
+            squareApplePay.value = applePay;
+            applePayReady.value = true;
+          } else {
+            applePayReady.value = false;
+          }
+        } catch (appleError) {
+          console.warn('Apple Pay not available:', appleError);
+          applePayError.value = appleError;
+          applePayReady.value = false;
+        }
+
+        try {
+          const googlePay = await payments.googlePay(paymentRequest);
+          const canMakePayment = await googlePay.canMakePayment();
+          if (canMakePayment.result) {
+            squareGooglePay.value = googlePay;
+            googlePayReady.value = true;
+          } else {
+            googlePayReady.value = false;
+          }
+        } catch (googleError) {
+          console.warn('Google Pay not available:', googleError);
+          googlePayError.value = googleError;
+          googlePayReady.value = false;
+        }
+
         const card = await payments.card();
-        await card.attach('#square-payment-form');
+        squareCard.value = card;
+
+        await mountSquareCard();
+        squareInitialized.value = true;
+        await updateSquarePaymentRequest();
+
+        if (selectedPaymentOption.value === 'apple_pay' && applePayReady.value) {
+          await renderApplePayButton();
+        }
+        if (
+          selectedPaymentOption.value === 'google_pay' &&
+          googlePayReady.value
+        ) {
+          await renderGooglePayButton();
+        }
 
         console.log('✅ Square payments initialized successfully');
       } catch (error) {
+        squareInitError.value = error;
         console.error('Error initializing Square payments:', error);
       }
     };

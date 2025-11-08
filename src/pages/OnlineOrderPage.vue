@@ -69,7 +69,7 @@
             Photo Upload Form
           </div>
 
-          <q-form @submit="onSubmit" class="q-gutter-md">
+          <q-form @submit.prevent="onSubmit" class="q-gutter-md">
             <!-- Customer Information -->
             <div class="text-h6 text-weight-medium q-mb-sm text-primary">
               <q-icon name="person" class="q-mr-sm" />

@@ -120,6 +120,7 @@
             >
               <!-- Outer cutting square template -->
               <div class="outer-cut-template"></div>
+              <div class="outer-cut-template secondary"></div>
 
               <!-- Corner triangles for cutting alignment -->
               <div class="corner-triangle corner-triangle-top-left"></div>
@@ -628,6 +629,16 @@ export default {
   margin: 0;
 }
 
+:root {
+  --inner-square-size: 246px; /* 2 9/16 in at 96dpi */
+  --outer-square-size: 313px;
+  --outer-square-size-secondary: calc(var(--outer-square-size) + 7.6px);
+  --triangle-size: 34px;
+  --grid-gap: 19.2px;
+  --page-padding-x: 43.2px; /* 0.45in */
+  --page-padding-y: 14.4px; /* 0.15in */
+}
+
 /* Print-specific styles */
 @media print {
   #q-app,
@@ -696,7 +707,7 @@ export default {
     height: 11in;
     page-break-after: always;
     margin: 0;
-    padding: 0.15in 0.45in 0.15in 0.45in;
+    padding: var(--page-padding-y) var(--page-padding-x);
     background: white;
     border: none;
     display: flex;
@@ -705,9 +716,9 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 3.2625in);
-    grid-template-rows: repeat(3, 3.2625in);
-    gap: 0.2in;
+    grid-template-columns: repeat(2, var(--outer-square-size));
+    grid-template-rows: repeat(3, var(--outer-square-size));
+    gap: var(--grid-gap);
     justify-content: center;
     flex: 0 0 auto;
     min-height: 0;
@@ -715,8 +726,8 @@ export default {
   }
 
   .print-square-container {
-    width: 3.2625in;
-    height: 3.2625in;
+    width: var(--outer-square-size);
+    height: var(--outer-square-size);
     position: relative;
     display: flex;
     align-items: center;
@@ -726,14 +737,22 @@ export default {
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-cut-template {
     position: absolute;
-    width: 3.2625in;
-    height: 3.2625in;
+    width: var(--outer-square-size);
+    height: var(--outer-square-size);
     border: 1px dashed #333;
+    box-sizing: border-box;
     pointer-events: none;
     z-index: 1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  .outer-cut-template.secondary {
+    width: var(--outer-square-size-secondary);
+    height: var(--outer-square-size-secondary);
+    opacity: 0.6;
+    z-index: 0;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
@@ -748,43 +767,44 @@ export default {
   .corner-triangle-top-left {
     top: 0;
     left: 0;
-    border-top: 0.35in solid #333;
-    border-left: 0.35in solid #333;
-    border-right: 0.35in solid transparent;
-    border-bottom: 0.35in solid transparent;
+    border-top: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid transparent;
+    border-bottom: var(--triangle-size) solid transparent;
   }
 
   .corner-triangle-top-right {
     top: 0;
     right: 0;
-    border-top: 0.35in solid #333;
-    border-right: 0.35in solid #333;
-    border-left: 0.35in solid transparent;
-    border-bottom: 0.35in solid transparent;
+    border-top: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid transparent;
+    border-bottom: var(--triangle-size) solid transparent;
   }
 
   .corner-triangle-bottom-left {
     bottom: 0;
     left: 0;
-    border-bottom: 0.35in solid #333;
-    border-left: 0.35in solid #333;
-    border-right: 0.35in solid transparent;
-    border-top: 0.35in solid transparent;
+    border-bottom: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid transparent;
+    border-top: var(--triangle-size) solid transparent;
   }
 
   .corner-triangle-bottom-right {
     bottom: 0;
     right: 0;
-    border-bottom: 0.35in solid #333;
-    border-right: 0.35in solid #333;
-    border-left: 0.35in solid transparent;
-    border-top: 0.35in solid transparent;
+    border-bottom: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid transparent;
+    border-top: var(--triangle-size) solid transparent;
   }
 
   .print-square {
-    width: 2.5625in;
-    height: 2.5625in;
+    width: var(--inner-square-size);
+    height: var(--inner-square-size);
     border: 1px solid #333;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -848,15 +868,15 @@ export default {
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 0.15in 0.45in 0.15in 0.45in;
+    padding: var(--page-padding-y) var(--page-padding-x);
     border: 1px solid #ddd;
   }
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 3.2625in);
-    grid-template-rows: repeat(3, 3.2625in);
-    gap: 0.2in;
+    grid-template-columns: repeat(2, var(--outer-square-size));
+    grid-template-rows: repeat(3, var(--outer-square-size));
+    gap: var(--grid-gap);
     justify-content: center;
     flex: 0 0 auto;
     min-height: 0;
@@ -864,8 +884,8 @@ export default {
   }
 
   .print-square-container {
-    width: 3.2625in;
-    height: 3.2625in;
+    width: var(--outer-square-size);
+    height: var(--outer-square-size);
     position: relative;
     display: flex;
     align-items: center;
@@ -875,14 +895,22 @@ export default {
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-cut-template {
     position: absolute;
-    width: 3.2625in;
-    height: 3.2625in;
+    width: var(--outer-square-size);
+    height: var(--outer-square-size);
     border: 1px dashed #333;
+    box-sizing: border-box;
     pointer-events: none;
     z-index: 1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  .outer-cut-template.secondary {
+    width: var(--outer-square-size-secondary);
+    height: var(--outer-square-size-secondary);
+    opacity: 0.6;
+    z-index: 0;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
@@ -897,43 +925,44 @@ export default {
   .corner-triangle-top-left {
     top: 0;
     left: 0;
-    border-top: 0.35in solid #333;
-    border-left: 0.35in solid #333;
-    border-right: 0.35in solid transparent;
-    border-bottom: 0.35in solid transparent;
+    border-top: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid transparent;
+    border-bottom: var(--triangle-size) solid transparent;
   }
 
   .corner-triangle-top-right {
     top: 0;
     right: 0;
-    border-top: 0.35in solid #333;
-    border-right: 0.35in solid #333;
-    border-left: 0.35in solid transparent;
-    border-bottom: 0.35in solid transparent;
+    border-top: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid transparent;
+    border-bottom: var(--triangle-size) solid transparent;
   }
 
   .corner-triangle-bottom-left {
     bottom: 0;
     left: 0;
-    border-bottom: 0.35in solid #333;
-    border-left: 0.35in solid #333;
-    border-right: 0.35in solid transparent;
-    border-top: 0.35in solid transparent;
+    border-bottom: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid transparent;
+    border-top: var(--triangle-size) solid transparent;
   }
 
   .corner-triangle-bottom-right {
     bottom: 0;
     right: 0;
-    border-bottom: 0.35in solid #333;
-    border-right: 0.35in solid #333;
-    border-left: 0.35in solid transparent;
-    border-top: 0.35in solid transparent;
+    border-bottom: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid transparent;
+    border-top: var(--triangle-size) solid transparent;
   }
 
   .print-square {
-    width: 2.5625in;
-    height: 2.5625in;
+    width: var(--inner-square-size);
+    height: var(--inner-square-size);
     border: 1px solid #333;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
