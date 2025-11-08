@@ -709,7 +709,7 @@ export default {
     grid-template-rows: repeat(3, 3.2625in);
     gap: 0.2in;
     justify-content: center;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-height: 0;
     margin-bottom: 0;
   }
@@ -858,7 +858,7 @@ export default {
     grid-template-rows: repeat(3, 3.2625in);
     gap: 0.2in;
     justify-content: center;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-height: 0;
     margin-bottom: 0;
   }
