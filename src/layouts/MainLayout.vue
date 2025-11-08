@@ -51,6 +51,15 @@
           <span class="text-h5 text-weight-bold">{{ pageTitle }}</span>
         </q-toolbar-title>
 
+        <!-- About Button -->
+        <q-btn
+          flat
+          dense
+          class="gt-xs q-mr-sm"
+          label="About"
+          @click="$router.push('/about')"
+        />
+
         <!-- Shopping Cart Icon -->
         <q-btn
           flat
@@ -133,10 +142,20 @@
             flat
             dense
             icon="camera_alt"
-            @click="$router.push('/upload')"
-            aria-label="Upload Photos"
+            @click="handleUploadClick"
+            aria-label="Start Creating Magnets"
           >
-            <q-tooltip>Upload Photos</q-tooltip>
+            <q-tooltip>Start Creating Magnets</q-tooltip>
+          </q-btn>
+          <q-btn
+            flat
+            dense
+            icon="info"
+            @click="$router.push('/about')"
+            aria-label="About Li'l Magnet Memories"
+            class="q-ml-xs"
+          >
+            <q-tooltip>About Li'l Magnet Memories</q-tooltip>
           </q-btn>
         </template>
       </q-toolbar>
@@ -166,6 +185,16 @@
             <q-item-section>
               <q-item-label>{{ uploadLinkLabel }}</q-item-label>
               <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple @click="navigateTo('/about')">
+            <q-item-section avatar>
+              <q-icon name="info" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>About</q-item-label>
+              <q-item-label caption>Get to know Li'l Magnet Memories</q-item-label>
             </q-item-section>
           </q-item>
         </template>
@@ -236,6 +265,16 @@
             <q-item-section>
               <q-item-label>{{ uploadLinkLabel }}</q-item-label>
               <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple @click="navigateTo('/about')">
+            <q-item-section avatar>
+              <q-icon name="info" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>About</q-item-label>
+              <q-item-label caption>Learn our story</q-item-label>
             </q-item-section>
           </q-item>
 
