@@ -744,6 +744,16 @@ export default {
       return options;
     });
 
+    // Calculate order total
+    const orderTotal = computed(() => {
+      let total = cartSubtotal.value;
+      if (selectedShippingOption.value === 'ship_to_address') {
+        total += shippingCost.value;
+      }
+      // TODO: Add tax calculation if needed
+      return total;
+    });
+
     // Auto-select payment option when shipping option list updates
     watch(
       paymentOptions,
@@ -769,16 +779,6 @@ export default {
 
     watch(orderTotal, () => {
       updateSquarePaymentRequest();
-    });
-
-    // Calculate order total
-    const orderTotal = computed(() => {
-      let total = cartSubtotal.value;
-      if (selectedShippingOption.value === 'ship_to_address') {
-        total += shippingCost.value;
-      }
-      // TODO: Add tax calculation if needed
-      return total;
     });
 
     // Check if order can be placed

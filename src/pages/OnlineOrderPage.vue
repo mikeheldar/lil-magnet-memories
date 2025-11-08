@@ -241,18 +241,35 @@
 
             <!-- Submit Button -->
             <div class="text-center q-mt-lg">
-              <q-btn
-                type="button"
-                color="primary"
-                size="lg"
-                :loading="submitting"
-                :disable="!canSubmit"
-                class="q-px-xl"
-                @click.prevent.stop="onSubmit"
-              >
-                <q-icon name="add_shopping_cart" class="q-mr-sm" />
-                Add to Cart
-              </q-btn>
+              <div class="row justify-center q-gutter-sm">
+                <div>
+                  <q-btn
+                    type="button"
+                    color="primary"
+                    size="lg"
+                    :loading="submitting"
+                    :disable="!canSubmit"
+                    class="q-px-xl"
+                    @click.prevent.stop="onSubmit"
+                  >
+                    <q-icon name="add_shopping_cart" class="q-mr-sm" />
+                    Add to Cart
+                  </q-btn>
+                </div>
+                <div>
+                  <q-btn
+                    type="button"
+                    color="secondary"
+                    outline
+                    size="lg"
+                    class="q-px-xl"
+                    @click.prevent.stop="router.push('/cart')"
+                  >
+                    <q-icon name="shopping_cart" class="q-mr-sm" />
+                    Proceed to Cart
+                  </q-btn>
+                </div>
+              </div>
             </div>
           </q-form>
         </q-card-section>
