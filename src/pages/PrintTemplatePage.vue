@@ -172,7 +172,7 @@ export default {
     const photoTransforms = ref({});
     const selectedPhotoKey = ref(null);
 
-    const INNER_SQUARE_SIZE_INCHES = 2.848;
+    const INNER_SQUARE_SIZE_INCHES = 2.5625; // 2 9/16 inches target print size
     const INNER_SQUARE_SIZE_PX = INNER_SQUARE_SIZE_INCHES * 96;
     const ZOOM_STEP = 0.05;
     const MOVE_STEP = 5;
@@ -696,7 +696,7 @@ export default {
     height: 11in;
     page-break-after: always;
     margin: 0;
-    padding: 0.15in 0.5in 0.15in 0.5in;
+    padding: 0.15in 0.45in 0.15in 0.45in;
     background: white;
     border: none;
     display: flex;
@@ -705,9 +705,9 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 3.4in);
-    grid-template-rows: repeat(3, 3.4in);
-    gap: 0.15in;
+    grid-template-columns: repeat(2, 3.2625in);
+    grid-template-rows: repeat(3, 3.2625in);
+    gap: 0.2in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
@@ -715,8 +715,8 @@ export default {
   }
 
   .print-square-container {
-    width: 3.4in;
-    height: 3.4in;
+    width: 3.2625in;
+    height: 3.2625in;
     position: relative;
     display: flex;
     align-items: center;
@@ -726,8 +726,8 @@ export default {
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-cut-template {
     position: absolute;
-    width: 3.4in;
-    height: 3.4in;
+    width: 3.2625in;
+    height: 3.2625in;
     border: 1px dashed #333;
     pointer-events: none;
     z-index: 1;
@@ -748,42 +748,42 @@ export default {
   .corner-triangle-top-left {
     top: 0;
     left: 0;
-    border-top: 0.15in solid #333;
-    border-left: 0.15in solid #333;
-    border-right: 0.15in solid transparent;
-    border-bottom: 0.15in solid transparent;
+    border-top: 0.35in solid #333;
+    border-left: 0.35in solid #333;
+    border-right: 0.35in solid transparent;
+    border-bottom: 0.35in solid transparent;
   }
 
   .corner-triangle-top-right {
     top: 0;
     right: 0;
-    border-top: 0.15in solid #333;
-    border-right: 0.15in solid #333;
-    border-left: 0.15in solid transparent;
-    border-bottom: 0.15in solid transparent;
+    border-top: 0.35in solid #333;
+    border-right: 0.35in solid #333;
+    border-left: 0.35in solid transparent;
+    border-bottom: 0.35in solid transparent;
   }
 
   .corner-triangle-bottom-left {
     bottom: 0;
     left: 0;
-    border-bottom: 0.15in solid #333;
-    border-left: 0.15in solid #333;
-    border-right: 0.15in solid transparent;
-    border-top: 0.15in solid transparent;
+    border-bottom: 0.35in solid #333;
+    border-left: 0.35in solid #333;
+    border-right: 0.35in solid transparent;
+    border-top: 0.35in solid transparent;
   }
 
   .corner-triangle-bottom-right {
     bottom: 0;
     right: 0;
-    border-bottom: 0.15in solid #333;
-    border-right: 0.15in solid #333;
-    border-left: 0.15in solid transparent;
-    border-top: 0.15in solid transparent;
+    border-bottom: 0.35in solid #333;
+    border-right: 0.35in solid #333;
+    border-left: 0.35in solid transparent;
+    border-top: 0.35in solid transparent;
   }
 
   .print-square {
-    width: 2.848in;
-    height: 2.848in;
+    width: 2.5625in;
+    height: 2.5625in;
     border: 1px solid #333;
     display: flex;
     align-items: center;
@@ -848,15 +848,15 @@ export default {
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 0.15in 0.5in 0.15in 0.5in;
+    padding: 0.15in 0.45in 0.15in 0.45in;
     border: 1px solid #ddd;
   }
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 3.4in);
-    grid-template-rows: repeat(3, 3.4in);
-    gap: 0.15in;
+    grid-template-columns: repeat(2, 3.2625in);
+    grid-template-rows: repeat(3, 3.2625in);
+    gap: 0.2in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
@@ -864,8 +864,8 @@ export default {
   }
 
   .print-square-container {
-    width: 3.4in;
-    height: 3.4in;
+    width: 3.2625in;
+    height: 3.2625in;
     position: relative;
     display: flex;
     align-items: center;
@@ -875,8 +875,8 @@ export default {
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-cut-template {
     position: absolute;
-    width: 3.4in;
-    height: 3.4in;
+    width: 3.2625in;
+    height: 3.2625in;
     border: 1px dashed #333;
     pointer-events: none;
     z-index: 1;
@@ -897,42 +897,42 @@ export default {
   .corner-triangle-top-left {
     top: 0;
     left: 0;
-    border-top: 0.15in solid #333;
-    border-left: 0.15in solid #333;
-    border-right: 0.15in solid transparent;
-    border-bottom: 0.15in solid transparent;
+    border-top: 0.35in solid #333;
+    border-left: 0.35in solid #333;
+    border-right: 0.35in solid transparent;
+    border-bottom: 0.35in solid transparent;
   }
 
   .corner-triangle-top-right {
     top: 0;
     right: 0;
-    border-top: 0.15in solid #333;
-    border-right: 0.15in solid #333;
-    border-left: 0.15in solid transparent;
-    border-bottom: 0.15in solid transparent;
+    border-top: 0.35in solid #333;
+    border-right: 0.35in solid #333;
+    border-left: 0.35in solid transparent;
+    border-bottom: 0.35in solid transparent;
   }
 
   .corner-triangle-bottom-left {
     bottom: 0;
     left: 0;
-    border-bottom: 0.15in solid #333;
-    border-left: 0.15in solid #333;
-    border-right: 0.15in solid transparent;
-    border-top: 0.15in solid transparent;
+    border-bottom: 0.35in solid #333;
+    border-left: 0.35in solid #333;
+    border-right: 0.35in solid transparent;
+    border-top: 0.35in solid transparent;
   }
 
   .corner-triangle-bottom-right {
     bottom: 0;
     right: 0;
-    border-bottom: 0.15in solid #333;
-    border-right: 0.15in solid #333;
-    border-left: 0.15in solid transparent;
-    border-top: 0.15in solid transparent;
+    border-bottom: 0.35in solid #333;
+    border-right: 0.35in solid #333;
+    border-left: 0.35in solid transparent;
+    border-top: 0.35in solid transparent;
   }
 
   .print-square {
-    width: 2.848in;
-    height: 2.848in;
+    width: 2.5625in;
+    height: 2.5625in;
     border: 1px solid #333;
     display: flex;
     align-items: center;
