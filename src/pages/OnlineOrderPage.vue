@@ -388,7 +388,7 @@ export default {
       fileQuantities.value.splice(index, 1);
     };
 
-    const onSubmit = () => {
+    const onSubmit = async () => {
       // Add to cart instead of submitting order
       const photos = selectedFiles.value.map((file, index) => ({
         name: file.name,
@@ -435,7 +435,18 @@ export default {
       fileQuantities.value = [];
 
       // Navigate to cart
-      router.push('/cart');
+      try {
+        await router.push('/cart');
+      } catch (error) {
+        console.error('Failed to navigate to cart:', error);
+        $q.notify({
+          type: 'warning',
+          message: 'Added to cart, but navigation failed',
+          caption: 'Please open the cart manually.',
+          position: 'top',
+          timeout: 4000,
+        });
+      }
     };
 
     // Authentication state
