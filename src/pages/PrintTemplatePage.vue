@@ -119,8 +119,26 @@
               class="print-square-container"
             >
               <!-- Outer cutting square template -->
-              <div class="outer-cut-template"></div>
-              <div class="outer-cut-template secondary"></div>
+              <svg class="outer-frame primary" viewBox="0 0 100 100">
+                <rect
+                  x="0.5"
+                  y="0.5"
+                  width="99"
+                  height="99"
+                  rx="0.5"
+                  ry="0.5"
+                />
+              </svg>
+              <svg class="outer-frame secondary" viewBox="0 0 100 100">
+                <rect
+                  x="0.5"
+                  y="0.5"
+                  width="99"
+                  height="99"
+                  rx="0.5"
+                  ry="0.5"
+                />
+              </svg>
 
               <!-- Corner triangles for cutting alignment -->
               <div class="corner-triangle corner-triangle-top-left"></div>
@@ -735,20 +753,28 @@ export default {
   }
 
   /* Outer cutting square template - dashed border for cutting guide */
-  .outer-cut-template {
+  .outer-frame {
     position: absolute;
     width: var(--outer-square-size);
     height: var(--outer-square-size);
-    border: 1px dashed #333;
-    box-sizing: border-box;
     pointer-events: none;
     z-index: 1;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
   }
 
-  .outer-cut-template.secondary {
+  .outer-frame rect {
+    fill: none;
+    stroke: #333;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .outer-frame.secondary {
     width: var(--outer-square-size-secondary);
     height: var(--outer-square-size-secondary);
     opacity: 0.6;
@@ -893,20 +919,28 @@ export default {
   }
 
   /* Outer cutting square template - dashed border for cutting guide */
-  .outer-cut-template {
+  .outer-frame {
     position: absolute;
     width: var(--outer-square-size);
     height: var(--outer-square-size);
-    border: 1px dashed #333;
-    box-sizing: border-box;
     pointer-events: none;
     z-index: 1;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
   }
 
-  .outer-cut-template.secondary {
+  .outer-frame rect {
+    fill: none;
+    stroke: #333;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .outer-frame.secondary {
     width: var(--outer-square-size-secondary);
     height: var(--outer-square-size-secondary);
     opacity: 0.6;

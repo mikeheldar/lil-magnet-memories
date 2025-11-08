@@ -159,13 +159,13 @@
             </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple @click="navigateTo('/upload')">
+          <q-item clickable v-ripple @click="handleUploadClick">
             <q-item-section avatar>
               <q-icon name="camera_alt" color="primary" />
             </q-item-section>
             <q-item-section>
-              <q-item-label>Upload Photos</q-item-label>
-              <q-item-label caption>Create custom magnets</q-item-label>
+              <q-item-label>{{ uploadLinkLabel }}</q-item-label>
+              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
             </q-item-section>
           </q-item>
         </template>
@@ -229,13 +229,13 @@
 
           <q-item-label header class="text-grey-8"> Customer </q-item-label>
 
-          <q-item clickable v-ripple @click="navigateTo('/upload')">
+          <q-item clickable v-ripple @click="handleUploadClick">
             <q-item-section avatar>
               <q-icon name="camera_alt" color="primary" />
             </q-item-section>
             <q-item-section>
-              <q-item-label>Upload Photos</q-item-label>
-              <q-item-label caption>Add new orders</q-item-label>
+              <q-item-label>{{ uploadLinkLabel }}</q-item-label>
+              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
             </q-item-section>
           </q-item>
 
@@ -337,6 +337,10 @@ import { useCart } from '../composables/useCart.js';
 import { useQuasar } from 'quasar';
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
+import {
+  useCustomerType,
+  CUSTOMER_TYPES,
+} from '../composables/useCustomerType.js';
 
 export default {
   name: 'MainLayout',
@@ -354,9 +358,37 @@ export default {
       email: null,
     });
 
+    const { setCustomerType } = useCustomerType();
+    const activeMarketEvent = computed(() =>
+      marketEventService.getCheckedInEvent()
+    );
+    const hasActiveEvent = computed(() => !!activeMarketEvent.value);
+
     // Create a ref that gets updated periodically to trigger reactivity
     const marketEventCheckTrigger = ref(0);
     let marketEventCheckInterval = null;
+
+    const uploadLinkLabel = computed(() => {
+      return 'Start Creating Magnets';
+    });
+
+    const uploadLinkCaption = computed(() => {
+      if (hasActiveEvent.value) {
+        return 'Create magnets for market pickup';
+      }
+      return 'Create magnets for online delivery';
+    });
+
+    const handleUploadClick = () => {
+      if (hasActiveEvent.value) {
+        setCustomerType(CUSTOMER_TYPES.MARKET);
+        router.push('/market-event-upload');
+      } else {
+        setCustomerType(CUSTOMER_TYPES.ONLINE);
+        router.push('/online-order');
+      }
+      leftDrawerOpen.value = false;
+    };
 
     const pageTitle = computed(() => {
       const baseTitle = (() => {
@@ -541,6 +573,9 @@ export default {
       handleSignIn,
       handleSignOut,
       cartItemCount,
+      uploadLinkLabel,
+      uploadLinkCaption,
+      handleUploadClick,
     };
   },
 };

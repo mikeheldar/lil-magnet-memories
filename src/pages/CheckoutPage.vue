@@ -655,23 +655,6 @@ export default {
       }, 500);
     });
 
-    // Auto-select payment option when shipping option changes
-    watch(selectedShippingOption, () => {
-      if (paymentOptions.value.length > 0) {
-        selectedPaymentOption.value = paymentOptions.value[0].value;
-      }
-    });
-
-    watch(
-      paymentOptions,
-      (options) => {
-        if (!options.find((option) => option.value === selectedPaymentOption.value)) {
-          selectedPaymentOption.value = options.length > 0 ? options[0].value : null;
-        }
-      },
-      { immediate: true }
-    );
-
     // Shipping options based on check-in status
     const shippingOptions = computed(() => {
       if (checkedInEvent.value) {
@@ -759,6 +742,33 @@ export default {
       }
 
       return options;
+    });
+
+    // Auto-select payment option when shipping option list updates
+    watch(
+      paymentOptions,
+      (options) => {
+        if (
+          !options.find(
+            (option) => option.value === selectedPaymentOption.value
+          )
+        ) {
+          selectedPaymentOption.value =
+            options.length > 0 ? options[0].value : null;
+        }
+      },
+      { immediate: true }
+    );
+
+    watch(selectedShippingOption, () => {
+      if (paymentOptions.value.length > 0) {
+        selectedPaymentOption.value = paymentOptions.value[0].value;
+      }
+      updateSquarePaymentRequest();
+    });
+
+    watch(orderTotal, () => {
+      updateSquarePaymentRequest();
     });
 
     // Calculate order total
