@@ -263,7 +263,7 @@
                     outline
                     size="lg"
                     class="q-px-xl"
-                    @click.prevent.stop="router.push('/cart')"
+                    @click.prevent.stop="goToCart"
                   >
                     <q-icon name="shopping_cart" class="q-mr-sm" />
                     Proceed to Cart
@@ -593,6 +593,14 @@ export default {
       }
     };
 
+    const goToCart = async () => {
+      try {
+        await router.push('/cart');
+      } catch (error) {
+        console.error('Failed to navigate to cart:', error);
+      }
+    };
+
     const loadProducts = async () => {
       try {
         const productsData = await firebaseService.getProducts();
@@ -658,6 +666,7 @@ export default {
       decreaseQuantity,
       removeFile,
       onSubmit,
+      goToCart,
       handleGoogleSignIn,
     };
   },
