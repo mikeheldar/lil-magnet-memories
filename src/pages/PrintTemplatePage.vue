@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md bg-grey-2">
+  <q-page class="q-pa-md bg-grey-2 print-template-page">
     <div class="text-center q-mb-lg">
       <div class="text-h4 text-weight-bold text-primary">
         Print Template - Order #{{ orderNumber }}
@@ -36,47 +36,121 @@
       <div
         v-for="(page, pageIndex) in pages"
         :key="pageIndex"
-        class="print-page"
+        class="print-page-wrapper"
       >
-        <div class="print-grid">
-          <div
-            v-for="(photo, gridIndex) in 6"
-            :key="`${pageIndex}-${gridIndex}`"
-            class="print-square-container"
-          >
-            <!-- Outer cutting square template -->
-            <div class="outer-cut-template"></div>
-
-            <!-- Corner triangles for cutting alignment -->
-            <div class="corner-triangle corner-triangle-top-left"></div>
-            <div class="corner-triangle corner-triangle-top-right"></div>
-            <div class="corner-triangle corner-triangle-bottom-left"></div>
-            <div class="corner-triangle corner-triangle-bottom-right"></div>
-
-            <!-- Inner square frame for image -->
-            <div class="print-square">
-              <div
-                v-if="page[gridIndex]"
-                class="image-wrapper"
-                :style="getImageStyle(page[gridIndex])"
-                @mousedown="startDrag($event, page[gridIndex])"
-                @touchstart="startDrag($event, page[gridIndex])"
-                @wheel.prevent="handleWheel($event, page[gridIndex])"
-              >
-                <img
-                  :src="page[gridIndex].url"
-                  :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
-                  class="print-image"
-                  draggable="false"
+        <div class="print-controls">
+          <div class="controls-header">Fine Adjustments</div>
+          <div class="controls-subheader">
+            <span class="label">Selected:</span>
+            <span class="value">{{ selectedPhotoLabel }}</span>
+          </div>
+          <div class="controls-group">
+            <div class="controls-row">
+              <q-btn
+                dense
+                round
+                icon="zoom_in"
+                color="primary"
+                @click="adjustScale(zoomStep)"
+                :disable="!selectedPhotoKey"
+              />
+              <q-btn
+                dense
+                round
+                icon="zoom_out"
+                color="primary"
+                @click="adjustScale(-zoomStep)"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
+            <div class="controls-row move-controls">
+              <q-btn
+                dense
+                round
+                icon="keyboard_arrow_up"
+                color="primary"
+                @click="adjustPosition('y', moveStep * -1)"
+                :disable="!selectedPhotoKey"
+              />
+              <div class="controls-row-horizontal">
+                <q-btn
+                  dense
+                  round
+                  icon="keyboard_arrow_left"
+                  color="primary"
+                  @click="adjustPosition('x', moveStep * -1)"
+                  :disable="!selectedPhotoKey"
+                />
+                <q-btn
+                  dense
+                  round
+                  icon="keyboard_arrow_right"
+                  color="primary"
+                  @click="adjustPosition('x', moveStep)"
+                  :disable="!selectedPhotoKey"
                 />
               </div>
+              <q-btn
+                dense
+                round
+                icon="keyboard_arrow_down"
+                color="primary"
+                @click="adjustPosition('y', moveStep)"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
+            <div class="controls-row">
+              <q-btn
+                dense
+                color="negative"
+                icon="restart_alt"
+                label="Reset Selected"
+                @click="resetSelectedTransform"
+                :disable="!selectedPhotoKey"
+              />
             </div>
           </div>
         </div>
-        <!-- Footer positioned below page content -->
-        <div class="print-footer">
-          Order #{{ orderNumber }} - Page {{ pageIndex + 1 }} of
-          {{ pages.length }}
+        <div class="print-page">
+          <div class="print-grid">
+            <div
+              v-for="(photo, gridIndex) in 6"
+              :key="`${pageIndex}-${gridIndex}`"
+              class="print-square-container"
+            >
+              <!-- Outer cutting square template -->
+              <div class="outer-cut-template"></div>
+
+              <!-- Corner triangles for cutting alignment -->
+              <div class="corner-triangle corner-triangle-top-left"></div>
+              <div class="corner-triangle corner-triangle-top-right"></div>
+              <div class="corner-triangle corner-triangle-bottom-left"></div>
+              <div class="corner-triangle corner-triangle-bottom-right"></div>
+
+              <!-- Inner square frame for image -->
+              <div
+                class="print-square"
+                :class="{ 'selected-photo': isPhotoSelected(page[gridIndex]) }"
+              >
+                <div
+                  v-if="page[gridIndex]"
+                  class="image-wrapper"
+                  :style="getImageStyle(page[gridIndex])"
+                  @mousedown="startDrag($event, page[gridIndex])"
+                  @touchstart="startDrag($event, page[gridIndex])"
+                  @wheel.prevent="handleWheel($event, page[gridIndex])"
+                  @click.stop="selectPhoto(page[gridIndex])"
+                >
+                  <img
+                    :src="page[gridIndex].url"
+                    :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
+                    class="print-image"
+                    draggable="false"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -96,6 +170,12 @@ export default {
 
     // Transformation tracking: map photo URL to transform state
     const photoTransforms = ref({});
+    const selectedPhotoKey = ref(null);
+
+    const INNER_SQUARE_SIZE_INCHES = 2.848;
+    const INNER_SQUARE_SIZE_PX = INNER_SQUARE_SIZE_INCHES * 96;
+    const ZOOM_STEP = 0.05;
+    const MOVE_STEP = 5;
 
     // Drag state
     const isDragging = ref(false);
@@ -112,8 +192,10 @@ export default {
     };
 
     // Initialize transform for a photo if not exists
-    const getTransform = (photo) => {
-      const key = getPhotoKey(photo);
+    const getTransformByKey = (key) => {
+      if (!key) {
+        return { scale: 1, x: 0, y: 0 };
+      }
       if (!photoTransforms.value[key]) {
         photoTransforms.value[key] = {
           scale: 1,
@@ -124,14 +206,57 @@ export default {
       return photoTransforms.value[key];
     };
 
+    const getTransform = (photo) => {
+      const key = getPhotoKey(photo);
+      return getTransformByKey(key);
+    };
+
     // Apply transform to all instances of this photo
+    const updateTransformByKey = (key, updates) => {
+      if (!key) {
+        return;
+      }
+      const transform = getTransformByKey(key);
+      Object.assign(transform, updates);
+    };
+
     const updateTransform = (photo, updates) => {
       const key = getPhotoKey(photo);
-      if (!photoTransforms.value[key]) {
-        photoTransforms.value[key] = { scale: 1, x: 0, y: 0 };
-      }
-      Object.assign(photoTransforms.value[key], updates);
+      updateTransformByKey(key, updates);
     };
+
+    const selectPhoto = (photo) => {
+      if (!photo) {
+        selectedPhotoKey.value = null;
+        return;
+      }
+      const key = getPhotoKey(photo);
+      selectedPhotoKey.value = key;
+      getTransformByKey(key);
+    };
+
+    const isPhotoSelected = (photo) => {
+      if (!photo) {
+        return false;
+      }
+      return selectedPhotoKey.value === getPhotoKey(photo);
+    };
+
+    const findPhotoByKey = (key) =>
+      photos.value.find((p) => getPhotoKey(p) === key);
+
+    const selectedPhotoLabel = computed(() => {
+      if (!selectedPhotoKey.value) {
+        return 'None';
+      }
+      const photo = findPhotoByKey(selectedPhotoKey.value);
+      if (!photo) {
+        return 'Photo';
+      }
+      return photo.name || photo.displayName || 'Photo';
+    });
+
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
     // Get CSS transform style for an image
     const getImageStyle = (photo) => {
@@ -225,6 +350,7 @@ export default {
       hasMoved.value = false;
       dragPhoto.value = photo;
       dragPhotoUrl.value = getPhotoKey(photo);
+      selectPhoto(photo);
 
       // Get coordinates from either mouse or touch event
       const clientX =
@@ -253,13 +379,12 @@ export default {
     };
 
     // Calculate max translation based on scale and container size
-    // Container is 2.6in = ~249.6px at 96dpi
+    // Container corresponds to the inner print square size
     const getMaxTranslate = (scale) => {
-      const containerSize = 249.6; // 2.6in in pixels at 96dpi
+      const containerSize = INNER_SQUARE_SIZE_PX;
       // Allow base movement of 100px even at scale 1, and more as we zoom in
       // At scale 1: 100px movement (allows panning even when not zoomed)
-      // At scale 2: 100 + 124.8 = ~225px movement
-      // At scale 3: 100 + 249.6 = ~350px movement
+      // At scale 2: increases based on container size
       const baseMovement = 100;
       const scaleBasedMovement = (containerSize / 2) * (scale - 1);
       return baseMovement + Math.max(0, scaleBasedMovement);
@@ -304,6 +429,43 @@ export default {
       updateTransform(photo, { x: newX, y: newY });
     };
 
+    const adjustScale = (delta) => {
+      if (!selectedPhotoKey.value) {
+        return;
+      }
+      const transform = { ...getTransformByKey(selectedPhotoKey.value) };
+      const newScale = clamp(transform.scale + delta, 0.5, 3);
+      const maxTranslate = getMaxTranslate(newScale);
+      const clampedX = clamp(transform.x, -maxTranslate, maxTranslate);
+      const clampedY = clamp(transform.y, -maxTranslate, maxTranslate);
+      updateTransformByKey(selectedPhotoKey.value, {
+        scale: newScale,
+        x: clampedX,
+        y: clampedY,
+      });
+    };
+
+    const adjustPosition = (axis, delta) => {
+      if (!selectedPhotoKey.value || (axis !== 'x' && axis !== 'y')) {
+        return;
+      }
+      const transform = { ...getTransformByKey(selectedPhotoKey.value) };
+      const maxTranslate = getMaxTranslate(transform.scale);
+      const newValue = clamp(
+        transform[axis] + delta,
+        -maxTranslate,
+        maxTranslate
+      );
+      updateTransformByKey(selectedPhotoKey.value, { [axis]: newValue });
+    };
+
+    const resetSelectedTransform = () => {
+      if (!selectedPhotoKey.value) {
+        return;
+      }
+      updateTransformByKey(selectedPhotoKey.value, { scale: 1, x: 0, y: 0 });
+    };
+
     // End dragging
     const endDrag = () => {
       // Remove document-level listeners (both mouse and touch)
@@ -321,6 +483,7 @@ export default {
     // Handle wheel zoom
     const handleWheel = (event, photo) => {
       event.preventDefault();
+      selectPhoto(photo);
       const delta = event.deltaY > 0 ? -0.1 : 0.1;
       const transform = getTransform(photo);
       const newScale = Math.max(0.5, Math.min(3, transform.scale + delta));
@@ -381,6 +544,12 @@ export default {
 
         photos.value = expandedPhotos;
 
+        if (expandedPhotos.length > 0) {
+          selectedPhotoKey.value = getPhotoKey(expandedPhotos[0]);
+        } else {
+          selectedPhotoKey.value = null;
+        }
+
         if (route.query.orderNumber) {
           orderNumber.value = route.query.orderNumber;
         }
@@ -432,6 +601,15 @@ export default {
       pages,
       photoTransforms,
       isDragging,
+      selectedPhotoKey,
+      selectedPhotoLabel,
+      selectPhoto,
+      isPhotoSelected,
+      adjustScale,
+      adjustPosition,
+      resetSelectedTransform,
+      zoomStep: ZOOM_STEP,
+      moveStep: MOVE_STEP,
       getImageStyle,
       startDrag,
       handleDrag,
@@ -444,26 +622,71 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
+@page {
+  size: letter;
+  margin: 0;
+}
+
 /* Print-specific styles */
 @media print {
-  body {
-    margin: 0;
-    padding: 0;
+  #q-app,
+  .q-layout,
+  .q-page-container,
+  .print-template-page {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
   }
 
-  .q-page {
-    background: white;
-    padding: 0;
-  }
-
-  .text-center,
-  .q-btn {
+  .q-header,
+  .q-layout__header,
+  .q-toolbar,
+  .q-drawer,
+  .q-footer,
+  .q-page-container > :not(.print-template-page) {
     display: none !important;
+    visibility: hidden !important;
+  }
+
+  .print-page::after,
+  .print-page::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .print-container,
+  .print-container * {
+    visibility: visible !important;
+  }
+
+  .print-controls {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .print-page-wrapper {
+    display: block;
   }
 
   .print-container {
-    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  body {
     margin: 0;
     padding: 0;
   }
@@ -473,7 +696,7 @@ export default {
     height: 11in;
     page-break-after: always;
     margin: 0;
-    padding: 0.75in 1in 0.5in 1in;
+    padding: 0.15in 0.5in 0.15in 0.5in;
     background: white;
     border: none;
     display: flex;
@@ -482,9 +705,9 @@ export default {
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 3in);
-    grid-template-rows: repeat(3, 3in);
-    gap: 0.4in;
+    grid-template-columns: repeat(2, 3.4in);
+    grid-template-rows: repeat(3, 3.4in);
+    gap: 0.15in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
@@ -492,8 +715,8 @@ export default {
   }
 
   .print-square-container {
-    width: 3in;
-    height: 3in;
+    width: 3.4in;
+    height: 3.4in;
     position: relative;
     display: flex;
     align-items: center;
@@ -503,8 +726,8 @@ export default {
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-cut-template {
     position: absolute;
-    width: 3in;
-    height: 3in;
+    width: 3.4in;
+    height: 3.4in;
     border: 1px dashed #333;
     pointer-events: none;
     z-index: 1;
@@ -559,8 +782,8 @@ export default {
   }
 
   .print-square {
-    width: 2.6in;
-    height: 2.6in;
+    width: 2.848in;
+    height: 2.848in;
     border: 1px solid #333;
     display: flex;
     align-items: center;
@@ -593,13 +816,12 @@ export default {
     pointer-events: none;
   }
 
-  .print-footer {
-    text-align: center;
-    padding-top: 0.3in;
-    font-size: 10pt;
-    color: #666;
-    margin-top: 0.3in;
-    flex-shrink: 0;
+  .selected-photo {
+    border: 1px solid #333 !important;
+  }
+
+  .print-template-page > :not(.print-container) {
+    display: none !important;
   }
 }
 
@@ -609,26 +831,32 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    padding: 2rem;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .print-page-wrapper {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
   }
 
   .print-page {
     width: 8.5in;
     height: 11in;
     background: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 0.75in 1in 0.5in 1in;
+    padding: 0.15in 0.5in 0.15in 0.5in;
     border: 1px solid #ddd;
   }
 
   .print-grid {
     display: grid;
-    grid-template-columns: repeat(2, 3in);
-    grid-template-rows: repeat(3, 3in);
-    gap: 0.4in;
+    grid-template-columns: repeat(2, 3.4in);
+    grid-template-rows: repeat(3, 3.4in);
+    gap: 0.15in;
     justify-content: center;
     flex: 1 1 auto;
     min-height: 0;
@@ -636,8 +864,8 @@ export default {
   }
 
   .print-square-container {
-    width: 3in;
-    height: 3in;
+    width: 3.4in;
+    height: 3.4in;
     position: relative;
     display: flex;
     align-items: center;
@@ -647,8 +875,8 @@ export default {
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-cut-template {
     position: absolute;
-    width: 3in;
-    height: 3in;
+    width: 3.4in;
+    height: 3.4in;
     border: 1px dashed #333;
     pointer-events: none;
     z-index: 1;
@@ -703,8 +931,8 @@ export default {
   }
 
   .print-square {
-    width: 2.6in;
-    height: 2.6in;
+    width: 2.848in;
+    height: 2.848in;
     border: 1px solid #333;
     display: flex;
     align-items: center;
@@ -739,11 +967,62 @@ export default {
 
   .print-footer {
     text-align: center;
-    padding-top: 0.3in;
+    padding-top: 0.15in;
     font-size: 10pt;
     color: #666;
-    margin-top: 0.3in;
+    margin-top: 0.15in;
     flex-shrink: 0;
+  }
+
+  .print-controls {
+    width: 180px;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .controls-header {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .controls-subheader {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .controls-subheader .label {
+    color: #666;
+    margin-right: 0.25rem;
+  }
+
+  .controls-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .controls-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .controls-row-horizontal {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .move-controls {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .selected-photo {
+    border: 2px solid #1976d2;
   }
 }
 </style>
