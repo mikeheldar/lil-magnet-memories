@@ -244,7 +244,9 @@
                           :error-message="
                             shippingCityError ? 'City is required' : ''
                           "
-                          :input-attrs="{ autocomplete: 'shipping address-level2' }"
+                          :input-attrs="{
+                            autocomplete: 'shipping address-level2',
+                          }"
                         />
                       </div>
                       <div class="col-6">
@@ -256,7 +258,9 @@
                           :error-message="
                             shippingStateError ? 'State is required' : ''
                           "
-                          :input-attrs="{ autocomplete: 'shipping address-level1' }"
+                          :input-attrs="{
+                            autocomplete: 'shipping address-level1',
+                          }"
                         />
                       </div>
                     </div>
@@ -270,7 +274,9 @@
                           :error-message="
                             shippingZipError ? 'ZIP code is required' : ''
                           "
-                          :input-attrs="{ autocomplete: 'shipping postal-code' }"
+                          :input-attrs="{
+                            autocomplete: 'shipping postal-code',
+                          }"
                         />
                       </div>
                     </div>
@@ -343,7 +349,9 @@
                           :error-message="
                             billingCityError ? 'Billing city is required' : ''
                           "
-                          :input-attrs="{ autocomplete: 'billing address-level2' }"
+                          :input-attrs="{
+                            autocomplete: 'billing address-level2',
+                          }"
                         />
                       </div>
                       <div class="col-6">
@@ -355,7 +363,9 @@
                           :error-message="
                             billingStateError ? 'Billing state is required' : ''
                           "
-                          :input-attrs="{ autocomplete: 'billing address-level1' }"
+                          :input-attrs="{
+                            autocomplete: 'billing address-level1',
+                          }"
                         />
                       </div>
                     </div>
@@ -743,6 +753,13 @@ export default {
   setup() {
     const router = useRouter();
     const $q = useQuasar();
+    const safeNotify = (options) => {
+      if ($q && typeof $q.notify === 'function') {
+        $q.notify(options);
+      } else {
+        console.warn('Notify plugin unavailable', options);
+      }
+    };
     const { cartItems, cartSubtotal, clearCart } = useCart();
 
     const submitting = ref(false);
@@ -971,7 +988,7 @@ export default {
       } catch (error) {
         console.error('Error loading shipping options:', error);
         shippingOptionsData.value = DEFAULT_SHIPPING_OPTIONS;
-        $q.notify({
+        safeNotify({
           type: 'warning',
           message: 'Using default shipping options',
           position: 'top',
@@ -1193,16 +1210,28 @@ export default {
           !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerInfo.value.email))
     );
     const shippingStreetError = computed(
-      () => showValidationErrors.value && requiresShippingAddress.value && !shippingAddress.value.street
+      () =>
+        showValidationErrors.value &&
+        requiresShippingAddress.value &&
+        !shippingAddress.value.street
     );
     const shippingCityError = computed(
-      () => showValidationErrors.value && requiresShippingAddress.value && !shippingAddress.value.city
+      () =>
+        showValidationErrors.value &&
+        requiresShippingAddress.value &&
+        !shippingAddress.value.city
     );
     const shippingStateError = computed(
-      () => showValidationErrors.value && requiresShippingAddress.value && !shippingAddress.value.state
+      () =>
+        showValidationErrors.value &&
+        requiresShippingAddress.value &&
+        !shippingAddress.value.state
     );
     const shippingZipError = computed(
-      () => showValidationErrors.value && requiresShippingAddress.value && !shippingAddress.value.zip
+      () =>
+        showValidationErrors.value &&
+        requiresShippingAddress.value &&
+        !shippingAddress.value.zip
     );
     const billingStreetError = computed(
       () =>
@@ -1455,7 +1484,7 @@ export default {
     const placeOrder = async () => {
       if (!canPlaceOrder.value) {
         showValidationErrors.value = true;
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Please fill in all required fields',
           position: 'top',
@@ -1550,7 +1579,7 @@ export default {
         clearCart();
 
         // Show success notification
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Order placed successfully!',
           caption: `Order #${orderNumber}`,
@@ -1585,7 +1614,7 @@ export default {
         });
       } catch (error) {
         console.error('Error placing order:', error);
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Failed to place order',
           caption: error.message || 'Please try again',
