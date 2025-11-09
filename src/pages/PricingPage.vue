@@ -59,6 +59,102 @@
             </q-item>
           </q-list>
         </q-card>
+
+        <q-card class="q-mt-md">
+          <q-card-section>
+            <div class="row items-center justify-between q-mb-sm">
+              <div class="text-h5">Shipping Options</div>
+              <div class="q-gutter-sm">
+                <q-btn
+                  color="primary"
+                  label="Add Shipping Option"
+                  icon="local_shipping"
+                  size="sm"
+                  @click="addShippingOption"
+                />
+                <q-btn
+                  flat
+                  color="grey-7"
+                  label="Reset to Default"
+                  size="sm"
+                  @click="resetShippingOptions"
+                />
+              </div>
+            </div>
+            <div class="text-body2 text-grey-7">
+              Adjust shipping speeds, pickup options, and costs for checkout.
+            </div>
+          </q-card-section>
+          <q-separator />
+          <q-list separator>
+            <q-item
+              v-for="(option, index) in shippingOptions"
+              :key="option.value || index"
+              class="shipping-option-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-weight-medium">
+                  {{ option.label || option.value }}
+                  <q-chip
+                    v-if="option.default"
+                    color="primary"
+                    text-color="white"
+                    size="sm"
+                    class="q-ml-sm"
+                  >
+                    Default
+                  </q-chip>
+                </q-item-label>
+                <q-item-label caption class="text-grey-7">
+                  <div v-if="option.description">{{ option.description }}</div>
+                  <div v-if="option.estimatedTimeline">
+                    {{ option.estimatedTimeline }}
+                  </div>
+                  <div class="text-caption text-grey-6 q-mt-xs">
+                    Type:
+                    {{
+                      option.type === 'pickup'
+                        ? 'Event pickup'
+                        : 'Ship to address'
+                    }}
+                    &nbsp;•&nbsp; Requires address:
+                    {{ option.allowAddress !== false ? 'Yes' : 'No' }}
+                  </div>
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side class="text-right">
+                <div class="text-body2 text-primary">
+                  {{ `$${Number(option.cost || 0).toFixed(2)}` }}
+                </div>
+                <div class="q-gutter-xs q-mt-sm">
+                  <q-btn
+                    flat
+                    round
+                    icon="edit"
+                    color="primary"
+                    size="sm"
+                    @click="editShippingOption(index)"
+                  />
+                  <q-btn
+                    flat
+                    round
+                    icon="delete"
+                    color="negative"
+                    size="sm"
+                    @click="confirmShippingDelete(index)"
+                  />
+                </div>
+              </q-item-section>
+            </q-item>
+            <q-item v-if="!shippingOptions.length">
+              <q-item-section>
+                <q-item-label caption>
+                  No shipping options configured yet.
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card>
       </div>
 
       <!-- Right: Product Form -->
@@ -190,6 +286,116 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="shippingOptionDialog">
+      <q-card style="min-width: 360px">
+        <q-card-section>
+          <div class="text-h6 q-mb-md">
+            {{
+              shippingOptionIndex >= 0
+                ? 'Edit Shipping Option'
+                : 'New Shipping Option'
+            }}
+          </div>
+          <q-input
+            v-model="editingShippingOption.label"
+            label="Label *"
+            filled
+            class="q-mb-md"
+          />
+          <q-input
+            v-model="editingShippingOption.value"
+            label="Identifier"
+            hint="Optional unique key (auto-generated if left blank)"
+            filled
+            class="q-mb-md"
+          />
+          <div class="row q-col-gutter-sm q-mb-md">
+            <div class="col-6">
+              <q-input
+                v-model.number="editingShippingOption.cost"
+                type="number"
+                label="Cost"
+                prefix="$"
+                filled
+              />
+            </div>
+            <div class="col-6">
+              <q-select
+                v-model="editingShippingOption.type"
+                :options="[
+                  { label: 'Ship to address', value: 'shipping' },
+                  { label: 'Event pickup', value: 'pickup' },
+                ]"
+                label="Type"
+                filled
+              />
+            </div>
+          </div>
+          <q-input
+            v-model="editingShippingOption.estimatedTimeline"
+            label="Estimated timeline"
+            filled
+            class="q-mb-md"
+          />
+          <q-input
+            v-model="editingShippingOption.description"
+            label="Description"
+            type="textarea"
+            filled
+            rows="3"
+            class="q-mb-md"
+          />
+          <q-toggle
+            v-model="editingShippingOption.allowAddress"
+            :disable="editingShippingOption.type === 'pickup'"
+            label="Requires customer address"
+            class="q-mb-sm"
+          />
+          <q-toggle
+            v-model="editingShippingOption.default"
+            label="Make this the default option"
+          />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Cancel"
+            color="primary"
+            @click="closeShippingOptionDialog"
+          />
+          <q-btn
+            color="primary"
+            label="Save"
+            @click="saveShippingOptionChanges"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="shippingDeleteDialog">
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="local_shipping" color="negative" text-color="white" />
+          <span class="q-ml-sm">Remove this shipping option?</span>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Cancel"
+            color="primary"
+            v-close-popup
+            @click="shippingDeleteDialog = false"
+          />
+          <q-btn
+            flat
+            label="Delete"
+            color="negative"
+            @click="deleteShippingOption"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -198,7 +404,10 @@ import { ref, onMounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { authService } from '../services/authService';
 import { useRouter } from 'vue-router';
-import { firebaseService } from '../services/firebaseService.js';
+import {
+  firebaseService,
+  DEFAULT_SHIPPING_OPTIONS,
+} from '../services/firebaseService.js';
 
 export default {
   name: 'PricingPage',
@@ -211,6 +420,12 @@ export default {
     const deleteIndex = ref(-1);
     const imageFile = ref(null);
     const uploadingImage = ref(false);
+    const shippingOptions = ref([]);
+    const shippingOptionDialog = ref(false);
+    const shippingOptionIndex = ref(-1);
+    const editingShippingOption = ref(null);
+    const shippingDeleteDialog = ref(false);
+    const shippingDeleteIndex = ref(-1);
 
     // Check admin access
     onMounted(async () => {
@@ -223,7 +438,7 @@ export default {
         router.push('/');
         return;
       }
-      loadProducts();
+      await Promise.all([loadProducts(), loadShippingOptions()]);
     });
 
     const pricingEntries = computed(() => {
@@ -247,6 +462,215 @@ export default {
         $q.notify({
           type: 'negative',
           message: 'Failed to load products',
+          position: 'top',
+        });
+      }
+    };
+
+    const loadShippingOptions = async () => {
+      try {
+        const options = await firebaseService.getShippingOptions();
+        shippingOptions.value = Array.isArray(options)
+          ? options
+          : DEFAULT_SHIPPING_OPTIONS.map((option) => ({ ...option }));
+      } catch (error) {
+        console.error('Error loading shipping options:', error);
+        shippingOptions.value = DEFAULT_SHIPPING_OPTIONS.map((option) => ({
+          ...option,
+        }));
+        $q.notify({
+          type: 'warning',
+          message: 'Using default shipping options',
+          position: 'top',
+        });
+      }
+    };
+
+    const slugify = (value) =>
+      value
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+
+    const startShippingOptionEdit = (option = null, index = -1) => {
+      if (option) {
+        editingShippingOption.value = {
+          label: option.label || '',
+          value: option.value || option.id || '',
+          description: option.description || '',
+          estimatedTimeline: option.estimatedTimeline || '',
+          cost: Number(option.cost ?? 0),
+          type: option.type || 'shipping',
+          allowAddress: option.allowAddress !== false,
+          default: option.default || false,
+        };
+        shippingOptionIndex.value = index;
+      } else {
+        editingShippingOption.value = {
+          label: '',
+          value: '',
+          description: '',
+          estimatedTimeline: '',
+          cost: 0,
+          type: 'shipping',
+          allowAddress: true,
+          default: shippingOptions.value.length === 0,
+        };
+        shippingOptionIndex.value = -1;
+      }
+      shippingOptionDialog.value = true;
+    };
+
+    const addShippingOption = () => {
+      startShippingOptionEdit();
+    };
+
+    const editShippingOption = (index) => {
+      const option = shippingOptions.value[index];
+      if (!option) {
+        return;
+      }
+      startShippingOptionEdit(option, index);
+    };
+
+    const closeShippingOptionDialog = () => {
+      shippingOptionDialog.value = false;
+      editingShippingOption.value = null;
+      shippingOptionIndex.value = -1;
+    };
+
+    const saveShippingOptionChanges = async () => {
+      const option = editingShippingOption.value;
+      if (!option) {
+        return;
+      }
+      if (!option.label.trim()) {
+        $q.notify({
+          type: 'negative',
+          message: 'Please enter a label for the shipping option',
+          position: 'top',
+        });
+        return;
+      }
+      let value = option.value.trim();
+      if (!value) {
+        value = slugify(option.label);
+      }
+      if (
+        shippingOptions.value.some(
+          (existing, index) =>
+            existing.value === value && index !== shippingOptionIndex.value
+        )
+      ) {
+        value = `${value}_${Date.now()}`;
+      }
+
+      const updatedOption = {
+        label: option.label.trim(),
+        value,
+        description: option.description.trim(),
+        estimatedTimeline: option.estimatedTimeline.trim(),
+        cost: Number(option.cost ?? 0),
+        type: option.type || 'shipping',
+        allowAddress: option.allowAddress !== false,
+        default: option.default || false,
+      };
+
+      if (updatedOption.default) {
+        shippingOptions.value = shippingOptions.value.map((existing, index) =>
+          index === shippingOptionIndex.value
+            ? existing
+            : { ...existing, default: false }
+        );
+      }
+
+      if (shippingOptionIndex.value >= 0) {
+        shippingOptions.value[shippingOptionIndex.value] = updatedOption;
+      } else {
+        shippingOptions.value.push(updatedOption);
+      }
+
+      try {
+        await firebaseService.saveShippingOptions(shippingOptions.value);
+        $q.notify({
+          type: 'positive',
+          message: 'Shipping options updated',
+          position: 'top',
+        });
+        closeShippingOptionDialog();
+      } catch (error) {
+        console.error('Error saving shipping options:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to save shipping options',
+          position: 'top',
+        });
+      }
+    };
+
+    const confirmShippingDelete = (index) => {
+      shippingDeleteIndex.value = index;
+      shippingDeleteDialog.value = true;
+    };
+
+    const deleteShippingOption = async () => {
+      if (shippingOptions.value.length <= 1) {
+        $q.notify({
+          type: 'warning',
+          message: 'At least one shipping option is required.',
+          position: 'top',
+        });
+        shippingDeleteDialog.value = false;
+        return;
+      }
+      const index = shippingDeleteIndex.value;
+      if (index < 0) {
+        shippingDeleteDialog.value = false;
+        return;
+      }
+      const wasDefault = shippingOptions.value[index]?.default;
+      shippingOptions.value.splice(index, 1);
+      if (wasDefault && shippingOptions.value.length > 0) {
+        shippingOptions.value[0].default = true;
+      }
+      try {
+        await firebaseService.saveShippingOptions(shippingOptions.value);
+        $q.notify({
+          type: 'positive',
+          message: 'Shipping option removed',
+          position: 'top',
+        });
+      } catch (error) {
+        console.error('Error deleting shipping option:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to delete shipping option',
+          position: 'top',
+        });
+      } finally {
+        shippingDeleteDialog.value = false;
+        shippingDeleteIndex.value = -1;
+      }
+    };
+
+    const resetShippingOptions = async () => {
+      shippingOptions.value = DEFAULT_SHIPPING_OPTIONS.map((option) => ({
+        ...option,
+      }));
+      try {
+        await firebaseService.saveShippingOptions(shippingOptions.value);
+        $q.notify({
+          type: 'positive',
+          message: 'Shipping options reset to defaults',
+          position: 'top',
+        });
+      } catch (error) {
+        console.error('Error resetting shipping options:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to reset shipping options',
           position: 'top',
         });
       }
@@ -444,6 +868,11 @@ export default {
       pricingEntries,
       imageFile,
       uploadingImage,
+      shippingOptions,
+      shippingOptionDialog,
+      editingShippingOption,
+      shippingOptionIndex,
+      shippingDeleteDialog,
       addProduct,
       editProduct,
       cancelEdit,
@@ -456,6 +885,13 @@ export default {
       updatePrice,
       handleImageSelect,
       removeImage,
+      addShippingOption,
+      editShippingOption,
+      closeShippingOptionDialog,
+      saveShippingOptionChanges,
+      confirmShippingDelete,
+      deleteShippingOption,
+      resetShippingOptions,
     };
   },
 };
@@ -482,5 +918,9 @@ export default {
   max-width: 200px;
   height: auto;
   border-radius: 8px;
+}
+
+.shipping-option-item {
+  padding: 12px 16px;
 }
 </style>

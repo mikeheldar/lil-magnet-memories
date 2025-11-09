@@ -192,14 +192,17 @@
                     :options="shippingOptions"
                     color="primary"
                   />
-                  <div
-                    v-if="
-                      selectedShippingOption === 'ship_to_address' &&
-                      shippingOptions.find((o) => o.value === 'ship_to_address')
-                        ?.required
-                    "
-                    class="q-mt-md"
-                  >
+                  <div v-if="selectedShippingDetails" class="q-mt-md">
+                    <q-banner dense class="bg-grey-2 text-grey-8">
+                      <div class="text-weight-medium">
+                        {{ selectedShippingDetails.rawLabel }}
+                      </div>
+                      <div v-if="shippingTimeline" class="text-caption">
+                        {{ shippingTimeline }}
+                      </div>
+                    </q-banner>
+                  </div>
+                  <div v-if="requiresShippingAddress" class="q-mt-md">
                     <q-input
                       v-model="shippingAddress.street"
                       label="Street Address *"
@@ -234,7 +237,8 @@
                   </div>
                   <div
                     v-if="
-                      selectedShippingOption === 'collect_at_event' &&
+                      selectedShippingDetails &&
+                      selectedShippingDetails.type === 'pickup' &&
                       checkedInEvent
                     "
                     class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
@@ -259,6 +263,66 @@
                   </div>
                 </q-card-section>
               </q-card>
+
+              <q-card
+                v-if="selectedPaymentOption === 'square_card'"
+                class="q-mb-md"
+              >
+                <q-card-section>
+                  <div class="text-h6 q-mb-md">Billing Address</div>
+                  <q-toggle
+                    v-model="billingSameAsShipping"
+                    :disable="!requiresShippingAddress"
+                    label="Billing address matches shipping address"
+                  />
+                  <div
+                    v-if="
+                      requiresBillingAddress &&
+                      (!billingSameAsShipping || !requiresShippingAddress)
+                    "
+                    class="q-mt-md"
+                  >
+                    <q-input
+                      v-model="billingAddress.street"
+                      label="Billing Street Address *"
+                      filled
+                      class="q-mb-md"
+                    />
+                    <div class="row q-col-gutter-md q-mb-md">
+                      <div class="col-6">
+                        <q-input
+                          v-model="billingAddress.city"
+                          label="Billing City *"
+                          filled
+                        />
+                      </div>
+                      <div class="col-6">
+                        <q-input
+                          v-model="billingAddress.state"
+                          label="Billing State *"
+                          filled
+                        />
+                      </div>
+                    </div>
+                    <div class="row q-col-gutter-md">
+                      <div class="col-6">
+                        <q-input
+                          v-model="billingAddress.zip"
+                          label="Billing ZIP Code *"
+                          filled
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    v-else-if="!requiresShippingAddress"
+                    class="text-body2 text-grey-7 q-mt-md"
+                  >
+                    Since you're collecting at the market, please provide a
+                    billing address so we can verify your payment details.
+                  </div>
+                </q-card-section>
+              </q-card>
             </div>
 
             <!-- Right: Order Total & Payment -->
@@ -270,16 +334,15 @@
                     <div class="text-body2">Subtotal:</div>
                     <div class="text-body2">${{ cartSubtotal.toFixed(2) }}</div>
                   </div>
-                  <div
-                    v-if="selectedShippingOption === 'ship_to_address'"
-                    class="row justify-between q-mb-sm"
-                  >
+                  <div class="row justify-between q-mb-sm">
                     <div class="text-body2">Shipping:</div>
-                    <div class="text-body2">${{ shippingCost.toFixed(2) }}</div>
-                  </div>
-                  <div v-else class="row justify-between q-mb-sm">
-                    <div class="text-body2">Shipping:</div>
-                    <div class="text-body2 text-positive">Free (Pickup)</div>
+                    <div class="text-body2" v-if="selectedShippingDetails">
+                      <span v-if="selectedShippingDetails.type === 'shipping'">
+                        ${{ shippingCost.toFixed(2) }}
+                      </span>
+                      <span v-else class="text-positive"> Free (Pickup) </span>
+                    </div>
+                    <div class="text-body2" v-else>—</div>
                   </div>
                   <q-separator class="q-my-md" />
                   <div class="row justify-between">
@@ -566,7 +629,10 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useCart } from '../composables/useCart.js';
 import { marketEventService } from '../services/marketEventService.js';
-import { firebaseService } from '../services/firebaseService.js';
+import {
+  firebaseService,
+  DEFAULT_SHIPPING_OPTIONS,
+} from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 
 export default {
@@ -609,12 +675,20 @@ export default {
       state: '',
       zip: '',
     });
-
-    const shippingCost = ref(5.0); // Default shipping cost
+    const billingAddress = ref({
+      street: '',
+      city: '',
+      state: '',
+      zip: '',
+    });
+    const billingSameAsShipping = ref(true);
+    const shippingOptionsData = ref([]);
+    const loadingShippingOptions = ref(true);
 
     // Check for active market event and check-in status
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
+      loadShippingOptions();
 
       // Pre-fill customer info if user is authenticated
       const currentUser = authService.getCurrentUser();
@@ -642,49 +716,167 @@ export default {
           customUploadItem.formData.phone || customerInfo.value.phone;
       }
 
-      // Auto-select shipping option based on check-in status
-      if (checkedInEvent.value) {
-        selectedShippingOption.value = 'collect_at_event';
-      } else {
-        selectedShippingOption.value = 'ship_to_address';
-      }
-
       // Initialize Square payments after a short delay to ensure SDK is loaded
       setTimeout(() => {
         initializeSquarePayments();
       }, 500);
     });
 
-    // Shipping options based on check-in status
-    const shippingOptions = computed(() => {
-      if (checkedInEvent.value) {
-        return [
-          {
-            label: `Collect at ${checkedInEvent.value.name}`,
-            value: 'collect_at_event',
-            description: 'Pick up at the market event - Free',
-          },
-          {
-            label: 'Ship to Address',
-            value: 'ship_to_address',
-            description: `Standard shipping - $${shippingCost.value.toFixed(
-              2
-            )}`,
-          },
-        ];
-      } else {
-        return [
-          {
-            label: 'Ship to Address',
-            value: 'ship_to_address',
-            description: `Standard shipping - $${shippingCost.value.toFixed(
-              2
-            )}`,
-            required: true,
-          },
-        ];
+    const normalizeShippingOption = (option) => {
+      if (!option) {
+        return null;
       }
+      const costNumber = Number(option.cost ?? 0);
+      const costLabel =
+        costNumber > 0 ? ` - $${costNumber.toFixed(2)}` : ' - Free';
+      const title = option.label || 'Shipping';
+      return {
+        label: `${title}${costLabel}`,
+        value: option.value || option.id,
+        description:
+          option.description ||
+          option.estimatedTimeline ||
+          (costNumber === 0 ? 'No additional shipping cost' : ''),
+        cost: costNumber,
+        estimatedTimeline: option.estimatedTimeline || '',
+        allowAddress: option.allowAddress !== false,
+        type: option.type || 'shipping',
+        default: option.default || false,
+        rawLabel: title,
+      };
+    };
+
+    const shippingOptions = computed(() => {
+      const baseOptions = Array.isArray(shippingOptionsData.value)
+        ? shippingOptionsData.value
+        : [];
+      const normalized = [];
+
+      const pushOption = (option) => {
+        const normalizedOption = normalizeShippingOption(option);
+        if (!normalizedOption?.value) {
+          return;
+        }
+        if (
+          normalized.find(
+            (existing) => existing.value === normalizedOption.value
+          )
+        ) {
+          return;
+        }
+        normalized.push(normalizedOption);
+      };
+
+      baseOptions.forEach((option) => {
+        if (!option) {
+          return;
+        }
+        const type = option.type || 'shipping';
+        if (type === 'pickup') {
+          if (checkedInEvent.value) {
+            pushOption(option);
+          }
+        } else {
+          pushOption(option);
+        }
+      });
+
+      if (!normalized.length) {
+        DEFAULT_SHIPPING_OPTIONS.forEach((option) => {
+          const type = option.type || 'shipping';
+          if (type === 'pickup') {
+            if (checkedInEvent.value) {
+              pushOption(option);
+            }
+          } else {
+            pushOption(option);
+          }
+        });
+      }
+
+      return normalized;
     });
+
+    const selectedShippingDetails = computed(() => {
+      return (
+        shippingOptions.value.find(
+          (option) => option.value === selectedShippingOption.value
+        ) || null
+      );
+    });
+
+    const shippingCost = computed(
+      () => selectedShippingDetails.value?.cost || 0
+    );
+    const shippingTimeline = computed(
+      () => selectedShippingDetails.value?.estimatedTimeline || ''
+    );
+    const requiresShippingAddress = computed(
+      () => !!selectedShippingDetails.value?.allowAddress
+    );
+    const requiresBillingAddress = computed(
+      () => selectedPaymentOption.value === 'square_card'
+    );
+
+    const addressIsComplete = (address) => {
+      if (!address) return false;
+      const { street, city, state, zip } = address;
+      return [street, city, state, zip].every(
+        (value) => value && value.toString().trim().length > 0
+      );
+    };
+
+    const sanitizeAddress = (address) => {
+      if (!address) {
+        return null;
+      }
+      const trimmed = {
+        street: (address.street || '').trim(),
+        city: (address.city || '').trim(),
+        state: (address.state || '').trim(),
+        zip: (address.zip || '').trim(),
+      };
+      const hasValue = Object.values(trimmed).some((value) => value.length > 0);
+      return hasValue ? trimmed : null;
+    };
+
+    const applyDefaultShippingSelection = () => {
+      const options = shippingOptions.value;
+      if (!options.length) {
+        selectedShippingOption.value = null;
+        return;
+      }
+      const existing = options.find(
+        (option) => option.value === selectedShippingOption.value
+      );
+      if (existing) {
+        return;
+      }
+      const defaultOption =
+        options.find((option) => option.default) || options[0];
+      selectedShippingOption.value = defaultOption.value;
+    };
+
+    const loadShippingOptions = async () => {
+      loadingShippingOptions.value = true;
+      try {
+        const options = await firebaseService.getShippingOptions();
+        shippingOptionsData.value = Array.isArray(options)
+          ? options
+          : DEFAULT_SHIPPING_OPTIONS;
+      } catch (error) {
+        console.error('Error loading shipping options:', error);
+        shippingOptionsData.value = DEFAULT_SHIPPING_OPTIONS;
+        $q.notify({
+          type: 'warning',
+          message: 'Using default shipping options',
+          position: 'top',
+        });
+      } finally {
+        loadingShippingOptions.value = false;
+        applyDefaultShippingSelection();
+      }
+    };
 
     // Available payment methods based on Square readiness and context
     const availablePaymentMethods = computed(() => {
@@ -770,11 +962,65 @@ export default {
       { immediate: true }
     );
 
+    watch(
+      shippingOptions,
+      () => {
+        applyDefaultShippingSelection();
+      },
+      { immediate: true }
+    );
+
     watch(selectedShippingOption, () => {
-      if (paymentOptions.value.length > 0) {
+      if (
+        paymentOptions.value.length > 0 &&
+        !paymentOptions.value.find(
+          (option) => option.value === selectedPaymentOption.value
+        )
+      ) {
         selectedPaymentOption.value = paymentOptions.value[0].value;
       }
+      if (!requiresShippingAddress.value) {
+        billingSameAsShipping.value = false;
+      }
       updateSquarePaymentRequest();
+    });
+
+    watch(
+      () => selectedShippingDetails.value?.allowAddress,
+      (allowAddress) => {
+        if (!allowAddress) {
+          billingSameAsShipping.value = false;
+        } else if (!addressIsComplete(billingAddress.value)) {
+          billingSameAsShipping.value = true;
+        }
+      }
+    );
+
+    watch(requiresBillingAddress, (required) => {
+      if (!required) {
+        billingAddress.value = {
+          street: '',
+          city: '',
+          state: '',
+          zip: '',
+        };
+      }
+    });
+
+    watch(
+      () => ({ ...shippingAddress.value }),
+      () => {
+        if (billingSameAsShipping.value && requiresShippingAddress.value) {
+          billingAddress.value = { ...shippingAddress.value };
+        }
+      },
+      { deep: true }
+    );
+
+    watch(billingSameAsShipping, (same) => {
+      if (same && requiresShippingAddress.value) {
+        billingAddress.value = { ...shippingAddress.value };
+      }
     });
 
     watch(orderTotal, () => {
@@ -783,10 +1029,15 @@ export default {
 
     // Check if order can be placed
     const canPlaceOrder = computed(() => {
+      const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+      if (cartItems.value.length === 0) {
+        return false;
+      }
       if (
         !customerInfo.value.firstName ||
         !customerInfo.value.lastName ||
-        !customerInfo.value.email
+        !customerInfo.value.email ||
+        !emailRegex.test(customerInfo.value.email)
       ) {
         return false;
       }
@@ -794,13 +1045,19 @@ export default {
         return false;
       }
       if (
-        selectedShippingOption.value === 'ship_to_address' &&
-        (!shippingAddress.value.street ||
-          !shippingAddress.value.city ||
-          !shippingAddress.value.state ||
-          !shippingAddress.value.zip)
+        requiresShippingAddress.value &&
+        !addressIsComplete(shippingAddress.value)
       ) {
         return false;
+      }
+      if (requiresBillingAddress.value) {
+        if (billingSameAsShipping.value && requiresShippingAddress.value) {
+          if (!addressIsComplete(shippingAddress.value)) {
+            return false;
+          }
+        } else if (!addressIsComplete(billingAddress.value)) {
+          return false;
+        }
       }
       return true;
     });
@@ -988,7 +1245,10 @@ export default {
         squareInitialized.value = true;
         await updateSquarePaymentRequest();
 
-        if (selectedPaymentOption.value === 'apple_pay' && applePayReady.value) {
+        if (
+          selectedPaymentOption.value === 'apple_pay' &&
+          applePayReady.value
+        ) {
           await renderApplePayButton();
         }
         if (
@@ -1003,6 +1263,19 @@ export default {
         squareInitError.value = error;
         console.error('Error initializing Square payments:', error);
       }
+    };
+
+    const getCartItemQuantity = (item) => {
+      if (typeof item?.quantity === 'number') {
+        return item.quantity;
+      }
+      if (Array.isArray(item?.photoQuantities)) {
+        return item.photoQuantities.reduce(
+          (sum, qty) => sum + Number(qty || 0),
+          0
+        );
+      }
+      return 0;
     };
 
     const placeOrder = async () => {
@@ -1020,18 +1293,60 @@ export default {
       try {
         const orderNumber = generateOrderNumber();
         const currentUser = authService.getCurrentUser();
+        const cartItemsSnapshot = JSON.parse(JSON.stringify(cartItems.value));
+        const shippingAddressData = requiresShippingAddress.value
+          ? sanitizeAddress(shippingAddress.value)
+          : null;
+        const billingAddressData = requiresBillingAddress.value
+          ? sanitizeAddress(
+              billingSameAsShipping.value && shippingAddressData
+                ? shippingAddress.value
+                : billingAddress.value
+            )
+          : null;
+        const shippingOptionPayload = selectedShippingDetails.value
+          ? {
+              value: selectedShippingDetails.value.value,
+              label: selectedShippingDetails.value.rawLabel,
+              description: selectedShippingDetails.value.description,
+              cost: shippingCost.value,
+              estimatedTimeline: shippingTimeline.value,
+              type: selectedShippingDetails.value.type,
+              eventId:
+                selectedShippingDetails.value.type === 'pickup'
+                  ? checkedInEvent.value?.id || null
+                  : null,
+              address: shippingAddressData,
+            }
+          : null;
+        const paymentProcessor =
+          selectedPaymentOption.value === 'square_card'
+            ? 'square'
+            : selectedPaymentOption.value === 'paypal'
+            ? 'paypal'
+            : selectedPaymentOption.value === 'apple_pay'
+            ? 'apple'
+            : selectedPaymentOption.value === 'google_pay'
+            ? 'google'
+            : selectedPaymentOption.value === 'pay_at_event'
+            ? 'in_person'
+            : null;
+        const paymentOptionPayload = {
+          type: selectedPaymentOption.value,
+          processor: paymentProcessor,
+          paymentId: null,
+          paidAt: null,
+          billingAddress: billingAddressData,
+        };
+        const totalMagnets = cartItemsSnapshot.reduce(
+          (sum, item) => sum + getCartItemQuantity(item),
+          0
+        );
 
-        // Prepare order data
         const orderData = {
           orderNumber,
           orderType: 'product_cart',
-          cartItems: cartItems.value.map((item) => ({
-            productId: item.productId,
-            productName: item.productName,
-            quantity: item.quantity,
-            pricePerUnit: item.pricePerUnit,
-            totalPrice: item.totalPrice,
-          })),
+          cartItems: cartItemsSnapshot,
           customer: {
             firstName: customerInfo.value.firstName,
             lastName: customerInfo.value.lastName,
@@ -1039,43 +1354,18 @@ export default {
             phone: customerInfo.value.phone || '',
           },
           userId: currentUser?.uid || null,
-          shippingOption: {
-            type: selectedShippingOption.value,
-            eventId:
-              selectedShippingOption.value === 'collect_at_event'
-                ? checkedInEvent.value?.id
-                : null,
-            address:
-              selectedShippingOption.value === 'ship_to_address'
-                ? { ...shippingAddress.value }
-                : null,
-          },
-          paymentOption: {
-            type: selectedPaymentOption.value,
-            processor:
-              selectedPaymentOption.value === 'online' ? 'square' : null,
-            paymentId: null, // Will be set after payment processing
-            paidAt: null,
-          },
+          shippingOption: shippingOptionPayload,
+          paymentOption: paymentOptionPayload,
           subtotal: cartSubtotal.value,
-          shipping:
-            selectedShippingOption.value === 'ship_to_address'
-              ? shippingCost.value
-              : 0,
+          shipping: shippingCost.value,
           tax: 0, // TODO: Calculate tax if needed
           totalAmount: orderTotal.value,
+          shippingTimeline: shippingTimeline.value,
           status:
             selectedPaymentOption.value === 'pay_at_event'
               ? 'pending_payment'
               : 'pending',
         };
-
-        // TODO: Process payment if paying online
-        if (selectedPaymentOption.value === 'online') {
-          // Square payment processing will go here
-          // For now, we'll save the order and mark payment as pending
-          orderData.paymentOption.paymentId = 'pending'; // Placeholder
-        }
 
         // Save order to Firebase
         await firebaseService.saveCartOrder(orderData);
@@ -1092,14 +1382,29 @@ export default {
           timeout: 5000,
         });
 
-        // Redirect to thank you page
+        localStorage.setItem(
+          'lastOrderData',
+          JSON.stringify({
+            orderNumber,
+            customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
+            customerEmail: customerInfo.value.email,
+            totalMagnets,
+            subtotal: cartSubtotal.value,
+            shipping: shippingCost.value,
+            tax: 0,
+            totalAmount: orderTotal.value,
+            shippingOption: shippingOptionPayload,
+            paymentOption: paymentOptionPayload,
+          })
+        );
+
         router.push({
           path: '/thank-you',
           query: {
             orderNumber: orderNumber,
             customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
             customerEmail: customerInfo.value.email,
-            totalAmount: orderTotal.value.toFixed(2),
+            totalMagnets,
           },
         });
       } catch (error) {
@@ -1120,10 +1425,16 @@ export default {
       cartSubtotal,
       customerInfo,
       shippingAddress,
+      billingAddress,
+      billingSameAsShipping,
       shippingCost,
+      shippingTimeline,
       selectedShippingOption,
+      selectedShippingDetails,
       selectedPaymentOption,
       shippingOptions,
+      requiresShippingAddress,
+      requiresBillingAddress,
       orderTotal,
       canPlaceOrder,
       submitting,

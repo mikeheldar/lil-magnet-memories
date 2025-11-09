@@ -53,6 +53,86 @@
 
             <q-separator class="q-my-md" />
 
+            <div class="receipt-summary q-mb-md">
+              <div class="text-subtitle1 text-weight-medium q-mb-sm">
+                Receipt Summary:
+              </div>
+              <div class="row justify-between text-body2">
+                <div>Subtotal</div>
+                <div>{{ formatCurrency(subtotal) }}</div>
+              </div>
+              <div class="row justify-between text-body2">
+                <div>Shipping</div>
+                <div>{{ formatCurrency(shippingCost) }}</div>
+              </div>
+              <div class="row justify-between text-body2">
+                <div>Tax</div>
+                <div>{{ formatCurrency(tax) }}</div>
+              </div>
+              <q-separator class="q-my-sm" />
+              <div
+                class="row justify-between text-body1 text-weight-medium q-mt-sm"
+              >
+                <div>Total</div>
+                <div class="text-primary">
+                  {{ formatCurrency(totalAmount) }}
+                </div>
+              </div>
+            </div>
+
+            <q-separator class="q-my-md" />
+
+            <div class="shipping-info q-mb-md">
+              <div class="text-subtitle1 text-weight-medium q-mb-sm">
+                <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
+                Shipping
+              </div>
+              <div class="text-body2 text-grey-7">
+                <div>
+                  <strong>{{ shippingMethodLabel }}</strong>
+                  <span class="q-ml-sm">
+                    ({{ formatCurrency(shippingCost) }})
+                  </span>
+                </div>
+                <div v-if="shippingTimeline" class="q-mt-xs">
+                  {{ shippingTimeline }}
+                </div>
+                <div v-if="shippingAddressLines.length" class="q-mt-sm">
+                  <div class="text-caption text-grey-6">Deliver to:</div>
+                  <div
+                    v-for="(line, index) in shippingAddressLines"
+                    :key="`ship-${index}`"
+                  >
+                    {{ line }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <q-separator class="q-my-md" />
+
+            <div class="billing-info q-mb-md">
+              <div class="text-subtitle1 text-weight-medium q-mb-sm">
+                <q-icon name="credit_card" size="20px" class="q-mr-sm" />
+                Payment
+              </div>
+              <div class="text-body2 text-grey-7">
+                <div>
+                  Method:
+                  <strong>{{ paymentMethodLabel }}</strong>
+                </div>
+                <div v-if="billingAddressLines.length" class="q-mt-sm">
+                  <div class="text-caption text-grey-6">Billing address:</div>
+                  <div
+                    v-for="(line, index) in billingAddressLines"
+                    :key="`bill-${index}`"
+                  >
+                    {{ line }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Next Steps -->
             <div class="next-steps">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
@@ -125,7 +205,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { authService } from '../services/authService';
 
@@ -139,6 +219,15 @@ export default {
     const customerName = ref('');
     const customerEmail = ref('');
     const totalMagnets = ref(0);
+    const subtotal = ref(0);
+    const shippingCost = ref(0);
+    const tax = ref(0);
+    const totalAmount = ref(0);
+    const shippingOption = ref(null);
+    const paymentOption = ref(null);
+    const shippingTimeline = ref('');
+    const shippingAddress = ref(null);
+    const billingAddress = ref(null);
     const isAuthenticated = ref(false);
 
     const submitAnotherOrder = () => {
@@ -153,8 +242,95 @@ export default {
       router.push('/my-orders');
     };
 
+    const formatCurrency = (value) => {
+      const amount = Number(value || 0);
+      return `$${amount.toFixed(2)}`;
+    };
+
+    const formatAddressLines = (address) => {
+      if (!address) {
+        return [];
+      }
+      const lines = [];
+      if (address.street) {
+        lines.push(address.street);
+      }
+      const cityState = [address.city, address.state]
+        .filter((part) => part && part.toString().trim().length > 0)
+        .join(', ');
+      const postal = (address.zip || '').toString().trim();
+      const cityLine = [cityState, postal].filter(Boolean).join(' ');
+      if (cityLine) {
+        lines.push(cityLine);
+      }
+      return lines;
+    };
+
+    const applyReceiptData = (data) => {
+      if (!data) return;
+      if (data.orderNumber) {
+        orderNumber.value = data.orderNumber;
+      }
+      if (data.customerName) {
+        customerName.value = data.customerName;
+      }
+      if (data.customerEmail) {
+        customerEmail.value = data.customerEmail;
+      }
+      if (typeof data.totalMagnets === 'number') {
+        totalMagnets.value = data.totalMagnets;
+      }
+      subtotal.value = Number(data.subtotal || 0);
+      shippingCost.value = Number(data.shipping || 0);
+      tax.value = Number(data.tax || 0);
+      totalAmount.value =
+        data.totalAmount !== undefined
+          ? Number(data.totalAmount)
+          : subtotal.value + shippingCost.value + tax.value;
+      shippingOption.value = data.shippingOption || null;
+      paymentOption.value = data.paymentOption || null;
+      shippingTimeline.value =
+        data.shippingOption?.estimatedTimeline || data.shippingTimeline || '';
+      shippingAddress.value = data.shippingOption?.address || null;
+      billingAddress.value = data.paymentOption?.billingAddress || null;
+    };
+
+    const shippingMethodLabel = computed(() => {
+      if (shippingOption.value?.label) {
+        return shippingOption.value.label;
+      }
+      if (shippingOption.value?.value) {
+        return shippingOption.value.value.replace(/_/g, ' ');
+      }
+      return 'Shipping';
+    });
+
+    const shippingAddressLines = computed(() =>
+      formatAddressLines(shippingAddress.value)
+    );
+    const billingAddressLines = computed(() =>
+      formatAddressLines(billingAddress.value)
+    );
+
+    const paymentMethodLabel = computed(() => {
+      const type = paymentOption.value?.type;
+      switch (type) {
+        case 'square_card':
+          return 'Credit/Debit Card';
+        case 'apple_pay':
+          return 'Apple Pay';
+        case 'google_pay':
+          return 'Google Pay';
+        case 'paypal':
+          return 'PayPal';
+        case 'pay_at_event':
+          return 'Pay at Event';
+        default:
+          return type ? type.replace(/_/g, ' ') : 'Payment';
+      }
+    });
+
     onMounted(() => {
-      // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
       if (currentAuthUser) {
         console.log(
@@ -164,34 +340,29 @@ export default {
         isAuthenticated.value = true;
       }
 
-      // Check authentication status
       authService.onAuthStateChanged((user) => {
         isAuthenticated.value = !!user;
       });
 
-      // Get order details from route params or localStorage
       if (route.query.orderNumber) {
         orderNumber.value = route.query.orderNumber;
         customerName.value = route.query.customerName || '';
         customerEmail.value = route.query.customerEmail || '';
         totalMagnets.value = parseInt(route.query.totalMagnets) || 0;
-      } else {
-        // Fallback to localStorage if route params not available
-        const orderData = localStorage.getItem('lastOrderData');
-        if (orderData) {
-          try {
-            const data = JSON.parse(orderData);
-            orderNumber.value = data.orderNumber || 'N/A';
-            customerName.value = data.customerName || '';
-            customerEmail.value = data.customerEmail || '';
-            totalMagnets.value = data.totalMagnets || 0;
-          } catch (error) {
-            console.error('Error parsing order data:', error);
-            orderNumber.value = 'N/A';
-          }
-        } else {
-          orderNumber.value = 'N/A';
+      }
+
+      const storedData = localStorage.getItem('lastOrderData');
+      if (storedData) {
+        try {
+          const data = JSON.parse(storedData);
+          applyReceiptData(data);
+        } catch (error) {
+          console.error('Error parsing order data:', error);
         }
+      }
+
+      if (!orderNumber.value) {
+        orderNumber.value = 'N/A';
       }
     });
 
@@ -200,10 +371,20 @@ export default {
       customerName,
       customerEmail,
       totalMagnets,
+      subtotal,
+      shippingCost,
+      tax,
+      totalAmount,
+      shippingTimeline,
+      shippingMethodLabel,
+      shippingAddressLines,
+      billingAddressLines,
+      paymentMethodLabel,
       isAuthenticated,
       submitAnotherOrder,
       goHome,
       viewMyOrders,
+      formatCurrency,
     };
   },
 };
@@ -270,6 +451,15 @@ export default {
 }
 
 .customer-info {
+  text-align: left;
+}
+
+.receipt-summary .row {
+  margin: 4px 0;
+}
+
+.shipping-info,
+.billing-info {
   text-align: left;
 }
 
