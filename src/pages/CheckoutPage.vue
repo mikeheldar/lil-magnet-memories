@@ -20,6 +20,14 @@
         </div>
 
         <div v-else>
+          <q-banner
+            v-if="showValidationErrors && !canPlaceOrder"
+            class="bg-red-1 text-negative q-mb-md"
+            rounded
+            dense
+          >
+            Please fix the highlighted fields before placing your order.
+          </q-banner>
           <div class="row q-col-gutter-md">
             <!-- Left: Customer Info & Shipping -->
             <div class="col-12 col-lg-7">
@@ -146,7 +154,11 @@
                         v-model="customerInfo.firstName"
                         label="First Name *"
                         filled
-                        :rules="[(val) => !!val || 'Required']"
+                        :error="customerFirstNameError"
+                        :error-message="
+                          customerFirstNameError ? 'First name is required' : ''
+                        "
+                        :input-attrs="{ autocomplete: 'given-name' }"
                       />
                     </div>
                     <div class="col-12 col-sm-6">
@@ -154,7 +166,11 @@
                         v-model="customerInfo.lastName"
                         label="Last Name *"
                         filled
-                        :rules="[(val) => !!val || 'Required']"
+                        :error="customerLastNameError"
+                        :error-message="
+                          customerLastNameError ? 'Last name is required' : ''
+                        "
+                        :input-attrs="{ autocomplete: 'family-name' }"
                       />
                     </div>
                     <div class="col-12">
@@ -163,12 +179,15 @@
                         label="Email *"
                         type="email"
                         filled
-                        :rules="[
-                          (val) => !!val || 'Required',
-                          (val) =>
-                            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) ||
-                            'Invalid email',
-                        ]"
+                        :error="customerEmailError"
+                        :error-message="
+                          customerEmailError
+                            ? !customerInfo.email
+                              ? 'Email is required'
+                              : 'Please enter a valid email'
+                            : ''
+                        "
+                        :input-attrs="{ autocomplete: 'email' }"
                       />
                     </div>
                     <div class="col-12">
@@ -177,6 +196,7 @@
                         label="Phone"
                         filled
                         mask="(###) ###-####"
+                        :input-attrs="{ autocomplete: 'tel' }"
                       />
                     </div>
                   </div>
@@ -208,6 +228,11 @@
                       label="Street Address *"
                       filled
                       class="q-mb-md"
+                      :error="shippingStreetError"
+                      :error-message="
+                        shippingStreetError ? 'Street address is required' : ''
+                      "
+                      :input-attrs="{ autocomplete: 'shipping address-line1' }"
                     />
                     <div class="row q-col-gutter-md q-mb-md">
                       <div class="col-6">
@@ -215,6 +240,11 @@
                           v-model="shippingAddress.city"
                           label="City *"
                           filled
+                          :error="shippingCityError"
+                          :error-message="
+                            shippingCityError ? 'City is required' : ''
+                          "
+                          :input-attrs="{ autocomplete: 'shipping address-level2' }"
                         />
                       </div>
                       <div class="col-6">
@@ -222,6 +252,11 @@
                           v-model="shippingAddress.state"
                           label="State *"
                           filled
+                          :error="shippingStateError"
+                          :error-message="
+                            shippingStateError ? 'State is required' : ''
+                          "
+                          :input-attrs="{ autocomplete: 'shipping address-level1' }"
                         />
                       </div>
                     </div>
@@ -231,6 +266,11 @@
                           v-model="shippingAddress.zip"
                           label="ZIP Code *"
                           filled
+                          :error="shippingZipError"
+                          :error-message="
+                            shippingZipError ? 'ZIP code is required' : ''
+                          "
+                          :input-attrs="{ autocomplete: 'shipping postal-code' }"
                         />
                       </div>
                     </div>
@@ -287,6 +327,11 @@
                       label="Billing Street Address *"
                       filled
                       class="q-mb-md"
+                      :error="billingStreetError"
+                      :error-message="
+                        billingStreetError ? 'Billing street is required' : ''
+                      "
+                      :input-attrs="{ autocomplete: 'billing address-line1' }"
                     />
                     <div class="row q-col-gutter-md q-mb-md">
                       <div class="col-6">
@@ -294,6 +339,11 @@
                           v-model="billingAddress.city"
                           label="Billing City *"
                           filled
+                          :error="billingCityError"
+                          :error-message="
+                            billingCityError ? 'Billing city is required' : ''
+                          "
+                          :input-attrs="{ autocomplete: 'billing address-level2' }"
                         />
                       </div>
                       <div class="col-6">
@@ -301,6 +351,11 @@
                           v-model="billingAddress.state"
                           label="Billing State *"
                           filled
+                          :error="billingStateError"
+                          :error-message="
+                            billingStateError ? 'Billing state is required' : ''
+                          "
+                          :input-attrs="{ autocomplete: 'billing address-level1' }"
                         />
                       </div>
                     </div>
@@ -310,6 +365,11 @@
                           v-model="billingAddress.zip"
                           label="Billing ZIP Code *"
                           filled
+                          :error="billingZipError"
+                          :error-message="
+                            billingZipError ? 'Billing ZIP is required' : ''
+                          "
+                          :input-attrs="{ autocomplete: 'billing postal-code' }"
                         />
                       </div>
                     </div>
@@ -572,6 +632,49 @@
 
                   <!-- Square Credit Card Form (shown when Square is selected) -->
                   <q-card-section
+                    v-if="selectedPaymentOption === 'apple_pay'"
+                    class="q-pt-md border-top"
+                  >
+                    <div v-if="!applePayReady" class="text-body2 text-grey-6">
+                      <q-spinner size="20px" class="q-mr-sm" />
+                      Checking Apple Pay...
+                    </div>
+                    <div
+                      v-show="applePayReady"
+                      id="square-apple-pay-button"
+                      class="wallet-button"
+                    ></div>
+                    <div
+                      v-if="applePayError"
+                      class="text-negative text-caption q-mt-sm"
+                    >
+                      {{ applePayError }}
+                    </div>
+                  </q-card-section>
+
+                  <q-card-section
+                    v-if="selectedPaymentOption === 'google_pay'"
+                    class="q-pt-md border-top"
+                  >
+                    <div v-if="!googlePayReady" class="text-body2 text-grey-6">
+                      <q-spinner size="20px" class="q-mr-sm" />
+                      Checking Google Pay...
+                    </div>
+                    <div
+                      v-show="googlePayReady"
+                      id="square-google-pay-button"
+                      class="wallet-button"
+                    ></div>
+                    <div
+                      v-if="googlePayError"
+                      class="text-negative text-caption q-mt-sm"
+                    >
+                      {{ googlePayError }}
+                    </div>
+                  </q-card-section>
+
+                  <!-- Square Credit Card Form (shown when Square is selected) -->
+                  <q-card-section
                     v-if="selectedPaymentOption === 'square_card'"
                     class="q-pt-md border-top"
                   >
@@ -684,6 +787,7 @@ export default {
     const billingSameAsShipping = ref(true);
     const shippingOptionsData = ref([]);
     const loadingShippingOptions = ref(true);
+    const showValidationErrors = ref(false);
 
     // Check for active market event and check-in status
     onMounted(() => {
@@ -939,7 +1043,7 @@ export default {
     // Calculate order total
     const orderTotal = computed(() => {
       let total = cartSubtotal.value;
-      if (selectedShippingOption.value === 'ship_to_address') {
+      if (selectedShippingDetails.value?.type === 'shipping') {
         total += shippingCost.value;
       }
       // TODO: Add tax calculation if needed
@@ -1027,9 +1131,23 @@ export default {
       updateSquarePaymentRequest();
     });
 
+    watch(selectedPaymentOption, async (option) => {
+      if (option === 'apple_pay' && applePayReady.value) {
+        applePayAttached.value = false;
+        await renderApplePayButton();
+      }
+      if (option === 'google_pay' && googlePayReady.value) {
+        googlePayAttached.value = false;
+        await renderGooglePayButton();
+      }
+      if (option === 'square_card') {
+        await mountSquareCard();
+      }
+    });
+
     // Check if order can be placed
     const canPlaceOrder = computed(() => {
-      const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (cartItems.value.length === 0) {
         return false;
       }
@@ -1061,6 +1179,59 @@ export default {
       }
       return true;
     });
+
+    const customerFirstNameError = computed(
+      () => showValidationErrors.value && !customerInfo.value.firstName
+    );
+    const customerLastNameError = computed(
+      () => showValidationErrors.value && !customerInfo.value.lastName
+    );
+    const customerEmailError = computed(
+      () =>
+        showValidationErrors.value &&
+        (!customerInfo.value.email ||
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerInfo.value.email))
+    );
+    const shippingStreetError = computed(
+      () => showValidationErrors.value && requiresShippingAddress.value && !shippingAddress.value.street
+    );
+    const shippingCityError = computed(
+      () => showValidationErrors.value && requiresShippingAddress.value && !shippingAddress.value.city
+    );
+    const shippingStateError = computed(
+      () => showValidationErrors.value && requiresShippingAddress.value && !shippingAddress.value.state
+    );
+    const shippingZipError = computed(
+      () => showValidationErrors.value && requiresShippingAddress.value && !shippingAddress.value.zip
+    );
+    const billingStreetError = computed(
+      () =>
+        showValidationErrors.value &&
+        requiresBillingAddress.value &&
+        (!billingSameAsShipping.value || !requiresShippingAddress.value) &&
+        !billingAddress.value.street
+    );
+    const billingCityError = computed(
+      () =>
+        showValidationErrors.value &&
+        requiresBillingAddress.value &&
+        (!billingSameAsShipping.value || !requiresShippingAddress.value) &&
+        !billingAddress.value.city
+    );
+    const billingStateError = computed(
+      () =>
+        showValidationErrors.value &&
+        requiresBillingAddress.value &&
+        (!billingSameAsShipping.value || !requiresShippingAddress.value) &&
+        !billingAddress.value.state
+    );
+    const billingZipError = computed(
+      () =>
+        showValidationErrors.value &&
+        requiresBillingAddress.value &&
+        (!billingSameAsShipping.value || !requiresShippingAddress.value) &&
+        !billingAddress.value.zip
+    );
 
     const generateOrderNumber = () => {
       const now = new Date();
@@ -1098,6 +1269,9 @@ export default {
       if (!container) {
         return;
       }
+      container.setAttribute('autocomplete', 'cc-number');
+      container.setAttribute('aria-label', 'Secure credit card form');
+      container.classList.add('square-card-container');
       if (!squareCardMounted.value) {
         container.innerHTML = '';
         await squareCard.value.attach('#square-payment-form');
@@ -1160,7 +1334,7 @@ export default {
             label: 'Lil Magnet Memories',
           },
           requestShippingContact:
-            selectedShippingOption.value === 'ship_to_address',
+            selectedShippingDetails.value?.type === 'shipping',
         });
       } catch (error) {
         console.warn('Failed to update Square payment request:', error);
@@ -1204,7 +1378,7 @@ export default {
           },
           requestBillingContact: true,
           requestShippingContact:
-            selectedShippingOption.value === 'ship_to_address',
+            selectedShippingDetails.value?.type === 'shipping',
         });
         squarePaymentRequest.value = paymentRequest;
 
@@ -1280,6 +1454,7 @@ export default {
 
     const placeOrder = async () => {
       if (!canPlaceOrder.value) {
+        showValidationErrors.value = true;
         $q.notify({
           type: 'negative',
           message: 'Please fill in all required fields',
@@ -1291,6 +1466,7 @@ export default {
       submitting.value = true;
 
       try {
+        showValidationErrors.value = false;
         const orderNumber = generateOrderNumber();
         const currentUser = authService.getCurrentUser();
         const cartItemsSnapshot = JSON.parse(JSON.stringify(cartItems.value));
@@ -1442,6 +1618,22 @@ export default {
       placeOrder,
       getPaymentIcon,
       availablePaymentMethods,
+      customerFirstNameError,
+      customerLastNameError,
+      customerEmailError,
+      shippingStreetError,
+      shippingCityError,
+      shippingStateError,
+      shippingZipError,
+      billingStreetError,
+      billingCityError,
+      billingStateError,
+      billingZipError,
+      showValidationErrors,
+      applePayReady,
+      applePayError,
+      googlePayReady,
+      googlePayError,
     };
   },
 };
@@ -1468,6 +1660,14 @@ export default {
 .payment-selected {
   border: 2px solid #1976d2 !important;
   background-color: #e3f2fd;
+}
+
+.wallet-button {
+  min-height: 48px;
+}
+
+.square-card-container {
+  min-height: 120px;
 }
 
 .border-top {
