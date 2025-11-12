@@ -240,35 +240,30 @@
             />
 
             <!-- Submit Button -->
-            <div class="text-center q-mt-lg">
-              <div class="row justify-center q-gutter-sm">
-                <div>
-                  <q-btn
-                    type="button"
-                    color="primary"
-                    size="lg"
-                    :loading="submitting"
-                    :disable="!canSubmit"
-                    class="q-px-xl"
-                    @click.prevent.stop="onSubmit"
-                  >
-                    <q-icon name="add_shopping_cart" class="q-mr-sm" />
-                    Add to Cart
-                  </q-btn>
-                </div>
-                <div>
-                  <q-btn
-                    type="button"
-                    color="secondary"
-                    outline
-                    size="lg"
-                    class="q-px-xl"
-                    @click.prevent.stop="goToCart"
-                  >
-                    <q-icon name="shopping_cart" class="q-mr-sm" />
-                    Proceed to Cart
-                  </q-btn>
-                </div>
+            <div class="q-mt-lg">
+              <div
+                class="row items-center justify-between q-gutter-sm no-wrap action-row"
+              >
+                <q-btn
+                  type="button"
+                  color="primary"
+                  round
+                  dense
+                  icon="add"
+                  :loading="submitting"
+                  :disable="!canSubmit"
+                  aria-label="Add to cart"
+                  @click.prevent.stop="onSubmit"
+                />
+                <q-btn
+                  type="button"
+                  color="secondary"
+                  unelevated
+                  class="action-row__checkout"
+                  icon-right="arrow_forward"
+                  label="Proceed to Checkout"
+                  @click.prevent.stop="goToCheckout"
+                />
               </div>
             </div>
           </q-form>
@@ -593,11 +588,11 @@ export default {
       }
     };
 
-    const goToCart = async () => {
+    const goToCheckout = async () => {
       try {
-        await router.push('/cart');
+        await router.push('/checkout');
       } catch (error) {
-        console.error('Failed to navigate to cart:', error);
+        console.error('Failed to navigate to checkout:', error);
       }
     };
 
@@ -666,7 +661,7 @@ export default {
       decreaseQuantity,
       removeFile,
       onSubmit,
-      goToCart,
+      goToCheckout,
       handleGoogleSignIn,
     };
   },
@@ -677,6 +672,14 @@ export default {
 .q-page {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
+}
+
+.action-row {
+  width: 100%;
+}
+
+.action-row__checkout {
+  text-transform: none;
 }
 
 // Mobile responsive adjustments
