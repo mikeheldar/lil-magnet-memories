@@ -1352,6 +1352,77 @@ export default {
       }
     };
 
+    const normalizeAddressForSquare = (address) => {
+      if (!address) {
+        return null;
+      }
+      const normalized = {
+        street: (address.street || '').trim(),
+        city: (address.city || '').trim(),
+        state: (address.state || '').trim(),
+        zip: (address.zip || '').trim(),
+        country: (address.country || 'US').trim(),
+      };
+
+      if (!normalized.street) {
+        return null;
+      }
+
+      return normalized;
+    };
+
+    const processSquareCardPayment = async (orderNumber) => {
+      if (!squareCard.value) {
+        throw new Error(
+          'Secure payment form is still loading. Please try again in a moment.'
+        );
+      }
+
+      squareProcessing.value = true;
+
+      try {
+        const tokenResult = await squareCard.value.tokenize();
+        if (tokenResult.status !== 'OK') {
+          const tokenError =
+            tokenResult.errors && tokenResult.errors.length > 0
+              ? tokenResult.errors[0].message
+              : null;
+          throw new Error(
+            tokenError || 'We could not verify your card details. Please retry.'
+          );
+        }
+
+        const billingAddressToUse =
+          billingSameAsShipping.value && requiresShippingAddress.value
+            ? shippingAddress.value
+            : billingAddress.value;
+
+        const paymentPayload = {
+          sourceId: tokenResult.token,
+          amount: orderTotal.value,
+          currency: 'USD',
+          orderNumber,
+          buyerEmail: customerInfo.value.email,
+          customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`.trim(),
+          billingAddress: normalizeAddressForSquare(billingAddressToUse),
+          shippingAddress: normalizeAddressForSquare(
+            requiresShippingAddress.value ? shippingAddress.value : null
+          ),
+        };
+
+        const result = await firebaseService.processSquarePayment(
+          paymentPayload
+        );
+
+        return result?.payment || null;
+      } catch (error) {
+        console.error('Square card payment failed:', error);
+        throw error;
+      } finally {
+        squareProcessing.value = false;
+      }
+    };
+
     const updateSquarePaymentRequest = async () => {
       if (!squarePaymentRequest.value) {
         return;
@@ -1536,17 +1607,33 @@ export default {
             : selectedPaymentOption.value === 'pay_at_event'
             ? 'in_person'
             : null;
+
+        let squarePaymentDetails = null;
+        if (selectedPaymentOption.value === 'square_card') {
+          squarePaymentDetails = await processSquareCardPayment(orderNumber);
+        }
+
         const paymentOptionPayload = {
           type: selectedPaymentOption.value,
           processor: paymentProcessor,
-          paymentId: null,
-          paidAt: null,
+          paymentId: squarePaymentDetails?.id || null,
+          paidAt: squarePaymentDetails?.createdAt || null,
+          status: squarePaymentDetails?.status || null,
+          receiptUrl: squarePaymentDetails?.receiptUrl || null,
           billingAddress: billingAddressData,
         };
         const totalMagnets = cartItemsSnapshot.reduce(
           (sum, item) => sum + getCartItemQuantity(item),
           0
         );
+
+        let orderStatus =
+          selectedPaymentOption.value === 'pay_at_event'
+            ? 'pending_payment'
+            : 'pending';
+        if (squarePaymentDetails?.status === 'COMPLETED') {
+          orderStatus = 'paid';
+        }
 
         const orderData = {
           orderNumber,
@@ -1566,10 +1653,7 @@ export default {
           tax: 0, // TODO: Calculate tax if needed
           totalAmount: orderTotal.value,
           shippingTimeline: shippingTimeline.value,
-          status:
-            selectedPaymentOption.value === 'pay_at_event'
-              ? 'pending_payment'
-              : 'pending',
+          status: orderStatus,
         };
 
         // Save order to Firebase

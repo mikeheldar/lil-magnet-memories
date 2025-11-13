@@ -6,12 +6,70 @@ const admin = require("firebase-admin");
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+const square_1 = require("square");
+const uuid_1 = require("uuid");
 // Initialize Firebase Admin
 admin.initializeApp();
 // Create Express app
 const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json());
+const squareConfig = functions.config().square || {};
+const squareEnvironment = squareConfig.environment === 'production'
+    ? square_1.SquareEnvironment.Production
+    : square_1.SquareEnvironment.Sandbox;
+let squareClient = null;
+const getSquareClient = () => {
+    if (!squareConfig.access_token) {
+        throw new Error('Square access token is not configured.');
+    }
+    if (!squareClient) {
+        squareClient = new square_1.SquareClient({
+            environment: squareEnvironment,
+            token: squareConfig.access_token,
+        });
+    }
+    return squareClient;
+};
+const getSquareLocationId = () => {
+    if (squareConfig.location_id) {
+        return squareConfig.location_id;
+    }
+    return null;
+};
+const normalizeSquareAddress = (address) => {
+    if (!address) {
+        return undefined;
+    }
+    const streetValue = address.addressLine1 || address.street || address.address1 || null;
+    if (!streetValue) {
+        return undefined;
+    }
+    const normalized = {
+        addressLine1: String(streetValue).slice(0, 500),
+    };
+    if (address.addressLine2) {
+        normalized.addressLine2 = String(address.addressLine2).slice(0, 500);
+    }
+    else if (address.address2) {
+        normalized.addressLine2 = String(address.address2).slice(0, 500);
+    }
+    if (address.city || address.locality) {
+        normalized.locality = String(address.city || address.locality).slice(0, 200);
+    }
+    if (address.state || address.administrativeDistrictLevel1) {
+        normalized.administrativeDistrictLevel1 = String(address.state || address.administrativeDistrictLevel1)
+            .slice(0, 2)
+            .toUpperCase();
+    }
+    if (address.zip || address.postalCode) {
+        normalized.postalCode = String(address.zip || address.postalCode).slice(0, 20);
+    }
+    normalized.country = String(address.country || 'US')
+        .slice(0, 2)
+        .toUpperCase();
+    return normalized;
+};
 // ===== LIL MAGNET MEMORIES API =====
 // Health check endpoint
 app.get('/', (req, res) => {
@@ -107,6 +165,91 @@ app.post('/send-status-update-email', async (req, res) => {
         return res.status(500).json({
             error: 'Failed to send status update email',
             details: error.message || 'Unknown error occurred',
+        });
+    }
+});
+// Square payment endpoint
+app.post('/payments/create', async (req, res) => {
+    var _a, _b, _c, _d;
+    try {
+        const locationId = getSquareLocationId() || req.body.locationId;
+        if (!locationId) {
+            return res.status(500).json({
+                error: 'Square location ID is not configured',
+            });
+        }
+        const { sourceId, amount, currency = 'USD', orderNumber, buyerEmail, customerName, billingAddress, shippingAddress, verificationToken, note, } = req.body;
+        if (!sourceId) {
+            return res
+                .status(400)
+                .json({ error: 'Missing payment source (sourceId).' });
+        }
+        if (amount === undefined || amount === null) {
+            return res.status(400).json({ error: 'Missing payment amount.' });
+        }
+        const amountNumber = Number(amount);
+        if (Number.isNaN(amountNumber) || amountNumber <= 0) {
+            return res
+                .status(400)
+                .json({ error: 'Amount must be a positive number.' });
+        }
+        const client = getSquareClient();
+        const idempotencyKey = req.body.idempotencyKey || (0, uuid_1.v4)();
+        const amountMoney = {
+            amount: Math.round(amountNumber * 100),
+            currency: String(currency || 'USD').toUpperCase(),
+        };
+        const requestBody = {
+            sourceId,
+            idempotencyKey,
+            amountMoney,
+            locationId,
+            autocomplete: true,
+        };
+        if (orderNumber) {
+            requestBody.referenceId = orderNumber;
+            requestBody.note = note || `Lil Magnet Memories order ${orderNumber}`;
+        }
+        else if (note) {
+            requestBody.note = note;
+        }
+        if (buyerEmail) {
+            requestBody.buyerEmailAddress = buyerEmail;
+        }
+        if (customerName) {
+            requestBody.statementDescriptionIdentifier = customerName
+                .replace(/\s+/g, ' ')
+                .trim()
+                .slice(0, 20);
+        }
+        if (verificationToken) {
+            requestBody.verificationToken = verificationToken;
+        }
+        const normalizedBilling = normalizeSquareAddress(billingAddress);
+        if (normalizedBilling) {
+            requestBody.billingAddress = normalizedBilling;
+        }
+        const normalizedShipping = normalizeSquareAddress(shippingAddress);
+        if (normalizedShipping) {
+            requestBody.shippingAddress = normalizedShipping;
+        }
+        const response = await client.payments.create(requestBody);
+        console.log('✅ Square payment created:', {
+            id: (_a = response.payment) === null || _a === void 0 ? void 0 : _a.id,
+            status: (_b = response.payment) === null || _b === void 0 ? void 0 : _b.status,
+            orderNumber,
+        });
+        return res.json({ success: true, payment: response.payment });
+    }
+    catch (error) {
+        console.error('❌ Square payment error:', error);
+        const statusCode = (error === null || error === void 0 ? void 0 : error.statusCode) || 500;
+        const message = (error === null || error === void 0 ? void 0 : error.message) ||
+            ((_d = (_c = error === null || error === void 0 ? void 0 : error.errors) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.detail) ||
+            'Failed to process Square payment.';
+        return res.status(statusCode).json({
+            error: message,
+            details: (error === null || error === void 0 ? void 0 : error.errors) || error,
         });
     }
 });

@@ -335,6 +335,50 @@ class FirebaseService {
     }
   }
 
+  async processSquarePayment(paymentData) {
+    try {
+      const response = await fetch(
+        'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/payments/create',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentData),
+        }
+      );
+
+      let result = null;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        if (!response.ok) {
+          throw new Error('Failed to process Square payment');
+        }
+        return null;
+      }
+
+      if (!response.ok) {
+        const errorMessage =
+          result?.error || 'Failed to process Square payment';
+        const error = new Error(errorMessage);
+        error.details = result?.details || null;
+        throw error;
+      }
+
+      if (result?.error) {
+        const error = new Error(result.error);
+        error.details = result?.details || null;
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error processing Square payment:', error);
+      throw error;
+    }
+  }
+
   // Product Management Methods
   async getProducts() {
     try {
