@@ -1403,7 +1403,8 @@ export default {
           currency: 'USD',
           orderNumber,
           buyerEmail: customerInfo.value.email,
-          customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`.trim(),
+          customerName:
+            `${customerInfo.value.firstName} ${customerInfo.value.lastName}`.trim(),
           billingAddress: normalizeAddressForSquare(billingAddressToUse),
           shippingAddress: normalizeAddressForSquare(
             requiresShippingAddress.value ? shippingAddress.value : null

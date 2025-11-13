@@ -7,7 +7,7 @@ const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const square_1 = require("square");
-const uuid_1 = require("uuid");
+const crypto_1 = require("crypto");
 // Initialize Firebase Admin
 admin.initializeApp();
 // Create Express app
@@ -194,7 +194,7 @@ app.post('/payments/create', async (req, res) => {
                 .json({ error: 'Amount must be a positive number.' });
         }
         const client = getSquareClient();
-        const idempotencyKey = req.body.idempotencyKey || (0, uuid_1.v4)();
+        const idempotencyKey = req.body.idempotencyKey || (0, crypto_1.randomUUID)();
         const amountMoney = {
             amount: Math.round(amountNumber * 100),
             currency: String(currency || 'USD').toUpperCase(),

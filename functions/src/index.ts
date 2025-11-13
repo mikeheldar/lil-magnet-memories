@@ -4,7 +4,7 @@ import * as express from 'express';
 import * as cors from 'cors';
 import * as nodemailer from 'nodemailer';
 import { SquareClient, SquareEnvironment } from 'square';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -273,7 +273,7 @@ app.post('/payments/create', async (req, res) => {
 
     const client = getSquareClient();
 
-    const idempotencyKey = req.body.idempotencyKey || uuidv4();
+    const idempotencyKey = req.body.idempotencyKey || randomUUID();
     const amountMoney = {
       amount: Math.round(amountNumber * 100),
       currency: String(currency || 'USD').toUpperCase(),
