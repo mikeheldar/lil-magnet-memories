@@ -120,6 +120,37 @@ app.get('/payments/health', (req, res) => {
   });
 });
 
+// Helper endpoint to list Square locations (for debugging)
+app.get('/payments/locations', async (req, res) => {
+  try {
+    console.log('🔵 [PAYMENTS/LOCATIONS] Listing Square locations...');
+    const client = getSquareClient();
+    
+    const response = await client.locations.list();
+    
+    console.log('✅ [PAYMENTS/LOCATIONS] Locations retrieved:', {
+      count: response.locations?.length || 0,
+    });
+    
+    return res.json({
+      success: true,
+      locations: response.locations?.map((loc) => ({
+        id: loc.id,
+        name: loc.name,
+        address: loc.address,
+        status: loc.status,
+        capabilities: loc.capabilities,
+      })) || [],
+    });
+  } catch (error: any) {
+    console.error('❌ [PAYMENTS/LOCATIONS] Error listing locations:', error);
+    return res.status(500).json({
+      error: 'Failed to list locations',
+      details: error?.message || 'Unknown error',
+    });
+  }
+});
+
 // Send order email endpoint
 app.post('/send-order-email', async (req, res) => {
   try {
