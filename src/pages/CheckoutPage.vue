@@ -693,9 +693,18 @@
                     </div>
                     <!-- Square payment form container -->
                     <div id="square-payment-form" class="q-mt-md">
-                      <div class="text-body2 text-grey-6">
+                      <div
+                        v-if="!squareInitialized || !squareCardMounted"
+                        class="text-body2 text-grey-6"
+                      >
                         <q-spinner size="24px" class="q-mr-sm" />
                         Loading secure payment form...
+                      </div>
+                      <div
+                        v-if="squareInitError"
+                        class="text-negative text-caption q-mt-sm"
+                      >
+                        Error loading payment form: {{ squareInitError.message }}
                       </div>
                     </div>
                   </q-card-section>
@@ -1291,20 +1300,29 @@ export default {
 
     const mountSquareCard = async () => {
       if (!squareCard.value) {
+        console.warn('Square card not initialized yet');
         return;
       }
       await nextTick();
       const container = document.getElementById('square-payment-form');
       if (!container) {
+        console.warn('Square payment form container not found');
         return;
       }
-      container.setAttribute('autocomplete', 'cc-number');
-      container.setAttribute('aria-label', 'Secure credit card form');
-      container.classList.add('square-card-container');
-      if (!squareCardMounted.value) {
-        container.innerHTML = '';
-        await squareCard.value.attach('#square-payment-form');
-        squareCardMounted.value = true;
+      try {
+        container.setAttribute('autocomplete', 'cc-number');
+        container.setAttribute('aria-label', 'Secure credit card form');
+        container.classList.add('square-card-container');
+        if (!squareCardMounted.value) {
+          container.innerHTML = '';
+          await squareCard.value.attach('#square-payment-form');
+          squareCardMounted.value = true;
+          console.log('✅ Square card form mounted successfully');
+        }
+      } catch (error) {
+        console.error('Error mounting Square card form:', error);
+        squareInitError.value = error;
+        throw error;
       }
     };
 
@@ -1457,16 +1475,22 @@ export default {
         const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
         if (!window.Square) {
-          console.warn('Square SDK not loaded yet');
+          console.error('Square SDK not loaded. Check if script is loaded from https://web.squarecdn.com/v1/square.js');
+          squareInitError.value = new Error('Square SDK not loaded');
           return;
         }
 
         if (!applicationId || !locationId) {
-          console.warn(
-            'Square credentials not configured. See SQUARE_PAYMENT_SETUP.md'
-          );
+          const errorMsg = `Square credentials not configured. Application ID: ${applicationId ? 'set' : 'missing'}, Location ID: ${locationId ? 'set' : 'missing'}`;
+          console.error(errorMsg);
+          squareInitError.value = new Error(errorMsg);
           return;
         }
+
+        console.log('🔵 Initializing Square payments with:', {
+          applicationId: applicationId.substring(0, 10) + '...',
+          locationId,
+        });
 
         const payments = window.Square.payments(applicationId, locationId);
         squarePayments.value = payments;
@@ -1514,8 +1538,10 @@ export default {
           googlePayReady.value = false;
         }
 
+        console.log('🔵 Creating Square card form...');
         const card = await payments.card();
         squareCard.value = card;
+        console.log('✅ Square card form created');
 
         await mountSquareCard();
         squareInitialized.value = true;
