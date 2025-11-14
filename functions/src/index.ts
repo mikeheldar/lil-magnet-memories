@@ -102,6 +102,20 @@ app.get('/', (req, res) => {
     status: 'Lil Magnet Memories API is running',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/',
+      sendOrderEmail: '/send-order-email',
+      sendStatusUpdateEmail: '/send-status-update-email',
+      createPayment: '/payments/create',
+    },
+  });
+});
+
+// Health check for payments endpoint
+app.get('/payments/health', (req, res) => {
+  res.json({
+    status: 'Payments endpoint is accessible',
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -233,9 +247,24 @@ app.post('/send-status-update-email', async (req, res) => {
 
 // Square payment endpoint
 app.post('/payments/create', async (req, res) => {
+  console.log('🔵 [PAYMENTS/CREATE] Request received:', {
+    method: req.method,
+    path: req.path,
+    headers: {
+      'content-type': req.headers['content-type'],
+      'user-agent': req.headers['user-agent'],
+    },
+    bodyKeys: Object.keys(req.body || {}),
+    timestamp: new Date().toISOString(),
+  });
+
   try {
+    console.log('🔵 [PAYMENTS/CREATE] Checking Square configuration...');
     const locationId = getSquareLocationId() || req.body.locationId;
+    console.log('🔵 [PAYMENTS/CREATE] Location ID:', locationId ? '✅ Found' : '❌ Missing');
+    
     if (!locationId) {
+      console.error('❌ [PAYMENTS/CREATE] Square location ID is not configured');
       return res.status(500).json({
         error: 'Square location ID is not configured',
       });
@@ -254,30 +283,52 @@ app.post('/payments/create', async (req, res) => {
       note,
     } = req.body;
 
+    console.log('🔵 [PAYMENTS/CREATE] Request data:', {
+      sourceId: sourceId ? `${sourceId.substring(0, 10)}...` : 'missing',
+      amount,
+      currency,
+      orderNumber,
+      buyerEmail,
+      customerName,
+      hasBillingAddress: !!billingAddress,
+      hasShippingAddress: !!shippingAddress,
+    });
+
     if (!sourceId) {
+      console.error('❌ [PAYMENTS/CREATE] Missing payment source (sourceId)');
       return res
         .status(400)
         .json({ error: 'Missing payment source (sourceId).' });
     }
 
     if (amount === undefined || amount === null) {
+      console.error('❌ [PAYMENTS/CREATE] Missing payment amount');
       return res.status(400).json({ error: 'Missing payment amount.' });
     }
 
     const amountNumber = Number(amount);
     if (Number.isNaN(amountNumber) || amountNumber <= 0) {
+      console.error('❌ [PAYMENTS/CREATE] Invalid amount:', amountNumber);
       return res
         .status(400)
         .json({ error: 'Amount must be a positive number.' });
     }
 
+    console.log('🔵 [PAYMENTS/CREATE] Initializing Square client...');
     const client = getSquareClient();
+    console.log('✅ [PAYMENTS/CREATE] Square client initialized');
 
     const idempotencyKey = req.body.idempotencyKey || randomUUID();
     const amountMoney = {
       amount: Math.round(amountNumber * 100),
       currency: String(currency || 'USD').toUpperCase(),
     };
+
+    console.log('🔵 [PAYMENTS/CREATE] Preparing payment request:', {
+      idempotencyKey,
+      amountMoney,
+      locationId,
+    });
 
     const requestBody: any = {
       sourceId,
@@ -319,17 +370,37 @@ app.post('/payments/create', async (req, res) => {
       requestBody.shippingAddress = normalizedShipping;
     }
 
+    console.log('🔵 [PAYMENTS/CREATE] Calling Square API...', {
+      requestBodyKeys: Object.keys(requestBody),
+      amountCents: requestBody.amountMoney.amount,
+    });
+
     const response = await client.payments.create(requestBody);
 
-    console.log('✅ Square payment created:', {
+    console.log('✅ [PAYMENTS/CREATE] Square payment created:', {
       id: response.payment?.id,
       status: response.payment?.status,
       orderNumber,
+      errors: response.errors,
     });
+
+    if (response.errors && response.errors.length > 0) {
+      console.error('⚠️ [PAYMENTS/CREATE] Square returned errors:', response.errors);
+      return res.status(400).json({
+        error: 'Square payment failed',
+        details: response.errors,
+        payment: response.payment,
+      });
+    }
 
     return res.json({ success: true, payment: response.payment });
   } catch (error: any) {
-    console.error('❌ Square payment error:', error);
+    console.error('❌ [PAYMENTS/CREATE] Square payment error:', {
+      message: error?.message,
+      statusCode: error?.statusCode,
+      errors: error?.errors,
+      stack: error?.stack,
+    });
     const statusCode = error?.statusCode || 500;
     const message =
       error?.message ||
