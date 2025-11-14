@@ -465,7 +465,9 @@ app.post('/payments/create', async (req, res) => {
     }
 
     // Serialize payment to convert BigInt values to strings for JSON
-    const serializedPayment = response.payment ? serializePayment(response.payment) : null;
+    const serializedPayment = response.payment
+      ? serializePayment(response.payment)
+      : null;
 
     return res.json({ success: true, payment: serializedPayment });
   } catch (error: any) {

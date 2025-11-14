@@ -247,13 +247,13 @@
                 <q-btn
                   type="button"
                   color="primary"
-                  round
-                  dense
-                  icon="add"
+                  :class="{ 'bg-grey-5': hasAddedToCart }"
+                  :disable="!canSubmit || hasAddedToCart"
                   :loading="submitting"
-                  :disable="!canSubmit"
-                  aria-label="Add to cart"
-                  @click.prevent.stop="onSubmit"
+                  icon="add_shopping_cart"
+                  label="Add to Cart"
+                  class="q-px-md"
+                  @click.prevent.stop="handleAddToCart"
                 />
                 <q-btn
                   type="button"
@@ -266,6 +266,36 @@
                 />
               </div>
             </div>
+
+            <!-- Re-add Warning Dialog -->
+            <q-dialog v-model="showReAddWarning">
+              <q-card>
+                <q-card-section class="row items-center q-pb-none">
+                  <q-icon name="warning" color="warning" size="32px" class="q-mr-sm" />
+                  <span class="text-h6">Re-adding to Cart</span>
+                </q-card-section>
+
+                <q-card-section>
+                  <div class="text-body1">
+                    You've already added these items to your cart. Adding them again will create duplicate items.
+                  </div>
+                  <div class="text-body2 text-grey-7 q-mt-sm">
+                    Are you sure you want to add these items again?
+                  </div>
+                </q-card-section>
+
+                <q-card-actions align="right">
+                  <q-btn flat label="Cancel" color="primary" v-close-popup />
+                  <q-btn
+                    flat
+                    label="Add Again"
+                    color="primary"
+                    @click="confirmReAdd"
+                    v-close-popup
+                  />
+                </q-card-actions>
+              </q-card>
+            </q-dialog>
           </q-form>
         </q-card-section>
       </q-card>
@@ -301,6 +331,8 @@ export default {
     const submitting = ref(false);
     const products = ref([]);
     const selectedProduct = ref(null);
+    const hasAddedToCart = ref(false);
+    const showReAddWarning = ref(false);
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -384,6 +416,8 @@ export default {
       selectedFiles.value = files;
       // Initialize quantities to 1 for each file
       fileQuantities.value = files.map(() => 1);
+      // Reset add to cart state when files change
+      hasAddedToCart.value = false;
     };
 
     const increaseQuantity = (index) => {
@@ -399,6 +433,21 @@ export default {
     const removeFile = (index) => {
       selectedFiles.value.splice(index, 1);
       fileQuantities.value.splice(index, 1);
+    };
+
+    const handleAddToCart = () => {
+      if (hasAddedToCart.value) {
+        // Show warning dialog if trying to add again
+        showReAddWarning.value = true;
+        return;
+      }
+      onSubmit();
+    };
+
+    const confirmReAdd = () => {
+      // Reset the state and add again
+      hasAddedToCart.value = false;
+      onSubmit();
     };
 
     const onSubmit = async () => {
@@ -426,6 +475,9 @@ export default {
           phone: formData.value.phone,
         },
       });
+
+      // Mark as added to cart
+      hasAddedToCart.value = true;
 
       // Show success notification and redirect to cart
       $q.notify({
@@ -653,6 +705,8 @@ export default {
       isAuthenticated,
       currentUser,
       signingIn,
+      hasAddedToCart,
+      showReAddWarning,
       isValidEmail,
       getFilePreview,
       onRejected,
@@ -661,6 +715,8 @@ export default {
       decreaseQuantity,
       removeFile,
       onSubmit,
+      handleAddToCart,
+      confirmReAdd,
       goToCheckout,
       handleGoogleSignIn,
     };
