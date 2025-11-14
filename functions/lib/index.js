@@ -70,6 +70,33 @@ const normalizeSquareAddress = (address) => {
         .toUpperCase();
     return normalized;
 };
+// Helper function to serialize payment object, converting BigInt to string
+const serializePayment = (payment) => {
+    if (!payment) {
+        return null;
+    }
+    // Recursively convert BigInt values to strings
+    const convertBigInt = (obj) => {
+        if (obj === null || obj === undefined) {
+            return obj;
+        }
+        if (typeof obj === 'bigint') {
+            return obj.toString();
+        }
+        if (Array.isArray(obj)) {
+            return obj.map(convertBigInt);
+        }
+        if (typeof obj === 'object') {
+            const converted = {};
+            for (const key in obj) {
+                converted[key] = convertBigInt(obj[key]);
+            }
+            return converted;
+        }
+        return obj;
+    };
+    return convertBigInt(payment);
+};
 // ===== LIL MAGNET MEMORIES API =====
 // Health check endpoint
 app.get('/', (req, res) => {
@@ -324,10 +351,12 @@ app.post('/payments/create', async (req, res) => {
             return res.status(400).json({
                 error: 'Square payment failed',
                 details: response.errors,
-                payment: response.payment,
+                payment: response.payment ? serializePayment(response.payment) : null,
             });
         }
-        return res.json({ success: true, payment: response.payment });
+        // Serialize payment to convert BigInt values to strings for JSON
+        const serializedPayment = response.payment ? serializePayment(response.payment) : null;
+        return res.json({ success: true, payment: serializedPayment });
     }
     catch (error) {
         console.error('❌ [PAYMENTS/CREATE] Square payment error:', {

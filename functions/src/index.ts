@@ -95,6 +95,36 @@ const normalizeSquareAddress = (address?: any) => {
   return normalized;
 };
 
+// Helper function to serialize payment object, converting BigInt to string
+const serializePayment = (payment: any): any => {
+  if (!payment) {
+    return null;
+  }
+
+  // Recursively convert BigInt values to strings
+  const convertBigInt = (obj: any): any => {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (typeof obj === 'bigint') {
+      return obj.toString();
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(convertBigInt);
+    }
+    if (typeof obj === 'object') {
+      const converted: any = {};
+      for (const key in obj) {
+        converted[key] = convertBigInt(obj[key]);
+      }
+      return converted;
+    }
+    return obj;
+  };
+
+  return convertBigInt(payment);
+};
+
 // ===== LIL MAGNET MEMORIES API =====
 
 // Health check endpoint
@@ -125,22 +155,23 @@ app.get('/payments/locations', async (req, res) => {
   try {
     console.log('🔵 [PAYMENTS/LOCATIONS] Listing Square locations...');
     const client = getSquareClient();
-    
+
     const response = await client.locations.list();
-    
+
     console.log('✅ [PAYMENTS/LOCATIONS] Locations retrieved:', {
       count: response.locations?.length || 0,
     });
-    
+
     return res.json({
       success: true,
-      locations: response.locations?.map((loc) => ({
-        id: loc.id,
-        name: loc.name,
-        address: loc.address,
-        status: loc.status,
-        capabilities: loc.capabilities,
-      })) || [],
+      locations:
+        response.locations?.map((loc) => ({
+          id: loc.id,
+          name: loc.name,
+          address: loc.address,
+          status: loc.status,
+          capabilities: loc.capabilities,
+        })) || [],
     });
   } catch (error: any) {
     console.error('❌ [PAYMENTS/LOCATIONS] Error listing locations:', error);
@@ -429,11 +460,14 @@ app.post('/payments/create', async (req, res) => {
       return res.status(400).json({
         error: 'Square payment failed',
         details: response.errors,
-        payment: response.payment,
+        payment: response.payment ? serializePayment(response.payment) : null,
       });
     }
 
-    return res.json({ success: true, payment: response.payment });
+    // Serialize payment to convert BigInt values to strings for JSON
+    const serializedPayment = response.payment ? serializePayment(response.payment) : null;
+
+    return res.json({ success: true, payment: serializedPayment });
   } catch (error: any) {
     console.error('❌ [PAYMENTS/CREATE] Square payment error:', {
       message: error?.message,
