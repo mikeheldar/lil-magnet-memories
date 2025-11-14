@@ -237,7 +237,7 @@ app.post('/payments/create', async (req, res) => {
         console.log('✅ [PAYMENTS/CREATE] Square client initialized');
         const idempotencyKey = req.body.idempotencyKey || (0, crypto_1.randomUUID)();
         const amountMoney = {
-            amount: Math.round(amountNumber * 100),
+            amount: BigInt(Math.round(amountNumber * 100)),
             currency: String(currency || 'USD').toUpperCase(),
         };
         console.log('🔵 [PAYMENTS/CREATE] Preparing payment request:', {

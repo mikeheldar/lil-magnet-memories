@@ -326,7 +326,7 @@ app.post('/payments/create', async (req, res) => {
 
     const idempotencyKey = req.body.idempotencyKey || randomUUID();
     const amountMoney = {
-      amount: Math.round(amountNumber * 100),
+      amount: BigInt(Math.round(amountNumber * 100)),
       currency: String(currency || 'USD').toUpperCase(),
     };
 
