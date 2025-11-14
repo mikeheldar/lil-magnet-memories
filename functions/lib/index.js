@@ -77,6 +77,19 @@ app.get('/', (req, res) => {
         status: 'Lil Magnet Memories API is running',
         version: '1.0.0',
         timestamp: new Date().toISOString(),
+        endpoints: {
+            health: '/',
+            sendOrderEmail: '/send-order-email',
+            sendStatusUpdateEmail: '/send-status-update-email',
+            createPayment: '/payments/create',
+        },
+    });
+});
+// Health check for payments endpoint
+app.get('/payments/health', (req, res) => {
+    res.json({
+        status: 'Payments endpoint is accessible',
+        timestamp: new Date().toISOString(),
     });
 });
 // Send order email endpoint

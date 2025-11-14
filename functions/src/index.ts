@@ -67,9 +67,10 @@ const normalizeSquareAddress = (address?: any) => {
   }
 
   if (address.city || address.locality) {
-    normalized.locality = String(
-      address.city || address.locality
-    ).slice(0, 200);
+    normalized.locality = String(address.city || address.locality).slice(
+      0,
+      200
+    );
   }
 
   if (address.state || address.administrativeDistrictLevel1) {
@@ -261,10 +262,15 @@ app.post('/payments/create', async (req, res) => {
   try {
     console.log('🔵 [PAYMENTS/CREATE] Checking Square configuration...');
     const locationId = getSquareLocationId() || req.body.locationId;
-    console.log('🔵 [PAYMENTS/CREATE] Location ID:', locationId ? '✅ Found' : '❌ Missing');
-    
+    console.log(
+      '🔵 [PAYMENTS/CREATE] Location ID:',
+      locationId ? '✅ Found' : '❌ Missing'
+    );
+
     if (!locationId) {
-      console.error('❌ [PAYMENTS/CREATE] Square location ID is not configured');
+      console.error(
+        '❌ [PAYMENTS/CREATE] Square location ID is not configured'
+      );
       return res.status(500).json({
         error: 'Square location ID is not configured',
       });
@@ -385,7 +391,10 @@ app.post('/payments/create', async (req, res) => {
     });
 
     if (response.errors && response.errors.length > 0) {
-      console.error('⚠️ [PAYMENTS/CREATE] Square returned errors:', response.errors);
+      console.error(
+        '⚠️ [PAYMENTS/CREATE] Square returned errors:',
+        response.errors
+      );
       return res.status(400).json({
         error: 'Square payment failed',
         details: response.errors,

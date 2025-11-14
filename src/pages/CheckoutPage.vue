@@ -1409,6 +1409,7 @@ export default {
           shippingAddress: normalizeAddressForSquare(
             requiresShippingAddress.value ? shippingAddress.value : null
           ),
+          locationId: import.meta.env.VITE_SQUARE_LOCATION_ID,
         };
 
         const result = await firebaseService.processSquarePayment(
