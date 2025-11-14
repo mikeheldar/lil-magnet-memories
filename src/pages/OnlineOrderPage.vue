@@ -271,13 +271,19 @@
             <q-dialog v-model="showReAddWarning">
               <q-card>
                 <q-card-section class="row items-center q-pb-none">
-                  <q-icon name="warning" color="warning" size="32px" class="q-mr-sm" />
+                  <q-icon
+                    name="warning"
+                    color="warning"
+                    size="32px"
+                    class="q-mr-sm"
+                  />
                   <span class="text-h6">Re-adding to Cart</span>
                 </q-card-section>
 
                 <q-card-section>
                   <div class="text-body1">
-                    You've already added these items to your cart. Adding them again will create duplicate items.
+                    You've already added these items to your cart. Adding them
+                    again will create duplicate items.
                   </div>
                   <div class="text-body2 text-grey-7 q-mt-sm">
                     Are you sure you want to add these items again?
