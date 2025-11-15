@@ -1501,22 +1501,20 @@ export default {
         const startTime = Date.now();
         const checkInterval = 100;
 
-        const checkSDK = setInterval(() => {
+        const intervalId = setInterval(() => {
           if (window.Square && window.Square.payments) {
             console.log(
               '✅ Square SDK loaded after',
               Date.now() - startTime,
               'ms'
             );
-            clearInterval(checkInterval);
+            clearInterval(intervalId);
             resolve();
-          } else if (Date.now() - startTime > maxWait) {
-            clearInterval(checkInterval);
-            reject(
-              new Error(
-                'Square SDK failed to load within 10 seconds. Check your network connection.'
-              )
-            );
+          } else if (Date.now() - startTime >= maxWait) {
+            clearInterval(intervalId);
+            const errorMsg = 'Square SDK failed to load within 10 seconds. Check your network connection and ensure the script is loading from https://web.squarecdn.com/v1/square.js';
+            console.error(errorMsg);
+            reject(new Error(errorMsg));
           }
         }, checkInterval);
       });
@@ -1610,13 +1608,22 @@ export default {
         }
 
         console.log('🔵 Creating Square card form...');
-        const card = await payments.card();
-        squareCard.value = card;
-        console.log('✅ Square card form created');
+        try {
+          const card = await payments.card();
+          squareCard.value = card;
+          console.log('✅ Square card form created');
 
-        await mountSquareCard();
-        squareInitialized.value = true;
-        await updateSquarePaymentRequest();
+          // Mount the card form immediately
+          await mountSquareCard();
+          squareInitialized.value = true;
+          console.log('✅ Square payments fully initialized');
+          
+          await updateSquarePaymentRequest();
+        } catch (cardError) {
+          console.error('❌ Error creating Square card form:', cardError);
+          squareInitError.value = cardError;
+          throw cardError;
+        }
 
         if (
           selectedPaymentOption.value === 'apple_pay' &&
@@ -1634,7 +1641,12 @@ export default {
         console.log('✅ Square payments initialized successfully');
       } catch (error) {
         squareInitError.value = error;
-        console.error('Error initializing Square payments:', error);
+        console.error('❌ Error initializing Square payments:', {
+          message: error?.message,
+          stack: error?.stack,
+          error,
+        });
+        // Don't throw - let the error be displayed in the UI
       }
     };
 
@@ -1846,6 +1858,10 @@ export default {
       applePayError,
       googlePayReady,
       googlePayError,
+      squareInitialized,
+      squareCardMounted,
+      squareInitError,
+      squareProcessing,
     };
   },
 };
