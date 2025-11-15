@@ -7,7 +7,8 @@
   "private": true,
   "scripts": {
     "dev": "quasar dev",
-    "build": "quasar build -m spa",
+    "build": "quasar build -m spa && npm run postbuild",
+    "postbuild": "rm -f dist/spa/.well-known/apple-developer-merchantid-domain-association",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0"
