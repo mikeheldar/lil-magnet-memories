@@ -1111,6 +1111,7 @@ export default {
         disable: !squareInitialized.value,
       });
 
+      // Only show PayPal if it's configured
       if (availablePaymentMethods.value.paypal) {
         options.push({
           label: 'PayPal',
@@ -1261,10 +1262,10 @@ export default {
           caption: 'Please use another payment method',
           position: 'top',
         });
-        // Reset to default payment option
-        selectedPaymentOption.value = availablePaymentMethods.value.square_card
-          ? 'square_card'
-          : paymentOptions.value[0]?.value || null;
+        // Reset to default payment option (skip PayPal)
+        const availableOptions = paymentOptions.value.filter(opt => opt.value !== 'paypal');
+        selectedPaymentOption.value = availableOptions.find(opt => opt.value === 'square_card')?.value || 
+          availableOptions[0]?.value || null;
       }
     });
 
