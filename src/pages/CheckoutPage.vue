@@ -730,11 +730,15 @@
                     v-if="selectedPaymentOption === 'paypal'"
                     class="q-pt-md border-top"
                   >
-                    <div v-if="!availablePaymentMethods.paypal" class="text-negative q-pa-md bg-red-1 rounded-borders">
+                    <div
+                      v-if="!availablePaymentMethods.paypal"
+                      class="text-negative q-pa-md bg-red-1 rounded-borders"
+                    >
                       <q-icon name="error" class="q-mr-xs" />
                       <strong>PayPal is not configured</strong>
                       <div class="q-mt-xs text-caption">
-                        PayPal payment method is not available. Please use another payment method or contact support.
+                        PayPal payment method is not available. Please use
+                        another payment method or contact support.
                       </div>
                     </div>
                     <div v-else id="paypal-button-container"></div>
@@ -1242,7 +1246,9 @@ export default {
         // PayPal is not currently configured
         // To enable PayPal, uncomment the PayPal SDK script in index.html
         // and add VITE_PAYPAL_CLIENT_ID to environment variables
-        console.warn('PayPal is not configured. Please configure PayPal client ID to enable PayPal payments.');
+        console.warn(
+          'PayPal is not configured. Please configure PayPal client ID to enable PayPal payments.'
+        );
         safeNotify({
           type: 'warning',
           message: 'PayPal is not currently available',
