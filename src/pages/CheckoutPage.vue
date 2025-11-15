@@ -1613,12 +1613,12 @@ export default {
         let applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
         let locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
-        // Trim whitespace and validate
+        // Trim whitespace, newlines, and validate
         if (applicationId) {
-          applicationId = String(applicationId).trim();
+          applicationId = String(applicationId).trim().replace(/\s+/g, '');
         }
         if (locationId) {
-          locationId = String(locationId).trim();
+          locationId = String(locationId).trim().replace(/\s+/g, '');
         }
 
         console.log('🔵 Checking Square configuration...', {
@@ -1732,11 +1732,18 @@ export default {
 
           try {
             const googlePay = await payments.googlePay(paymentRequest);
-            const canMakePayment = await googlePay.canMakePayment();
-            if (canMakePayment.result) {
-              squareGooglePay.value = googlePay;
-              googlePayReady.value = true;
+            // Check if canMakePayment method exists and call it appropriately
+            if (typeof googlePay.canMakePayment === 'function') {
+              const canMakePayment = await googlePay.canMakePayment();
+              if (canMakePayment && (canMakePayment.result || canMakePayment === true)) {
+                squareGooglePay.value = googlePay;
+                googlePayReady.value = true;
+              } else {
+                googlePayReady.value = false;
+              }
             } else {
+              // If canMakePayment doesn't exist, assume Google Pay is not available
+              console.warn('Google Pay canMakePayment method not available');
               googlePayReady.value = false;
             }
           } catch (googleError) {
