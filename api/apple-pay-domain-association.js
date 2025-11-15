@@ -4,7 +4,6 @@ const path = require('path');
 module.exports = function handler(req, res) {
   try {
     // Read the file from the public directory
-    // In Vercel, the file will be in the dist/spa/.well-known directory after build
     const filePath = path.join(
       process.cwd(),
       'public',
@@ -37,13 +36,36 @@ module.exports = function handler(req, res) {
       }
     }
 
-    // Set headers to force download
+    // Check if this is a verification bot (Square, Apple, etc.)
+    const userAgent = (req.headers['user-agent'] || '').toLowerCase();
+    const isVerificationBot = 
+      userAgent.includes('square') ||
+      userAgent.includes('apple') ||
+      userAgent.includes('bot') ||
+      userAgent.includes('crawler') ||
+      userAgent.includes('spider') ||
+      userAgent.includes('curl') ||
+      userAgent.includes('wget') ||
+      userAgent.includes('postman') ||
+      userAgent.includes('insomnia') ||
+      userAgent.includes('python') ||
+      userAgent.includes('go-http') ||
+      userAgent.includes('java') ||
+      userAgent.includes('node-fetch') ||
+      userAgent.includes('axios');
+
+    // Set Content-Type
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader(
-      'Content-Disposition',
-      'attachment; filename="apple-developer-merchantid-domain-association"'
-    );
     res.setHeader('Content-Length', Buffer.byteLength(fileContent, 'utf8'));
+
+    // Only force download for regular browsers, not verification bots
+    // Verification bots need to read the file as plain JSON
+    if (!isVerificationBot) {
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="apple-developer-merchantid-domain-association"'
+      );
+    }
 
     // Send the file content
     res.status(200).send(fileContent);
