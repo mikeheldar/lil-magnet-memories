@@ -11,12 +11,12 @@
   ],
   "routes": [
     {
+      "src": "/\\.well-known/apple-developer-merchantid-domain-association",
+      "dest": "/api/apple-pay-domain-association"
+    },
+    {
       "src": "/\\.well-known/(.*)",
-      "dest": "/.well-known/$1",
-      "headers": {
-        "Content-Type": "application/json",
-        "Content-Disposition": "attachment; filename=\"apple-developer-merchantid-domain-association\""
-      }
+      "dest": "/.well-known/$1"
     },
     {
       "src": "/assets/(.*)",
