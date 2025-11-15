@@ -31,6 +31,8 @@ module.exports = function handler(req, res) {
     let fileSource = 'public';
     try {
       fileContent = fs.readFileSync(filePath, 'utf8');
+      // Trim any trailing whitespace/newlines to serve exact content
+      fileContent = fileContent.trim();
     } catch (readError) {
       // If file not found in public, try dist/spa
       const distPath = path.join(
@@ -42,6 +44,7 @@ module.exports = function handler(req, res) {
       );
       try {
         fileContent = fs.readFileSync(distPath, 'utf8');
+        fileContent = fileContent.trim();
         fileSource = 'dist/spa';
       } catch (distError) {
         console.error(
@@ -55,10 +58,10 @@ module.exports = function handler(req, res) {
 
     console.log('File source:', fileSource);
     console.log('File content length (chars):', fileContent.length);
-    console.log(
-      'File content preview (first 100 chars):',
-      fileContent.substring(0, 100)
-    );
+    console.log('File content (first 100 chars):', fileContent.substring(0, 100));
+    console.log('File content (last 100 chars):', fileContent.substring(fileContent.length - 100));
+    console.log('File ends with newline:', fileContent.endsWith('\n'));
+    console.log('File ends with carriage return:', fileContent.endsWith('\r'));
 
     // Check if this is a verification bot (Square, Apple, etc.)
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
@@ -82,10 +85,16 @@ module.exports = function handler(req, res) {
     console.log('Is Verification Bot:', isVerificationBot);
     console.log('User-Agent (lowercase):', userAgent || '(empty)');
 
-    // Calculate EXACT content length in bytes
+    // Calculate EXACT content length in bytes (must match exactly what we send)
     const contentLength = Buffer.byteLength(fileContent, 'utf8');
+    const bufferLength = Buffer.from(fileContent, 'utf8').length;
     console.log('Content-Length (bytes):', contentLength);
-    console.log('Content-Length verification:', Buffer.from(fileContent, 'utf8').length);
+    console.log('Content-Length verification (Buffer.from):', bufferLength);
+    console.log('Content-Length match:', contentLength === bufferLength);
+    
+    if (contentLength !== bufferLength) {
+      console.warn('WARNING: Content-Length mismatch!');
+    }
 
     // Set headers - CRITICAL: Exact requirements for Square verification
     // Content-Type: text/plain
