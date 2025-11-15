@@ -325,9 +325,12 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService';
+import { marketEventService } from '../services/marketEventService.js';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config.js';
 
 export default {
   name: 'MarketEventsPage',
@@ -341,6 +344,7 @@ export default {
     const checkingIn = ref(null);
     const deletingEvent = ref(false);
     const allOrders = ref([]);
+    let unsubscribeEvents = null;
 
     // Dialog states
     const showCreateEventDialog = ref(false);
@@ -455,16 +459,78 @@ export default {
       }
     };
 
-    // Load events from localStorage (for now)
+    // Convert Firebase event to processed format
+    const processEvent = (event) => {
+      const processed = { ...event };
+      if (processed.createdAt?.toDate) {
+        processed.createdAt = processed.createdAt.toDate().toISOString();
+      }
+      if (processed.updatedAt?.toDate) {
+        processed.updatedAt = processed.updatedAt.toDate().toISOString();
+      }
+      if (processed.checkedInAt?.toDate) {
+        processed.checkedInAt = processed.checkedInAt.toDate().toISOString();
+      }
+      if (processed.checkedOutAt?.toDate) {
+        processed.checkedOutAt = processed.checkedOutAt.toDate().toISOString();
+      }
+      return processed;
+    };
+
+    // Set up real-time listener for market events
+    const setupRealtimeListener = () => {
+      loading.value = true;
+      try {
+        const eventsRef = collection(db, 'marketEvents');
+        const q = query(eventsRef, orderBy('startDateTime', 'desc'));
+
+        unsubscribeEvents = onSnapshot(
+          q,
+          (snapshot) => {
+            const eventsList = [];
+            snapshot.forEach((doc) => {
+              eventsList.push(processEvent({
+                id: doc.id,
+                ...doc.data(),
+              }));
+            });
+
+            events.value = eventsList;
+            loading.value = false;
+
+            // Update market event service cache
+            marketEventService.eventsCache = eventsList;
+            marketEventService.cacheTimestamp = Date.now();
+
+            console.log('Market events updated in real-time:', eventsList.length);
+          },
+          (err) => {
+            console.error('Real-time listener error:', err);
+            loading.value = false;
+            // Fallback to manual load
+            loadEvents();
+          }
+        );
+      } catch (err) {
+        console.error('Error setting up real-time listener:', err);
+        loading.value = false;
+        // Fallback to manual load
+        loadEvents();
+      }
+    };
+
+    // Load events from Firebase (fallback method)
     const loadEvents = async () => {
       loading.value = true;
       try {
-        const savedEvents = localStorage.getItem('marketEvents');
-        if (savedEvents) {
-          events.value = JSON.parse(savedEvents);
-        } else {
-          events.value = [];
-        }
+        // Load events from Firebase
+        const firebaseEvents = await firebaseService.getMarketEvents();
+        
+        // Convert Firebase timestamps to ISO strings for compatibility
+        events.value = firebaseEvents.map(processEvent);
+
+        // Refresh market event service cache
+        await marketEventService.refreshCache();
 
         // Also load orders from Firebase
         await loadOrdersFromFirebase();
@@ -473,15 +539,6 @@ export default {
         events.value = [];
       } finally {
         loading.value = false;
-      }
-    };
-
-    // Save events to localStorage
-    const saveEvents = () => {
-      try {
-        localStorage.setItem('marketEvents', JSON.stringify(events.value));
-      } catch (error) {
-        console.error('Error saving events:', error);
       }
     };
 
@@ -593,25 +650,25 @@ export default {
 
       creatingEvent.value = true;
       try {
-        const event = {
-          id: Date.now().toString(),
+        // Create event in Firebase
+        const eventData = {
           name: newEvent.value.name,
           location: newEvent.value.location,
           startDateTime: newEvent.value.startDateTime,
           endDateTime: newEvent.value.endDateTime,
-          checkedIn: false,
-          checkedOut: false,
-          createdAt: new Date().toISOString(),
         };
 
-        events.value.unshift(event);
-        saveEvents();
+        // Create event in Firebase - real-time listener will update the list automatically
+        await firebaseService.createMarketEvent(eventData);
+        
+        // Refresh market event service cache (real-time listener will update events.value)
+        await marketEventService.refreshCache();
 
         try {
           $q.notify({
             type: 'positive',
             message: 'Event created successfully!',
-            caption: event.name,
+            caption: eventData.name,
             position: 'top',
           });
         } catch (error) {
@@ -628,8 +685,8 @@ export default {
             caption: error.message || 'An error occurred',
             position: 'top',
           });
-        } catch (error) {
-          console.error('Notification error:', error);
+        } catch (notifyError) {
+          console.error('Notification error:', notifyError);
         }
       } finally {
         creatingEvent.value = false;
@@ -652,23 +709,23 @@ export default {
     const checkInToEvent = async (eventId) => {
       checkingIn.value = eventId;
       try {
-        const event = events.value.find((e) => e.id === eventId);
-        if (event) {
-          event.checkedIn = true;
-          event.checkedInAt = new Date().toISOString();
-          saveEvents();
+        // Update in Firebase - real-time listener will update the list automatically
+        await firebaseService.checkInToMarketEvent(eventId);
 
-          try {
-            $q.notify({
-              type: 'positive',
-              message: 'Successfully checked in!',
-              caption: event.name,
-              position: 'top',
-              timeout: 3000,
-            });
-          } catch (error) {
-            console.error('Notification error:', error);
-          }
+        // Refresh market event service cache
+        await marketEventService.refreshCache();
+
+        try {
+          const event = events.value.find((e) => e.id === eventId);
+          $q.notify({
+            type: 'positive',
+            message: 'Successfully checked in!',
+            caption: event?.name || 'Market Event',
+            position: 'top',
+            timeout: 3000,
+          });
+        } catch (error) {
+          console.error('Notification error:', error);
         }
       } catch (error) {
         console.error('Error checking in:', error);
@@ -679,8 +736,8 @@ export default {
             caption: error.message || 'An error occurred',
             position: 'top',
           });
-        } catch (error) {
-          console.error('Notification error:', error);
+        } catch (notifyError) {
+          console.error('Notification error:', notifyError);
         }
       } finally {
         checkingIn.value = null;
@@ -691,23 +748,23 @@ export default {
     const checkOutOfEvent = async (eventId) => {
       checkingIn.value = eventId;
       try {
-        const event = events.value.find((e) => e.id === eventId);
-        if (event) {
-          event.checkedOut = true;
-          event.checkedOutAt = new Date().toISOString();
-          saveEvents();
+        // Update in Firebase - real-time listener will update the list automatically
+        await firebaseService.checkOutOfMarketEvent(eventId);
 
-          try {
-            $q.notify({
-              type: 'positive',
-              message: 'Successfully checked out!',
-              caption: event.name,
-              position: 'top',
-              timeout: 3000,
-            });
-          } catch (error) {
-            console.error('Notification error:', error);
-          }
+        // Refresh market event service cache
+        await marketEventService.refreshCache();
+
+        try {
+          const event = events.value.find((e) => e.id === eventId);
+          $q.notify({
+            type: 'positive',
+            message: 'Successfully checked out!',
+            caption: event?.name || 'Market Event',
+            position: 'top',
+            timeout: 3000,
+          });
+        } catch (error) {
+          console.error('Notification error:', error);
         }
       } catch (error) {
         console.error('Error checking out:', error);
@@ -718,8 +775,8 @@ export default {
             caption: error.message || 'An error occurred',
             position: 'top',
           });
-        } catch (error) {
-          console.error('Notification error:', error);
+        } catch (notifyError) {
+          console.error('Notification error:', notifyError);
         }
       } finally {
         checkingIn.value = null;
@@ -730,22 +787,22 @@ export default {
     const undoCheckOut = async (eventId) => {
       checkingIn.value = eventId;
       try {
-        const event = events.value.find((e) => e.id === eventId);
-        if (event) {
-          event.checkedOut = false;
-          delete event.checkedOutAt;
-          saveEvents();
+        // Update in Firebase - real-time listener will update the list automatically
+        await firebaseService.undoCheckOutOfMarketEvent(eventId);
 
-          try {
-            $q.notify({
-              type: 'info',
-              message: 'Check-out undone',
-              caption: event.name,
-              position: 'top',
-            });
-          } catch (error) {
-            console.error('Notification error:', error);
-          }
+        // Refresh market event service cache
+        await marketEventService.refreshCache();
+
+        try {
+          const event = events.value.find((e) => e.id === eventId);
+          $q.notify({
+            type: 'info',
+            message: 'Check-out undone',
+            caption: event?.name || 'Market Event',
+            position: 'top',
+          });
+        } catch (error) {
+          console.error('Notification error:', error);
         }
       } catch (error) {
         console.error('Error undoing check-out:', error);
@@ -756,8 +813,8 @@ export default {
             caption: error.message || 'An error occurred',
             position: 'top',
           });
-        } catch (error) {
-          console.error('Notification error:', error);
+        } catch (notifyError) {
+          console.error('Notification error:', notifyError);
         }
       } finally {
         checkingIn.value = null;
@@ -776,22 +833,20 @@ export default {
 
       deletingEvent.value = true;
       try {
-        const eventIndex = events.value.findIndex(
-          (e) => e.id === eventToDelete.value.id
-        );
-        if (eventIndex !== -1) {
-          events.value.splice(eventIndex, 1);
-          saveEvents();
+        // Delete from Firebase - real-time listener will update the list automatically
+        await firebaseService.deleteMarketEvent(eventToDelete.value.id);
 
-          try {
-            $q.notify({
-              type: 'positive',
-              message: 'Event deleted successfully',
-              position: 'top',
-            });
-          } catch (error) {
-            console.error('Notification error:', error);
-          }
+        // Refresh market event service cache
+        await marketEventService.refreshCache();
+
+        try {
+          $q.notify({
+            type: 'positive',
+            message: 'Event deleted successfully',
+            position: 'top',
+          });
+        } catch (error) {
+          console.error('Notification error:', error);
         }
       } catch (error) {
         console.error('Error deleting event:', error);
@@ -802,8 +857,8 @@ export default {
             caption: error.message || 'An error occurred',
             position: 'top',
           });
-        } catch (error) {
-          console.error('Notification error:', error);
+        } catch (notifyError) {
+          console.error('Notification error:', notifyError);
         }
       } finally {
         deletingEvent.value = false;
@@ -814,7 +869,15 @@ export default {
 
     // Initialize
     onMounted(() => {
-      loadEvents();
+      setupRealtimeListener();
+      loadOrdersFromFirebase();
+    });
+
+    onUnmounted(() => {
+      if (unsubscribeEvents) {
+        unsubscribeEvents();
+        console.log('Market events real-time listener unsubscribed');
+      }
     });
 
     return {

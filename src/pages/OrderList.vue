@@ -227,9 +227,22 @@
             v-if="order.shippingOption && order.shippingOption.type === 'shipping'"
             class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
           >
-            <div class="text-weight-medium text-primary q-mb-sm">
-              <q-icon name="local_shipping" class="q-mr-xs" />
-              Shipping Information
+            <div class="row items-center q-mb-sm">
+              <div class="col">
+                <div class="text-weight-medium text-primary">
+                  <q-icon name="local_shipping" class="q-mr-xs" />
+                  Shipping Information
+                </div>
+              </div>
+              <div class="col-auto">
+                <q-chip
+                  :color="getShippingStatusColor(order.shippingStatus)"
+                  text-color="white"
+                  size="sm"
+                >
+                  {{ getShippingStatusLabel(order.shippingStatus) }}
+                </q-chip>
+              </div>
             </div>
             <div v-if="order.shippingOption.address" class="q-mt-xs">
               <div>
@@ -247,6 +260,40 @@
               <div v-if="order.shippingOption.cost" class="q-mt-xs">
                 <strong>Shipping Cost:</strong> ${{ order.shippingOption.cost.toFixed(2) }}
               </div>
+            </div>
+            <!-- Shipping Status Controls (Admin Only) -->
+            <div class="q-mt-md">
+              <q-btn-group>
+                <q-btn
+                  v-if="!order.shippingStatus || order.shippingStatus === 'pending'"
+                  icon="local_shipping"
+                  color="blue"
+                  size="sm"
+                  label="Mark as Shipped"
+                  @click="updateShippingStatus(order.id, 'shipped')"
+                >
+                  <q-tooltip>Mark order as shipped</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="order.shippingStatus === 'shipped'"
+                  icon="check_circle"
+                  color="green"
+                  size="sm"
+                  label="Mark as Delivered"
+                  @click="updateShippingStatus(order.id, 'delivered')"
+                >
+                  <q-tooltip>Mark order as delivered</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="order.shippingStatus === 'shipped' || order.shippingStatus === 'delivered'"
+                  icon="undo"
+                  color="orange"
+                  size="sm"
+                  @click="updateShippingStatus(order.id, 'pending')"
+                >
+                  <q-tooltip>Reset to Pending</q-tooltip>
+                </q-btn>
+              </q-btn-group>
             </div>
           </div>
 
@@ -593,6 +640,85 @@ export default {
       }
     };
 
+    // Get shipping status color
+    const getShippingStatusColor = (status) => {
+      switch (status) {
+        case 'pending':
+          return 'orange';
+        case 'shipped':
+          return 'blue';
+        case 'delivered':
+          return 'green';
+        default:
+          return 'grey';
+      }
+    };
+
+    // Get shipping status label
+    const getShippingStatusLabel = (status) => {
+      switch (status) {
+        case 'pending':
+          return 'Pending Shipment';
+        case 'shipped':
+          return 'Shipped';
+        case 'delivered':
+          return 'Delivered';
+        default:
+          return 'Pending Shipment';
+      }
+    };
+
+    // Update shipping status
+    const updateShippingStatus = async (orderId, status) => {
+      try {
+        await firebaseService.updateShippingStatus(orderId, status);
+        
+        let notificationMessage = '';
+        let notificationIcon = '';
+
+        switch (status) {
+          case 'shipped':
+            notificationMessage = '📦 Order marked as shipped! Customer will be notified.';
+            notificationIcon = 'local_shipping';
+            break;
+          case 'delivered':
+            notificationMessage = '✅ Order marked as delivered!';
+            notificationIcon = 'check_circle';
+            break;
+          case 'pending':
+            notificationMessage = '🔄 Shipping status reset to pending.';
+            notificationIcon = 'refresh';
+            break;
+          default:
+            notificationMessage = `Shipping status updated to ${status}`;
+            notificationIcon = 'update';
+        }
+
+        try {
+          $q.notify({
+            type: 'positive',
+            message: notificationMessage,
+            icon: notificationIcon,
+            position: 'top',
+            timeout: 4000,
+          });
+        } catch (notifyError) {
+          console.error('Failed to show success notification:', notifyError);
+        }
+      } catch (err) {
+        try {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to update shipping status',
+            icon: 'error',
+            position: 'top',
+          });
+        } catch (notifyError) {
+          console.error('Failed to show error notification:', notifyError);
+        }
+      }
+    };
+
     const completedOrders = computed(() => {
       return orders.value.filter((order) => order.status === 'completed');
     });
@@ -807,6 +933,9 @@ export default {
       getPaymentMethodLabel,
       getPaymentStatusColor,
       getOrderType,
+      getShippingStatusColor,
+      getShippingStatusLabel,
+      updateShippingStatus,
     };
   },
 };

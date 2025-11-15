@@ -616,10 +616,10 @@
                           <q-icon name="atm" size="32px" class="q-mr-md" />
                           <div>
                             <div class="text-weight-bold">
-                              Pay at Pop-up Station
+                              Pay at Market Event Kiosk
                             </div>
                             <div class="text-caption text-grey-7">
-                              Pay when you collect your order
+                              Pay when you collect your order at the market event
                             </div>
                           </div>
                         </div>
@@ -1069,9 +1069,8 @@ export default {
 
     // Available payment methods based on Square readiness and context
     const availablePaymentMethods = computed(() => {
-      const hasEvent =
-        selectedShippingOption.value === 'collect_at_event' &&
-        checkedInEvent.value;
+      // Pay at event is available whenever there's a checked-in market event
+      const hasCheckedInEvent = !!checkedInEvent.value;
 
       // Check if PayPal client ID is configured
       const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
@@ -1084,7 +1083,7 @@ export default {
         applePay: applePayReady.value,
         googlePay: googlePayReady.value,
         paypal: isPayPalConfigured, // Only show PayPal if client ID is configured
-        payAtEvent: hasEvent,
+        payAtEvent: hasCheckedInEvent,
       };
     });
 
@@ -1124,7 +1123,7 @@ export default {
 
       if (availablePaymentMethods.value.payAtEvent) {
         options.push({
-          label: 'Pay at Event',
+          label: 'Pay at Market Event Kiosk',
           value: 'pay_at_event',
           disable: false,
         });
@@ -2032,9 +2031,9 @@ export default {
           })
         );
 
-        // Navigate to orders list instead of thank you page
+        // Navigate to My Orders page
         router.push({
-          path: '/orders',
+          path: '/my-orders',
         });
       } catch (error) {
         console.error('Error placing order:', error);

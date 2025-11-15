@@ -427,10 +427,23 @@ export default {
     const shippingDeleteDialog = ref(false);
     const shippingDeleteIndex = ref(-1);
 
+    // Safe notify helper to prevent errors when $q.notify is not available
+    const safeNotify = (options) => {
+      try {
+        if ($q && typeof $q.notify === 'function') {
+          $q.notify(options);
+        } else {
+          console.warn('Notification not available:', options);
+        }
+      } catch (error) {
+        console.error('Error showing notification:', error, options);
+      }
+    };
+
     // Check admin access
     onMounted(async () => {
       if (!authService.isAuthenticated() || !authService.isAdmin()) {
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Access denied. Admin privileges required.',
           position: 'top',
@@ -459,7 +472,7 @@ export default {
         products.value = productsData || [];
       } catch (error) {
         console.error('Error loading products:', error);
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Failed to load products',
           position: 'top',
@@ -478,7 +491,7 @@ export default {
         shippingOptions.value = DEFAULT_SHIPPING_OPTIONS.map((option) => ({
           ...option,
         }));
-        $q.notify({
+        safeNotify({
           type: 'warning',
           message: 'Using default shipping options',
           position: 'top',
@@ -547,7 +560,7 @@ export default {
         return;
       }
       if (!option.label.trim()) {
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Please enter a label for the shipping option',
           position: 'top',
@@ -594,7 +607,7 @@ export default {
 
       try {
         await firebaseService.saveShippingOptions(shippingOptions.value);
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Shipping options updated',
           position: 'top',
@@ -602,7 +615,7 @@ export default {
         closeShippingOptionDialog();
       } catch (error) {
         console.error('Error saving shipping options:', error);
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Failed to save shipping options',
           position: 'top',
@@ -617,7 +630,7 @@ export default {
 
     const deleteShippingOption = async () => {
       if (shippingOptions.value.length <= 1) {
-        $q.notify({
+        safeNotify({
           type: 'warning',
           message: 'At least one shipping option is required.',
           position: 'top',
@@ -637,14 +650,14 @@ export default {
       }
       try {
         await firebaseService.saveShippingOptions(shippingOptions.value);
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Shipping option removed',
           position: 'top',
         });
       } catch (error) {
         console.error('Error deleting shipping option:', error);
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Failed to delete shipping option',
           position: 'top',
@@ -661,14 +674,14 @@ export default {
       }));
       try {
         await firebaseService.saveShippingOptions(shippingOptions.value);
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Shipping options reset to defaults',
           position: 'top',
         });
       } catch (error) {
         console.error('Error resetting shipping options:', error);
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Failed to reset shipping options',
           position: 'top',
@@ -711,14 +724,14 @@ export default {
       try {
         const imageUrl = await firebaseService.uploadProductImage(file);
         editingProduct.value.imageUrl = imageUrl;
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Image uploaded successfully',
           position: 'top',
         });
       } catch (error) {
         console.error('Error uploading image:', error);
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Failed to upload image',
           position: 'top',
@@ -735,7 +748,7 @@ export default {
 
     const saveProduct = async () => {
       if (!editingProduct.value.description) {
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Please enter a product description',
           position: 'top',
@@ -765,7 +778,7 @@ export default {
             ...product,
             id: existingProduct.id,
           };
-          $q.notify({
+          safeNotify({
             type: 'positive',
             message: 'Product updated',
             position: 'top',
@@ -774,7 +787,7 @@ export default {
           // Add new
           const id = await firebaseService.addProduct(product);
           products.value.push({ ...product, id });
-          $q.notify({
+          safeNotify({
             type: 'positive',
             message: 'Product added',
             position: 'top',
@@ -784,7 +797,7 @@ export default {
         imageFile.value = null;
       } catch (error) {
         console.error('Error saving product:', error);
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Failed to save product',
           position: 'top',
@@ -806,14 +819,14 @@ export default {
         products.value.splice(deleteIndex.value, 1);
         showDeleteDialog.value = false;
         deleteIndex.value = -1;
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Product deleted',
           position: 'top',
         });
       } catch (error) {
         console.error('Error deleting product:', error);
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'Failed to delete product',
           position: 'top',
@@ -833,13 +846,13 @@ export default {
         const entries = pricingEntries.value;
         const qtyToRemove = entries[index].qty;
         delete editingProduct.value.pricing[qtyToRemove];
-        $q.notify({
+        safeNotify({
           type: 'info',
           message: 'Pricing tier removed',
           position: 'top',
         });
       } else {
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: 'At least one pricing tier is required',
           position: 'top',

@@ -254,6 +254,38 @@ class FirebaseService {
     }
   }
 
+  // Update shipping status
+  async updateShippingStatus(orderId, shippingStatus) {
+    try {
+      const orderRef = doc(db, 'orders', orderId);
+      const orderDoc = await this.getOrderById(orderId);
+
+      if (!orderDoc) {
+        throw new Error('Order not found');
+      }
+
+      // Update the shipping status
+      await updateDoc(orderRef, {
+        shippingStatus: shippingStatus,
+        updatedAt: serverTimestamp(),
+      });
+
+      // Send shipping status update email to customer if order has shipping
+      if (orderDoc.shippingOption && orderDoc.shippingOption.type === 'shipping') {
+        try {
+          // You can add email notification for shipping updates here if needed
+          console.log('Shipping status updated:', shippingStatus);
+        } catch (emailError) {
+          console.error('Failed to send shipping status email:', emailError);
+          // Don't throw error - status was updated successfully
+        }
+      }
+    } catch (error) {
+      console.error('Error updating shipping status:', error);
+      throw error;
+    }
+  }
+
   // Delete order
   async deleteOrder(orderId) {
     try {
@@ -514,6 +546,8 @@ class FirebaseService {
         totalAmount: orderData.totalAmount || 0,
         shippingTimeline: orderData.shippingTimeline || null,
         status: orderData.status || 'pending',
+        // Set default shipping status for orders with shipping
+        shippingStatus: shippingOption && shippingOption.type === 'shipping' ? 'pending' : null,
         submissionDate: serverTimestamp(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -556,6 +590,129 @@ class FirebaseService {
       return docRef.id;
     } catch (error) {
       console.error('Error saving cart order:', error);
+      throw error;
+    }
+  }
+
+  // Market Events Methods
+  // Get all market events
+  async getMarketEvents() {
+    try {
+      const eventsRef = collection(db, 'marketEvents');
+      const q = query(eventsRef, orderBy('startDateTime', 'desc'));
+      const querySnapshot = await getDocs(q);
+
+      const events = [];
+      querySnapshot.forEach((doc) => {
+        events.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      return events;
+    } catch (error) {
+      console.error('Error getting market events:', error);
+      throw error;
+    }
+  }
+
+  // Create a new market event
+  async createMarketEvent(eventData) {
+    try {
+      const eventDoc = {
+        name: eventData.name,
+        location: eventData.location,
+        startDateTime: eventData.startDateTime,
+        endDateTime: eventData.endDateTime,
+        checkedIn: false,
+        checkedOut: false,
+        checkedInAt: null,
+        checkedOutAt: null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      const docRef = await addDoc(collection(db, 'marketEvents'), eventDoc);
+      console.log('Market event created with ID:', docRef.id);
+      return { id: docRef.id, ...eventDoc };
+    } catch (error) {
+      console.error('Error creating market event:', error);
+      throw error;
+    }
+  }
+
+  // Update a market event
+  async updateMarketEvent(eventId, updates) {
+    try {
+      const eventRef = doc(db, 'marketEvents', eventId);
+      await updateDoc(eventRef, {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      });
+      console.log('Market event updated:', eventId);
+    } catch (error) {
+      console.error('Error updating market event:', error);
+      throw error;
+    }
+  }
+
+  // Delete a market event
+  async deleteMarketEvent(eventId) {
+    try {
+      await deleteDoc(doc(db, 'marketEvents', eventId));
+      console.log('Market event deleted:', eventId);
+    } catch (error) {
+      console.error('Error deleting market event:', error);
+      throw error;
+    }
+  }
+
+  // Check in to a market event
+  async checkInToMarketEvent(eventId) {
+    try {
+      const eventRef = doc(db, 'marketEvents', eventId);
+      await updateDoc(eventRef, {
+        checkedIn: true,
+        checkedOut: false,
+        checkedInAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      console.log('Checked in to market event:', eventId);
+    } catch (error) {
+      console.error('Error checking in to market event:', error);
+      throw error;
+    }
+  }
+
+  // Check out of a market event
+  async checkOutOfMarketEvent(eventId) {
+    try {
+      const eventRef = doc(db, 'marketEvents', eventId);
+      await updateDoc(eventRef, {
+        checkedOut: true,
+        checkedOutAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      console.log('Checked out of market event:', eventId);
+    } catch (error) {
+      console.error('Error checking out of market event:', error);
+      throw error;
+    }
+  }
+
+  // Undo check out of a market event
+  async undoCheckOutOfMarketEvent(eventId) {
+    try {
+      const eventRef = doc(db, 'marketEvents', eventId);
+      await updateDoc(eventRef, {
+        checkedOut: false,
+        checkedOutAt: null,
+        updatedAt: serverTimestamp(),
+      });
+      console.log('Undid check out of market event:', eventId);
+    } catch (error) {
+      console.error('Error undoing check out of market event:', error);
       throw error;
     }
   }
