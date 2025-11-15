@@ -9,9 +9,44 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase/config.js';
+
+export const DEFAULT_SHIPPING_OPTIONS = [
+  {
+    id: 'standard_shipping',
+    value: 'standard_shipping',
+    label: 'Standard Shipping',
+    description: 'Ships via USPS with tracking in about 5-7 business days.',
+    estimatedTimeline: 'Estimated delivery in 5-7 business days',
+    cost: 5,
+    type: 'shipping',
+    allowAddress: true,
+    default: true,
+  },
+  {
+    id: 'expedited_shipping',
+    value: 'expedited_shipping',
+    label: 'Expedited Shipping',
+    description: 'Priority handling with faster door-to-door delivery.',
+    estimatedTimeline: 'Estimated delivery in 2-3 business days',
+    cost: 15,
+    type: 'shipping',
+    allowAddress: true,
+  },
+  {
+    id: 'collect_at_event',
+    value: 'collect_at_event',
+    label: 'Collect at Market Event',
+    description: 'Pick up your magnets at the market booth for free.',
+    estimatedTimeline: 'Ready for pickup at the event',
+    cost: 0,
+    type: 'pickup',
+    allowAddress: false,
+  },
+];
 
 class FirebaseService {
   // Upload photos to Firebase Storage
@@ -300,6 +335,50 @@ class FirebaseService {
     }
   }
 
+  async processSquarePayment(paymentData) {
+    try {
+      const response = await fetch(
+        'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/payments/create',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentData),
+        }
+      );
+
+      let result = null;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        if (!response.ok) {
+          throw new Error('Failed to process Square payment');
+        }
+        return null;
+      }
+
+      if (!response.ok) {
+        const errorMessage =
+          result?.error || 'Failed to process Square payment';
+        const error = new Error(errorMessage);
+        error.details = result?.details || null;
+        throw error;
+      }
+
+      if (result?.error) {
+        const error = new Error(result.error);
+        error.details = result?.details || null;
+        throw error;
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error processing Square payment:', error);
+      throw error;
+    }
+  }
+
   // Product Management Methods
   async getProducts() {
     try {
@@ -318,6 +397,40 @@ class FirebaseService {
       return products;
     } catch (error) {
       console.error('Error getting products:', error);
+      throw error;
+    }
+  }
+
+  async getShippingOptions() {
+    try {
+      const shippingDocRef = doc(db, 'settings', 'shippingOptions');
+      const snapshot = await getDoc(shippingDocRef);
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (Array.isArray(data?.options) && data.options.length > 0) {
+          return data.options;
+        }
+      }
+      return DEFAULT_SHIPPING_OPTIONS;
+    } catch (error) {
+      console.error('Error loading shipping options:', error);
+      return DEFAULT_SHIPPING_OPTIONS;
+    }
+  }
+
+  async saveShippingOptions(options) {
+    try {
+      const shippingDocRef = doc(db, 'settings', 'shippingOptions');
+      await setDoc(
+        shippingDocRef,
+        {
+          options,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    } catch (error) {
+      console.error('Error saving shipping options:', error);
       throw error;
     }
   }
@@ -378,19 +491,28 @@ class FirebaseService {
   // Save cart-based order to Firestore
   async saveCartOrder(orderData) {
     try {
+      const cartItems = JSON.parse(JSON.stringify(orderData.cartItems || []));
+      const shippingOption = orderData.shippingOption
+        ? JSON.parse(JSON.stringify(orderData.shippingOption))
+        : null;
+      const paymentOption = orderData.paymentOption
+        ? JSON.parse(JSON.stringify(orderData.paymentOption))
+        : null;
+
       // Prepare order document
       const orderDoc = {
         orderNumber: orderData.orderNumber,
         orderType: orderData.orderType || 'product_cart',
-        cartItems: orderData.cartItems || [],
+        cartItems,
         customer: orderData.customer,
         userId: orderData.userId || null,
-        shippingOption: orderData.shippingOption,
-        paymentOption: orderData.paymentOption,
+        shippingOption,
+        paymentOption,
         subtotal: orderData.subtotal || 0,
         shipping: orderData.shipping || 0,
         tax: orderData.tax || 0,
         totalAmount: orderData.totalAmount || 0,
+        shippingTimeline: orderData.shippingTimeline || null,
         status: orderData.status || 'pending',
         submissionDate: serverTimestamp(),
         createdAt: serverTimestamp(),

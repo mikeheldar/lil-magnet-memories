@@ -69,7 +69,7 @@
             Photo Upload Form
           </div>
 
-          <q-form @submit="onSubmit" class="q-gutter-md">
+          <q-form @submit.prevent.stop="onSubmit" class="q-gutter-md">
             <!-- Customer Information -->
             <div class="text-h6 text-weight-medium q-mb-sm text-primary">
               <q-icon name="person" class="q-mr-sm" />
@@ -162,11 +162,33 @@
                   class="col-6 col-md-4 col-lg-3"
                 >
                   <q-card class="q-pa-sm">
-                    <img
-                      :src="getFilePreview(file)"
-                      style="height: 100px; width: 100%; object-fit: cover"
-                      class="rounded-borders q-mb-sm"
-                    />
+                    <!-- Square frame with centered photo -->
+                    <div
+                      class="square-photo-frame q-mb-sm"
+                      style="
+                        width: 100%;
+                        aspect-ratio: 1;
+                        position: relative;
+                        overflow: hidden;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 4px;
+                        background: #f5f5f5;
+                      "
+                    >
+                      <img
+                        :src="getFilePreview(file)"
+                        style="
+                          position: absolute;
+                          top: 50%;
+                          left: 50%;
+                          transform: translate(-50%, -50%);
+                          width: 100%;
+                          height: 100%;
+                          object-fit: contain;
+                        "
+                        class="rounded-borders"
+                      />
+                    </div>
                     <div class="text-caption text-center q-mb-xs">
                       {{ file.name }}
                     </div>
@@ -240,19 +262,56 @@
             />
 
             <!-- Submit Button -->
-            <div class="text-center q-mt-lg">
+            <div class="q-mt-lg text-center">
               <q-btn
-                type="submit"
+                type="button"
                 color="primary"
-                size="lg"
+                :class="{ 'bg-grey-5': hasAddedToCart }"
+                :disable="!canSubmit || hasAddedToCart"
                 :loading="submitting"
-                :disable="!canSubmit"
+                icon="add_shopping_cart"
+                label="Add to Cart"
+                size="lg"
                 class="q-px-xl"
-              >
-                <q-icon name="add_shopping_cart" class="q-mr-sm" />
-                Add to Cart
-              </q-btn>
+                @click.prevent.stop="handleAddToCart"
+              />
             </div>
+
+            <!-- Re-add Warning Dialog -->
+            <q-dialog v-model="showReAddWarning">
+              <q-card>
+                <q-card-section class="row items-center q-pb-none">
+                  <q-icon
+                    name="warning"
+                    color="warning"
+                    size="32px"
+                    class="q-mr-sm"
+                  />
+                  <span class="text-h6">Re-adding to Cart</span>
+                </q-card-section>
+
+                <q-card-section>
+                  <div class="text-body1">
+                    You've already added these items to your cart. Adding them
+                    again will create duplicate items.
+                  </div>
+                  <div class="text-body2 text-grey-7 q-mt-sm">
+                    Are you sure you want to add these items again?
+                  </div>
+                </q-card-section>
+
+                <q-card-actions align="right">
+                  <q-btn flat label="Cancel" color="primary" v-close-popup />
+                  <q-btn
+                    flat
+                    label="Add Again"
+                    color="primary"
+                    @click="confirmReAdd"
+                    v-close-popup
+                  />
+                </q-card-actions>
+              </q-card>
+            </q-dialog>
           </q-form>
         </q-card-section>
       </q-card>
@@ -275,6 +334,15 @@ export default {
     const router = useRouter();
     const { addCustomUploadToCart } = useCart();
 
+    // Safe notify helper to prevent errors when $q.notify is not available
+    const safeNotify = (options) => {
+      if ($q && typeof $q.notify === 'function') {
+        $q.notify(options);
+      } else {
+        console.warn('Notify plugin unavailable', options);
+      }
+    };
+
     const formData = ref({
       firstName: '',
       lastName: '',
@@ -288,6 +356,8 @@ export default {
     const submitting = ref(false);
     const products = ref([]);
     const selectedProduct = ref(null);
+    const hasAddedToCart = ref(false);
+    const showReAddWarning = ref(false);
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -359,7 +429,7 @@ export default {
     };
 
     const onRejected = () => {
-      $q.notify({
+      safeNotify({
         type: 'negative',
         message:
           'Some files were rejected. Please make sure they are image files.',
@@ -371,6 +441,8 @@ export default {
       selectedFiles.value = files;
       // Initialize quantities to 1 for each file
       fileQuantities.value = files.map(() => 1);
+      // Reset add to cart state when files change
+      hasAddedToCart.value = false;
     };
 
     const increaseQuantity = (index) => {
@@ -388,7 +460,22 @@ export default {
       fileQuantities.value.splice(index, 1);
     };
 
-    const onSubmit = () => {
+    const handleAddToCart = () => {
+      if (hasAddedToCart.value) {
+        // Show warning dialog if trying to add again
+        showReAddWarning.value = true;
+        return;
+      }
+      onSubmit();
+    };
+
+    const confirmReAdd = () => {
+      // Reset the state and add again
+      hasAddedToCart.value = false;
+      onSubmit();
+    };
+
+    const onSubmit = async () => {
       // Add to cart instead of submitting order
       const photos = selectedFiles.value.map((file, index) => ({
         name: file.name,
@@ -414,8 +501,11 @@ export default {
         },
       });
 
+      // Mark as added to cart
+      hasAddedToCart.value = true;
+
       // Show success notification and redirect to cart
-      $q.notify({
+      safeNotify({
         type: 'positive',
         message: 'Added to cart!',
         caption: `${totalMagnets.value} magnets added to your cart`,
@@ -423,19 +513,19 @@ export default {
         timeout: 3000,
       });
 
-      // Reset form
-      formData.value = {
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        specialInstructions: '',
-      };
-      selectedFiles.value = [];
-      fileQuantities.value = [];
-
       // Navigate to cart
-      router.push('/cart');
+      try {
+        await router.push('/cart');
+      } catch (error) {
+        console.error('Failed to navigate to cart:', error);
+        safeNotify({
+          type: 'warning',
+          message: 'Added to cart, but navigation failed',
+          caption: 'Please open the cart manually.',
+          position: 'top',
+          timeout: 4000,
+        });
+      }
     };
 
     // Authentication state
@@ -447,7 +537,7 @@ export default {
       // Check if popups are likely blocked
       const popupBlocked = checkPopupBlocked();
       if (popupBlocked) {
-        $q.notify({
+        safeNotify({
           type: 'warning',
           message: 'Popup blocked detected',
           caption: 'Please allow popups for this site and try again.',
@@ -464,7 +554,7 @@ export default {
         if (signingIn.value) {
           console.log('Sign-in timeout, resetting state');
           signingIn.value = false;
-          $q.notify({
+          safeNotify({
             type: 'negative',
             message: 'Sign-in timed out',
             caption:
@@ -489,7 +579,7 @@ export default {
         await authService.signInWithGoogle();
         console.log('Google sign-in successful');
 
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Successfully signed in!',
           caption: 'Your information has been filled automatically.',
@@ -524,7 +614,7 @@ export default {
           caption = 'The sign-in process took too long. Please try again.';
         }
 
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: errorMessage,
           caption: caption,
@@ -632,6 +722,8 @@ export default {
       isAuthenticated,
       currentUser,
       signingIn,
+      hasAddedToCart,
+      showReAddWarning,
       isValidEmail,
       getFilePreview,
       onRejected,
@@ -640,6 +732,8 @@ export default {
       decreaseQuantity,
       removeFile,
       onSubmit,
+      handleAddToCart,
+      confirmReAdd,
       handleGoogleSignIn,
     };
   },

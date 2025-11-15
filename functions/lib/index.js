@@ -6,12 +6,97 @@ const admin = require("firebase-admin");
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+const square_1 = require("square");
+const crypto_1 = require("crypto");
 // Initialize Firebase Admin
 admin.initializeApp();
 // Create Express app
 const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json());
+const squareConfig = functions.config().square || {};
+const squareEnvironment = squareConfig.environment === 'production'
+    ? square_1.SquareEnvironment.Production
+    : square_1.SquareEnvironment.Sandbox;
+let squareClient = null;
+const getSquareClient = () => {
+    if (!squareConfig.access_token) {
+        throw new Error('Square access token is not configured.');
+    }
+    if (!squareClient) {
+        squareClient = new square_1.SquareClient({
+            environment: squareEnvironment,
+            token: squareConfig.access_token,
+        });
+    }
+    return squareClient;
+};
+const getSquareLocationId = () => {
+    if (squareConfig.location_id) {
+        return squareConfig.location_id;
+    }
+    return null;
+};
+const normalizeSquareAddress = (address) => {
+    if (!address) {
+        return undefined;
+    }
+    const streetValue = address.addressLine1 || address.street || address.address1 || null;
+    if (!streetValue) {
+        return undefined;
+    }
+    const normalized = {
+        addressLine1: String(streetValue).slice(0, 500),
+    };
+    if (address.addressLine2) {
+        normalized.addressLine2 = String(address.addressLine2).slice(0, 500);
+    }
+    else if (address.address2) {
+        normalized.addressLine2 = String(address.address2).slice(0, 500);
+    }
+    if (address.city || address.locality) {
+        normalized.locality = String(address.city || address.locality).slice(0, 200);
+    }
+    if (address.state || address.administrativeDistrictLevel1) {
+        normalized.administrativeDistrictLevel1 = String(address.state || address.administrativeDistrictLevel1)
+            .slice(0, 2)
+            .toUpperCase();
+    }
+    if (address.zip || address.postalCode) {
+        normalized.postalCode = String(address.zip || address.postalCode).slice(0, 20);
+    }
+    normalized.country = String(address.country || 'US')
+        .slice(0, 2)
+        .toUpperCase();
+    return normalized;
+};
+// Helper function to serialize payment object, converting BigInt to string
+const serializePayment = (payment) => {
+    if (!payment) {
+        return null;
+    }
+    // Recursively convert BigInt values to strings
+    const convertBigInt = (obj) => {
+        if (obj === null || obj === undefined) {
+            return obj;
+        }
+        if (typeof obj === 'bigint') {
+            return obj.toString();
+        }
+        if (Array.isArray(obj)) {
+            return obj.map(convertBigInt);
+        }
+        if (typeof obj === 'object') {
+            const converted = {};
+            for (const key in obj) {
+                converted[key] = convertBigInt(obj[key]);
+            }
+            return converted;
+        }
+        return obj;
+    };
+    return convertBigInt(payment);
+};
 // ===== LIL MAGNET MEMORIES API =====
 // Health check endpoint
 app.get('/', (req, res) => {
@@ -19,7 +104,49 @@ app.get('/', (req, res) => {
         status: 'Lil Magnet Memories API is running',
         version: '1.0.0',
         timestamp: new Date().toISOString(),
+        endpoints: {
+            health: '/',
+            sendOrderEmail: '/send-order-email',
+            sendStatusUpdateEmail: '/send-status-update-email',
+            createPayment: '/payments/create',
+        },
     });
+});
+// Health check for payments endpoint
+app.get('/payments/health', (req, res) => {
+    res.json({
+        status: 'Payments endpoint is accessible',
+        timestamp: new Date().toISOString(),
+    });
+});
+// Helper endpoint to list Square locations (for debugging)
+app.get('/payments/locations', async (req, res) => {
+    var _a, _b;
+    try {
+        console.log('🔵 [PAYMENTS/LOCATIONS] Listing Square locations...');
+        const client = getSquareClient();
+        const response = await client.locations.list();
+        console.log('✅ [PAYMENTS/LOCATIONS] Locations retrieved:', {
+            count: ((_a = response.locations) === null || _a === void 0 ? void 0 : _a.length) || 0,
+        });
+        return res.json({
+            success: true,
+            locations: ((_b = response.locations) === null || _b === void 0 ? void 0 : _b.map((loc) => ({
+                id: loc.id,
+                name: loc.name,
+                address: loc.address,
+                status: loc.status,
+                capabilities: loc.capabilities,
+            }))) || [],
+        });
+    }
+    catch (error) {
+        console.error('❌ [PAYMENTS/LOCATIONS] Error listing locations:', error);
+        return res.status(500).json({
+            error: 'Failed to list locations',
+            details: (error === null || error === void 0 ? void 0 : error.message) || 'Unknown error',
+        });
+    }
 });
 // Send order email endpoint
 app.post('/send-order-email', async (req, res) => {
@@ -107,6 +234,144 @@ app.post('/send-status-update-email', async (req, res) => {
         return res.status(500).json({
             error: 'Failed to send status update email',
             details: error.message || 'Unknown error occurred',
+        });
+    }
+});
+// Square payment endpoint
+app.post('/payments/create', async (req, res) => {
+    var _a, _b, _c, _d;
+    console.log('🔵 [PAYMENTS/CREATE] Request received:', {
+        method: req.method,
+        path: req.path,
+        headers: {
+            'content-type': req.headers['content-type'],
+            'user-agent': req.headers['user-agent'],
+        },
+        bodyKeys: Object.keys(req.body || {}),
+        timestamp: new Date().toISOString(),
+    });
+    try {
+        console.log('🔵 [PAYMENTS/CREATE] Checking Square configuration...');
+        const locationId = getSquareLocationId() || req.body.locationId;
+        console.log('🔵 [PAYMENTS/CREATE] Location ID:', locationId ? '✅ Found' : '❌ Missing');
+        if (!locationId) {
+            console.error('❌ [PAYMENTS/CREATE] Square location ID is not configured');
+            return res.status(500).json({
+                error: 'Square location ID is not configured',
+            });
+        }
+        const { sourceId, amount, currency = 'USD', orderNumber, buyerEmail, customerName, billingAddress, shippingAddress, verificationToken, note, } = req.body;
+        console.log('🔵 [PAYMENTS/CREATE] Request data:', {
+            sourceId: sourceId ? `${sourceId.substring(0, 10)}...` : 'missing',
+            amount,
+            currency,
+            orderNumber,
+            buyerEmail,
+            customerName,
+            hasBillingAddress: !!billingAddress,
+            hasShippingAddress: !!shippingAddress,
+        });
+        if (!sourceId) {
+            console.error('❌ [PAYMENTS/CREATE] Missing payment source (sourceId)');
+            return res
+                .status(400)
+                .json({ error: 'Missing payment source (sourceId).' });
+        }
+        if (amount === undefined || amount === null) {
+            console.error('❌ [PAYMENTS/CREATE] Missing payment amount');
+            return res.status(400).json({ error: 'Missing payment amount.' });
+        }
+        const amountNumber = Number(amount);
+        if (Number.isNaN(amountNumber) || amountNumber <= 0) {
+            console.error('❌ [PAYMENTS/CREATE] Invalid amount:', amountNumber);
+            return res
+                .status(400)
+                .json({ error: 'Amount must be a positive number.' });
+        }
+        console.log('🔵 [PAYMENTS/CREATE] Initializing Square client...');
+        const client = getSquareClient();
+        console.log('✅ [PAYMENTS/CREATE] Square client initialized');
+        const idempotencyKey = req.body.idempotencyKey || (0, crypto_1.randomUUID)();
+        const amountMoney = {
+            amount: BigInt(Math.round(amountNumber * 100)),
+            currency: String(currency || 'USD').toUpperCase(),
+        };
+        console.log('🔵 [PAYMENTS/CREATE] Preparing payment request:', {
+            idempotencyKey,
+            amountMoney,
+            locationId,
+        });
+        const requestBody = {
+            sourceId,
+            idempotencyKey,
+            amountMoney,
+            locationId,
+            autocomplete: true,
+        };
+        if (orderNumber) {
+            requestBody.referenceId = orderNumber;
+            requestBody.note = note || `Lil Magnet Memories order ${orderNumber}`;
+        }
+        else if (note) {
+            requestBody.note = note;
+        }
+        if (buyerEmail) {
+            requestBody.buyerEmailAddress = buyerEmail;
+        }
+        if (customerName) {
+            requestBody.statementDescriptionIdentifier = customerName
+                .replace(/\s+/g, ' ')
+                .trim()
+                .slice(0, 20);
+        }
+        if (verificationToken) {
+            requestBody.verificationToken = verificationToken;
+        }
+        const normalizedBilling = normalizeSquareAddress(billingAddress);
+        if (normalizedBilling) {
+            requestBody.billingAddress = normalizedBilling;
+        }
+        const normalizedShipping = normalizeSquareAddress(shippingAddress);
+        if (normalizedShipping) {
+            requestBody.shippingAddress = normalizedShipping;
+        }
+        console.log('🔵 [PAYMENTS/CREATE] Calling Square API...', {
+            requestBodyKeys: Object.keys(requestBody),
+            amountCents: requestBody.amountMoney.amount,
+        });
+        const response = await client.payments.create(requestBody);
+        console.log('✅ [PAYMENTS/CREATE] Square payment created:', {
+            id: (_a = response.payment) === null || _a === void 0 ? void 0 : _a.id,
+            status: (_b = response.payment) === null || _b === void 0 ? void 0 : _b.status,
+            orderNumber,
+            errors: response.errors,
+        });
+        if (response.errors && response.errors.length > 0) {
+            console.error('⚠️ [PAYMENTS/CREATE] Square returned errors:', response.errors);
+            return res.status(400).json({
+                error: 'Square payment failed',
+                details: response.errors,
+                payment: response.payment ? serializePayment(response.payment) : null,
+            });
+        }
+        // Serialize payment to convert BigInt values to strings for JSON
+        const serializedPayment = response.payment ? serializePayment(response.payment) : null;
+        return res.json({ success: true, payment: serializedPayment });
+    }
+    catch (error) {
+        console.error('❌ [PAYMENTS/CREATE] Square payment error:', {
+            message: error === null || error === void 0 ? void 0 : error.message,
+            statusCode: error === null || error === void 0 ? void 0 : error.statusCode,
+            errors: error === null || error === void 0 ? void 0 : error.errors,
+            stack: error === null || error === void 0 ? void 0 : error.stack,
+        });
+        const statusCode = (error === null || error === void 0 ? void 0 : error.statusCode) || 500;
+        const message = (error === null || error === void 0 ? void 0 : error.message) ||
+            ((_d = (_c = error === null || error === void 0 ? void 0 : error.errors) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.detail) ||
+            'Failed to process Square payment.';
+        return res.status(statusCode).json({
+            error: message,
+            details: (error === null || error === void 0 ? void 0 : error.errors) || error,
         });
     }
 });

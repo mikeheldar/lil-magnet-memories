@@ -12,6 +12,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'cart', component: () => import('pages/CartPage.vue') },
       { path: 'checkout', component: () => import('pages/CheckoutPage.vue') },
       { path: 'thank-you', component: () => import('pages/ThankYouPage.vue') },
+      { path: 'about', component: () => import('pages/AboutPage.vue') },
       {
         path: 'firebase-test',
         component: () => import('pages/FirebaseDiagnostic.vue'),
