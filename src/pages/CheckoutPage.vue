@@ -730,7 +730,14 @@
                     v-if="selectedPaymentOption === 'paypal'"
                     class="q-pt-md border-top"
                   >
-                    <div id="paypal-button-container"></div>
+                    <div v-if="!availablePaymentMethods.paypal" class="text-negative q-pa-md bg-red-1 rounded-borders">
+                      <q-icon name="error" class="q-mr-xs" />
+                      <strong>PayPal is not configured</strong>
+                      <div class="q-mt-xs text-caption">
+                        PayPal payment method is not available. Please use another payment method or contact support.
+                      </div>
+                    </div>
+                    <div v-else id="paypal-button-container"></div>
                   </q-card-section>
                 </q-card-section>
 
@@ -1230,6 +1237,22 @@ export default {
             squareInitError.value = error;
           }
         }
+      }
+      if (option === 'paypal') {
+        // PayPal is not currently configured
+        // To enable PayPal, uncomment the PayPal SDK script in index.html
+        // and add VITE_PAYPAL_CLIENT_ID to environment variables
+        console.warn('PayPal is not configured. Please configure PayPal client ID to enable PayPal payments.');
+        safeNotify({
+          type: 'warning',
+          message: 'PayPal is not currently available',
+          caption: 'Please use another payment method',
+          position: 'top',
+        });
+        // Reset to default payment option
+        selectedPaymentOption.value = availablePaymentMethods.value.square_card
+          ? 'square_card'
+          : paymentOptions.value[0]?.value || null;
       }
     });
 
@@ -1990,14 +2013,9 @@ export default {
           })
         );
 
+        // Navigate to orders list instead of thank you page
         router.push({
-          path: '/thank-you',
-          query: {
-            orderNumber: orderNumber,
-            customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
-            customerEmail: customerInfo.value.email,
-            totalMagnets,
-          },
+          path: '/orders',
         });
       } catch (error) {
         console.error('Error placing order:', error);

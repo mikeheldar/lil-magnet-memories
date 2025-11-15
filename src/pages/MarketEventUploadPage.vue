@@ -164,11 +164,35 @@
                   class="col-6 col-md-4 col-lg-3"
                 >
                   <q-card class="q-pa-sm">
-                    <img
-                      :src="getFilePreview(file)"
-                      style="height: 100px; width: 100%; object-fit: cover"
-                      class="rounded-borders q-mb-sm"
-                    />
+                    <!-- Square frame with centered photo -->
+                    <div
+                      class="square-photo-frame q-mb-sm"
+                      style="
+                        width: 100%;
+                        aspect-ratio: 1;
+                        position: relative;
+                        overflow: hidden;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 4px;
+                        background: #f5f5f5;
+                      "
+                    >
+                      <img
+                        :src="getFilePreview(file)"
+                        style="
+                          position: absolute;
+                          top: 50%;
+                          left: 50%;
+                          transform: translate(-50%, -50%);
+                          min-width: 100%;
+                          min-height: 100%;
+                          width: auto;
+                          height: auto;
+                          object-fit: cover;
+                        "
+                        class="rounded-borders"
+                      />
+                    </div>
                     <div class="text-caption text-center q-mb-xs">
                       {{ file.name }}
                     </div>
