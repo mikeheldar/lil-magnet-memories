@@ -82,18 +82,22 @@ module.exports = function handler(req, res) {
     console.log('Is Verification Bot:', isVerificationBot);
     console.log('User-Agent (lowercase):', userAgent || '(empty)');
 
-    // Calculate content length
+    // Calculate EXACT content length in bytes
     const contentLength = Buffer.byteLength(fileContent, 'utf8');
     console.log('Content-Length (bytes):', contentLength);
+    console.log('Content-Length verification:', Buffer.from(fileContent, 'utf8').length);
 
-    // Set headers - CRITICAL: These must be set exactly as shown
-    // to prevent compression, chunking, or any modification
+    // Set headers - CRITICAL: Exact requirements for Square verification
+    // Content-Type: text/plain
+    // Content-Length: EXACT byte size
+    // No compression (Content-Encoding: identity)
+    // No redirects (direct 200 response)
     const responseHeaders = {
-      'Content-Type': 'application/json',
+      'Content-Type': 'text/plain',
       'Content-Length': contentLength.toString(),
+      'Content-Encoding': 'identity', // Explicitly disable compression
       'Cache-Control': 'public, max-age=3600',
       'X-Content-Type-Options': 'nosniff',
-      'Content-Encoding': 'identity',
     };
 
     // Only force download for regular browsers, not verification bots
@@ -103,20 +107,20 @@ module.exports = function handler(req, res) {
     }
 
     console.log('Response Headers:', JSON.stringify(responseHeaders, null, 2));
+    console.log('Content-Length header value:', responseHeaders['Content-Length']);
 
-    // Set all headers
-    Object.keys(responseHeaders).forEach((key) => {
-      res.setHeader(key, responseHeaders[key]);
-    });
+    // Set all headers BEFORE sending response
+    // Use writeHead to ensure headers are set atomically
+    res.writeHead(200, responseHeaders);
 
-    // Send the file content - use writeHead to ensure headers are set before body
-    console.log('Sending response with status 200');
+    // Send the file content directly - no redirects, no compression
+    console.log('Sending response with status 200 (no redirect)');
     console.log(
       'File content ends with (last 100 chars):',
       fileContent.substring(fileContent.length - 100)
     );
 
-    res.writeHead(200);
+    // Send the exact content with exact length
     res.end(fileContent);
 
     console.log('Response sent successfully');
