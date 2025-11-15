@@ -1072,10 +1072,16 @@ export default {
         selectedShippingOption.value === 'collect_at_event' &&
         checkedInEvent.value;
 
+      // Check if PayPal client ID is configured
+      const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+      const isPayPalConfigured = !!paypalClientId && 
+        paypalClientId !== 'YOUR_PAYPAL_CLIENT_ID' && 
+        paypalClientId.trim() !== '';
+
       return {
         applePay: applePayReady.value,
         googlePay: googlePayReady.value,
-        paypal: true, // PayPal available everywhere
+        paypal: isPayPalConfigured, // Only show PayPal if client ID is configured
         payAtEvent: hasEvent,
       };
     });
