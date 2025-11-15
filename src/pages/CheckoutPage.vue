@@ -692,7 +692,9 @@
                       Payment will be processed securely via Square
                     </div>
                     <!-- Square payment form container -->
+                    <!-- Use v-once to prevent Vue from reconciling after Square manipulates DOM -->
                     <div
+                      v-once
                       id="square-payment-form"
                       class="q-mt-md"
                       style="min-height: 200px"
@@ -1410,11 +1412,11 @@ export default {
           );
           try {
             await squareCard.value.attach('#square-payment-form');
-            
+
             // Wait for Square to finish DOM manipulation before updating Vue state
             await nextTick();
             await new Promise((resolve) => setTimeout(resolve, 150));
-            
+
             // Now update Vue state - this should prevent reconciliation conflicts
             squareCardMounted.value = true;
             console.log('✅ Square card form mounted successfully');
@@ -1788,13 +1790,13 @@ export default {
 
             await updateSquarePaymentRequest();
 
-          // Always mount the card form immediately so it's ready
-          // The container will be shown/hidden based on selectedPaymentOption
-          // Use a delay to ensure the payment option section is fully rendered
-          console.log('🔵 Mounting Square card form...');
-          await nextTick();
-          await new Promise((resolve) => setTimeout(resolve, 200));
-          await mountSquareCard();
+            // Always mount the card form immediately so it's ready
+            // The container will be shown/hidden based on selectedPaymentOption
+            // Use a delay to ensure the payment option section is fully rendered
+            console.log('🔵 Mounting Square card form...');
+            await nextTick();
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            await mountSquareCard();
           } catch (cardError) {
             console.error('❌ Error creating Square card form:', cardError);
             squareInitError.value = cardError;
