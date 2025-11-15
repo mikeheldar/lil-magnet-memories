@@ -704,7 +704,8 @@
                         v-if="squareInitError"
                         class="text-negative text-caption q-mt-sm"
                       >
-                        Error loading payment form: {{ squareInitError.message }}
+                        Error loading payment form:
+                        {{ squareInitError.message }}
                       </div>
                     </div>
                   </q-card-section>
@@ -846,10 +847,13 @@ export default {
           customUploadItem.formData.phone || customerInfo.value.phone;
       }
 
-      // Initialize Square payments after a short delay to ensure SDK is loaded
-      setTimeout(() => {
+      // Wait for Square SDK to load, then initialize
+      waitForSquareSDK().then(() => {
         initializeSquarePayments();
-      }, 500);
+      }).catch((error) => {
+        console.error('Failed to load Square SDK:', error);
+        squareInitError.value = error;
+      });
     });
 
     const normalizeShippingOption = (option) => {
@@ -1167,7 +1171,20 @@ export default {
         await renderGooglePayButton();
       }
       if (option === 'square_card') {
-        await mountSquareCard();
+        // Wait for Square to be initialized before mounting
+        if (squareInitialized.value && squareCard.value) {
+          await mountSquareCard();
+        } else if (!squareInitialized.value) {
+          // Try to initialize if not already done
+          console.log('Square not initialized yet, attempting initialization...');
+          try {
+            await waitForSquareSDK();
+            await initializeSquarePayments();
+          } catch (error) {
+            console.error('Failed to initialize Square:', error);
+            squareInitError.value = error;
+          }
+        }
       }
     });
 
@@ -1461,6 +1478,34 @@ export default {
       }
     };
 
+    // Wait for Square SDK to be available
+    const waitForSquareSDK = () => {
+      return new Promise((resolve, reject) => {
+        // Check if already loaded
+        if (window.Square && window.Square.payments) {
+          console.log('✅ Square SDK already loaded');
+          resolve();
+          return;
+        }
+
+        // Wait for SDK to load (max 10 seconds)
+        const maxWait = 10000;
+        const startTime = Date.now();
+        const checkInterval = 100;
+
+        const checkSDK = setInterval(() => {
+          if (window.Square && window.Square.payments) {
+            console.log('✅ Square SDK loaded after', Date.now() - startTime, 'ms');
+            clearInterval(checkInterval);
+            resolve();
+          } else if (Date.now() - startTime > maxWait) {
+            clearInterval(checkInterval);
+            reject(new Error('Square SDK failed to load within 10 seconds. Check your network connection.'));
+          }
+        }, checkInterval);
+      });
+    };
+
     // Square payment initialization
     const initializeSquarePayments = async () => {
       try {
@@ -1474,14 +1519,23 @@ export default {
         const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
         const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
-        if (!window.Square) {
-          console.error('Square SDK not loaded. Check if script is loaded from https://web.squarecdn.com/v1/square.js');
-          squareInitError.value = new Error('Square SDK not loaded');
+        console.log('🔵 Checking Square configuration...', {
+          hasSDK: !!window.Square,
+          hasApplicationId: !!applicationId,
+          hasLocationId: !!locationId,
+        });
+
+        if (!window.Square || !window.Square.payments) {
+          const errorMsg = 'Square SDK not loaded. Check if script is loaded from https://web.squarecdn.com/v1/square.js';
+          console.error(errorMsg);
+          squareInitError.value = new Error(errorMsg);
           return;
         }
 
         if (!applicationId || !locationId) {
-          const errorMsg = `Square credentials not configured. Application ID: ${applicationId ? 'set' : 'missing'}, Location ID: ${locationId ? 'set' : 'missing'}`;
+          const errorMsg = `Square credentials not configured. Application ID: ${
+            applicationId ? 'set' : 'missing'
+          }, Location ID: ${locationId ? 'set' : 'missing'}`;
           console.error(errorMsg);
           squareInitError.value = new Error(errorMsg);
           return;
