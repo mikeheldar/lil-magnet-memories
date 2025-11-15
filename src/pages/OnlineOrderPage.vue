@@ -665,13 +665,6 @@ export default {
       }
     };
 
-    const goToCheckout = async () => {
-      try {
-        await router.push('/checkout');
-      } catch (error) {
-        console.error('Failed to navigate to checkout:', error);
-      }
-    };
 
     const loadProducts = async () => {
       try {
@@ -753,7 +746,6 @@ export default {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
 }
-
 
 // Mobile responsive adjustments
 @media (max-width: 599px) {
