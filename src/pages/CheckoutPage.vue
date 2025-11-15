@@ -758,6 +758,7 @@
                   />
                   <q-btn
                     flat
+                    icon="arrow_back"
                     label="Back to Cart"
                     @click="$router.push('/cart')"
                     class="full-width q-mt-sm"

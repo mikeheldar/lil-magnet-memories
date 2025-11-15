@@ -13,6 +13,7 @@
         />
         <q-btn
           flat
+          icon="arrow_back"
           label="Back to Orders"
           @click="$router.push('/orders')"
           class="q-ml-sm"

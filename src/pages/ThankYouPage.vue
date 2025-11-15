@@ -185,7 +185,7 @@
             class="q-px-xl q-py-md"
             @click="goHome"
           >
-            <q-icon name="home" class="q-mr-sm" />
+            <q-icon name="arrow_back" class="q-mr-sm" />
             Back to Home
           </q-btn>
         </div>

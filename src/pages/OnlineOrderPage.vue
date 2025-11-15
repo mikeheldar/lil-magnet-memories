@@ -665,7 +665,6 @@ export default {
       }
     };
 
-
     const loadProducts = async () => {
       try {
         const productsData = await firebaseService.getProducts();
