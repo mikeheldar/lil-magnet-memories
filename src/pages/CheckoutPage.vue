@@ -858,17 +858,23 @@ export default {
       // Check environment variables first
       const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
       const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
-      
+
       console.log('🔵 CheckoutPage mounted - Square configuration:', {
         hasApplicationId: !!applicationId,
         hasLocationId: !!locationId,
-        applicationIdPrefix: applicationId ? applicationId.substring(0, 15) + '...' : 'MISSING',
+        applicationIdPrefix: applicationId
+          ? applicationId.substring(0, 15) + '...'
+          : 'MISSING',
         locationId: locationId || 'MISSING',
         hasWindowSquare: typeof window !== 'undefined' && !!window.Square,
       });
 
       if (!applicationId || !locationId) {
-        const errorMsg = `Square credentials not configured. Application ID: ${applicationId ? 'set' : 'MISSING'}, Location ID: ${locationId ? 'set' : 'MISSING'}. Please configure Vercel environment variables for Production and Preview environments.`;
+        const errorMsg = `Square credentials not configured. Application ID: ${
+          applicationId ? 'set' : 'MISSING'
+        }, Location ID: ${
+          locationId ? 'set' : 'MISSING'
+        }. Please configure Vercel environment variables for Production and Preview environments.`;
         console.error('❌', errorMsg);
         squareInitError.value = new Error(errorMsg);
         return;
@@ -1664,16 +1670,22 @@ export default {
           squareCard.value = card;
           console.log('✅ Square card form created');
 
-          // Mount the card form immediately
-          await mountSquareCard();
           squareInitialized.value = true;
           console.log('✅ Square payments fully initialized');
-
+          
           await updateSquarePaymentRequest();
+          
+          // Only mount if square_card is selected, otherwise wait for user selection
+          if (selectedPaymentOption.value === 'square_card') {
+            console.log('🔵 Square card selected, mounting form...');
+            await mountSquareCard();
+          } else {
+            console.log('ℹ️ Square card form created but not mounted (payment option not selected yet)');
+          }
         } catch (cardError) {
           console.error('❌ Error creating Square card form:', cardError);
           squareInitError.value = cardError;
-          throw cardError;
+          // Don't throw - let error be displayed in UI
         }
 
         if (
