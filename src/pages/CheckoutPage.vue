@@ -1386,13 +1386,23 @@ export default {
         container.classList.add('square-card-container');
 
         if (!squareCardMounted.value) {
-          // Clear any existing content
+          // Clear any existing content (including loading spinner)
           container.innerHTML = '';
-
-          // Attach the card form
+          
+          // Attach the card form - this will populate the container
+          console.log('🔵 Attaching Square card form to #square-payment-form...');
           await squareCard.value.attach('#square-payment-form');
           squareCardMounted.value = true;
           console.log('✅ Square card form mounted successfully');
+          
+          // Verify the form was attached
+          await nextTick();
+          const hasSquareForm = container.querySelector('.sq-card') || container.querySelector('[id*="sq-"]') || container.children.length > 0;
+          if (hasSquareForm) {
+            console.log('✅ Verified: Square form is present in container');
+          } else {
+            console.warn('⚠️ Warning: Square form container appears empty after mounting');
+          }
         } else {
           console.log('ℹ️ Square card form already mounted');
         }
@@ -1672,15 +1682,17 @@ export default {
 
           squareInitialized.value = true;
           console.log('✅ Square payments fully initialized');
-          
+
           await updateSquarePaymentRequest();
-          
+
           // Only mount if square_card is selected, otherwise wait for user selection
           if (selectedPaymentOption.value === 'square_card') {
             console.log('🔵 Square card selected, mounting form...');
             await mountSquareCard();
           } else {
-            console.log('ℹ️ Square card form created but not mounted (payment option not selected yet)');
+            console.log(
+              'ℹ️ Square card form created but not mounted (payment option not selected yet)'
+            );
           }
         } catch (cardError) {
           console.error('❌ Error creating Square card form:', cardError);
