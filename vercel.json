@@ -9,14 +9,30 @@
       }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/.well-known/apple-developer-merchantid-domain-association",
-      "destination": "/api/apple-pay-domain-association"
+      "src": "/\\.well-known/apple-developer-merchantid-domain-association",
+      "dest": "/api/apple-pay-domain-association"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/\\.well-known/(.*)",
+      "dest": "/.well-known/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/icons/(.*)",
+      "dest": "/icons/$1"
+    },
+    {
+      "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
