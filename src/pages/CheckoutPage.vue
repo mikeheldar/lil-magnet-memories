@@ -701,14 +701,18 @@
                         Loading secure payment form...
                       </div>
                       <div
-                        v-if="squareInitError && (!squareInitialized || !squareCardMounted)"
+                        v-if="
+                          squareInitError &&
+                          (!squareInitialized || !squareCardMounted)
+                        "
                         class="text-negative text-caption q-mt-sm q-pa-sm bg-red-1 rounded-borders"
                       >
                         <q-icon name="error" class="q-mr-xs" />
                         <strong>Error loading payment form:</strong>
                         <div class="q-mt-xs">{{ squareInitError.message }}</div>
                         <div class="q-mt-xs text-caption">
-                          Please refresh the page or contact support if the issue persists.
+                          Please refresh the page or contact support if the
+                          issue persists.
                         </div>
                       </div>
                     </div>
@@ -1325,29 +1329,54 @@ export default {
 
     const mountSquareCard = async () => {
       if (!squareCard.value) {
-        console.warn('Square card not initialized yet');
+        console.warn('⚠️ Square card not initialized yet');
         return;
       }
+      
+      // Wait for DOM to be ready
       await nextTick();
-      const container = document.getElementById('square-payment-form');
+      
+      // Give extra time for container to be available
+      let retries = 0;
+      let container = document.getElementById('square-payment-form');
+      while (!container && retries < 10) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        container = document.getElementById('square-payment-form');
+        retries++;
+      }
+      
       if (!container) {
-        console.warn('Square payment form container not found');
+        const errorMsg = 'Square payment form container not found after waiting';
+        console.error('❌', errorMsg);
+        squareInitError.value = new Error(errorMsg);
         return;
       }
+      
       try {
+        console.log('🔵 Mounting Square card form to container...');
         container.setAttribute('autocomplete', 'cc-number');
         container.setAttribute('aria-label', 'Secure credit card form');
         container.classList.add('square-card-container');
+        
         if (!squareCardMounted.value) {
+          // Clear any existing content
           container.innerHTML = '';
+          
+          // Attach the card form
           await squareCard.value.attach('#square-payment-form');
           squareCardMounted.value = true;
           console.log('✅ Square card form mounted successfully');
+        } else {
+          console.log('ℹ️ Square card form already mounted');
         }
       } catch (error) {
-        console.error('Error mounting Square card form:', error);
+        console.error('❌ Error mounting Square card form:', {
+          message: error?.message,
+          stack: error?.stack,
+          error,
+        });
         squareInitError.value = error;
-        throw error;
+        // Don't throw - let error be displayed in UI
       }
     };
 
@@ -1512,7 +1541,8 @@ export default {
             resolve();
           } else if (Date.now() - startTime >= maxWait) {
             clearInterval(intervalId);
-            const errorMsg = 'Square SDK failed to load within 10 seconds. Check your network connection and ensure the script is loading from https://web.squarecdn.com/v1/square.js';
+            const errorMsg =
+              'Square SDK failed to load within 10 seconds. Check your network connection and ensure the script is loading from https://web.squarecdn.com/v1/square.js';
             console.error(errorMsg);
             reject(new Error(errorMsg));
           }
@@ -1617,7 +1647,7 @@ export default {
           await mountSquareCard();
           squareInitialized.value = true;
           console.log('✅ Square payments fully initialized');
-          
+
           await updateSquarePaymentRequest();
         } catch (cardError) {
           console.error('❌ Error creating Square card form:', cardError);
