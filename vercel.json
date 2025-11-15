@@ -14,7 +14,8 @@
       "src": "/\\.well-known/(.*)",
       "dest": "/.well-known/$1",
       "headers": {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Content-Disposition": "attachment; filename=\"apple-developer-merchantid-domain-association\""
       }
     },
     {
