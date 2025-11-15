@@ -692,7 +692,11 @@
                       Payment will be processed securely via Square
                     </div>
                     <!-- Square payment form container -->
-                    <div id="square-payment-form" class="q-mt-md" style="min-height: 200px;">
+                    <div
+                      id="square-payment-form"
+                      class="q-mt-md"
+                      style="min-height: 200px"
+                    >
                       <!-- Show loading only if not initialized AND no error -->
                       <div
                         v-if="!squareCardMounted && !squareInitError"
@@ -710,7 +714,8 @@
                         <strong>Error loading payment form:</strong>
                         <div class="q-mt-xs">{{ squareInitError.message }}</div>
                         <div class="q-mt-xs text-caption">
-                          Please refresh the page or contact support if the issue persists.
+                          Please refresh the page or contact support if the
+                          issue persists.
                         </div>
                       </div>
                       <!-- Form will be rendered here by Square SDK when mounted -->
@@ -1604,13 +1609,27 @@ export default {
         applePayAttached.value = false;
         googlePayAttached.value = false;
 
-        const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
-        const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
+        // Get and validate environment variables
+        let applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+        let locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
+
+        // Trim whitespace and validate
+        if (applicationId) {
+          applicationId = String(applicationId).trim();
+        }
+        if (locationId) {
+          locationId = String(locationId).trim();
+        }
 
         console.log('🔵 Checking Square configuration...', {
           hasSDK: !!window.Square,
           hasApplicationId: !!applicationId,
           hasLocationId: !!locationId,
+          applicationIdType: typeof applicationId,
+          applicationIdLength: applicationId ? applicationId.length : 0,
+          applicationIdPrefix: applicationId ? applicationId.substring(0, 10) : 'N/A',
+          locationIdType: typeof locationId,
+          locationIdLength: locationId ? locationId.length : 0,
         });
 
         if (!window.Square || !window.Square.payments) {
@@ -1630,13 +1649,39 @@ export default {
           return;
         }
 
+        // Validate format before passing to Square SDK
+        if (!applicationId || typeof applicationId !== 'string' || applicationId.length === 0) {
+          const errorMsg = 'Square Application ID is missing or invalid';
+          console.error('❌', errorMsg, { applicationId, type: typeof applicationId });
+          squareInitError.value = new Error(errorMsg);
+          return;
+        }
+
+        if (!locationId || typeof locationId !== 'string' || locationId.length === 0) {
+          const errorMsg = 'Square Location ID is missing or invalid';
+          console.error('❌', errorMsg, { locationId, type: typeof locationId });
+          squareInitError.value = new Error(errorMsg);
+          return;
+        }
+
+        // Validate Application ID format (should start with 'sq0idp-' or 'sq0idb-')
+        if (!applicationId.match(/^sq0id[pb]-/)) {
+          const errorMsg = `Square Application ID format is invalid. Expected format: sq0idp-... or sq0idb-..., got: ${applicationId.substring(0, 15)}...`;
+          console.error('❌', errorMsg);
+          squareInitError.value = new Error(errorMsg);
+          return;
+        }
+
         console.log('🔵 Initializing Square payments with:', {
-          applicationId: applicationId.substring(0, 10) + '...',
-          locationId,
+          applicationId: applicationId.substring(0, 15) + '...',
+          applicationIdLength: applicationId.length,
+          locationId: locationId.substring(0, 10) + '...',
+          locationIdLength: locationId.length,
         });
 
-        const payments = window.Square.payments(applicationId, locationId);
-        squarePayments.value = payments;
+        try {
+          const payments = window.Square.payments(applicationId, locationId);
+          squarePayments.value = payments;
 
         const paymentRequest = payments.paymentRequest({
           countryCode: 'US',
@@ -1715,7 +1760,17 @@ export default {
           await renderGooglePayButton();
         }
 
-        console.log('✅ Square payments initialized successfully');
+          console.log('✅ Square payments initialized successfully');
+        } catch (initError) {
+          console.error('❌ Error calling Square.payments():', {
+            message: initError?.message,
+            applicationId: applicationId ? applicationId.substring(0, 15) + '...' : 'missing',
+            locationId: locationId ? locationId.substring(0, 10) + '...' : 'missing',
+            error: initError,
+          });
+          squareInitError.value = initError;
+          return;
+        }
       } catch (error) {
         squareInitError.value = error;
         console.error('❌ Error initializing Square payments:', {
