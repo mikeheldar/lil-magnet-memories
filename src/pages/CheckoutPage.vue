@@ -1715,6 +1715,8 @@ export default {
           });
           squarePaymentRequest.value = paymentRequest;
 
+          try {
+            const applePay = await payments.applePay(paymentRequest);
             const canMakePayment = await applePay.canMakePayment();
             if (canMakePayment) {
               squareApplePay.value = applePay;
@@ -1751,9 +1753,9 @@ export default {
 
             squareInitialized.value = true;
             console.log('✅ Square payments fully initialized');
-            
+
             await updateSquarePaymentRequest();
-            
+
             // Always mount the card form immediately so it's ready
             // The container will be shown/hidden based on selectedPaymentOption
             console.log('🔵 Mounting Square card form...');
