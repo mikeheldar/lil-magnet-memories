@@ -1392,11 +1392,17 @@ export default {
 
         if (!squareCardMounted.value) {
           // Clear any existing content (including loading spinner)
-          // Use a small delay to ensure Vue has finished rendering
+          // Use multiple nextTick calls and delays to ensure Vue has finished rendering
           await nextTick();
-          await new Promise(resolve => setTimeout(resolve, 50));
-          
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await nextTick();
+
+          // Clear container before attaching
           container.innerHTML = '';
+
+          // Wait one more tick to ensure DOM is stable
+          await nextTick();
+          await new Promise((resolve) => setTimeout(resolve, 50));
 
           // Attach the card form - this will populate the container
           console.log(
@@ -1404,12 +1410,17 @@ export default {
           );
           try {
             await squareCard.value.attach('#square-payment-form');
+            
+            // Wait for Square to finish DOM manipulation before updating Vue state
+            await nextTick();
+            await new Promise((resolve) => setTimeout(resolve, 150));
+            
+            // Now update Vue state - this should prevent reconciliation conflicts
             squareCardMounted.value = true;
             console.log('✅ Square card form mounted successfully');
 
-            // Verify the form was attached (with a small delay for DOM updates)
+            // Verify the form was attached
             await nextTick();
-            await new Promise(resolve => setTimeout(resolve, 100));
             const hasSquareForm =
               container.querySelector('.sq-card') ||
               container.querySelector('[id*="sq-"]') ||
@@ -1777,10 +1788,13 @@ export default {
 
             await updateSquarePaymentRequest();
 
-            // Always mount the card form immediately so it's ready
-            // The container will be shown/hidden based on selectedPaymentOption
-            console.log('🔵 Mounting Square card form...');
-            await mountSquareCard();
+          // Always mount the card form immediately so it's ready
+          // The container will be shown/hidden based on selectedPaymentOption
+          // Use a delay to ensure the payment option section is fully rendered
+          console.log('🔵 Mounting Square card form...');
+          await nextTick();
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          await mountSquareCard();
           } catch (cardError) {
             console.error('❌ Error creating Square card form:', cardError);
             squareInitError.value = cardError;
