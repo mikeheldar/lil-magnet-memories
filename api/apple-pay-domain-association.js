@@ -55,7 +55,10 @@ module.exports = function handler(req, res) {
 
     console.log('File source:', fileSource);
     console.log('File content length (chars):', fileContent.length);
-    console.log('File content preview (first 100 chars):', fileContent.substring(0, 100));
+    console.log(
+      'File content preview (first 100 chars):',
+      fileContent.substring(0, 100)
+    );
 
     // Check if this is a verification bot (Square, Apple, etc.)
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
@@ -108,11 +111,14 @@ module.exports = function handler(req, res) {
 
     // Send the file content - use writeHead to ensure headers are set before body
     console.log('Sending response with status 200');
-    console.log('File content ends with (last 100 chars):', fileContent.substring(fileContent.length - 100));
-    
+    console.log(
+      'File content ends with (last 100 chars):',
+      fileContent.substring(fileContent.length - 100)
+    );
+
     res.writeHead(200);
     res.end(fileContent);
-    
+
     console.log('Response sent successfully');
     console.log('=== End Request ===\n');
   } catch (error) {
