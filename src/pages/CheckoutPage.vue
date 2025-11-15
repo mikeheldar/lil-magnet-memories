@@ -701,11 +701,15 @@
                         Loading secure payment form...
                       </div>
                       <div
-                        v-if="squareInitError"
-                        class="text-negative text-caption q-mt-sm"
+                        v-if="squareInitError && (!squareInitialized || !squareCardMounted)"
+                        class="text-negative text-caption q-mt-sm q-pa-sm bg-red-1 rounded-borders"
                       >
-                        Error loading payment form:
-                        {{ squareInitError.message }}
+                        <q-icon name="error" class="q-mr-xs" />
+                        <strong>Error loading payment form:</strong>
+                        <div class="q-mt-xs">{{ squareInitError.message }}</div>
+                        <div class="q-mt-xs text-caption">
+                          Please refresh the page or contact support if the issue persists.
+                        </div>
                       </div>
                     </div>
                   </q-card-section>
@@ -848,12 +852,14 @@ export default {
       }
 
       // Wait for Square SDK to load, then initialize
-      waitForSquareSDK().then(() => {
-        initializeSquarePayments();
-      }).catch((error) => {
-        console.error('Failed to load Square SDK:', error);
-        squareInitError.value = error;
-      });
+      waitForSquareSDK()
+        .then(() => {
+          initializeSquarePayments();
+        })
+        .catch((error) => {
+          console.error('Failed to load Square SDK:', error);
+          squareInitError.value = error;
+        });
     });
 
     const normalizeShippingOption = (option) => {
@@ -1176,7 +1182,9 @@ export default {
           await mountSquareCard();
         } else if (!squareInitialized.value) {
           // Try to initialize if not already done
-          console.log('Square not initialized yet, attempting initialization...');
+          console.log(
+            'Square not initialized yet, attempting initialization...'
+          );
           try {
             await waitForSquareSDK();
             await initializeSquarePayments();
@@ -1495,12 +1503,20 @@ export default {
 
         const checkSDK = setInterval(() => {
           if (window.Square && window.Square.payments) {
-            console.log('✅ Square SDK loaded after', Date.now() - startTime, 'ms');
+            console.log(
+              '✅ Square SDK loaded after',
+              Date.now() - startTime,
+              'ms'
+            );
             clearInterval(checkInterval);
             resolve();
           } else if (Date.now() - startTime > maxWait) {
             clearInterval(checkInterval);
-            reject(new Error('Square SDK failed to load within 10 seconds. Check your network connection.'));
+            reject(
+              new Error(
+                'Square SDK failed to load within 10 seconds. Check your network connection.'
+              )
+            );
           }
         }, checkInterval);
       });
@@ -1526,7 +1542,8 @@ export default {
         });
 
         if (!window.Square || !window.Square.payments) {
-          const errorMsg = 'Square SDK not loaded. Check if script is loaded from https://web.squarecdn.com/v1/square.js';
+          const errorMsg =
+            'Square SDK not loaded. Check if script is loaded from https://web.squarecdn.com/v1/square.js';
           console.error(errorMsg);
           squareInitError.value = new Error(errorMsg);
           return;
