@@ -692,29 +692,29 @@
                       Payment will be processed securely via Square
                     </div>
                     <!-- Square payment form container -->
-                    <div id="square-payment-form" class="q-mt-md">
+                    <div id="square-payment-form" class="q-mt-md" style="min-height: 200px;">
+                      <!-- Show loading only if not initialized AND no error -->
                       <div
-                        v-if="!squareInitialized || !squareCardMounted"
-                        class="text-body2 text-grey-6"
+                        v-if="!squareCardMounted && !squareInitError"
+                        class="text-body2 text-grey-6 q-pa-md text-center"
                       >
                         <q-spinner size="24px" class="q-mr-sm" />
                         Loading secure payment form...
                       </div>
+                      <!-- Show error if initialization failed -->
                       <div
-                        v-if="
-                          squareInitError &&
-                          (!squareInitialized || !squareCardMounted)
-                        "
-                        class="text-negative text-caption q-mt-sm q-pa-sm bg-red-1 rounded-borders"
+                        v-if="squareInitError"
+                        class="text-negative text-caption q-pa-sm bg-red-1 rounded-borders"
                       >
                         <q-icon name="error" class="q-mr-xs" />
                         <strong>Error loading payment form:</strong>
                         <div class="q-mt-xs">{{ squareInitError.message }}</div>
                         <div class="q-mt-xs text-caption">
-                          Please refresh the page or contact support if the
-                          issue persists.
+                          Please refresh the page or contact support if the issue persists.
                         </div>
                       </div>
+                      <!-- Form will be rendered here by Square SDK when mounted -->
+                      <!-- The loading spinner above will be hidden once squareCardMounted is true -->
                     </div>
                   </q-card-section>
 
@@ -1388,20 +1388,27 @@ export default {
         if (!squareCardMounted.value) {
           // Clear any existing content (including loading spinner)
           container.innerHTML = '';
-          
+
           // Attach the card form - this will populate the container
-          console.log('🔵 Attaching Square card form to #square-payment-form...');
+          console.log(
+            '🔵 Attaching Square card form to #square-payment-form...'
+          );
           await squareCard.value.attach('#square-payment-form');
           squareCardMounted.value = true;
           console.log('✅ Square card form mounted successfully');
-          
+
           // Verify the form was attached
           await nextTick();
-          const hasSquareForm = container.querySelector('.sq-card') || container.querySelector('[id*="sq-"]') || container.children.length > 0;
+          const hasSquareForm =
+            container.querySelector('.sq-card') ||
+            container.querySelector('[id*="sq-"]') ||
+            container.children.length > 0;
           if (hasSquareForm) {
             console.log('✅ Verified: Square form is present in container');
           } else {
-            console.warn('⚠️ Warning: Square form container appears empty after mounting');
+            console.warn(
+              '⚠️ Warning: Square form container appears empty after mounting'
+            );
           }
         } else {
           console.log('ℹ️ Square card form already mounted');
@@ -1685,15 +1692,10 @@ export default {
 
           await updateSquarePaymentRequest();
 
-          // Only mount if square_card is selected, otherwise wait for user selection
-          if (selectedPaymentOption.value === 'square_card') {
-            console.log('🔵 Square card selected, mounting form...');
-            await mountSquareCard();
-          } else {
-            console.log(
-              'ℹ️ Square card form created but not mounted (payment option not selected yet)'
-            );
-          }
+          // Always mount the card form immediately so it's ready
+          // The container will be shown/hidden based on selectedPaymentOption
+          console.log('🔵 Mounting Square card form...');
+          await mountSquareCard();
         } catch (cardError) {
           console.error('❌ Error creating Square card form:', cardError);
           squareInitError.value = cardError;
