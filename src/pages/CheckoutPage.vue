@@ -855,13 +855,33 @@ export default {
           customUploadItem.formData.phone || customerInfo.value.phone;
       }
 
+      // Check environment variables first
+      const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+      const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
+      
+      console.log('🔵 CheckoutPage mounted - Square configuration:', {
+        hasApplicationId: !!applicationId,
+        hasLocationId: !!locationId,
+        applicationIdPrefix: applicationId ? applicationId.substring(0, 15) + '...' : 'MISSING',
+        locationId: locationId || 'MISSING',
+        hasWindowSquare: typeof window !== 'undefined' && !!window.Square,
+      });
+
+      if (!applicationId || !locationId) {
+        const errorMsg = `Square credentials not configured. Application ID: ${applicationId ? 'set' : 'MISSING'}, Location ID: ${locationId ? 'set' : 'MISSING'}. Please configure Vercel environment variables for Production and Preview environments.`;
+        console.error('❌', errorMsg);
+        squareInitError.value = new Error(errorMsg);
+        return;
+      }
+
       // Wait for Square SDK to load, then initialize
       waitForSquareSDK()
         .then(() => {
+          console.log('✅ Square SDK loaded, initializing payments...');
           initializeSquarePayments();
         })
         .catch((error) => {
-          console.error('Failed to load Square SDK:', error);
+          console.error('❌ Failed to load Square SDK:', error);
           squareInitError.value = error;
         });
     });
@@ -1332,36 +1352,37 @@ export default {
         console.warn('⚠️ Square card not initialized yet');
         return;
       }
-      
+
       // Wait for DOM to be ready
       await nextTick();
-      
+
       // Give extra time for container to be available
       let retries = 0;
       let container = document.getElementById('square-payment-form');
       while (!container && retries < 10) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         container = document.getElementById('square-payment-form');
         retries++;
       }
-      
+
       if (!container) {
-        const errorMsg = 'Square payment form container not found after waiting';
+        const errorMsg =
+          'Square payment form container not found after waiting';
         console.error('❌', errorMsg);
         squareInitError.value = new Error(errorMsg);
         return;
       }
-      
+
       try {
         console.log('🔵 Mounting Square card form to container...');
         container.setAttribute('autocomplete', 'cc-number');
         container.setAttribute('aria-label', 'Secure credit card form');
         container.classList.add('square-card-container');
-        
+
         if (!squareCardMounted.value) {
           // Clear any existing content
           container.innerHTML = '';
-          
+
           // Attach the card form
           await squareCard.value.attach('#square-payment-form');
           squareCardMounted.value = true;
