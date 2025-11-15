@@ -1074,8 +1074,9 @@ export default {
 
       // Check if PayPal client ID is configured
       const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
-      const isPayPalConfigured = !!paypalClientId && 
-        paypalClientId !== 'YOUR_PAYPAL_CLIENT_ID' && 
+      const isPayPalConfigured =
+        !!paypalClientId &&
+        paypalClientId !== 'YOUR_PAYPAL_CLIENT_ID' &&
         paypalClientId.trim() !== '';
 
       return {
@@ -1263,9 +1264,13 @@ export default {
           position: 'top',
         });
         // Reset to default payment option (skip PayPal)
-        const availableOptions = paymentOptions.value.filter(opt => opt.value !== 'paypal');
-        selectedPaymentOption.value = availableOptions.find(opt => opt.value === 'square_card')?.value || 
-          availableOptions[0]?.value || null;
+        const availableOptions = paymentOptions.value.filter(
+          (opt) => opt.value !== 'paypal'
+        );
+        selectedPaymentOption.value =
+          availableOptions.find((opt) => opt.value === 'square_card')?.value ||
+          availableOptions[0]?.value ||
+          null;
       }
     });
 

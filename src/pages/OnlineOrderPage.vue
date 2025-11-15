@@ -346,6 +346,15 @@ export default {
     const router = useRouter();
     const { addCustomUploadToCart } = useCart();
 
+    // Safe notify helper to prevent errors when $q.notify is not available
+    const safeNotify = (options) => {
+      if ($q && typeof $q.notify === 'function') {
+        $q.notify(options);
+      } else {
+        console.warn('Notify plugin unavailable', options);
+      }
+    };
+
     const formData = ref({
       firstName: '',
       lastName: '',
@@ -432,7 +441,7 @@ export default {
     };
 
     const onRejected = () => {
-      $q.notify({
+      safeNotify({
         type: 'negative',
         message:
           'Some files were rejected. Please make sure they are image files.',
@@ -508,7 +517,7 @@ export default {
       hasAddedToCart.value = true;
 
       // Show success notification and redirect to cart
-      $q.notify({
+      safeNotify({
         type: 'positive',
         message: 'Added to cart!',
         caption: `${totalMagnets.value} magnets added to your cart`,
@@ -521,7 +530,7 @@ export default {
         await router.push('/cart');
       } catch (error) {
         console.error('Failed to navigate to cart:', error);
-        $q.notify({
+        safeNotify({
           type: 'warning',
           message: 'Added to cart, but navigation failed',
           caption: 'Please open the cart manually.',
@@ -540,7 +549,7 @@ export default {
       // Check if popups are likely blocked
       const popupBlocked = checkPopupBlocked();
       if (popupBlocked) {
-        $q.notify({
+        safeNotify({
           type: 'warning',
           message: 'Popup blocked detected',
           caption: 'Please allow popups for this site and try again.',
@@ -557,7 +566,7 @@ export default {
         if (signingIn.value) {
           console.log('Sign-in timeout, resetting state');
           signingIn.value = false;
-          $q.notify({
+          safeNotify({
             type: 'negative',
             message: 'Sign-in timed out',
             caption:
@@ -582,7 +591,7 @@ export default {
         await authService.signInWithGoogle();
         console.log('Google sign-in successful');
 
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Successfully signed in!',
           caption: 'Your information has been filled automatically.',
@@ -617,7 +626,7 @@ export default {
           caption = 'The sign-in process took too long. Please try again.';
         }
 
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: errorMessage,
           caption: caption,
