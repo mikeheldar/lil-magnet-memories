@@ -262,31 +262,19 @@
             />
 
             <!-- Submit Button -->
-            <div class="q-mt-lg">
-              <div
-                class="row items-center justify-between q-gutter-sm no-wrap action-row"
-              >
-                <q-btn
-                  type="button"
-                  color="primary"
-                  :class="{ 'bg-grey-5': hasAddedToCart }"
-                  :disable="!canSubmit || hasAddedToCart"
-                  :loading="submitting"
-                  icon="add_shopping_cart"
-                  label="Add to Cart"
-                  class="q-px-md"
-                  @click.prevent.stop="handleAddToCart"
-                />
-                <q-btn
-                  type="button"
-                  color="secondary"
-                  unelevated
-                  class="action-row__checkout"
-                  icon-right="arrow_forward"
-                  label="Proceed to Checkout"
-                  @click.prevent.stop="goToCheckout"
-                />
-              </div>
+            <div class="q-mt-lg text-center">
+              <q-btn
+                type="button"
+                color="primary"
+                :class="{ 'bg-grey-5': hasAddedToCart }"
+                :disable="!canSubmit || hasAddedToCart"
+                :loading="submitting"
+                icon="add_shopping_cart"
+                label="Add to Cart"
+                size="lg"
+                class="q-px-xl"
+                @click.prevent.stop="handleAddToCart"
+              />
             </div>
 
             <!-- Re-add Warning Dialog -->
@@ -754,7 +742,6 @@ export default {
       onSubmit,
       handleAddToCart,
       confirmReAdd,
-      goToCheckout,
       handleGoogleSignIn,
     };
   },
@@ -767,13 +754,6 @@ export default {
   min-height: 100vh;
 }
 
-.action-row {
-  width: 100%;
-}
-
-.action-row__checkout {
-  text-transform: none;
-}
 
 // Mobile responsive adjustments
 @media (max-width: 599px) {
