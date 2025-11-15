@@ -12,10 +12,7 @@
   "routes": [
     {
       "src": "/\\.well-known/apple-developer-merchantid-domain-association",
-      "dest": "/.well-known/apple-developer-merchantid-domain-association",
-      "headers": {
-        "Content-Type": "application/json"
-      }
+      "dest": "/api/apple-pay-domain-association"
     },
     {
       "src": "/\\.well-known/(.*)",
