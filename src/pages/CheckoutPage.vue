@@ -1627,7 +1627,9 @@ export default {
           hasLocationId: !!locationId,
           applicationIdType: typeof applicationId,
           applicationIdLength: applicationId ? applicationId.length : 0,
-          applicationIdPrefix: applicationId ? applicationId.substring(0, 10) : 'N/A',
+          applicationIdPrefix: applicationId
+            ? applicationId.substring(0, 10)
+            : 'N/A',
           locationIdType: typeof locationId,
           locationIdLength: locationId ? locationId.length : 0,
         });
@@ -1650,23 +1652,40 @@ export default {
         }
 
         // Validate format before passing to Square SDK
-        if (!applicationId || typeof applicationId !== 'string' || applicationId.length === 0) {
+        if (
+          !applicationId ||
+          typeof applicationId !== 'string' ||
+          applicationId.length === 0
+        ) {
           const errorMsg = 'Square Application ID is missing or invalid';
-          console.error('❌', errorMsg, { applicationId, type: typeof applicationId });
+          console.error('❌', errorMsg, {
+            applicationId,
+            type: typeof applicationId,
+          });
           squareInitError.value = new Error(errorMsg);
           return;
         }
 
-        if (!locationId || typeof locationId !== 'string' || locationId.length === 0) {
+        if (
+          !locationId ||
+          typeof locationId !== 'string' ||
+          locationId.length === 0
+        ) {
           const errorMsg = 'Square Location ID is missing or invalid';
-          console.error('❌', errorMsg, { locationId, type: typeof locationId });
+          console.error('❌', errorMsg, {
+            locationId,
+            type: typeof locationId,
+          });
           squareInitError.value = new Error(errorMsg);
           return;
         }
 
         // Validate Application ID format (should start with 'sq0idp-' or 'sq0idb-')
         if (!applicationId.match(/^sq0id[pb]-/)) {
-          const errorMsg = `Square Application ID format is invalid. Expected format: sq0idp-... or sq0idb-..., got: ${applicationId.substring(0, 15)}...`;
+          const errorMsg = `Square Application ID format is invalid. Expected format: sq0idp-... or sq0idb-..., got: ${applicationId.substring(
+            0,
+            15
+          )}...`;
           console.error('❌', errorMsg);
           squareInitError.value = new Error(errorMsg);
           return;
@@ -1683,89 +1702,91 @@ export default {
           const payments = window.Square.payments(applicationId, locationId);
           squarePayments.value = payments;
 
-        const paymentRequest = payments.paymentRequest({
-          countryCode: 'US',
-          currencyCode: 'USD',
-          total: {
-            amount: orderTotal.value.toFixed(2),
-            label: 'Lil Magnet Memories',
-          },
-          requestBillingContact: true,
-          requestShippingContact:
-            selectedShippingDetails.value?.type === 'shipping',
-        });
-        squarePaymentRequest.value = paymentRequest;
+          const paymentRequest = payments.paymentRequest({
+            countryCode: 'US',
+            currencyCode: 'USD',
+            total: {
+              amount: orderTotal.value.toFixed(2),
+              label: 'Lil Magnet Memories',
+            },
+            requestBillingContact: true,
+            requestShippingContact:
+              selectedShippingDetails.value?.type === 'shipping',
+          });
+          squarePaymentRequest.value = paymentRequest;
 
-        try {
-          const applePay = await payments.applePay(paymentRequest);
-          const canMakePayment = await applePay.canMakePayment();
-          if (canMakePayment) {
-            squareApplePay.value = applePay;
-            applePayReady.value = true;
-          } else {
+            const canMakePayment = await applePay.canMakePayment();
+            if (canMakePayment) {
+              squareApplePay.value = applePay;
+              applePayReady.value = true;
+            } else {
+              applePayReady.value = false;
+            }
+          } catch (appleError) {
+            console.warn('Apple Pay not available:', appleError);
+            applePayError.value = appleError;
             applePayReady.value = false;
           }
-        } catch (appleError) {
-          console.warn('Apple Pay not available:', appleError);
-          applePayError.value = appleError;
-          applePayReady.value = false;
-        }
 
-        try {
-          const googlePay = await payments.googlePay(paymentRequest);
-          const canMakePayment = await googlePay.canMakePayment();
-          if (canMakePayment.result) {
-            squareGooglePay.value = googlePay;
-            googlePayReady.value = true;
-          } else {
+          try {
+            const googlePay = await payments.googlePay(paymentRequest);
+            const canMakePayment = await googlePay.canMakePayment();
+            if (canMakePayment.result) {
+              squareGooglePay.value = googlePay;
+              googlePayReady.value = true;
+            } else {
+              googlePayReady.value = false;
+            }
+          } catch (googleError) {
+            console.warn('Google Pay not available:', googleError);
+            googlePayError.value = googleError;
             googlePayReady.value = false;
           }
-        } catch (googleError) {
-          console.warn('Google Pay not available:', googleError);
-          googlePayError.value = googleError;
-          googlePayReady.value = false;
-        }
 
-        console.log('🔵 Creating Square card form...');
-        try {
-          const card = await payments.card();
-          squareCard.value = card;
-          console.log('✅ Square card form created');
+          console.log('🔵 Creating Square card form...');
+          try {
+            const card = await payments.card();
+            squareCard.value = card;
+            console.log('✅ Square card form created');
 
-          squareInitialized.value = true;
-          console.log('✅ Square payments fully initialized');
+            squareInitialized.value = true;
+            console.log('✅ Square payments fully initialized');
+            
+            await updateSquarePaymentRequest();
+            
+            // Always mount the card form immediately so it's ready
+            // The container will be shown/hidden based on selectedPaymentOption
+            console.log('🔵 Mounting Square card form...');
+            await mountSquareCard();
+          } catch (cardError) {
+            console.error('❌ Error creating Square card form:', cardError);
+            squareInitError.value = cardError;
+            // Don't throw - let error be displayed in UI
+          }
 
-          await updateSquarePaymentRequest();
-
-          // Always mount the card form immediately so it's ready
-          // The container will be shown/hidden based on selectedPaymentOption
-          console.log('🔵 Mounting Square card form...');
-          await mountSquareCard();
-        } catch (cardError) {
-          console.error('❌ Error creating Square card form:', cardError);
-          squareInitError.value = cardError;
-          // Don't throw - let error be displayed in UI
-        }
-
-        if (
-          selectedPaymentOption.value === 'apple_pay' &&
-          applePayReady.value
-        ) {
-          await renderApplePayButton();
-        }
-        if (
-          selectedPaymentOption.value === 'google_pay' &&
-          googlePayReady.value
-        ) {
-          await renderGooglePayButton();
-        }
+          if (
+            selectedPaymentOption.value === 'apple_pay' &&
+            applePayReady.value
+          ) {
+            await renderApplePayButton();
+          }
+          if (
+            selectedPaymentOption.value === 'google_pay' &&
+            googlePayReady.value
+          ) {
+            await renderGooglePayButton();
+          }
 
           console.log('✅ Square payments initialized successfully');
         } catch (initError) {
           console.error('❌ Error calling Square.payments():', {
             message: initError?.message,
-            applicationId: applicationId ? applicationId.substring(0, 15) + '...' : 'missing',
-            locationId: locationId ? locationId.substring(0, 10) + '...' : 'missing',
+            applicationId: applicationId
+              ? applicationId.substring(0, 15) + '...'
+              : 'missing',
+            locationId: locationId
+              ? locationId.substring(0, 10) + '...'
+              : 'missing',
             error: initError,
           });
           squareInitError.value = initError;
