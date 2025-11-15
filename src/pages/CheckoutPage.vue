@@ -1392,28 +1392,39 @@ export default {
 
         if (!squareCardMounted.value) {
           // Clear any existing content (including loading spinner)
+          // Use a small delay to ensure Vue has finished rendering
+          await nextTick();
+          await new Promise(resolve => setTimeout(resolve, 50));
+          
           container.innerHTML = '';
 
           // Attach the card form - this will populate the container
           console.log(
             '🔵 Attaching Square card form to #square-payment-form...'
           );
-          await squareCard.value.attach('#square-payment-form');
-          squareCardMounted.value = true;
-          console.log('✅ Square card form mounted successfully');
+          try {
+            await squareCard.value.attach('#square-payment-form');
+            squareCardMounted.value = true;
+            console.log('✅ Square card form mounted successfully');
 
-          // Verify the form was attached
-          await nextTick();
-          const hasSquareForm =
-            container.querySelector('.sq-card') ||
-            container.querySelector('[id*="sq-"]') ||
-            container.children.length > 0;
-          if (hasSquareForm) {
-            console.log('✅ Verified: Square form is present in container');
-          } else {
-            console.warn(
-              '⚠️ Warning: Square form container appears empty after mounting'
-            );
+            // Verify the form was attached (with a small delay for DOM updates)
+            await nextTick();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            const hasSquareForm =
+              container.querySelector('.sq-card') ||
+              container.querySelector('[id*="sq-"]') ||
+              container.children.length > 0;
+            if (hasSquareForm) {
+              console.log('✅ Verified: Square form is present in container');
+            } else {
+              console.warn(
+                '⚠️ Warning: Square form container appears empty after mounting'
+              );
+            }
+          } catch (attachError) {
+            console.error('❌ Error attaching Square card form:', attachError);
+            // Don't set squareCardMounted to true if attach failed
+            throw attachError;
           }
         } else {
           console.log('ℹ️ Square card form already mounted');
@@ -1735,7 +1746,10 @@ export default {
             // Check if canMakePayment method exists and call it appropriately
             if (typeof googlePay.canMakePayment === 'function') {
               const canMakePayment = await googlePay.canMakePayment();
-              if (canMakePayment && (canMakePayment.result || canMakePayment === true)) {
+              if (
+                canMakePayment &&
+                (canMakePayment.result || canMakePayment === true)
+              ) {
                 squareGooglePay.value = googlePay;
                 googlePayReady.value = true;
               } else {
