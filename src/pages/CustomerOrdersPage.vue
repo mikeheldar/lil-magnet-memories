@@ -115,15 +115,77 @@
               <div class="text-weight-medium text-primary">Order Summary</div>
               <div class="q-mt-xs">
                 <div>
-                  <strong>Total Photos:</strong> {{ order.photos.length }}
+                  <strong>Total Photos:</strong> {{ order.photos?.length || order.cartItems?.length || 0 }}
                 </div>
                 <div>
                   <strong>Total Magnets:</strong> {{ order.totalMagnets }}
                 </div>
                 <div>
                   <strong>Order Date:</strong>
-                  {{ formatDate(order.submissionDate) }}
+                  {{ formatDate(order.submissionDate || order.createdAt) }}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Information (for online orders) -->
+          <div
+            v-if="order.shippingOption && order.shippingOption.type === 'shipping'"
+            class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
+          >
+            <div class="row items-center q-mb-sm">
+              <div class="col">
+                <div class="text-weight-medium text-primary">
+                  <q-icon name="local_shipping" class="q-mr-xs" />
+                  Shipping Information
+                </div>
+              </div>
+              <div class="col-auto">
+                <q-chip
+                  :color="getShippingStatusColor(order.shippingStatus)"
+                  text-color="white"
+                  size="sm"
+                >
+                  {{ getShippingStatusLabel(order.shippingStatus) }}
+                </q-chip>
+              </div>
+            </div>
+            <div v-if="order.shippingOption.address" class="q-mt-xs">
+              <div>
+                <strong>Address:</strong>
+                {{ formatAddress(order.shippingOption.address) }}
+              </div>
+              <div v-if="order.shippingOption.description" class="q-mt-xs">
+                <strong>Shipping Method:</strong>
+                {{ order.shippingOption.description }}
+              </div>
+              <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
+                <strong>Estimated Delivery:</strong>
+                {{ order.shippingOption.estimatedTimeline }}
+              </div>
+              <div v-if="order.shippingOption.cost" class="q-mt-xs">
+                <strong>Shipping Cost:</strong> ${{ order.shippingOption.cost.toFixed(2) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Pickup Information (for market event orders) -->
+          <div
+            v-if="order.shippingOption && order.shippingOption.type === 'pickup'"
+            class="q-mt-md q-pa-md bg-green-1 rounded-borders"
+          >
+            <div class="text-weight-medium text-primary q-mb-sm">
+              <q-icon name="store" class="q-mr-xs" />
+              Pickup Information
+            </div>
+            <div class="q-mt-xs">
+              <div v-if="order.shippingOption.description">
+                <strong>Pickup Location:</strong>
+                {{ order.shippingOption.description }}
+              </div>
+              <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
+                <strong>Estimated Pickup:</strong>
+                {{ order.shippingOption.estimatedTimeline }}
               </div>
             </div>
           </div>
@@ -337,6 +399,56 @@ export default {
       }
     };
 
+    // Format shipping address
+    const formatAddress = (address) => {
+      if (!address) return 'No address provided';
+      const parts = [];
+      if (address.street || address.addressLine1) {
+        parts.push(address.street || address.addressLine1);
+      }
+      if (address.addressLine2) {
+        parts.push(address.addressLine2);
+      }
+      const cityStateZip = [];
+      if (address.city) cityStateZip.push(address.city);
+      if (address.state) cityStateZip.push(address.state);
+      if (address.zip || address.postalCode) {
+        cityStateZip.push(address.zip || address.postalCode);
+      }
+      if (cityStateZip.length > 0) {
+        parts.push(cityStateZip.join(', '));
+      }
+      return parts.join(', ') || 'No address provided';
+    };
+
+    // Get shipping status color
+    const getShippingStatusColor = (status) => {
+      switch (status) {
+        case 'pending':
+          return 'orange';
+        case 'shipped':
+          return 'blue';
+        case 'delivered':
+          return 'green';
+        default:
+          return 'grey';
+      }
+    };
+
+    // Get shipping status label
+    const getShippingStatusLabel = (status) => {
+      switch (status) {
+        case 'pending':
+          return 'Pending Shipment';
+        case 'shipped':
+          return 'Shipped';
+        case 'delivered':
+          return 'Delivered';
+        default:
+          return 'Pending Shipment';
+      }
+    };
+
     onMounted(() => {
       // Check if user is already authenticated
       const currentAuthUser = authService.getCurrentUser();
@@ -398,6 +510,9 @@ export default {
       formatDate,
       getStatusColor,
       getDisplayStatus,
+      formatAddress,
+      getShippingStatusColor,
+      getShippingStatusLabel,
     };
   },
 };

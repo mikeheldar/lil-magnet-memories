@@ -161,6 +161,25 @@
       </q-toolbar>
     </q-header>
 
+    <!-- Market Event Banner (shows when admin is checked in) -->
+    <q-banner
+      v-if="isAtMarketEvent && activeMarketEvent"
+      class="bg-green-5 text-white market-event-banner"
+      dense
+    >
+      <template v-slot:avatar>
+        <q-icon name="event" size="32px" />
+      </template>
+      <div class="text-weight-bold">
+        Market Event Live!
+      </div>
+      <div class="text-body2">
+        We're currently at <strong>{{ activeMarketEvent.name }}</strong>
+        <span v-if="activeMarketEvent.location"> at {{ activeMarketEvent.location }}</span>.
+        Visit us at the market event!
+      </div>
+    </q-banner>
+
     <!-- Left Drawer for Navigation (always visible) -->
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-1">
       <q-list>
@@ -400,9 +419,24 @@ export default {
     });
 
     const { setCustomerType } = useCustomerType();
-    const activeMarketEvent = computed(() =>
-      marketEventService.getCheckedInEvent()
-    );
+    
+    // Initialize market event cache immediately
+    const marketEventCacheInitialized = ref(false);
+    (async () => {
+      try {
+        await marketEventService.refreshCache();
+        marketEventCacheInitialized.value = true;
+      } catch (error) {
+        console.error('Error initializing market event cache:', error);
+        marketEventCacheInitialized.value = true; // Set to true even on error to prevent infinite loading
+      }
+    })();
+
+    const activeMarketEvent = computed(() => {
+      // Trigger reactivity with marketEventCheckTrigger
+      marketEventCheckTrigger.value;
+      return marketEventService.getCheckedInEvent();
+    });
     const hasActiveEvent = computed(() => !!activeMarketEvent.value);
 
     // Create a ref that gets updated periodically to trigger reactivity
@@ -588,9 +622,16 @@ export default {
 
       // Set up periodic check for market event status
       // This will automatically hide the indicator when events end
-      marketEventCheckInterval = setInterval(() => {
+      // Refresh more frequently to ensure all users see updates quickly
+      marketEventCheckInterval = setInterval(async () => {
         marketEventCheckTrigger.value++;
-      }, 60000); // Check every minute
+        // Refresh market event cache periodically
+        try {
+          await marketEventService.refreshCache();
+        } catch (error) {
+          console.error('Error refreshing market event cache:', error);
+        }
+      }, 10000); // Check every 10 seconds for faster updates
     });
 
     onUnmounted(() => {
@@ -605,6 +646,7 @@ export default {
       pageTitle,
       isTestEnvironment,
       isAtMarketEvent,
+      activeMarketEvent,
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,
