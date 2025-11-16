@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <!-- Top header: always purple gradient; market event is indicated by the green banner below -->
+    <!-- Top header: always purple gradient; market event banner sits directly under the toolbar -->
     <q-header elevated class="text-white">
       <q-toolbar>
         <!-- Menu button (always visible) -->
@@ -160,26 +160,25 @@
           </q-btn>
         </template>
       </q-toolbar>
+      <!-- Market Event Banner embedded inside header so it cannot slide behind or leave gaps -->
+      <q-banner
+        v-if="isAtMarketEvent && activeMarketEvent"
+        class="bg-green-5 text-white market-event-banner"
+        dense
+      >
+        <template v-slot:avatar>
+          <q-icon name="event" size="32px" />
+        </template>
+        <div class="text-weight-bold">
+          Market Event Live!
+        </div>
+        <div class="text-body2">
+          We're currently at <strong>{{ activeMarketEvent.name }}</strong>
+          <span v-if="activeMarketEvent.location"> at {{ activeMarketEvent.location }}</span>.
+          Visit us at the market event!
+        </div>
+      </q-banner>
     </q-header>
-
-    <!-- Market Event Banner (single green band directly under the purple header) -->
-    <q-banner
-      v-if="isAtMarketEvent && activeMarketEvent"
-      class="bg-green-5 text-white market-event-banner"
-      dense
-    >
-      <template v-slot:avatar>
-        <q-icon name="event" size="32px" />
-      </template>
-      <div class="text-weight-bold">
-        Market Event Live!
-      </div>
-      <div class="text-body2">
-        We're currently at <strong>{{ activeMarketEvent.name }}</strong>
-        <span v-if="activeMarketEvent.location"> at {{ activeMarketEvent.location }}</span>.
-        Visit us at the market event!
-      </div>
-    </q-banner>
 
     <!-- Left Drawer for Navigation (always visible) -->
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-1">
@@ -765,6 +764,7 @@ export default {
   /* iOS safe area to prevent content (like the green banner) from sliding under Safari's system bar */
   padding-top: env(safe-area-inset-top);
   padding-top: constant(safe-area-inset-top); /* legacy iOS fallback */
+  padding-bottom: 0; /* eliminate extra space below header content */
 }
 
 .logo-header {
@@ -829,10 +829,18 @@ export default {
 .market-event-banner {
   margin: 0;
   border-radius: 0;
-  /* Make sure the banner always sits below the header and remains visible when scrolling */
-  position: sticky;
-  top: 0;
-  z-index: 998; /* just below the header (which is higher) */
+  /* No sticky positioning when embedded in header */
+}
+
+/* Remove any unintended top gaps below the header */
+.q-page-container {
+  padding-top: 0 !important;
+}
+.q-page-container > .q-page {
+  padding-top: 0 !important;
+}
+.q-page-container > .q-page > :first-child {
+  margin-top: 0 !important;
 }
 
 // Mobile responsive adjustments
