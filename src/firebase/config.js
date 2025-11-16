@@ -20,6 +20,11 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+// Log which bucket is being used (for debugging test vs prod)
+console.log('Firebase Storage Bucket:', firebaseConfig.storageBucket);
+console.log('Firebase Project ID:', firebaseConfig.projectId);
+console.log('Environment:', config.environment);
+
 // Optionally initialize Firebase App Check (reCAPTCHA v3) when a site key is provided
 const appCheckSiteKey = import.meta.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
 if (appCheckSiteKey) {
