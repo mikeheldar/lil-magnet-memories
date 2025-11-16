@@ -185,7 +185,7 @@
               v-model="marketCustomerToggle"
               color="white"
               keep-color
-              :label="$q.screen.xs ? 'I\\'m at the event' : `I'm at the event`"
+              label="I'm at the event"
             />
           </div>
         </div>
