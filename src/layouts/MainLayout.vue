@@ -35,13 +35,13 @@
           TEST
         </q-chip>
 
-        <!-- Market Event Indicator (hide on extra-small screens; banner will indicate event) -->
+        <!-- Market Event Indicator (always visible when an event is live) -->
         <q-chip
           v-if="isAtMarketEvent"
           color="green"
           text-color="white"
           size="sm"
-          class="q-mr-md gt-xs"
+          class="q-mr-md"
           icon="event"
         >
           MARKET EVENT
@@ -162,20 +162,32 @@
       </q-toolbar>
       <!-- Market Event Banner embedded inside header so it cannot slide behind or leave gaps -->
       <q-banner
-        v-if="isAtMarketEvent && activeMarketEvent"
+        v-if="isLandingPage && isAtMarketEvent && activeMarketEvent"
         class="bg-green-5 text-white market-event-banner"
         dense
       >
         <template v-slot:avatar>
           <q-icon name="event" size="32px" />
         </template>
-        <div class="text-weight-bold">
-          Market Event Live!
-        </div>
-        <div class="text-body2">
-          We're currently at <strong>{{ activeMarketEvent.name }}</strong>
-          <span v-if="activeMarketEvent.location"> at {{ activeMarketEvent.location }}</span>.
-          Visit us at the market event!
+        <div class="row items-center q-col-gutter-sm full-width">
+          <div class="col">
+            <div class="text-weight-bold">Market Event Live!</div>
+            <div class="text-body2">
+              Come visit us at <strong>{{ activeMarketEvent.name }}</strong>
+              <span v-if="activeMarketEvent.location">
+                in <strong>{{ activeMarketEvent.location }}</strong>
+              </span
+              >!
+            </div>
+          </div>
+          <div class="col-auto">
+            <q-toggle
+              v-model="marketCustomerToggle"
+              color="white"
+              keep-color
+              :label="$q.screen.xs ? 'I\\'m at the event' : `I'm at the event`"
+            />
+          </div>
         </div>
       </q-banner>
     </q-header>
@@ -420,7 +432,7 @@ export default {
       email: null,
     });
 
-    const { setCustomerType } = useCustomerType();
+    const { setCustomerType, isMarketCustomer } = useCustomerType();
     
     // Initialize market event cache immediately
     const marketEventCacheInitialized = ref(false);
@@ -526,6 +538,14 @@ export default {
       return marketEventService.getCheckedInEvent();
     });
     const hasActiveEvent = computed(() => !!activeMarketEvent.value);
+    const isLandingPage = computed(() => route.path === '/');
+
+    // Toggle binding for "I'm at the event"
+    const marketCustomerToggle = computed({
+      get: () => isMarketCustomer.value,
+      set: (val) =>
+        setCustomerType(val ? CUSTOMER_TYPES.MARKET : CUSTOMER_TYPES.ONLINE),
+    });
 
     // Create a ref that gets updated periodically to trigger reactivity
     const marketEventCheckTrigger = ref(0);
@@ -740,6 +760,8 @@ export default {
       pageTitle,
       isTestEnvironment,
       isAtMarketEvent,
+      isLandingPage,
+      marketCustomerToggle,
       activeMarketEvent,
       isAuthenticated,
       isAdmin,
@@ -765,6 +787,7 @@ export default {
   padding-top: env(safe-area-inset-top);
   padding-top: constant(safe-area-inset-top); /* legacy iOS fallback */
   padding-bottom: 0; /* eliminate extra space below header content */
+  z-index: 2000; /* ensure header content always sits above any q-page-header */
 }
 
 .logo-header {
@@ -830,6 +853,8 @@ export default {
   margin: 0;
   border-radius: 0;
   /* No sticky positioning when embedded in header */
+  position: relative;
+  z-index: 2001; /* above any page-level headers or overlays */
 }
 
 /* Remove any unintended top gaps below the header */

@@ -798,6 +798,10 @@ export default {
       }
     };
     const { cartItems, cartSubtotal, clearCart } = useCart();
+    // Support custom total routed from Market Event Upload page (skip shipping)
+    const query = router.currentRoute.value?.query || {};
+    const customTotalParam = Number(query.customTotal || 0);
+    const skipShippingParam = query.skipShipping === '1' || query.skipShipping === 1;
 
     const submitting = ref(false);
     const checkedInEvent = ref(null);
@@ -1134,6 +1138,10 @@ export default {
 
     // Calculate order total
     const orderTotal = computed(() => {
+      // If a custom total is provided (market-event-upload flow), use it and skip shipping
+      if (customTotalParam > 0) {
+        return customTotalParam;
+      }
       let total = cartSubtotal.value;
       if (selectedShippingDetails.value?.type === 'shipping') {
         total += shippingCost.value;
@@ -1162,6 +1170,15 @@ export default {
       shippingOptions,
       () => {
         applyDefaultShippingSelection();
+        // Force pickup selection when skipShipping is requested (market-event-upload online pay)
+        if (skipShippingParam && shippingOptions.value.length > 0) {
+          const pickup =
+            shippingOptions.value.find((o) => o.type === 'pickup') ||
+            shippingOptions.value[0];
+          if (pickup) {
+            selectedShippingOption.value = pickup.value;
+          }
+        }
       },
       { immediate: true }
     );

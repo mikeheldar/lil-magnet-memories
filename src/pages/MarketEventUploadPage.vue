@@ -261,8 +261,25 @@
               placeholder="Any special requests for your magnets? Size preferences, color adjustments, etc."
             />
 
+            <!-- Payment Choice for Market Event -->
+            <q-separator class="q-my-md" />
+            <div class="text-h6 text-weight-medium q-mb-sm text-primary">
+              <q-icon name="payment" class="q-mr-sm" />
+              How would you like to pay?
+            </div>
+            <q-option-group
+              v-model="paymentChoice"
+              :options="[
+                { label: `Pay at Li'l Magnet Memories Tent`, value: 'pay_at_tent' },
+                { label: 'Pay Online Now', value: 'pay_online' },
+              ]"
+              type="radio"
+              color="primary"
+              class="q-mb-md"
+            />
+
             <!-- Submit Button -->
-            <div class="text-center q-mt-lg">
+            <div class="text-center q-mt-md">
               <q-btn
                 type="submit"
                 color="primary"
@@ -356,11 +373,7 @@
               color="grey"
               @click="showOrderSummary = false"
             />
-            <q-btn
-              label="Confirm Order"
-              color="primary"
-              @click="confirmOrder"
-            />
+            <q-btn label="Confirm" color="primary" @click="confirmOrder" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -437,6 +450,7 @@ export default {
     const selectedFiles = ref([]);
     const fileQuantities = ref([]);
     const submitting = ref(false);
+    const paymentChoice = ref('pay_at_tent'); // 'pay_at_tent' | 'pay_online'
     const showOrderSummary = ref(false);
     const orderNumber = ref('');
     const products = ref([]);
@@ -626,17 +640,29 @@ export default {
           console.log('Notification error (non-critical):', notifyError);
         }
 
-        // Redirect to thank you page with order details
-        try {
-          router.push({
-            path: '/thank-you',
-            query: orderData,
-          });
-        } catch (routerError) {
-          console.error('Router error:', routerError);
-          // Fallback: redirect using window.location
-          const queryString = new URLSearchParams(orderData).toString();
-          window.location.href = `/thank-you?${queryString}`;
+        // Route based on payment choice
+        if (paymentChoice.value === 'pay_online') {
+          // Redirect to checkout with custom total and skip shipping
+          const customTotal = totalCost.value.total ? totalCost.value.total.toFixed(2) : '0.00';
+          const query = new URLSearchParams({
+            customTotal,
+            skipShipping: '1',
+            orderNumber: orderNumber.value,
+            context: 'market_event',
+          }).toString();
+          router.push(`/checkout?${query}`);
+        } else {
+          // Thank you page for pay-at-tent
+          try {
+            router.push({
+              path: '/thank-you',
+              query: orderData,
+            });
+          } catch (routerError) {
+            console.error('Router error:', routerError);
+            const queryString = new URLSearchParams(orderData).toString();
+            window.location.href = `/thank-you?${queryString}`;
+          }
         }
       } catch (error) {
         console.error('Order submission error:', error);
