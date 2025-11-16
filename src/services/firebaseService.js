@@ -139,7 +139,16 @@ class FirebaseService {
 
       // Add to Firestore with timeout (increased to 30 seconds to account for slow uploads)
       console.log('Saving order to Firestore...');
-      const savePromise = addDoc(collection(db, 'orders'), orderDoc);
+      console.log('Firestore database:', db.app.options.projectId);
+      console.log('Order document to save:', { ...orderDoc, photos: `[${orderDoc.photos.length} photos]` });
+      
+      const savePromise = addDoc(collection(db, 'orders'), orderDoc).catch((error) => {
+        console.error('Firestore save error details:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        throw error;
+      });
+      
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
           () => reject(new Error('Firebase operation timed out after 30 seconds')),
