@@ -58,8 +58,8 @@ if (appCheckSiteKey) {
   );
 }
 
-// Initialize Firestore with environment-specific database name
-export const db = getFirestore(app, config.firebase.projectId);
+// Initialize Firestore (use default database - Firebase creates it automatically)
+export const db = getFirestore(app);
 
 // Initialize Storage
 export const storage = getStorage(app);
