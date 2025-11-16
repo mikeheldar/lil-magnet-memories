@@ -2,6 +2,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
+  signInAnonymously,
   onAuthStateChanged,
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
@@ -92,12 +93,23 @@ class AuthService {
     }
   }
 
-  // Sign out
+  // Sign out (and sign in anonymously to maintain auth context)
   async signOut() {
     try {
       console.log('AuthService: Starting sign out...');
       await signOut(auth);
-      console.log('AuthService: Sign out successful');
+      console.log('AuthService: Sign out successful, signing in anonymously...');
+      
+      // Sign in anonymously after sign out to maintain auth context for Storage rules
+      // This is silent - user won't see any indication they're anonymous
+      try {
+        await signInAnonymously(auth);
+        console.log('AuthService: Anonymous sign-in after sign-out successful');
+      } catch (anonError) {
+        console.error('AuthService: Anonymous sign-in failed (non-blocking):', anonError);
+        // Non-blocking - continue even if anonymous sign-in fails
+      }
+      
       this.user = null;
       this.notifyListeners();
       console.log('AuthService: Notified listeners of sign out');
