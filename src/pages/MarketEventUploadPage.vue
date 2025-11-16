@@ -874,6 +874,7 @@ export default {
       selectedFiles,
       fileQuantities,
       submitting,
+      paymentChoice,
       canSubmit,
       totalMagnets,
       totalCost,
