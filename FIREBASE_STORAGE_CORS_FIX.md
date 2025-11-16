@@ -18,10 +18,21 @@ Create a file called `cors.json` in the project root:
 [
   {
     "origin": [
+      "https://www.lilmagnetmemories.com",
+      "https://lilmagnetmemories.com",
       "https://lil-magnet-memories.vercel.app",
       "http://localhost:9000"
     ],
-    "method": ["GET", "HEAD"],
+    "method": ["GET", "HEAD", "POST", "PUT", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type",
+      "X-Goog-Upload-Protocol",
+      "X-Goog-Upload-Command",
+      "X-Goog-Upload-Header-Content-Length",
+      "X-Goog-Upload-Header-Content-Type",
+      "X-Goog-Upload-Offset",
+      "Authorization"
+    ],
     "maxAgeSeconds": 3600
   }
 ]
@@ -32,7 +43,7 @@ Create a file called `cors.json` in the project root:
 Run this command to apply the CORS configuration:
 
 ```bash
-gsutil cors set cors.json gs://lil-magnet-memories.firebasestorage.app
+gsutil cors set cors.json gs://lil-magnet-memories.appspot.com
 ```
 
 ### Step 3: Alternative Solution - Use Firebase Storage Rules
