@@ -108,7 +108,7 @@
           color="primary"
           unelevated
           label="Start Creating Magnets"
-          @click="$router.push('/online-order')"
+          @click="$router.push('/market-event-upload')"
         />
       </section>
 

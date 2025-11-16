@@ -523,22 +523,9 @@ export default {
     const activeMarketEvent = ref(null);
 
     const goToUpload = () => {
-      // Check if there's an active market event
-      activeMarketEvent.value = marketEventService.getCheckedInEvent();
-
-      if (activeMarketEvent.value) {
-        // Check if user is already set as market customer
-        if (isMarketCustomer.value) {
-          // User has already confirmed they're at event, go directly to market event upload
-          router.push('/market-event-upload');
-        } else {
-          // Show popup asking if they're at the event
-          showMarketEventDialog.value = true;
-        }
-      } else {
-        // No active event, go to online order page
-        router.push('/online-order');
-      }
+      // Always go straight to market event upload flow
+      setCustomerType('market_customer');
+      router.push('/market-event-upload');
     };
 
     const goToMarketEventUpload = () => {
@@ -548,9 +535,10 @@ export default {
     };
 
     const goToOnlineOrder = () => {
+      // Repurpose to market event upload (hide online ordering)
       showMarketEventDialog.value = false;
-      setCustomerType('online_customer');
-      router.push('/online-order');
+      setCustomerType('market_customer');
+      router.push('/market-event-upload');
     };
 
     const addProductToCart = (product) => {
