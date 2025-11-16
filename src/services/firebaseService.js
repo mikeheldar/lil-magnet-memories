@@ -54,15 +54,19 @@ class FirebaseService {
   // Upload photos to Firebase Storage
   async uploadPhotos(photos) {
     // Ensure we have an auth context for Storage rules (request.auth != null)
-    try {
-      if (!auth?.currentUser) {
-        await signInAnonymously(auth).catch(() => {
-          // Non-blocking: rules may still allow uploads, but we prefer auth context
-        });
+    if (!auth?.currentUser) {
+      try {
+        console.log('No authenticated user, attempting anonymous sign-in...');
+        const userCredential = await signInAnonymously(auth);
+        console.log('Anonymous sign-in successful, uid:', userCredential.user?.uid);
+        // Wait a moment for auth state to propagate
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (e) {
+        console.error('Anonymous sign-in failed:', e);
+        // If anonymous sign-in fails, we'll still try uploads
+        // but Storage rules may reject if they require auth
+        console.warn('Proceeding without auth - uploads may fail if rules require authentication');
       }
-    } catch (e) {
-      // Do not block uploads on anonymous auth issues
-      console.warn('Anonymous auth guard failed (non-blocking):', e);
     }
 
     const uploadedPhotos = [];
