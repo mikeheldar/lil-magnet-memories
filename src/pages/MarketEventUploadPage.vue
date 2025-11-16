@@ -419,6 +419,8 @@ import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
+import { auth } from '../firebase/config.js';
+import { signInAnonymously } from 'firebase/auth';
 
 export default {
   name: 'MarketEventUploadPage',
@@ -841,6 +843,25 @@ export default {
 
       // Load products
       loadProducts();
+
+      // Ensure we have an auth context for Storage rules even without full sign-in.
+      // This avoids 403 (storage/unauthorized) when rules require request.auth != null.
+      try {
+        const userNow = authService.getCurrentUser();
+        if (!userNow) {
+          // Enable Anonymous sign-in in Firebase Console (Auth -> Sign-in method)
+          console.log('No authenticated user detected; attempting anonymous sign-in for uploads...');
+          signInAnonymously(auth)
+            .then((cred) => {
+              console.log('Anonymous sign-in successful; uid:', cred.user?.uid);
+            })
+            .catch((err) => {
+              console.error('Anonymous sign-in failed (non-blocking):', err);
+            });
+        }
+      } catch (anonErr) {
+        console.error('Anonymous sign-in init error (non-blocking):', anonErr);
+      }
     });
 
     return {
