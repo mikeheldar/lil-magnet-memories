@@ -762,6 +762,9 @@ export default {
 <style lang="scss">
 .q-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  /* iOS safe area to prevent content (like the green banner) from sliding under Safari's system bar */
+  padding-top: env(safe-area-inset-top);
+  padding-top: constant(safe-area-inset-top); /* legacy iOS fallback */
 }
 
 .logo-header {
@@ -826,6 +829,10 @@ export default {
 .market-event-banner {
   margin: 0;
   border-radius: 0;
+  /* Make sure the banner always sits below the header and remains visible when scrolling */
+  position: sticky;
+  top: 0;
+  z-index: 998; /* just below the header (which is higher) */
 }
 
 // Mobile responsive adjustments
