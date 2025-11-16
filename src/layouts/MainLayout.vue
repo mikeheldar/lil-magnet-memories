@@ -175,8 +175,7 @@
             <div class="text-body2">
               Come visit us at <strong>{{ activeMarketEvent.name }}</strong>
               <span v-if="activeMarketEvent.location">
-                in <strong>{{ activeMarketEvent.location }}</strong>
-              </span
+                in <strong>{{ activeMarketEvent.location }}</strong> </span
               >!
             </div>
           </div>
@@ -433,7 +432,7 @@ export default {
     });
 
     const { setCustomerType, isMarketCustomer } = useCustomerType();
-    
+
     // Initialize market event cache immediately
     const marketEventCacheInitialized = ref(false);
     let unsubscribeMarketEvents = null;
@@ -444,13 +443,18 @@ export default {
         const eventsRef = collection(db, 'marketEvents');
         const q = query(eventsRef, orderBy('startDateTime', 'desc'));
 
-        console.log('MainLayout: Setting up real-time listener for market events...');
+        console.log(
+          'MainLayout: Setting up real-time listener for market events...'
+        );
 
         unsubscribeMarketEvents = onSnapshot(
           q,
           (snapshot) => {
             // Skip if this is just a metadata change (not actual data change)
-            if (snapshot.metadata.fromCache && snapshot.metadata.hasPendingWrites) {
+            if (
+              snapshot.metadata.fromCache &&
+              snapshot.metadata.hasPendingWrites
+            ) {
               return;
             }
 
@@ -468,16 +472,24 @@ export default {
                 ...eventData,
               };
               if (processed.createdAt?.toDate) {
-                processed.createdAt = processed.createdAt.toDate().toISOString();
+                processed.createdAt = processed.createdAt
+                  .toDate()
+                  .toISOString();
               }
               if (processed.updatedAt?.toDate) {
-                processed.updatedAt = processed.updatedAt.toDate().toISOString();
+                processed.updatedAt = processed.updatedAt
+                  .toDate()
+                  .toISOString();
               }
               if (processed.checkedInAt?.toDate) {
-                processed.checkedInAt = processed.checkedInAt.toDate().toISOString();
+                processed.checkedInAt = processed.checkedInAt
+                  .toDate()
+                  .toISOString();
               }
               if (processed.checkedOutAt?.toDate) {
-                processed.checkedOutAt = processed.checkedOutAt.toDate().toISOString();
+                processed.checkedOutAt = processed.checkedOutAt
+                  .toDate()
+                  .toISOString();
               }
               eventsList.push(processed);
             });
@@ -491,7 +503,11 @@ export default {
 
             console.log('MainLayout: Market events cache updated:', {
               count: eventsList.length,
-              events: eventsList.map(e => ({ id: e.id, name: e.name, checkedIn: e.checkedIn })),
+              events: eventsList.map((e) => ({
+                id: e.id,
+                name: e.name,
+                checkedIn: e.checkedIn,
+              })),
             });
 
             marketEventCacheInitialized.value = true;
@@ -499,7 +515,7 @@ export default {
           (err) => {
             console.error('MainLayout: Real-time listener error:', err);
             // Fallback: refresh cache manually
-            marketEventService.refreshCache().catch(refreshErr => {
+            marketEventService.refreshCache().catch((refreshErr) => {
               console.error('MainLayout: Error refreshing cache:', refreshErr);
             });
             marketEventCacheInitialized.value = true;
@@ -508,11 +524,12 @@ export default {
       } catch (err) {
         console.error('MainLayout: Error setting up real-time listener:', err);
         // Fallback: initialize cache manually
-        marketEventService.refreshCache()
+        marketEventService
+          .refreshCache()
           .then(() => {
             marketEventCacheInitialized.value = true;
           })
-          .catch(refreshErr => {
+          .catch((refreshErr) => {
             console.error('MainLayout: Error initializing cache:', refreshErr);
             marketEventCacheInitialized.value = true;
           });
@@ -751,7 +768,9 @@ export default {
       // Clean up real-time listener
       if (unsubscribeMarketEvents) {
         unsubscribeMarketEvents();
-        console.log('MainLayout: Market events real-time listener unsubscribed');
+        console.log(
+          'MainLayout: Market events real-time listener unsubscribed'
+        );
       }
     });
 
