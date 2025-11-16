@@ -82,3 +82,9 @@ jspm_packages/
 .tern-port
 .vercel
 .env*.local
+
+# Firebase service account keys (keep secure!)
+*-service-account.json
+service-account*.json
+prod-service-account.json
+test-service-account.json
