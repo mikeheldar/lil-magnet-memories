@@ -74,6 +74,7 @@ class FirebaseService {
       const storageRef = ref(storage, fileName);
 
       try {
+        console.log(`Uploading photo ${i + 1}/${photos.length}: ${photo.name}`);
         // Provide metadata to avoid multipart quirks and ensure proper Content-Type
         const metadata = {
           contentType: photo.type || 'image/jpeg',
@@ -90,6 +91,7 @@ class FirebaseService {
           );
         });
         const downloadURL = await getDownloadURL(storageRef);
+        console.log(`Photo ${i + 1} uploaded successfully`);
 
         uploadedPhotos.push({
           name: photo.name,
@@ -111,7 +113,9 @@ class FirebaseService {
   async saveOrder(orderData) {
     try {
       // Upload photos first
+      console.log('Starting photo uploads...');
       const uploadedPhotos = await this.uploadPhotos(orderData.photos);
+      console.log(`Photo uploads completed: ${uploadedPhotos.length} photos uploaded`);
 
       // Prepare order document
       const orderDoc = {
@@ -133,12 +137,13 @@ class FirebaseService {
         updatedAt: serverTimestamp(),
       };
 
-      // Add to Firestore with timeout
+      // Add to Firestore with timeout (increased to 30 seconds to account for slow uploads)
+      console.log('Saving order to Firestore...');
       const savePromise = addDoc(collection(db, 'orders'), orderDoc);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
-          () => reject(new Error('Firebase operation timed out')),
-          10000
+          () => reject(new Error('Firebase operation timed out after 30 seconds')),
+          30000
         )
       );
 
