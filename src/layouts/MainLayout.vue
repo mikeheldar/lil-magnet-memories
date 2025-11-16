@@ -1,6 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="bg-primary text-white">
+    <!-- Top header: always purple gradient; market event is indicated by the green banner below -->
+    <q-header elevated class="text-white">
       <q-toolbar>
         <!-- Menu button (always visible) -->
         <q-btn
@@ -22,36 +23,36 @@
           />
         </q-btn>
 
-        <!-- Test Environment Indicator -->
+        <!-- Test Environment Indicator (hide on extra-small screens to avoid crowding) -->
         <q-chip
           v-if="isTestEnvironment"
           color="orange"
           text-color="white"
           size="sm"
-          class="q-mr-md"
+          class="q-mr-md gt-xs"
           icon="bug_report"
         >
           TEST
         </q-chip>
 
-        <!-- Market Event Indicator -->
+        <!-- Market Event Indicator (hide on extra-small screens; banner will indicate event) -->
         <q-chip
           v-if="isAtMarketEvent"
           color="green"
           text-color="white"
           size="sm"
-          class="q-mr-md"
+          class="q-mr-md gt-xs"
           icon="event"
         >
           MARKET EVENT
         </q-chip>
 
-        <!-- Page title in center -->
-        <q-toolbar-title class="text-center">
+        <!-- Page title in center (hide on extra-small screens to reduce crowding) -->
+        <q-toolbar-title class="text-center gt-xs">
           <span class="text-h5 text-weight-bold">{{ pageTitle }}</span>
         </q-toolbar-title>
 
-        <!-- About Button -->
+        <!-- About Button (hide on extra-small screens) -->
         <q-btn
           flat
           dense
@@ -161,7 +162,7 @@
       </q-toolbar>
     </q-header>
 
-    <!-- Market Event Banner (shows when admin is checked in) -->
+    <!-- Market Event Banner (single green band directly under the purple header) -->
     <q-banner
       v-if="isAtMarketEvent && activeMarketEvent"
       class="bg-green-5 text-white market-event-banner"
@@ -736,6 +737,7 @@ export default {
     });
 
     return {
+      $q,
       pageTitle,
       isTestEnvironment,
       isAtMarketEvent,
@@ -819,6 +821,11 @@ export default {
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.market-event-banner {
+  margin: 0;
+  border-radius: 0;
 }
 
 // Mobile responsive adjustments
