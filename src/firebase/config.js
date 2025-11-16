@@ -5,11 +5,23 @@ import { getAuth } from 'firebase/auth';
 import { config } from '../config/environment.js';
 
 // Firebase configuration - uses environment-specific config
+// Some environments may mistakenly provide the download domain (`firebasestorage.app`)
+// as the storageBucket. The Web SDK requires the bucket in the form `<project-id>.appspot.com`.
+const resolveStorageBucket = () => {
+  const raw = (config.firebase.storageBucket || '').trim();
+  if (!raw) return undefined;
+  if (raw.endsWith('firebasestorage.app')) {
+    // Convert to the proper bucket host
+    return `${config.firebase.projectId}.appspot.com`;
+  }
+  return raw;
+};
+
 const firebaseConfig = {
   apiKey: config.firebase.apiKey,
   authDomain: config.firebase.authDomain,
   projectId: config.firebase.projectId,
-  storageBucket: config.firebase.storageBucket,
+  storageBucket: resolveStorageBucket(),
   messagingSenderId: config.firebase.messagingSenderId,
   appId: config.firebase.appId,
 };
