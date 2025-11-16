@@ -137,9 +137,27 @@ class FirebaseService {
         updatedAt: serverTimestamp(),
       };
 
+      // Ensure we have an auth context for Firestore rules (request.auth != null)
+      // This is critical - Firestore rules require authentication
+      if (!auth?.currentUser) {
+        console.log('No authenticated user before Firestore save, signing in anonymously...');
+        try {
+          await signInAnonymously(auth);
+          // Wait longer for auth state to propagate to Firestore
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          console.log('Anonymous sign-in completed, current user:', auth.currentUser?.uid);
+        } catch (authError) {
+          console.error('Anonymous sign-in failed before Firestore save:', authError);
+          // Continue anyway - rules might allow unauthenticated writes
+        }
+      } else {
+        console.log('User already authenticated:', auth.currentUser.uid);
+      }
+
       // Add to Firestore with timeout (increased to 30 seconds to account for slow uploads)
       console.log('Saving order to Firestore...');
       console.log('Firestore database:', db.app.options.projectId);
+      console.log('Current auth user:', auth?.currentUser?.uid || 'null');
       console.log('Order document to save:', { ...orderDoc, photos: `[${orderDoc.photos.length} photos]` });
       
       const savePromise = addDoc(collection(db, 'orders'), orderDoc).catch((error) => {
