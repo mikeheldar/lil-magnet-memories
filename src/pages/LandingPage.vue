@@ -365,7 +365,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
@@ -591,13 +591,20 @@ export default {
       return products.value.filter((p) => p.productType === 'predesigned');
     });
 
+    // Reactive ref to trigger updates when market events are loaded
+    const marketEventCheckTrigger = ref(0);
+
     // Check if there's an active market event
     const hasActiveEvent = computed(() => {
+      // Trigger reactivity
+      marketEventCheckTrigger.value;
       return marketEventService.getCheckedInEvent() !== null;
     });
 
     // Get the active market event name for display
     const activeMarketEventName = computed(() => {
+      // Trigger reactivity
+      marketEventCheckTrigger.value;
       const event = marketEventService.getCheckedInEvent();
       return event ? event.name : '';
     });
@@ -642,9 +649,26 @@ export default {
       try {
         await marketEventService.refreshCache();
         console.log('Market events checked on page load');
+        // Trigger reactivity update after cache is refreshed
+        marketEventCheckTrigger.value++;
       } catch (error) {
         console.error('Error checking market events on page load:', error);
       }
+
+      // Set up periodic refresh to keep banner updated
+      const marketEventInterval = setInterval(async () => {
+        try {
+          await marketEventService.refreshCache();
+          marketEventCheckTrigger.value++;
+        } catch (error) {
+          console.error('Error refreshing market events:', error);
+        }
+      }, 10000); // Refresh every 10 seconds
+
+      // Cleanup interval on unmount
+      onUnmounted(() => {
+        clearInterval(marketEventInterval);
+      });
 
       loadProducts();
 
