@@ -39,9 +39,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize App Check if a site key is provided via env
-const appCheckSiteKey =
-  import.meta?.env?.VITE_FIREBASE_APPCHECK_SITE_KEY ||
-  process?.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
+const appCheckSiteKey = import.meta?.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
 if (initializeAppCheckFn && appCheckSiteKey) {
   try {
     initializeAppCheckFn(app, {
