@@ -523,9 +523,24 @@ export default {
     const activeMarketEvent = ref(null);
 
     const goToUpload = () => {
-      // Always go straight to market event upload flow
-      setCustomerType('market_customer');
-      router.push('/market-event-upload');
+      // Check if there's an active market event
+      const activeEvent = marketEventService.getCheckedInEvent();
+      
+      if (activeEvent) {
+        // If user has toggled "I'm at the event", go directly to market upload
+        if (isCustomerAtEvent.value) {
+          setCustomerType('market_customer');
+          router.push('/market-event-upload');
+        } else {
+          // Show popup to ask if they're at the event
+          activeMarketEvent.value = activeEvent;
+          showMarketEventDialog.value = true;
+        }
+      } else {
+        // No active event - go to online order
+        setCustomerType('online_customer');
+        router.push('/online-order');
+      }
     };
 
     const goToMarketEventUpload = () => {
@@ -535,10 +550,9 @@ export default {
     };
 
     const goToOnlineOrder = () => {
-      // Repurpose to market event upload (hide online ordering)
       showMarketEventDialog.value = false;
-      setCustomerType('market_customer');
-      router.push('/market-event-upload');
+      setCustomerType('online_customer');
+      router.push('/online-order');
     };
 
     const addProductToCart = (product) => {
@@ -654,12 +668,7 @@ export default {
         }
       });
 
-      // Check if we should show market event prompt on initial load
-      const activeEvent = marketEventService.getCheckedInEvent();
-      if (activeEvent && shouldShowMarketEventPrompt.value) {
-        activeMarketEvent.value = activeEvent;
-        showMarketEventDialog.value = true;
-      }
+      // Don't auto-show dialog on load - only show when user clicks "Start Creating Magnets"
 
       // Rotate easel images every 5 seconds (only if more than 1 image)
       if (easelImages.length > 1) {
