@@ -84,14 +84,26 @@ class FirebaseService {
         };
 
         const uploadTask = uploadBytesResumable(storageRef, photo, metadata);
-        await new Promise((resolve, reject) => {
+        
+        // Add timeout to prevent hanging uploads (30 seconds per photo)
+        const uploadPromise = new Promise((resolve, reject) => {
           uploadTask.on(
             'state_changed',
-            null,
+            (snapshot) => {
+              // Log progress for debugging
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              console.log(`Upload progress for ${photo.name}: ${progress.toFixed(1)}%`);
+            },
             (err) => reject(err),
             () => resolve()
           );
         });
+        
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`Upload timeout for ${photo.name} after 30 seconds`)), 30000)
+        );
+        
+        await Promise.race([uploadPromise, timeoutPromise]);
         const downloadURL = await getDownloadURL(storageRef);
 
         uploadedPhotos.push({
