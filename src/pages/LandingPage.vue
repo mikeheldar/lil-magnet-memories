@@ -341,22 +341,22 @@
             >!
           </div>
           <div class="text-body2 text-grey-7 q-mb-md">
-            Are you at the market event and want to pick up your order there?
+            Are you at the market event?
           </div>
         </q-card-section>
 
         <q-card-actions align="right">
           <q-btn
             flat
-            label="Order Online"
+            label="No, Order Online"
             color="grey-8"
             @click="goToOnlineOrder"
           />
           <q-btn
             flat
-            label="At Event - Pickup"
+            label="Yes, I'm at the event"
             color="primary"
-            @click="goToMarketEventUpload"
+            @click="confirmAtMarketEvent"
           />
         </q-card-actions>
       </q-card>
@@ -543,13 +543,16 @@ export default {
       }
     };
 
-    const goToMarketEventUpload = () => {
-      showMarketEventDialog.value = false;
+    const confirmAtMarketEvent = () => {
+      // Set the toggle state (this persists via localStorage in customerType composable)
       setCustomerType('market_customer');
+      // Close dialog and navigate to market event upload
+      showMarketEventDialog.value = false;
       router.push('/market-event-upload');
     };
 
     const goToOnlineOrder = () => {
+      // User said they're not at the event - go to online ordering
       showMarketEventDialog.value = false;
       setCustomerType('online_customer');
       router.push('/online-order');
@@ -700,7 +703,7 @@ export default {
       goToUpload,
       addProductToCart,
       goToPreDesigned,
-      goToMarketEventUpload,
+      confirmAtMarketEvent,
       goToOnlineOrder,
       goToImage,
       toggleCustomerAtEvent,
