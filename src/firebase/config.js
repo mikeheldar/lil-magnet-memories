@@ -24,6 +24,10 @@ const app = initializeApp(firebaseConfig);
 console.log('Firebase Storage Bucket:', firebaseConfig.storageBucket);
 console.log('Firebase Project ID:', firebaseConfig.projectId);
 console.log('Environment:', config.environment);
+if (config.isTest && firebaseConfig.projectId !== 'lil-magnet-memories') {
+  console.warn('⚠️ Test environment is using a different Firebase project:', firebaseConfig.projectId);
+  console.warn('⚠️ Make sure this project exists and is configured, or set VITE_FIREBASE_PROJECT_ID_TEST=lil-magnet-memories to use the same project');
+}
 
 // Optionally initialize Firebase App Check (reCAPTCHA v3) when a site key is provided
 const appCheckSiteKey = import.meta.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
