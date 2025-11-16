@@ -143,8 +143,7 @@ class FirebaseService {
         console.log('No authenticated user before Firestore save, signing in anonymously...');
         try {
           await signInAnonymously(auth);
-          // Wait longer for auth state to propagate to Firestore
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          // Auth state should propagate immediately
           console.log('Anonymous sign-in completed, current user:', auth.currentUser?.uid);
         } catch (authError) {
           console.error('Anonymous sign-in failed before Firestore save:', authError);
