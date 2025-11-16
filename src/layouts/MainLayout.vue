@@ -34,17 +34,7 @@
           TEST
         </q-chip>
 
-        <!-- Market Event Indicator -->
-        <q-chip
-          v-if="isAtMarketEvent"
-          color="green"
-          text-color="white"
-          size="sm"
-          class="q-mr-md"
-          icon="event"
-        >
-          MARKET EVENT
-        </q-chip>
+        <!-- Market Event Indicator removed -->
 
         <!-- Page title in center -->
         <q-toolbar-title class="text-center">
@@ -161,24 +151,7 @@
       </q-toolbar>
     </q-header>
 
-    <!-- Market Event Banner (shows when admin is checked in) -->
-    <q-banner
-      v-if="isAtMarketEvent && activeMarketEvent"
-      class="bg-green-5 text-white market-event-banner"
-      dense
-    >
-      <template v-slot:avatar>
-        <q-icon name="event" size="32px" />
-      </template>
-      <div class="text-weight-bold">
-        Market Event Live!
-      </div>
-      <div class="text-body2">
-        We're currently at <strong>{{ activeMarketEvent.name }}</strong>
-        <span v-if="activeMarketEvent.location"> at {{ activeMarketEvent.location }}</span>.
-        Visit us at the market event!
-      </div>
-    </q-banner>
+    <!-- Market Event Banner removed -->
 
     <!-- Left Drawer for Navigation (always visible) -->
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-1">
