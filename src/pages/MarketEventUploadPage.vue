@@ -261,6 +261,31 @@
               placeholder="Any special requests for your magnets? Size preferences, color adjustments, etc."
             />
 
+            <!-- Payment Options (only show if at market event) -->
+            <div v-if="isAtMarketEvent" class="q-mb-md">
+              <q-card class="q-pa-md bg-blue-1">
+                <div class="text-h6 q-mb-sm text-primary">
+                  <q-icon name="payment" class="q-mr-sm" />
+                  Payment Options
+                </div>
+                <q-radio
+                  v-model="paymentChoice"
+                  val="pay_at_tent"
+                  label="Pay at Li'l Magnet Memories Tent"
+                  class="q-mb-sm"
+                />
+                <q-radio
+                  v-model="paymentChoice"
+                  val="pay_online"
+                  label="Pay Online Now"
+                  class="q-mb-sm"
+                />
+                <div v-if="paymentChoice === 'pay_online'" class="text-body2 text-grey-7 q-mt-sm">
+                  You'll be taken to the payment form to complete your order.
+                </div>
+              </q-card>
+            </div>
+
             <!-- Submit Button -->
             <div class="text-center q-mt-lg">
               <q-btn
@@ -272,7 +297,7 @@
                 class="q-px-xl"
               >
                 <q-icon name="send" class="q-mr-sm" />
-                Submit Photos for Magnet Creation
+                {{ isAtMarketEvent && paymentChoice === 'pay_online' ? 'Continue to Payment' : 'Submit Photos for Magnet Creation' }}
               </q-btn>
             </div>
           </q-form>
@@ -421,6 +446,8 @@ import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
+import { marketEventService } from '../services/marketEventService.js';
+import { useCustomerType } from '../composables/useCustomerType.js';
 
 export default {
   name: 'MarketEventUploadPage',
@@ -443,6 +470,8 @@ export default {
     const orderNumber = ref('');
     const products = ref([]);
     const selectedProduct = ref(null);
+    const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
+    const { isMarketCustomer } = useCustomerType();
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -451,6 +480,11 @@ export default {
 
     const totalMagnets = computed(() => {
       return fileQuantities.value.reduce((sum, qty) => sum + qty, 0);
+    });
+
+    // Check if user is at a market event
+    const isAtMarketEvent = computed(() => {
+      return marketEventService.getCheckedInEvent() !== null;
     });
 
     const totalCost = computed(() => {
@@ -657,7 +691,35 @@ export default {
     };
 
     const onSubmit = () => {
-      // Generate order number and show summary dialog
+      // If at market event and user chose to pay online, route to checkout
+      if (isAtMarketEvent.value && paymentChoice.value === 'pay_online') {
+        // Generate order number
+        orderNumber.value = generateOrderNumber();
+        
+        // Calculate total cost
+        const total = totalCost.value.total;
+        
+        // Route to checkout with skipShipping and customTotal
+        router.push({
+          path: '/checkout',
+          query: {
+            customTotal: total.toFixed(2),
+            skipShipping: '1',
+            orderNumber: orderNumber.value,
+            context: 'market_event',
+            firstName: formData.value.firstName,
+            lastName: formData.value.lastName,
+            email: formData.value.email,
+            phone: formData.value.phone,
+            specialInstructions: formData.value.specialInstructions,
+            totalMagnets: totalMagnets.value.toString(),
+            photos: selectedFiles.value.length.toString(),
+          }
+        });
+        return;
+      }
+      
+      // Otherwise, show order summary dialog (default behavior)
       orderNumber.value = generateOrderNumber();
       showOrderSummary.value = true;
     };
@@ -892,6 +954,8 @@ export default {
       confirmOrder,
       onSubmit,
       handleGoogleSignIn,
+      isAtMarketEvent,
+      paymentChoice,
     };
   },
 };
