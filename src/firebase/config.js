@@ -2,6 +2,22 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
+// Optional App Check (for Firebase Storage / Firestore enforcement)
+// Will only initialize if a site key env is provided
+let initializeAppCheckFn = null;
+try {
+  // eslint-disable-next-line import/no-extraneous-dependencies
+  // Dynamically require to avoid bundling if unused
+  // This pattern keeps builds working even when App Check isn't configured
+  // and avoids SSR import issues.
+  // eslint-disable-next-line global-require
+  const appCheckModule = require('firebase/app-check');
+  initializeAppCheckFn = appCheckModule.initializeAppCheck;
+  // eslint-disable-next-line prefer-destructuring
+  var ReCaptchaV3Provider = appCheckModule.ReCaptchaV3Provider;
+} catch (_) {
+  // App Check not installed; that's fine unless enforcement is enabled
+}
 import { config } from '../config/environment.js';
 
 // Firebase configuration - uses environment-specific config
@@ -28,6 +44,30 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize App Check if a site key is provided via env
+const appCheckSiteKey =
+  import.meta?.env?.VITE_FIREBASE_APPCHECK_SITE_KEY ||
+  process?.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
+if (initializeAppCheckFn && appCheckSiteKey) {
+  try {
+    initializeAppCheckFn(app, {
+      provider: new ReCaptchaV3Provider(appCheckSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+    // eslint-disable-next-line no-console
+    console.log('✅ Firebase App Check initialized (reCAPTCHA v3).');
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize App Check:', err);
+  }
+} else {
+  // eslint-disable-next-line no-console
+  console.log(
+    'ℹ️ App Check not initialized (no site key provided). ' +
+      'If App Check is enforced on Storage/Firestore, set VITE_FIREBASE_APPCHECK_SITE_KEY.'
+  );
+}
 
 // Initialize Firestore with environment-specific database name
 export const db = getFirestore(app, config.firebase.projectId);
