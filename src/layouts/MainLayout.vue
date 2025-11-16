@@ -573,12 +573,20 @@ export default {
       }
     };
 
+    // Helper to check if user is anonymous (no email means anonymous)
+    const isAnonymousUser = (user) => {
+      return user && user.providerId === 'firebase' && !user.email;
+    };
+
     onMounted(() => {
       // Listen for auth state changes
       authService.onAuthStateChanged((user) => {
-        console.log('Auth state changed:', user?.email);
-        isAuthenticated.value = !!user;
-        if (user) {
+        // Only treat non-anonymous users as authenticated for UI
+        // Anonymous users should see sign-in options, not be treated as signed in
+        const isRealUser = user && !isAnonymousUser(user);
+        isAuthenticated.value = isRealUser;
+        
+        if (isRealUser) {
           userProfile.value = {
             displayName: user.displayName,
             photoURL: user.photoURL,
