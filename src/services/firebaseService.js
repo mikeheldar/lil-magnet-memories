@@ -54,18 +54,15 @@ class FirebaseService {
   // Upload photos to Firebase Storage
   async uploadPhotos(photos) {
     // Ensure we have an auth context for Storage rules (request.auth != null)
+    // Do this silently - don't expose anonymous auth to users
     if (!auth?.currentUser) {
       try {
-        console.log('No authenticated user, attempting anonymous sign-in...');
         const userCredential = await signInAnonymously(auth);
-        console.log('Anonymous sign-in successful, uid:', userCredential.user?.uid);
         // Wait a moment for auth state to propagate
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (e) {
-        console.error('Anonymous sign-in failed:', e);
-        // If anonymous sign-in fails, we'll still try uploads
-        // but Storage rules may reject if they require auth
-        console.warn('Proceeding without auth - uploads may fail if rules require authentication');
+        // Silent failure - proceed with uploads anyway
+        // Storage rules may reject if they require auth, but we'll try
       }
     }
 
@@ -84,26 +81,14 @@ class FirebaseService {
         };
 
         const uploadTask = uploadBytesResumable(storageRef, photo, metadata);
-        
-        // Add timeout to prevent hanging uploads (30 seconds per photo)
-        const uploadPromise = new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
           uploadTask.on(
             'state_changed',
-            (snapshot) => {
-              // Log progress for debugging
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              console.log(`Upload progress for ${photo.name}: ${progress.toFixed(1)}%`);
-            },
+            null,
             (err) => reject(err),
             () => resolve()
           );
         });
-        
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`Upload timeout for ${photo.name} after 30 seconds`)), 30000)
-        );
-        
-        await Promise.race([uploadPromise, timeoutPromise]);
         const downloadURL = await getDownloadURL(storageRef);
 
         uploadedPhotos.push({

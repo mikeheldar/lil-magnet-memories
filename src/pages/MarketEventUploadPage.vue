@@ -817,10 +817,15 @@ export default {
       }
     };
 
+    // Helper to check if user is anonymous (no email means anonymous)
+    const isAnonymousUser = (user) => {
+      return user && user.providerId === 'firebase' && !user.email;
+    };
+
     onMounted(() => {
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
-      if (currentAuthUser) {
+      if (currentAuthUser && !isAnonymousUser(currentAuthUser)) {
         console.log(
           'User already authenticated on upload page:',
           currentAuthUser
@@ -832,11 +837,13 @@ export default {
 
       // Listen for auth state changes
       authService.onAuthStateChanged((user) => {
-        isAuthenticated.value = !!user;
-        currentUser.value = user;
+        // Only treat non-anonymous users as authenticated for UI
+        const isRealUser = user && !isAnonymousUser(user);
+        isAuthenticated.value = isRealUser;
+        currentUser.value = isRealUser ? user : null;
 
-        // Pre-fill form data if user is authenticated
-        if (user) {
+        // Pre-fill form data if user is authenticated (and not anonymous)
+        if (isRealUser) {
           fillFormWithUserData(user);
         }
       });
@@ -846,21 +853,17 @@ export default {
 
       // Ensure we have an auth context for Storage rules even without full sign-in.
       // This avoids 403 (storage/unauthorized) when rules require request.auth != null.
+      // Do this silently - don't expose to user that they're using anonymous auth
       try {
         const userNow = authService.getCurrentUser();
-        if (!userNow) {
-          // Enable Anonymous sign-in in Firebase Console (Auth -> Sign-in method)
-          console.log('No authenticated user detected; attempting anonymous sign-in for uploads...');
-          signInAnonymously(auth)
-            .then((cred) => {
-              console.log('Anonymous sign-in successful; uid:', cred.user?.uid);
-            })
-            .catch((err) => {
-              console.error('Anonymous sign-in failed (non-blocking):', err);
-            });
+        if (!userNow || isAnonymousUser(userNow)) {
+          // Silently sign in anonymously for Storage rules
+          signInAnonymously(auth).catch(() => {
+            // Silent failure - non-blocking
+          });
         }
       } catch (anonErr) {
-        console.error('Anonymous sign-in init error (non-blocking):', anonErr);
+        // Silent failure - non-blocking
       }
     });
 
