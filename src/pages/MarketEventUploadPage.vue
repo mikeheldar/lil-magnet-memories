@@ -448,6 +448,7 @@ import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
+import { useCart } from '../composables/useCart.js';
 
 export default {
   name: 'MarketEventUploadPage',
@@ -472,6 +473,7 @@ export default {
     const selectedProduct = ref(null);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
     const { isMarketCustomer } = useCustomerType();
+    const { addCustomUploadToCart } = useCart();
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -699,6 +701,33 @@ export default {
         // Calculate total cost
         const total = totalCost.value.total;
         
+        // Prepare photos with preview URLs for cart
+        const photosWithPreviews = selectedFiles.value.map((file, index) => ({
+          file: file,
+          name: file.name,
+          preview: getFilePreview(file),
+          quantity: fileQuantities.value[index] || 1,
+        }));
+        
+        // Add order to cart
+        addCustomUploadToCart({
+          productName: selectedProduct.value?.description || 'Custom Photo Magnets',
+          photos: photosWithPreviews,
+          quantities: fileQuantities.value,
+          specialInstructions: formData.value.specialInstructions,
+          totalMagnets: totalMagnets.value,
+          totalCost: totalCost.value,
+          costBreakdown: totalCost.value.breakdown,
+          pricing: selectedProduct.value?.pricing || {},
+          formData: {
+            firstName: formData.value.firstName,
+            lastName: formData.value.lastName,
+            email: formData.value.email,
+            phone: formData.value.phone,
+            specialInstructions: formData.value.specialInstructions,
+          },
+        });
+        
         // Route to checkout with skipShipping and customTotal
         router.push({
           path: '/checkout',
@@ -710,10 +739,7 @@ export default {
             firstName: formData.value.firstName,
             lastName: formData.value.lastName,
             email: formData.value.email,
-            phone: formData.value.phone,
-            specialInstructions: formData.value.specialInstructions,
-            totalMagnets: totalMagnets.value.toString(),
-            photos: selectedFiles.value.length.toString(),
+            phone: formData.value.phone || '',
           }
         });
         return;

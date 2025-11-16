@@ -203,8 +203,8 @@
                 </q-card-section>
               </q-card>
 
-              <!-- Shipping Options -->
-              <q-card class="q-mb-md">
+              <!-- Shipping Options (hidden if skipShipping) -->
+              <q-card v-if="!skipShipping" class="q-mb-md">
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Shipping Options</div>
                   <q-option-group
@@ -310,6 +310,19 @@
                 </q-card-section>
               </q-card>
 
+              <!-- Market Event Notice (shown when skipShipping) -->
+              <q-card v-if="skipShipping" class="q-mb-md bg-green-1">
+                <q-card-section>
+                  <div class="text-h6 q-mb-sm text-primary">
+                    <q-icon name="event" class="q-mr-sm" />
+                    Market Event Pickup
+                  </div>
+                  <div class="text-body2">
+                    Your order will be available for pickup at the market event. No shipping required.
+                  </div>
+                </q-card-section>
+              </q-card>
+
               <q-card
                 v-if="selectedPaymentOption === 'square_card'"
                 class="q-mb-md"
@@ -317,6 +330,7 @@
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Billing Address</div>
                   <q-toggle
+                    v-if="!skipShipping"
                     v-model="billingSameAsShipping"
                     :disable="!requiresShippingAddress"
                     label="Billing address matches shipping address"
@@ -324,7 +338,7 @@
                   <div
                     v-if="
                       requiresBillingAddress &&
-                      (!billingSameAsShipping || !requiresShippingAddress)
+                      (skipShipping || !billingSameAsShipping || !requiresShippingAddress)
                     "
                     class="q-mt-md"
                   >
@@ -385,11 +399,10 @@
                     </div>
                   </div>
                   <div
-                    v-else-if="!requiresShippingAddress"
+                    v-if="skipShipping && requiresBillingAddress && billingSameAsShipping"
                     class="text-body2 text-grey-7 q-mt-md"
                   >
-                    Since you're collecting at the market, please provide a
-                    billing address so we can verify your payment details.
+                    Please provide a billing address so we can verify your payment details.
                   </div>
                 </q-card-section>
               </q-card>
@@ -775,7 +788,7 @@
 
 <script>
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useCart } from '../composables/useCart.js';
 import { marketEventService } from '../services/marketEventService.js';
@@ -789,6 +802,7 @@ export default {
   name: 'CheckoutPage',
   setup() {
     const router = useRouter();
+    const route = useRoute();
     const $q = useQuasar();
     const safeNotify = (options) => {
       if ($q && typeof $q.notify === 'function') {
@@ -846,32 +860,56 @@ export default {
     // Check for active market event and check-in status
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
+      
+      // Pre-fill customer info from route query if available (from market event upload)
+      if (route.query.firstName) {
+        customerInfo.value.firstName = route.query.firstName;
+      }
+      if (route.query.lastName) {
+        customerInfo.value.lastName = route.query.lastName;
+      }
+      if (route.query.email) {
+        customerInfo.value.email = route.query.email;
+      }
+      if (route.query.phone) {
+        customerInfo.value.phone = route.query.phone;
+      }
+      
       loadShippingOptions();
 
-      // Pre-fill customer info if user is authenticated
+      // Pre-fill customer info if user is authenticated (only if not already set from query)
       const currentUser = authService.getCurrentUser();
-      if (currentUser) {
+      if (currentUser && !customerInfo.value.email) {
         customerInfo.value.email = currentUser.email || '';
-        if (currentUser.displayName) {
+        if (currentUser.displayName && !customerInfo.value.firstName) {
           const nameParts = currentUser.displayName.split(' ');
           customerInfo.value.firstName = nameParts[0] || '';
           customerInfo.value.lastName = nameParts.slice(1).join(' ') || '';
         }
       }
 
-      // Pre-fill customer info from custom upload form data if available
+      // Pre-fill customer info from custom upload form data if available (only if not already set)
       const customUploadItem = cartItems.value.find(
         (item) => item.isCustomUpload && item.formData
       );
       if (customUploadItem?.formData) {
-        customerInfo.value.firstName =
-          customUploadItem.formData.firstName || customerInfo.value.firstName;
-        customerInfo.value.lastName =
-          customUploadItem.formData.lastName || customerInfo.value.lastName;
-        customerInfo.value.email =
-          customUploadItem.formData.email || customerInfo.value.email;
-        customerInfo.value.phone =
-          customUploadItem.formData.phone || customerInfo.value.phone;
+        if (!customerInfo.value.firstName) {
+          customerInfo.value.firstName = customUploadItem.formData.firstName || '';
+        }
+        if (!customerInfo.value.lastName) {
+          customerInfo.value.lastName = customUploadItem.formData.lastName || '';
+        }
+        if (!customerInfo.value.email) {
+          customerInfo.value.email = customUploadItem.formData.email || '';
+        }
+        if (!customerInfo.value.phone) {
+          customerInfo.value.phone = customUploadItem.formData.phone || '';
+        }
+      }
+      
+      // If skipShipping, set billingSameAsShipping to false
+      if (skipShipping.value) {
+        billingSameAsShipping.value = false;
       }
 
       // Check environment variables first
@@ -1000,9 +1038,18 @@ export default {
     const shippingTimeline = computed(
       () => selectedShippingDetails.value?.estimatedTimeline || ''
     );
-    const requiresShippingAddress = computed(
-      () => !!selectedShippingDetails.value?.allowAddress
-    );
+    // Check if shipping should be skipped (from route query)
+    const skipShipping = computed(() => {
+      return route.query.skipShipping === '1' || route.query.skipShipping === 'true';
+    });
+    
+    const requiresShippingAddress = computed(() => {
+      // If skipShipping is true, don't require shipping address
+      if (skipShipping.value) {
+        return false;
+      }
+      return !!selectedShippingDetails.value?.allowAddress;
+    });
     const requiresBillingAddress = computed(
       () => selectedPaymentOption.value === 'square_card'
     );
@@ -1047,6 +1094,12 @@ export default {
     };
 
     const loadShippingOptions = async () => {
+      // Skip loading shipping options if skipShipping is true
+      if (skipShipping.value) {
+        loadingShippingOptions.value = false;
+        return;
+      }
+      
       loadingShippingOptions.value = true;
       try {
         const options = await firebaseService.getShippingOptions();
@@ -1134,8 +1187,17 @@ export default {
 
     // Calculate order total
     const orderTotal = computed(() => {
+      // If customTotal is provided in query, use it (for market event orders)
+      if (route.query.customTotal) {
+        const customTotal = parseFloat(route.query.customTotal);
+        if (!isNaN(customTotal)) {
+          return customTotal;
+        }
+      }
+      
+      // Otherwise calculate from cart
       let total = cartSubtotal.value;
-      if (selectedShippingDetails.value?.type === 'shipping') {
+      if (!skipShipping.value && selectedShippingDetails.value?.type === 'shipping') {
         total += shippingCost.value;
       }
       // TODO: Add tax calculation if needed
@@ -1175,7 +1237,7 @@ export default {
       ) {
         selectedPaymentOption.value = paymentOptions.value[0].value;
       }
-      if (!requiresShippingAddress.value) {
+      if (!requiresShippingAddress.value || skipShipping.value) {
         billingSameAsShipping.value = false;
       }
       updateSquarePaymentRequest();
@@ -1288,17 +1350,27 @@ export default {
       ) {
         return false;
       }
-      if (!selectedShippingOption.value || !selectedPaymentOption.value) {
+      // Skip shipping option check if skipShipping is true
+      if (!skipShipping.value && !selectedShippingOption.value) {
+        return false;
+      }
+      if (!selectedPaymentOption.value) {
         return false;
       }
       if (
+        !skipShipping.value &&
         requiresShippingAddress.value &&
         !addressIsComplete(shippingAddress.value)
       ) {
         return false;
       }
       if (requiresBillingAddress.value) {
-        if (billingSameAsShipping.value && requiresShippingAddress.value) {
+        if (skipShipping.value) {
+          // When skipShipping, always require billing address
+          if (!addressIsComplete(billingAddress.value)) {
+            return false;
+          }
+        } else if (billingSameAsShipping.value && requiresShippingAddress.value) {
           if (!addressIsComplete(shippingAddress.value)) {
             return false;
           }
