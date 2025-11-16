@@ -4,14 +4,9 @@ import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 let initializeAppCheckFn = null;
 try {
-  // eslint-disable-next-line import/no-extraneous-dependencies
-  // Dynamically require to avoid bundling if unused
-  // This pattern keeps builds working even when App Check isn't configured
-  // and avoids SSR import issues.
-  // eslint-disable-next-line global-require
+  // Dynamically require to avoid bundling if unused and to prevent SSR import issues.
   const appCheckModule = require('firebase/app-check');
   initializeAppCheckFn = appCheckModule.initializeAppCheck;
-  // eslint-disable-next-line prefer-destructuring
   var ReCaptchaV3Provider = appCheckModule.ReCaptchaV3Provider;
 } catch (_) {
   // App Check not installed; that's fine unless enforcement is enabled
