@@ -11,7 +11,9 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { auth } from '../firebase/config.js';
+import { signInAnonymously } from 'firebase/auth';
 import { db, storage } from '../firebase/config.js';
 
 export const DEFAULT_SHIPPING_OPTIONS = [
@@ -51,6 +53,18 @@ export const DEFAULT_SHIPPING_OPTIONS = [
 class FirebaseService {
   // Upload photos to Firebase Storage
   async uploadPhotos(photos) {
+    // Ensure we have an auth context for Storage rules (request.auth != null)
+    try {
+      if (!auth?.currentUser) {
+        await signInAnonymously(auth).catch(() => {
+          // Non-blocking: rules may still allow uploads, but we prefer auth context
+        });
+      }
+    } catch (e) {
+      // Do not block uploads on anonymous auth issues
+      console.warn('Anonymous auth guard failed (non-blocking):', e);
+    }
+
     const uploadedPhotos = [];
 
     for (let i = 0; i < photos.length; i++) {
@@ -59,8 +73,22 @@ class FirebaseService {
       const storageRef = ref(storage, fileName);
 
       try {
-        const snapshot = await uploadBytes(storageRef, photo);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        // Provide metadata to avoid multipart quirks and ensure proper Content-Type
+        const metadata = {
+          contentType: photo.type || 'image/jpeg',
+          cacheControl: 'public,max-age=3600',
+        };
+
+        const uploadTask = uploadBytesResumable(storageRef, photo, metadata);
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            null,
+            (err) => reject(err),
+            () => resolve()
+          );
+        });
+        const downloadURL = await getDownloadURL(storageRef);
 
         uploadedPhotos.push({
           name: photo.name,
