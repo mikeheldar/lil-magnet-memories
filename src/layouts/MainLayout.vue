@@ -455,13 +455,9 @@ export default {
     });
 
     const handleUploadClick = () => {
-      if (hasActiveEvent.value) {
-        setCustomerType(CUSTOMER_TYPES.MARKET);
-        router.push('/market-event-upload');
-      } else {
-        setCustomerType(CUSTOMER_TYPES.ONLINE);
-        router.push('/online-order');
-      }
+      // Always direct users to the market event upload experience
+      setCustomerType(CUSTOMER_TYPES.MARKET);
+      router.push('/market-event-upload');
       leftDrawerOpen.value = false;
     };
 
