@@ -2,8 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
-// Optional App Check (for Firebase Storage / Firestore enforcement)
-// Will only initialize if a site key env is provided
 let initializeAppCheckFn = null;
 try {
   // eslint-disable-next-line import/no-extraneous-dependencies
