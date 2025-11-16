@@ -1,20 +1,50 @@
 // Service to detect and manage active market events and check-in status
 import { firebaseService } from './firebaseService.js';
+import { auth } from '../firebase/config.js';
+import { signInAnonymously } from 'firebase/auth';
 
 class MarketEventService {
   constructor() {
     this.eventsCache = [];
     this.cacheTimestamp = null;
     this.cacheTimeout = 30000; // Cache for 30 seconds (shorter for faster updates)
-    // Initialize cache on service creation
-    this.refreshCache().catch(err => {
-      console.error('Error initializing market event cache:', err);
+    // Ensure anonymous auth before initializing cache
+    this.ensureAuth().then(() => {
+      // Initialize cache on service creation
+      this.refreshCache().catch(err => {
+        console.error('Error initializing market event cache:', err);
+      });
+    }).catch(err => {
+      console.error('Error ensuring auth for market events:', err);
+      // Try to refresh cache anyway
+      this.refreshCache().catch(cacheErr => {
+        console.error('Error initializing market event cache:', cacheErr);
+      });
     });
+  }
+
+  // Ensure we have an auth context (anonymous if needed) for Firestore reads
+  async ensureAuth() {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        // Sign in anonymously to ensure we can read market events
+        // This is silent - users won't see any indication
+        await signInAnonymously(auth);
+      }
+    } catch (error) {
+      // Non-blocking - if anonymous sign-in fails, we'll try to read anyway
+      // Firestore rules might allow unauthenticated reads
+      console.error('Error ensuring auth (non-blocking):', error);
+    }
   }
 
   // Get all events from Firebase (with caching)
   async getEvents() {
     try {
+      // Ensure we have auth before reading
+      await this.ensureAuth();
+
       // Check if cache is still valid
       const now = Date.now();
       if (
