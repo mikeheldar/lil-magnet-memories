@@ -401,6 +401,8 @@ import {
   useCustomerType,
   CUSTOMER_TYPES,
 } from '../composables/useCustomerType.js';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config.js';
 
 export default {
   name: 'MainLayout',
@@ -422,14 +424,100 @@ export default {
     
     // Initialize market event cache immediately
     const marketEventCacheInitialized = ref(false);
+    let unsubscribeMarketEvents = null;
+
+    // Set up real-time listener for market events in MainLayout
+    const setupMarketEventsListener = () => {
+      try {
+        const eventsRef = collection(db, 'marketEvents');
+        const q = query(eventsRef, orderBy('startDateTime', 'desc'));
+
+        console.log('MainLayout: Setting up real-time listener for market events...');
+
+        unsubscribeMarketEvents = onSnapshot(
+          q,
+          (snapshot) => {
+            // Skip if this is just a metadata change (not actual data change)
+            if (snapshot.metadata.fromCache && snapshot.metadata.hasPendingWrites) {
+              return;
+            }
+
+            console.log('MainLayout: Market events snapshot received:', {
+              size: snapshot.size,
+              empty: snapshot.empty,
+            });
+
+            const eventsList = [];
+            snapshot.forEach((doc) => {
+              const eventData = doc.data();
+              // Convert Firebase timestamps to ISO strings
+              const processed = {
+                id: doc.id,
+                ...eventData,
+              };
+              if (processed.createdAt?.toDate) {
+                processed.createdAt = processed.createdAt.toDate().toISOString();
+              }
+              if (processed.updatedAt?.toDate) {
+                processed.updatedAt = processed.updatedAt.toDate().toISOString();
+              }
+              if (processed.checkedInAt?.toDate) {
+                processed.checkedInAt = processed.checkedInAt.toDate().toISOString();
+              }
+              if (processed.checkedOutAt?.toDate) {
+                processed.checkedOutAt = processed.checkedOutAt.toDate().toISOString();
+              }
+              eventsList.push(processed);
+            });
+
+            // Update market event service cache immediately
+            marketEventService.eventsCache = eventsList;
+            marketEventService.cacheTimestamp = Date.now();
+
+            // Trigger reactivity
+            marketEventCheckTrigger.value++;
+
+            console.log('MainLayout: Market events cache updated:', {
+              count: eventsList.length,
+              events: eventsList.map(e => ({ id: e.id, name: e.name, checkedIn: e.checkedIn })),
+            });
+
+            marketEventCacheInitialized.value = true;
+          },
+          (err) => {
+            console.error('MainLayout: Real-time listener error:', err);
+            // Fallback: refresh cache manually
+            marketEventService.refreshCache().catch(refreshErr => {
+              console.error('MainLayout: Error refreshing cache:', refreshErr);
+            });
+            marketEventCacheInitialized.value = true;
+          }
+        );
+      } catch (err) {
+        console.error('MainLayout: Error setting up real-time listener:', err);
+        // Fallback: initialize cache manually
+        marketEventService.refreshCache()
+          .then(() => {
+            marketEventCacheInitialized.value = true;
+          })
+          .catch(refreshErr => {
+            console.error('MainLayout: Error initializing cache:', refreshErr);
+            marketEventCacheInitialized.value = true;
+          });
+      }
+    };
+
+    // Initialize cache and set up listener
     (async () => {
       try {
         await marketEventService.refreshCache();
         marketEventCacheInitialized.value = true;
       } catch (error) {
         console.error('Error initializing market event cache:', error);
-        marketEventCacheInitialized.value = true; // Set to true even on error to prevent infinite loading
+        marketEventCacheInitialized.value = true;
       }
+      // Set up real-time listener
+      setupMarketEventsListener();
     })();
 
     const activeMarketEvent = computed(() => {
@@ -639,6 +727,11 @@ export default {
       if (marketEventCheckInterval) {
         clearInterval(marketEventCheckInterval);
         marketEventCheckInterval = null;
+      }
+      // Clean up real-time listener
+      if (unsubscribeMarketEvents) {
+        unsubscribeMarketEvents();
+        console.log('MainLayout: Market events real-time listener unsubscribed');
       }
     });
 

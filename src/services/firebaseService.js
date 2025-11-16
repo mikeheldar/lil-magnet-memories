@@ -620,6 +620,8 @@ class FirebaseService {
   // Create a new market event
   async createMarketEvent(eventData) {
     try {
+      console.log('Creating market event with data:', eventData);
+      
       const eventDoc = {
         name: eventData.name,
         location: eventData.location,
@@ -633,12 +635,57 @@ class FirebaseService {
         updatedAt: serverTimestamp(),
       };
 
-      const docRef = await addDoc(collection(db, 'marketEvents'), eventDoc);
-      console.log('Market event created with ID:', docRef.id);
-      return { id: docRef.id, ...eventDoc };
+      console.log('Event document to save:', eventDoc);
+      console.log('Collection path: marketEvents');
+
+      const eventsRef = collection(db, 'marketEvents');
+      const docRef = await addDoc(eventsRef, eventDoc);
+      
+      console.log('✅ Market event created successfully!');
+      console.log('Document ID:', docRef.id);
+      console.log('Document path:', docRef.path);
+      
+      // Verify the document was created by reading it back
+      try {
+        const createdDoc = await getDoc(docRef);
+        if (createdDoc.exists()) {
+          console.log('✅ Verified: Document exists in Firestore');
+          console.log('Document data:', createdDoc.data());
+        } else {
+          console.error('❌ ERROR: Document was not found after creation!');
+        }
+      } catch (verifyError) {
+        console.error('Error verifying document creation:', verifyError);
+      }
+
+      // Return the created event with the ID
+      const createdEvent = {
+        id: docRef.id,
+        name: eventData.name,
+        location: eventData.location,
+        startDateTime: eventData.startDateTime,
+        endDateTime: eventData.endDateTime,
+        checkedIn: false,
+        checkedOut: false,
+        checkedInAt: null,
+        checkedOutAt: null,
+      };
+      
+      return createdEvent;
     } catch (error) {
-      console.error('Error creating market event:', error);
-      throw error;
+      console.error('❌ Error creating market event:', error);
+      console.error('Error code:', error?.code);
+      console.error('Error message:', error?.message);
+      console.error('Error stack:', error?.stack);
+      
+      // Provide more helpful error messages
+      if (error?.code === 'permission-denied') {
+        throw new Error('Permission denied: Check Firebase security rules for marketEvents collection');
+      } else if (error?.code === 'unavailable') {
+        throw new Error('Firebase service unavailable. Please check your connection.');
+      } else {
+        throw error;
+      }
     }
   }
 

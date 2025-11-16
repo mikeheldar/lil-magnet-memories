@@ -26,9 +26,20 @@
 
       <!-- Events List -->
       <div class="events-section">
-        <div class="text-h5 text-weight-bold q-mb-md">
-          <q-icon name="calendar_month" class="q-mr-sm" />
-          Market Events
+        <div class="row items-center justify-between q-mb-md">
+          <div class="text-h5 text-weight-bold">
+            <q-icon name="calendar_month" class="q-mr-sm" />
+            Market Events
+          </div>
+          <q-btn
+            flat
+            dense
+            icon="refresh"
+            label="Refresh"
+            @click="refreshEvents"
+            :loading="loading"
+            color="primary"
+          />
         </div>
 
         <!-- Loading State -->
@@ -337,6 +348,19 @@ export default {
   setup() {
     const $q = useQuasar();
 
+    // Safe notification helper
+    const safeNotify = (options) => {
+      try {
+        if ($q && typeof $q.notify === 'function') {
+          $q.notify(options);
+        } else {
+          console.warn('Notification not available:', options);
+        }
+      } catch (error) {
+        console.error('Error showing notification:', error, options);
+      }
+    };
+
     // Reactive data
     const events = ref([]);
     const loading = ref(false);
@@ -484,15 +508,41 @@ export default {
         const eventsRef = collection(db, 'marketEvents');
         const q = query(eventsRef, orderBy('startDateTime', 'desc'));
 
+        console.log('Setting up real-time listener for market events...');
+
         unsubscribeEvents = onSnapshot(
           q,
           (snapshot) => {
+            // Skip if this is just a metadata change (not actual data change)
+            if (snapshot.metadata.fromCache && snapshot.metadata.hasPendingWrites) {
+              console.log('Snapshot is from cache with pending writes, skipping...');
+              return;
+            }
+
+            console.log('Real-time snapshot received:', {
+              size: snapshot.size,
+              empty: snapshot.empty,
+              fromCache: snapshot.metadata.fromCache,
+              hasPendingWrites: snapshot.metadata.hasPendingWrites,
+            });
+
             const eventsList = [];
             snapshot.forEach((doc) => {
+              const eventData = doc.data();
+              console.log('Processing event:', doc.id, {
+                name: eventData.name,
+                location: eventData.location,
+                checkedIn: eventData.checkedIn,
+              });
               eventsList.push(processEvent({
                 id: doc.id,
-                ...doc.data(),
+                ...eventData,
               }));
+            });
+
+            console.log('Market events updated in real-time:', {
+              count: eventsList.length,
+              events: eventsList.map(e => ({ id: e.id, name: e.name })),
             });
 
             events.value = eventsList;
@@ -501,18 +551,34 @@ export default {
             // Update market event service cache
             marketEventService.eventsCache = eventsList;
             marketEventService.cacheTimestamp = Date.now();
-
-            console.log('Market events updated in real-time:', eventsList.length);
           },
           (err) => {
             console.error('Real-time listener error:', err);
+            console.error('Error code:', err?.code);
+            console.error('Error message:', err?.message);
+            console.error('Error details:', {
+              code: err?.code,
+              message: err?.message,
+              stack: err?.stack,
+            });
             loading.value = false;
+            
+            // Show error notification
+            safeNotify({
+              type: 'negative',
+              message: 'Real-time listener error',
+              caption: err?.message || 'Failed to connect to Firebase. Using fallback method.',
+              position: 'top',
+              timeout: 5000,
+            });
+            
             // Fallback to manual load
             loadEvents();
           }
         );
       } catch (err) {
         console.error('Error setting up real-time listener:', err);
+        console.error('Error stack:', err?.stack);
         loading.value = false;
         // Fallback to manual load
         loadEvents();
@@ -523,8 +589,14 @@ export default {
     const loadEvents = async () => {
       loading.value = true;
       try {
+        console.log('Loading events from Firebase (fallback method)...');
         // Load events from Firebase
         const firebaseEvents = await firebaseService.getMarketEvents();
+        
+        console.log('Loaded events from Firebase:', {
+          count: firebaseEvents.length,
+          events: firebaseEvents.map(e => ({ id: e.id, name: e.name })),
+        });
         
         // Convert Firebase timestamps to ISO strings for compatibility
         events.value = firebaseEvents.map(processEvent);
@@ -536,10 +608,29 @@ export default {
         await loadOrdersFromFirebase();
       } catch (error) {
         console.error('Error loading events:', error);
+        console.error('Error code:', error?.code);
+        console.error('Error message:', error?.message);
         events.value = [];
+        
+        // Show error notification
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to load market events',
+          caption: error?.message || 'Please check your connection and try again',
+          position: 'top',
+          timeout: 5000,
+        });
       } finally {
         loading.value = false;
       }
+    };
+
+    // Manual refresh function
+    const refreshEvents = async () => {
+      console.log('Manual refresh triggered');
+      // Force refresh by clearing cache and reloading
+      marketEventService.cacheTimestamp = null;
+      await loadEvents();
     };
 
     // Get orders that occurred during an event
@@ -619,15 +710,11 @@ export default {
         !newEvent.value.startDateTime ||
         !newEvent.value.endDateTime
       ) {
-        try {
-          $q.notify({
-            type: 'negative',
-            message: 'Please fill in all fields',
-            position: 'top',
-          });
-        } catch (error) {
-          console.error('Notification error:', error);
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'Please fill in all fields',
+          position: 'top',
+        });
         return;
       }
 
@@ -636,15 +723,11 @@ export default {
         new Date(newEvent.value.endDateTime) <=
         new Date(newEvent.value.startDateTime)
       ) {
-        try {
-          $q.notify({
-            type: 'negative',
-            message: 'End time must be after start time',
-            position: 'top',
-          });
-        } catch (error) {
-          console.error('Notification error:', error);
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'End time must be after start time',
+          position: 'top',
+        });
         return;
       }
 
@@ -652,42 +735,50 @@ export default {
       try {
         // Create event in Firebase
         const eventData = {
-          name: newEvent.value.name,
-          location: newEvent.value.location,
+          name: newEvent.value.name.trim(),
+          location: newEvent.value.location.trim(),
           startDateTime: newEvent.value.startDateTime,
           endDateTime: newEvent.value.endDateTime,
         };
 
-        // Create event in Firebase - real-time listener will update the list automatically
-        await firebaseService.createMarketEvent(eventData);
-        
-        // Refresh market event service cache (real-time listener will update events.value)
-        await marketEventService.refreshCache();
+        console.log('MarketEventsPage: Creating event with data:', eventData);
 
-        try {
-          $q.notify({
-            type: 'positive',
-            message: 'Event created successfully!',
-            caption: eventData.name,
-            position: 'top',
-          });
-        } catch (error) {
-          console.error('Notification error:', error);
-        }
+        // Create event in Firebase - real-time listener will update the list automatically
+        const createdEvent = await firebaseService.createMarketEvent(eventData);
+        
+        console.log('MarketEventsPage: Event created, result:', createdEvent);
+        console.log('MarketEventsPage: Waiting for real-time listener to update...');
+
+        // Don't refresh cache manually - let the real-time listener handle it
+        // The listener should pick up the new event within 1-2 seconds
+        
+        // Give the real-time listener a moment to update
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        safeNotify({
+          type: 'positive',
+          message: 'Event created successfully!',
+          caption: `"${eventData.name}" has been saved to Firebase`,
+          position: 'top',
+          timeout: 3000,
+        });
 
         cancelCreateEvent();
       } catch (error) {
-        console.error('Error creating event:', error);
-        try {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to create event',
-            caption: error.message || 'An error occurred',
-            position: 'top',
-          });
-        } catch (notifyError) {
-          console.error('Notification error:', notifyError);
-        }
+        console.error('MarketEventsPage: Error creating event:', error);
+        console.error('Error code:', error?.code);
+        console.error('Error message:', error?.message);
+        
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to create event',
+          caption: error.message || error?.code || 'An error occurred. Check console for details.',
+          position: 'top',
+          timeout: 5000,
+          actions: [
+            { label: 'Dismiss', color: 'white' }
+          ]
+        });
       } finally {
         creatingEvent.value = false;
       }
@@ -715,30 +806,22 @@ export default {
         // Refresh market event service cache
         await marketEventService.refreshCache();
 
-        try {
-          const event = events.value.find((e) => e.id === eventId);
-          $q.notify({
-            type: 'positive',
-            message: 'Successfully checked in!',
-            caption: event?.name || 'Market Event',
-            position: 'top',
-            timeout: 3000,
-          });
-        } catch (error) {
-          console.error('Notification error:', error);
-        }
+        const event = events.value.find((e) => e.id === eventId);
+        safeNotify({
+          type: 'positive',
+          message: 'Successfully checked in!',
+          caption: event?.name || 'Market Event',
+          position: 'top',
+          timeout: 3000,
+        });
       } catch (error) {
         console.error('Error checking in:', error);
-        try {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to check in',
-            caption: error.message || 'An error occurred',
-            position: 'top',
-          });
-        } catch (notifyError) {
-          console.error('Notification error:', notifyError);
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to check in',
+          caption: error.message || 'An error occurred',
+          position: 'top',
+        });
       } finally {
         checkingIn.value = null;
       }
@@ -754,30 +837,22 @@ export default {
         // Refresh market event service cache
         await marketEventService.refreshCache();
 
-        try {
-          const event = events.value.find((e) => e.id === eventId);
-          $q.notify({
-            type: 'positive',
-            message: 'Successfully checked out!',
-            caption: event?.name || 'Market Event',
-            position: 'top',
-            timeout: 3000,
-          });
-        } catch (error) {
-          console.error('Notification error:', error);
-        }
+        const event = events.value.find((e) => e.id === eventId);
+        safeNotify({
+          type: 'positive',
+          message: 'Successfully checked out!',
+          caption: event?.name || 'Market Event',
+          position: 'top',
+          timeout: 3000,
+        });
       } catch (error) {
         console.error('Error checking out:', error);
-        try {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to check out',
-            caption: error.message || 'An error occurred',
-            position: 'top',
-          });
-        } catch (notifyError) {
-          console.error('Notification error:', notifyError);
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to check out',
+          caption: error.message || 'An error occurred',
+          position: 'top',
+        });
       } finally {
         checkingIn.value = null;
       }
@@ -793,29 +868,21 @@ export default {
         // Refresh market event service cache
         await marketEventService.refreshCache();
 
-        try {
-          const event = events.value.find((e) => e.id === eventId);
-          $q.notify({
-            type: 'info',
-            message: 'Check-out undone',
-            caption: event?.name || 'Market Event',
-            position: 'top',
-          });
-        } catch (error) {
-          console.error('Notification error:', error);
-        }
+        const event = events.value.find((e) => e.id === eventId);
+        safeNotify({
+          type: 'info',
+          message: 'Check-out undone',
+          caption: event?.name || 'Market Event',
+          position: 'top',
+        });
       } catch (error) {
         console.error('Error undoing check-out:', error);
-        try {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to undo check-out',
-            caption: error.message || 'An error occurred',
-            position: 'top',
-          });
-        } catch (notifyError) {
-          console.error('Notification error:', notifyError);
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to undo check-out',
+          caption: error.message || 'An error occurred',
+          position: 'top',
+        });
       } finally {
         checkingIn.value = null;
       }
@@ -839,27 +906,19 @@ export default {
         // Refresh market event service cache
         await marketEventService.refreshCache();
 
-        try {
-          $q.notify({
-            type: 'positive',
-            message: 'Event deleted successfully',
-            position: 'top',
-          });
-        } catch (error) {
-          console.error('Notification error:', error);
-        }
+        safeNotify({
+          type: 'positive',
+          message: 'Event deleted successfully',
+          position: 'top',
+        });
       } catch (error) {
         console.error('Error deleting event:', error);
-        try {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to delete event',
-            caption: error.message || 'An error occurred',
-            position: 'top',
-          });
-        } catch (notifyError) {
-          console.error('Notification error:', notifyError);
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to delete event',
+          caption: error.message || 'An error occurred',
+          position: 'top',
+        });
       } finally {
         deletingEvent.value = false;
         showDeleteDialog.value = false;
@@ -908,6 +967,7 @@ export default {
       undoCheckOut,
       confirmDeleteEvent,
       deleteEvent,
+      refreshEvents,
     };
   },
 };
