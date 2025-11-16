@@ -20,7 +20,8 @@ const PROD_PROJECT_ID = 'lil-magnet-memories';
 const TEST_PROJECT_ID = 'lil-magnet-memories-test';
 
 // Collections to copy
-const COLLECTIONS_TO_COPY = ['products', 'adminConfig'];
+// Note: admin_config uses underscore (not camelCase)
+const COLLECTIONS_TO_COPY = ['products', 'admin_config'];
 
 // Initialize Firebase Admin for production
 function initProdAdmin() {
@@ -86,14 +87,14 @@ async function copyCollection(sourceDb, destDb, collectionName) {
     
     if (snapshot.empty) {
       console.log(`   ⚠️  Collection "${collectionName}" is empty in production, skipping...`);
-      return { copied: 0, skipped: 0 };
+      return { copied: 0, skipped: 0, error: null };
     }
 
     console.log(`   Found ${snapshot.size} document(s) in production`);
 
     let copied = 0;
     let skipped = 0;
-    const batch = destDb.batch();
+    let batch = destDb.batch();
     let batchCount = 0;
     const BATCH_SIZE = 500; // Firestore batch limit
 
@@ -114,6 +115,7 @@ async function copyCollection(sourceDb, destDb, collectionName) {
         await batch.commit();
         console.log(`   ✅ Committed batch of ${batchCount} documents`);
         batchCount = 0;
+        batch = destDb.batch(); // Create new batch
       }
     }
 
@@ -124,10 +126,16 @@ async function copyCollection(sourceDb, destDb, collectionName) {
     }
 
     console.log(`   ✅ Successfully copied ${copied} document(s) to test database`);
-    return { copied, skipped };
+    return { copied, skipped, error: null };
   } catch (error) {
+    // Check if it's a NOT_FOUND error (collection doesn't exist)
+    if (error.code === 5 || error.message.includes('NOT_FOUND')) {
+      console.log(`   ⚠️  Collection "${collectionName}" does not exist in production, skipping...`);
+      return { copied: 0, skipped: 0, error: 'NOT_FOUND' };
+    }
     console.error(`   ❌ Error copying collection "${collectionName}":`, error.message);
-    throw error;
+    console.error(`   Error code: ${error.code}`);
+    return { copied: 0, skipped: 0, error: error.message };
   }
 }
 
@@ -176,11 +184,25 @@ async function main() {
     // Summary
     console.log('\n📊 Summary:');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    let hasErrors = false;
     for (const [collection, result] of Object.entries(results)) {
-      console.log(`   ${collection}: ${result.copied} copied, ${result.skipped} skipped`);
+      if (result.error) {
+        console.log(`   ${collection}: ❌ ${result.error}`);
+        hasErrors = true;
+      } else {
+        console.log(`   ${collection}: ${result.copied} copied, ${result.skipped} skipped`);
+      }
     }
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('\n✅ Database seeding completed successfully!');
+    
+    if (hasErrors) {
+      console.log('\n⚠️  Some collections could not be copied. This may be normal if:');
+      console.log('   - Collections don\'t exist in production yet');
+      console.log('   - Firestore hasn\'t been initialized in production');
+      console.log('   - You can manually create these collections in the test project');
+    } else {
+      console.log('\n✅ Database seeding completed successfully!');
+    }
     console.log('\n💡 Next steps:');
     console.log('   1. Check test Firestore: https://console.firebase.google.com/project/lil-magnet-memories-test/firestore/data');
     console.log('   2. Verify products and adminConfig collections exist');
@@ -190,9 +212,10 @@ async function main() {
     await prodApp.delete();
     await testApp.delete();
     
+    // Exit with 0 even if some collections were missing (that's expected)
     process.exit(0);
   } catch (error) {
-    console.error('\n❌ Error during seeding:', error);
+    console.error('\n❌ Fatal error during seeding:', error);
     process.exit(1);
   }
 }
