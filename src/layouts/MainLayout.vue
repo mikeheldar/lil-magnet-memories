@@ -34,7 +34,17 @@
           TEST
         </q-chip>
 
-        <!-- Market Event Indicator removed -->
+        <!-- Market Event Indicator (always visible when an event is live) -->
+        <q-chip
+          v-if="isAtMarketEvent"
+          color="green"
+          text-color="white"
+          size="sm"
+          class="q-mr-md"
+          icon="event"
+        >
+          MARKET EVENT
+        </q-chip>
 
         <!-- Page title in center -->
         <q-toolbar-title class="text-center">
