@@ -1,0 +1,4 @@
+Trigger preview rebuild: 2025-11-16T13:17:00Z
+
+This file exists only to force a new preview deployment when environment variables were changed in Vercel.
+
