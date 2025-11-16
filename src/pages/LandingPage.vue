@@ -637,7 +637,15 @@ export default {
     };
 
     // Check if user is already authenticated
-    onMounted(() => {
+    onMounted(async () => {
+      // Check for market events immediately on page load
+      try {
+        await marketEventService.refreshCache();
+        console.log('Market events checked on page load');
+      } catch (error) {
+        console.error('Error checking market events on page load:', error);
+      }
+
       loadProducts();
 
       // Check if user is already authenticated immediately
