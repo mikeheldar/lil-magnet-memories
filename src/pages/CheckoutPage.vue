@@ -1037,6 +1037,10 @@ export default {
       if (skipShipping.value) {
         return 0;
       }
+      // If pickup is selected, shipping cost is 0
+      if (selectedShippingDetails.value?.type === 'pickup') {
+        return 0;
+      }
       return selectedShippingDetails.value?.cost || 0;
     });
     const shippingTimeline = computed(
@@ -1221,8 +1225,8 @@ export default {
       
       // Otherwise calculate from cart
       let total = cartSubtotal.value;
-      // Only add shipping cost if not skipped (skipShipping handles pay at tent)
-      if (!skipShipping.value && selectedShippingDetails.value?.type === 'shipping') {
+      // Only add shipping cost if shipping type is selected (not pickup)
+      if (selectedShippingDetails.value?.type === 'shipping') {
         total += shippingCost.value;
       }
       // TODO: Add tax calculation if needed
