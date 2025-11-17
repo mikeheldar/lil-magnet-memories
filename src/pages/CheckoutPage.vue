@@ -203,8 +203,8 @@
                 </q-card-section>
               </q-card>
 
-              <!-- Shipping Options (hidden if skipShipping) -->
-              <q-card v-if="!skipShipping" class="q-mb-md">
+              <!-- Shipping Options (always show so user can toggle between pickup and shipping) -->
+              <q-card class="q-mb-md">
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Shipping Options</div>
                   <q-option-group
@@ -1042,7 +1042,8 @@ export default {
     const shippingTimeline = computed(
       () => selectedShippingDetails.value?.estimatedTimeline || ''
     );
-    // Check if shipping should be skipped (from route query, pay at tent, or pickup selected)
+    // Check if shipping should be skipped (from route query or pay at tent)
+    // Note: pickup selection doesn't skip shipping section - it just hides address fields
     const skipShipping = computed(() => {
       // Skip shipping if explicitly set in query (market event upload with pay online)
       if (route.query.skipShipping === '1' || route.query.skipShipping === 'true') {
@@ -1050,10 +1051,6 @@ export default {
       }
       // Skip shipping if user selected "pay at tent" (market event pickup)
       if (selectedPaymentOption.value === 'pay_at_event') {
-        return true;
-      }
-      // Skip shipping if pickup option is selected (user is at event and chose pickup)
-      if (selectedShippingDetails.value?.type === 'pickup') {
         return true;
       }
       return false;
