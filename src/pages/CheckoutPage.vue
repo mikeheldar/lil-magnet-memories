@@ -203,15 +203,44 @@
                 </q-card-section>
               </q-card>
 
-              <!-- Shipping Options (always show so user can toggle between pickup and shipping) -->
+              <!-- Shipping Options -->
               <q-card class="q-mb-md">
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Shipping Options</div>
-                  <q-option-group
-                    v-model="selectedShippingOption"
-                    :options="shippingOptions"
-                    color="primary"
-                  />
+                  
+                  <!-- Pickup option (shown when at market event) -->
+                  <div v-if="pickupOptions.length > 0">
+                    <q-option-group
+                      v-model="selectedShippingOption"
+                      :options="pickupOptions"
+                      color="primary"
+                    />
+                  </div>
+
+                  <!-- Other shipping options (expandable) -->
+                  <div v-if="otherShippingOptions.length > 0">
+                    <q-expansion-item
+                      v-model="showOtherShippingOptions"
+                      label="Other delivery options"
+                      icon="local_shipping"
+                      class="q-mt-md"
+                    >
+                      <q-option-group
+                        v-model="selectedShippingOption"
+                        :options="otherShippingOptions"
+                        color="primary"
+                      />
+                    </q-expansion-item>
+                  </div>
+                  
+                  <!-- If no pickup options, show all options normally -->
+                  <div v-if="pickupOptions.length === 0">
+                    <q-option-group
+                      v-model="selectedShippingOption"
+                      :options="shippingOptions"
+                      color="primary"
+                    />
+                  </div>
                   <div v-if="selectedShippingDetails" class="q-mt-md">
                     <q-banner dense class="bg-grey-2 text-grey-8">
                       <div class="text-weight-medium">
@@ -330,7 +359,7 @@
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Billing Address</div>
                   <q-toggle
-                    v-if="!skipShipping"
+                    v-if="!skipShipping && selectedShippingDetails?.type !== 'pickup'"
                     v-model="billingSameAsShipping"
                     :disable="!requiresShippingAddress"
                     label="Billing address matches shipping address"
@@ -856,6 +885,7 @@ export default {
     const shippingOptionsData = ref([]);
     const loadingShippingOptions = ref(true);
     const showValidationErrors = ref(false);
+    const showOtherShippingOptions = ref(false);
 
     // Check for active market event and check-in status
     onMounted(() => {
@@ -1022,6 +1052,15 @@ export default {
       }
 
       return normalized;
+    });
+
+    // Separate pickup and shipping options for display
+    const pickupOptions = computed(() => {
+      return shippingOptions.value.filter(option => option.type === 'pickup');
+    });
+
+    const otherShippingOptions = computed(() => {
+      return shippingOptions.value.filter(option => option.type !== 'pickup');
     });
 
     const selectedShippingDetails = computed(() => {
