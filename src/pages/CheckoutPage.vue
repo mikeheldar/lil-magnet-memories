@@ -1032,15 +1032,27 @@ export default {
       );
     });
 
-    const shippingCost = computed(
-      () => selectedShippingDetails.value?.cost || 0
-    );
+    const shippingCost = computed(() => {
+      // If shipping is skipped (pay at tent or skipShipping query), cost is 0
+      if (skipShipping.value) {
+        return 0;
+      }
+      return selectedShippingDetails.value?.cost || 0;
+    });
     const shippingTimeline = computed(
       () => selectedShippingDetails.value?.estimatedTimeline || ''
     );
-    // Check if shipping should be skipped (from route query)
+    // Check if shipping should be skipped (from route query or pay at tent)
     const skipShipping = computed(() => {
-      return route.query.skipShipping === '1' || route.query.skipShipping === 'true';
+      // Skip shipping if explicitly set in query (market event upload with pay online)
+      if (route.query.skipShipping === '1' || route.query.skipShipping === 'true') {
+        return true;
+      }
+      // Skip shipping if user selected "pay at tent" (market event pickup)
+      if (selectedPaymentOption.value === 'pay_at_event') {
+        return true;
+      }
+      return false;
     });
     
     const requiresShippingAddress = computed(() => {
@@ -1197,6 +1209,7 @@ export default {
       
       // Otherwise calculate from cart
       let total = cartSubtotal.value;
+      // Only add shipping cost if not skipped (skipShipping handles pay at tent)
       if (!skipShipping.value && selectedShippingDetails.value?.type === 'shipping') {
         total += shippingCost.value;
       }
