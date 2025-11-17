@@ -1256,6 +1256,15 @@ export default {
       updateSquarePaymentRequest();
     });
 
+    // Watch for payment option changes - if pay at tent is selected, clear shipping selection
+    watch(selectedPaymentOption, (newOption) => {
+      if (newOption === 'pay_at_event') {
+        // Clear shipping selection when pay at tent is selected
+        selectedShippingOption.value = null;
+      }
+      updateSquarePaymentRequest();
+    });
+
     watch(
       () => selectedShippingDetails.value?.allowAddress,
       (allowAddress) => {
