@@ -1042,7 +1042,7 @@ export default {
     const shippingTimeline = computed(
       () => selectedShippingDetails.value?.estimatedTimeline || ''
     );
-    // Check if shipping should be skipped (from route query or pay at tent)
+    // Check if shipping should be skipped (from route query, pay at tent, or pickup selected)
     const skipShipping = computed(() => {
       // Skip shipping if explicitly set in query (market event upload with pay online)
       if (route.query.skipShipping === '1' || route.query.skipShipping === 'true') {
@@ -1050,6 +1050,10 @@ export default {
       }
       // Skip shipping if user selected "pay at tent" (market event pickup)
       if (selectedPaymentOption.value === 'pay_at_event') {
+        return true;
+      }
+      // Skip shipping if pickup option is selected (user is at event and chose pickup)
+      if (selectedShippingDetails.value?.type === 'pickup') {
         return true;
       }
       return false;
@@ -1100,6 +1104,17 @@ export default {
       if (existing) {
         return;
       }
+      
+      // If user is at market event, prefer pickup option
+      if (checkedInEvent.value) {
+        const pickupOption = options.find((option) => option.type === 'pickup');
+        if (pickupOption) {
+          selectedShippingOption.value = pickupOption.value;
+          return;
+        }
+      }
+      
+      // Otherwise use default or first option
       const defaultOption =
         options.find((option) => option.default) || options[0];
       selectedShippingOption.value = defaultOption.value;
