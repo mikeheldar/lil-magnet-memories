@@ -26,8 +26,8 @@
               <div class="text-caption text-grey-6 q-mb-xs">
                 Your Order Number:
               </div>
-              <div class="text-h4 text-weight-bold text-primary">
-                {{ orderNumber }}
+              <div class="order-number-display">
+                {{ formattedOrderNumber }}
               </div>
             </div>
 
@@ -88,22 +88,33 @@
                 Shipping
               </div>
               <div class="text-body2 text-grey-7">
-                <div>
-                  <strong>{{ shippingMethodLabel }}</strong>
-                  <span class="q-ml-sm">
-                    ({{ formatCurrency(shippingCost) }})
-                  </span>
+                <!-- Market Event Pickup -->
+                <div v-if="isPickupOrder">
+                  <strong>Pickup at Market Event Tent</strong>
+                  <span class="q-ml-sm">(Free)</span>
+                  <div class="q-mt-xs text-body2">
+                    You'll receive an email when your magnets are ready for pickup at the tent.
+                  </div>
                 </div>
-                <div v-if="shippingTimeline" class="q-mt-xs">
-                  {{ shippingTimeline }}
-                </div>
-                <div v-if="shippingAddressLines.length" class="q-mt-sm">
-                  <div class="text-caption text-grey-6">Deliver to:</div>
-                  <div
-                    v-for="(line, index) in shippingAddressLines"
-                    :key="`ship-${index}`"
-                  >
-                    {{ line }}
+                <!-- Online Shipping -->
+                <div v-else>
+                  <div>
+                    <strong>{{ shippingMethodLabel }}</strong>
+                    <span class="q-ml-sm">
+                      ({{ formatCurrency(shippingCost) }})
+                    </span>
+                  </div>
+                  <div v-if="shippingTimeline" class="q-mt-xs">
+                    {{ shippingTimeline }}
+                  </div>
+                  <div v-if="shippingAddressLines.length" class="q-mt-sm">
+                    <div class="text-caption text-grey-6">Deliver to:</div>
+                    <div
+                      v-for="(line, index) in shippingAddressLines"
+                      :key="`ship-${index}`"
+                    >
+                      {{ line }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -119,9 +130,9 @@
               <div class="text-body2 text-grey-7">
                 <div>
                   Method:
-                  <strong>{{ paymentMethodLabel }}</strong>
+                  <strong>{{ displayPaymentMethod }}</strong>
                 </div>
-                <div v-if="billingAddressLines.length" class="q-mt-sm">
+                <div v-if="billingAddressLines.length && !isPayAtTent" class="q-mt-sm">
                   <div class="text-caption text-grey-6">Billing address:</div>
                   <div
                     v-for="(line, index) in billingAddressLines"
@@ -133,8 +144,8 @@
               </div>
             </div>
 
-            <!-- Next Steps -->
-            <div class="next-steps">
+            <!-- Next Steps (only for online orders) -->
+            <div v-if="!isPickupOrder" class="next-steps">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
                 <q-icon name="email" size="20px" class="q-mr-sm" />
                 What's Next?
@@ -161,7 +172,7 @@
             v-if="isAuthenticated"
             color="purple"
             size="lg"
-            class="q-px-xl q-py-md q-mr-md"
+            class="action-btn"
             @click="viewMyOrders"
           >
             <q-icon name="list_alt" class="q-mr-sm" />
@@ -171,7 +182,7 @@
           <q-btn
             color="primary"
             size="lg"
-            class="q-px-xl q-py-md q-mr-md"
+            class="action-btn"
             @click="submitAnotherOrder"
           >
             <q-icon name="camera_alt" class="q-mr-sm" />
@@ -182,7 +193,7 @@
             flat
             color="grey-7"
             size="lg"
-            class="q-px-xl q-py-md"
+            class="action-btn"
             @click="goHome"
           >
             <q-icon name="arrow_back" class="q-mr-sm" />
@@ -330,6 +341,36 @@ export default {
       }
     });
 
+    const isPayAtTent = computed(() => {
+      return paymentOption.value?.type === 'pay_at_event';
+    });
+
+    const isPickupOrder = computed(() => {
+      // Check if shipping option is pickup type
+      if (shippingOption.value?.type === 'pickup') {
+        return true;
+      }
+      // Also check if payment is at event (market event order)
+      if (isPayAtTent.value) {
+        return true;
+      }
+      return false;
+    });
+
+    const displayPaymentMethod = computed(() => {
+      if (isPayAtTent.value) {
+        return 'Payment Options at Tent';
+      }
+      return paymentMethodLabel.value;
+    });
+
+    const formattedOrderNumber = computed(() => {
+      // Make order number more readable by adding spacing
+      if (!orderNumber.value) return 'N/A';
+      // Format like: LMM-251116-1886 -> LMM - 251116 - 1886
+      return orderNumber.value.replace(/([A-Z]+)-(\d+)-(\d+)/, '$1 - $2 - $3');
+    });
+
     onMounted(() => {
       const currentAuthUser = authService.getCurrentUser();
       if (currentAuthUser) {
@@ -368,6 +409,7 @@ export default {
 
     return {
       orderNumber,
+      formattedOrderNumber,
       customerName,
       customerEmail,
       totalMagnets,
@@ -380,6 +422,9 @@ export default {
       shippingAddressLines,
       billingAddressLines,
       paymentMethodLabel,
+      displayPaymentMethod,
+      isPayAtTent,
+      isPickupOrder,
       isAuthenticated,
       submitAnotherOrder,
       goHome,
@@ -444,10 +489,13 @@ export default {
   border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-.order-number-section .text-h4 {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+.order-number-display {
+  font-size: 2rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.15em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: 'Courier New', monospace;
+  word-spacing: 0.2em;
 }
 
 .customer-info {
@@ -478,6 +526,12 @@ export default {
   justify-content: center;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.action-btn {
+  min-width: 200px;
+  width: 100%;
+  max-width: 250px;
 }
 
 .contact-info {
@@ -524,10 +578,15 @@ export default {
     flex-direction: column;
     align-items: center;
 
-    .q-btn {
+    .action-btn {
       width: 100%;
       max-width: 300px;
+      min-width: 200px;
     }
+  }
+  
+  .order-number-display {
+    font-size: 1.5rem;
   }
 
   .order-number-section {
