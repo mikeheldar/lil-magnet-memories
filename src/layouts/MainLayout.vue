@@ -60,8 +60,9 @@
           @click="$router.push('/about')"
         />
 
-        <!-- Shopping Cart Icon -->
+        <!-- Shopping Cart Icon (only show if cart has items) -->
         <q-btn
+          v-if="cartItemCount > 0"
           flat
           dense
           icon="shopping_cart"
@@ -70,7 +71,6 @@
           class="q-mr-sm"
         >
           <q-badge
-            v-if="cartItemCount > 0"
             color="orange"
             :label="cartItemCount"
             floating

@@ -476,6 +476,9 @@ export default {
     };
 
     const onSubmit = async () => {
+      // Save form data to localStorage for non-authenticated users
+      saveFormDataToLocalStorage();
+      
       // Add to cart instead of submitting order
       const photos = selectedFiles.value.map((file, index) => ({
         name: file.name,
@@ -665,6 +668,41 @@ export default {
       }
     };
 
+    // Save form data to localStorage for non-authenticated users
+    const saveFormDataToLocalStorage = () => {
+      if (!isAuthenticated.value) {
+        try {
+          const dataToSave = {
+            firstName: formData.value.firstName,
+            lastName: formData.value.lastName,
+            email: formData.value.email,
+            phone: formData.value.phone,
+          };
+          localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
+        } catch (error) {
+          console.error('Error saving form data to localStorage:', error);
+        }
+      }
+    };
+
+    // Load form data from localStorage for non-authenticated users
+    const loadFormDataFromLocalStorage = () => {
+      if (!isAuthenticated.value) {
+        try {
+          const savedData = localStorage.getItem('guestFormData');
+          if (savedData) {
+            const parsed = JSON.parse(savedData);
+            if (parsed.firstName) formData.value.firstName = parsed.firstName;
+            if (parsed.lastName) formData.value.lastName = parsed.lastName;
+            if (parsed.email) formData.value.email = parsed.email;
+            if (parsed.phone) formData.value.phone = parsed.phone;
+          }
+        } catch (error) {
+          console.error('Error loading form data from localStorage:', error);
+        }
+      }
+    };
+
     const loadProducts = async () => {
       try {
         const productsData = await firebaseService.getProducts();
@@ -694,6 +732,9 @@ export default {
         isAuthenticated.value = true;
         currentUser.value = currentAuthUser;
         fillFormWithUserData(currentAuthUser);
+      } else {
+        // Load saved form data from localStorage for non-authenticated users
+        loadFormDataFromLocalStorage();
       }
 
       // Listen for auth state changes
@@ -704,6 +745,9 @@ export default {
         // Pre-fill form data if user is authenticated
         if (user) {
           fillFormWithUserData(user);
+        } else {
+          // Load saved form data from localStorage when user signs out
+          loadFormDataFromLocalStorage();
         }
       });
 
