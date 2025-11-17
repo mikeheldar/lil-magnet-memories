@@ -101,15 +101,28 @@
           Ready to craft your next magnet story?
         </div>
         <div class="text-body1 text-grey-7 q-mb-md">
-          Join Amy and the Li'l Magnet Memories crew in turning today’s
-          snapshots into tomorrow’s treasures.
+          Join Amy and the Li'l Magnet Memories crew in turning today's
+          snapshots into tomorrow's treasures.
         </div>
         <q-btn
           color="primary"
           unelevated
           label="Start Creating Magnets"
           @click="$router.push('/market-event-upload')"
+          class="q-mb-md"
         />
+        <div class="q-mt-md">
+          <a
+            href="https://www.instagram.com/lilmagnetmemories"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="instagram-link"
+          >
+            <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
+            <span class="text-body1 text-primary">Follow us on Instagram</span>
+            <q-icon name="open_in_new" size="16px" class="q-ml-xs" />
+          </a>
+        </div>
       </section>
 
       <section class="timeline-section">
@@ -259,6 +272,18 @@ export default {
 .timeline-section {
   max-width: 900px;
   margin: 0 auto 5rem;
+}
+
+.instagram-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s;
+}
+
+.instagram-link:hover {
+  opacity: 0.8;
 }
 
 @media (max-width: 767px) {
