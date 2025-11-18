@@ -15,7 +15,7 @@
       "destination": "/api/apple-pay-domain-association"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/).*)",
       "destination": "/index.html"
     }
   ]
