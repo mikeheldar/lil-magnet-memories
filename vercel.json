@@ -7,6 +7,10 @@
       "config": {
         "distDir": "dist/spa"
       }
+    },
+    {
+      "src": "api/apple-pay-domain-association.js",
+      "use": "@vercel/node"
     }
   ],
   "rewrites": [
@@ -15,8 +19,27 @@
       "destination": "/api/apple-pay-domain-association"
     },
     {
-      "source": "/((?!assets/).*)",
+      "source": "/((?!assets/)(?!.well-known/).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/.well-known/apple-developer-merchantid-domain-association",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        },
+        {
+          "key": "Content-Encoding",
+          "value": "identity"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
     }
   ]
 }

@@ -68,7 +68,10 @@ module.exports = configure(function (/* ctx */) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
+      extendViteConf (viteConf) {
+        // Ensure .well-known directory is copied to dist
+        viteConf.publicDir = 'public';
+      },
       // viteVuePluginOptions: {},
 
       // vitePlugins: [
