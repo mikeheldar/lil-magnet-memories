@@ -28,10 +28,10 @@
           color="orange"
           text-color="white"
           size="sm"
-          class="q-mr-md"
+          class="q-mr-md test-environment-chip"
           icon="bug_report"
         >
-          TEST
+          <span class="gt-xs">TEST</span>
         </q-chip>
 
         <!-- Market Event Indicator (always visible when an event is live) -->
@@ -736,10 +736,39 @@ export default {
   @media (max-width: 600px) {
     min-width: 24px;
     height: 24px;
-    padding: 0 4px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     
     :deep(.q-chip__content) {
       padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    :deep(.q-icon) {
+      font-size: 16px;
+      margin: 0;
+    }
+  }
+}
+
+.test-environment-chip {
+  @media (max-width: 600px) {
+    min-width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    :deep(.q-chip__content) {
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     :deep(.q-icon) {
