@@ -753,36 +753,11 @@ export default {
       width: 100% !important;
       height: 100% !important;
       margin: 0 !important;
-      position: relative;
     }
     
+    // Hide icons on small screens
     :deep(.q-chip__icon) {
-      margin: 0 !important;
-      padding: 0 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: auto !important;
-      height: auto !important;
-    }
-    
-    :deep(.q-chip__icon-left) {
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-    
-    :deep(.q-icon) {
-      font-size: 16px;
-      margin: 0 !important;
-      padding: 0 !important;
-      line-height: 1;
-      display: block;
-      width: 16px;
-      height: 16px;
+      display: none !important;
     }
     
     // Hide text on small screens
