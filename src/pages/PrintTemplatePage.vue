@@ -1047,7 +1047,7 @@ export default {
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     position: sticky;
-    top: 20px;
+    top: 80px;
     left: 0;
     align-self: flex-start;
   }
