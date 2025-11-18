@@ -348,12 +348,14 @@
                   :key="index"
                   class="col-6"
                 >
-                  <q-img
-                    :src="getFilePreview(file)"
-                    style="height: 60px"
-                    class="rounded-borders q-mb-xs"
-                  />
-                  <div class="text-caption">{{ file.name }}</div>
+                  <div class="photo-thumbnail-container">
+                    <img
+                      :src="getFilePreview(file)"
+                      class="photo-thumbnail rounded-borders q-mb-xs"
+                      alt="Photo thumbnail"
+                    />
+                  </div>
+                  <div class="text-caption text-truncate" :title="file.name">{{ file.name }}</div>
                   <div class="text-caption text-primary">
                     <q-icon name="style" size="12px" class="q-mr-xs" />
                     {{ fileQuantities[index] }} magnet{{
@@ -1053,5 +1055,23 @@ export default {
   .q-btn {
     font-size: 14px;
   }
+}
+
+.photo-thumbnail-container {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.photo-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  display: block;
 }
 </style>
