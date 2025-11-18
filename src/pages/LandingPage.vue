@@ -22,8 +22,8 @@
             @update:model-value="toggleCustomerAtEvent"
             class="banner-toggle"
           >
-            <span class="text-white text-body2 q-ml-sm lt-sm-hide">I'm at the event</span>
-            <span class="text-white text-body2 q-ml-sm gt-xs-hide">At event</span>
+            <span class="text-white text-body2 q-ml-sm gt-xs">I'm at the event</span>
+            <span class="text-white text-body2 q-ml-sm lt-sm">At event</span>
           </q-toggle>
         </div>
       </div>
