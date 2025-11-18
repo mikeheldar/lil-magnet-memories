@@ -7,20 +7,16 @@
       "config": {
         "distDir": "dist/spa"
       }
-    },
-    {
-      "src": "api/apple-pay-domain-association.js",
-      "use": "@vercel/node"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/.well-known/apple-developer-merchantid-domain-association",
-      "destination": "/api/apple-pay-domain-association"
+      "src": "/.well-known/apple-developer-merchantid-domain-association",
+      "dest": "/api/apple-pay-domain-association"
     },
     {
-      "source": "/((?!assets/)(?!.well-known/)(?!api/).*)",
-      "destination": "/index.html"
+      "src": "/((?!assets/)(?!.well-known/)(?!api/).*)",
+      "dest": "/index.html"
     }
   ]
 }
