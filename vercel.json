@@ -7,6 +7,10 @@
       "config": {
         "distDir": "dist/spa"
       }
+    },
+    {
+      "src": "api/apple-pay-domain-association.js",
+      "use": "@vercel/node"
     }
   ],
   "rewrites": [
