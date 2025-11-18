@@ -735,14 +735,27 @@ export default {
   
   @media (max-width: 600px) {
     min-width: 24px;
+    width: 24px;
     height: 24px;
-    padding: 0;
+    padding: 0 !important;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
     
     :deep(.q-chip__content) {
-      padding: 0;
+      padding: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+    
+    :deep(.q-chip__icon) {
+      margin: 0 !important;
+      padding: 0 !important;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -750,7 +763,11 @@ export default {
     
     :deep(.q-icon) {
       font-size: 16px;
-      margin: 0;
+      margin: 0 !important;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 }
@@ -758,14 +775,27 @@ export default {
 .test-environment-chip {
   @media (max-width: 600px) {
     min-width: 24px;
+    width: 24px;
     height: 24px;
-    padding: 0;
+    padding: 0 !important;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
     
     :deep(.q-chip__content) {
-      padding: 0;
+      padding: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+    
+    :deep(.q-chip__icon) {
+      margin: 0 !important;
+      padding: 0 !important;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -773,7 +803,11 @@ export default {
     
     :deep(.q-icon) {
       font-size: 16px;
-      margin: 0;
+      margin: 0 !important;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 }
