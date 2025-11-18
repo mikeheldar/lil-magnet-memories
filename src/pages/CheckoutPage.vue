@@ -1422,6 +1422,13 @@ export default {
       if (newOption === 'pay_at_event') {
         // Clear shipping selection when pay at tent is selected
         selectedShippingOption.value = null;
+        // Ensure switchToMarketEventPickup is true when pay at event is selected
+        if (checkedInEvent.value) {
+          switchToMarketEventPickup.value = true;
+        }
+      } else if (newOption !== 'pay_at_event' && switchToMarketEventPickup.value) {
+        // If user switches away from pay at event, turn off the toggle
+        switchToMarketEventPickup.value = false;
       }
       updateSquarePaymentRequest();
     });
