@@ -408,12 +408,17 @@ export default {
 
     const { setCustomerType } = useCustomerType();
     
+    // Create a ref that gets updated periodically to trigger reactivity
+    const marketEventCheckTrigger = ref(0);
+
     // Initialize market event cache immediately
     const marketEventCacheInitialized = ref(false);
     (async () => {
       try {
         await marketEventService.refreshCache();
         marketEventCacheInitialized.value = true;
+        // Immediately trigger reactivity update so pill shows right away
+        marketEventCheckTrigger.value++;
       } catch (error) {
         console.error('Error initializing market event cache:', error);
         marketEventCacheInitialized.value = true; // Set to true even on error to prevent infinite loading
@@ -426,9 +431,6 @@ export default {
       return marketEventService.getCheckedInEvent();
     });
     const hasActiveEvent = computed(() => !!activeMarketEvent.value);
-
-    // Create a ref that gets updated periodically to trigger reactivity
-    const marketEventCheckTrigger = ref(0);
     let marketEventCheckInterval = null;
 
     const uploadLinkLabel = computed(() => {
