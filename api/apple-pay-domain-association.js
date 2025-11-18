@@ -74,19 +74,14 @@ module.exports = function handler(req, res) {
     // Content-Length: EXACT byte size
     // No compression (Content-Encoding: identity)
     // No redirects (direct 200 response)
+    // NO Content-Disposition header - serve inline, not as download
     const responseHeaders = {
-      'Content-Type': 'text/plain',
+      'Content-Type': 'text/plain; charset=utf-8',
       'Content-Length': contentLength.toString(),
       'Content-Encoding': 'identity', // Explicitly disable compression
       'Cache-Control': 'public, max-age=3600',
       'X-Content-Type-Options': 'nosniff',
     };
-
-    // Only force download for regular browsers, not verification bots
-    if (!isVerificationBot) {
-      responseHeaders['Content-Disposition'] =
-        'attachment; filename="apple-developer-merchantid-domain-association"';
-    }
 
     console.log('Response Headers:', JSON.stringify(responseHeaders, null, 2));
     console.log(
