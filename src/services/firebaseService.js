@@ -66,11 +66,12 @@ class FirebaseService {
       }
     }
 
-    const uploadedPhotos = [];
+    console.log(`Starting parallel upload of ${photos.length} photos...`);
+    const timestamp = Date.now();
 
-    for (let i = 0; i < photos.length; i++) {
-      const photo = photos[i];
-      const fileName = `orders/${Date.now()}_${i}_${photo.name}`;
+    // Upload all photos in parallel for much faster uploads
+    const uploadPromises = photos.map(async (photo, i) => {
+      const fileName = `orders/${timestamp}_${i}_${photo.name}`;
       const storageRef = ref(storage, fileName);
 
       try {
@@ -93,19 +94,23 @@ class FirebaseService {
         const downloadURL = await getDownloadURL(storageRef);
         console.log(`Photo ${i + 1} uploaded successfully`);
 
-        uploadedPhotos.push({
+        return {
           name: photo.name,
           url: downloadURL,
           fileName: fileName,
           size: photo.size,
           type: photo.type,
-        });
+        };
       } catch (error) {
-        console.error('Error uploading photo:', error);
+        console.error(`Error uploading photo ${i + 1}:`, error);
         throw error;
       }
-    }
+    });
 
+    // Wait for all uploads to complete in parallel
+    const uploadedPhotos = await Promise.all(uploadPromises);
+    console.log(`All ${photos.length} photos uploaded successfully`);
+    
     return uploadedPhotos;
   }
 
