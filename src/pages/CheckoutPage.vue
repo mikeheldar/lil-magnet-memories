@@ -898,6 +898,23 @@ export default {
     const loadingShippingOptions = ref(true);
     const showValidationErrors = ref(false);
     const showOtherShippingOptions = ref(false);
+    const switchToMarketEventPickup = ref(false);
+
+    // Determine if this checkout is from market event upload (vs online order)
+    const isFromMarketEventUpload = computed(() => {
+      // If skipShipping is set in query, it's from market event upload
+      if (
+        route.query.skipShipping === '1' ||
+        route.query.skipShipping === 'true'
+      ) {
+        return true;
+      }
+      // If customTotal is set, it's from market event upload
+      if (route.query.customTotal) {
+        return true;
+      }
+      return false;
+    });
 
     // Check for active market event and check-in status
     onMounted(() => {
@@ -1113,8 +1130,39 @@ export default {
       if (selectedPaymentOption.value === 'pay_at_event') {
         return true;
       }
+      // Skip shipping if user toggled to switch to market event pickup
+      if (switchToMarketEventPickup.value) {
+        return true;
+      }
       return false;
     });
+
+    // Handle market event toggle - switch to pickup mode
+    const handleMarketEventToggle = (value) => {
+      if (value) {
+        // User wants to switch to market event pickup
+        switchToMarketEventPickup.value = true;
+        // Automatically select "pay at event" payment option if available
+        if (availablePaymentMethods.value.payAtEvent) {
+          selectedPaymentOption.value = 'pay_at_event';
+        }
+        // Clear shipping selection
+        selectedShippingOption.value = null;
+      } else {
+        // User wants to go back to shipping
+        switchToMarketEventPickup.value = false;
+        // Clear pay at event selection if it was selected
+        if (selectedPaymentOption.value === 'pay_at_event') {
+          // Select first available payment option
+          const options = paymentOptions.value;
+          if (options.length > 0) {
+            selectedPaymentOption.value = options[0].value;
+          }
+        }
+        // Re-apply default shipping selection
+        applyDefaultShippingSelection();
+      }
+    };
 
     const requiresShippingAddress = computed(() => {
       // If skipShipping is true, don't require shipping address
@@ -1206,8 +1254,13 @@ export default {
 
     // Available payment methods based on Square readiness and context
     const availablePaymentMethods = computed(() => {
-      // Pay at event is available whenever there's a checked-in market event
+      // Pay at event is available when:
+      // 1. There's a checked-in market event AND
+      // 2. Either: user is from market event upload OR user has toggled to switch to pickup
       const hasCheckedInEvent = !!checkedInEvent.value;
+      const canPayAtEvent =
+        hasCheckedInEvent &&
+        (isFromMarketEventUpload.value || switchToMarketEventPickup.value);
 
       // Check if PayPal client ID is configured
       const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
@@ -1220,7 +1273,7 @@ export default {
         applePay: applePayReady.value,
         googlePay: googlePayReady.value,
         paypal: isPayPalConfigured, // Only show PayPal if client ID is configured
-        payAtEvent: hasCheckedInEvent,
+        payAtEvent: canPayAtEvent,
       };
     });
 
