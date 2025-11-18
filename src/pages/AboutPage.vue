@@ -10,6 +10,18 @@
           Founded in 2025 by Amy Helman-Darley to sprinkle a little more joy
           into the world—one magnetic memory at a time.
         </div>
+        <div class="q-mt-md">
+          <a
+            href="https://www.instagram.com/lilmagnetmemories"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="instagram-link"
+          >
+            <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
+            <span class="text-body1 text-primary">Follow us on Instagram</span>
+            <q-icon name="open_in_new" size="16px" class="q-ml-xs" />
+          </a>
+        </div>
       </section>
 
       <section class="story-section q-pa-lg bg-white shadow-2 rounded-borders">
@@ -111,18 +123,6 @@
           @click="$router.push('/market-event-upload')"
           class="q-mb-md"
         />
-        <div class="q-mt-md">
-          <a
-            href="https://www.instagram.com/lilmagnetmemories"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="instagram-link"
-          >
-            <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
-            <span class="text-body1 text-primary">Follow us on Instagram</span>
-            <q-icon name="open_in_new" size="16px" class="q-ml-xs" />
-          </a>
-        </div>
       </section>
 
       <section class="timeline-section">

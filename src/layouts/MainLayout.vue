@@ -35,16 +35,21 @@
         </q-chip>
 
         <!-- Market Event Indicator (always visible when an event is live) -->
-        <q-chip
+        <router-link
           v-if="isAtMarketEvent"
-          color="green"
-          text-color="white"
-          size="sm"
-          class="q-mr-md"
-          icon="event"
+          to="/"
+          class="market-event-pill-link"
         >
-          MARKET EVENT
-        </q-chip>
+          <q-chip
+            color="green"
+            text-color="white"
+            size="sm"
+            class="q-mr-md market-event-chip"
+            icon="event"
+          >
+            <span class="gt-xs">MARKET EVENT</span>
+          </q-chip>
+        </router-link>
 
         <!-- Page title in center -->
         <q-toolbar-title class="text-center">
@@ -713,6 +718,35 @@ export default {
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.market-event-pill-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.market-event-chip {
+  cursor: pointer;
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+  
+  @media (max-width: 600px) {
+    min-width: 24px;
+    height: 24px;
+    padding: 0 4px;
+    
+    :deep(.q-chip__content) {
+      padding: 0;
+    }
+    
+    :deep(.q-icon) {
+      font-size: 16px;
+      margin: 0;
+    }
+  }
 }
 
 // Mobile responsive adjustments

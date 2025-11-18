@@ -43,7 +43,7 @@
           <div class="controls-header">Fine Adjustments</div>
           <div class="controls-subheader">
             <span class="label">Selected:</span>
-            <span class="value">{{ selectedPhotoLabel }}</span>
+            <span class="value" :title="selectedPhotoLabel">{{ selectedPhotoLabel }}</span>
           </div>
           <div class="controls-group">
             <div class="controls-row">
@@ -886,6 +886,7 @@ export default {
     display: flex;
     gap: 1.5rem;
     align-items: flex-start;
+    position: relative;
   }
 
   .print-page {
@@ -1045,6 +1046,10 @@ export default {
     border: 1px solid #d0d0d0;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 20px;
+    left: 0;
+    align-self: flex-start;
   }
 
   .controls-header {
@@ -1055,11 +1060,23 @@ export default {
   .controls-subheader {
     font-size: 0.9rem;
     margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 
   .controls-subheader .label {
     color: #666;
     margin-right: 0.25rem;
+  }
+
+  .controls-subheader .value {
+    color: #333;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   .controls-group {

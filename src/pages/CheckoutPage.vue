@@ -207,7 +207,7 @@
               <q-card class="q-mb-md">
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Shipping Options</div>
-                  
+
                   <!-- Pickup option (shown when at market event) -->
                   <div v-if="pickupOptions.length > 0">
                     <q-option-group
@@ -232,7 +232,7 @@
                       />
                     </q-expansion-item>
                   </div>
-                  
+
                   <!-- If no pickup options, show all options normally -->
                   <div v-if="pickupOptions.length === 0">
                     <q-option-group
@@ -347,7 +347,8 @@
                     Market Event Pickup
                   </div>
                   <div class="text-body2">
-                    Your order will be available for pickup at the market event. No shipping required.
+                    Your order will be available for pickup at the market event.
+                    No shipping required.
                   </div>
                 </q-card-section>
               </q-card>
@@ -359,7 +360,10 @@
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Billing Address</div>
                   <q-toggle
-                    v-if="!skipShipping && selectedShippingDetails?.type !== 'pickup'"
+                    v-if="
+                      !skipShipping &&
+                      selectedShippingDetails?.type !== 'pickup'
+                    "
                     v-model="billingSameAsShipping"
                     :disable="!requiresShippingAddress"
                     label="Billing address matches shipping address"
@@ -367,7 +371,9 @@
                   <div
                     v-if="
                       requiresBillingAddress &&
-                      (skipShipping || !billingSameAsShipping || !requiresShippingAddress)
+                      (skipShipping ||
+                        !billingSameAsShipping ||
+                        !requiresShippingAddress)
                     "
                     class="q-mt-md"
                   >
@@ -428,10 +434,15 @@
                     </div>
                   </div>
                   <div
-                    v-if="skipShipping && requiresBillingAddress && billingSameAsShipping"
+                    v-if="
+                      skipShipping &&
+                      requiresBillingAddress &&
+                      billingSameAsShipping
+                    "
                     class="text-body2 text-grey-7 q-mt-md"
                   >
-                    Please provide a billing address so we can verify your payment details.
+                    Please provide a billing address so we can verify your
+                    payment details.
                   </div>
                 </q-card-section>
               </q-card>
@@ -661,7 +672,8 @@
                               Pay at Market Event Kiosk
                             </div>
                             <div class="text-caption text-grey-7">
-                              Pay when you collect your order at the market event
+                              Pay when you collect your order at the market
+                              event
                             </div>
                           </div>
                         </div>
@@ -890,7 +902,7 @@ export default {
     // Check for active market event and check-in status
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
-      
+
       // Pre-fill customer info from route query if available (from market event upload)
       if (route.query.firstName) {
         customerInfo.value.firstName = route.query.firstName;
@@ -904,7 +916,7 @@ export default {
       if (route.query.phone) {
         customerInfo.value.phone = route.query.phone;
       }
-      
+
       loadShippingOptions();
 
       // Pre-fill customer info if user is authenticated (only if not already set from query)
@@ -924,10 +936,12 @@ export default {
       );
       if (customUploadItem?.formData) {
         if (!customerInfo.value.firstName) {
-          customerInfo.value.firstName = customUploadItem.formData.firstName || '';
+          customerInfo.value.firstName =
+            customUploadItem.formData.firstName || '';
         }
         if (!customerInfo.value.lastName) {
-          customerInfo.value.lastName = customUploadItem.formData.lastName || '';
+          customerInfo.value.lastName =
+            customUploadItem.formData.lastName || '';
         }
         if (!customerInfo.value.email) {
           customerInfo.value.email = customUploadItem.formData.email || '';
@@ -936,7 +950,7 @@ export default {
           customerInfo.value.phone = customUploadItem.formData.phone || '';
         }
       }
-      
+
       // If skipShipping, set billingSameAsShipping to false
       if (skipShipping.value) {
         billingSameAsShipping.value = false;
@@ -1056,11 +1070,11 @@ export default {
 
     // Separate pickup and shipping options for display
     const pickupOptions = computed(() => {
-      return shippingOptions.value.filter(option => option.type === 'pickup');
+      return shippingOptions.value.filter((option) => option.type === 'pickup');
     });
 
     const otherShippingOptions = computed(() => {
-      return shippingOptions.value.filter(option => option.type !== 'pickup');
+      return shippingOptions.value.filter((option) => option.type !== 'pickup');
     });
 
     const selectedShippingDetails = computed(() => {
@@ -1089,7 +1103,10 @@ export default {
     // Note: pickup selection doesn't skip shipping section - it just hides address fields
     const skipShipping = computed(() => {
       // Skip shipping if explicitly set in query (market event upload with pay online)
-      if (route.query.skipShipping === '1' || route.query.skipShipping === 'true') {
+      if (
+        route.query.skipShipping === '1' ||
+        route.query.skipShipping === 'true'
+      ) {
         return true;
       }
       // Skip shipping if user selected "pay at tent" (market event pickup)
@@ -1098,7 +1115,7 @@ export default {
       }
       return false;
     });
-    
+
     const requiresShippingAddress = computed(() => {
       // If skipShipping is true, don't require shipping address
       if (skipShipping.value) {
@@ -1144,7 +1161,7 @@ export default {
       if (existing) {
         return;
       }
-      
+
       // If user is at market event, prefer pickup option
       if (checkedInEvent.value) {
         const pickupOption = options.find((option) => option.type === 'pickup');
@@ -1153,7 +1170,7 @@ export default {
           return;
         }
       }
-      
+
       // Otherwise use default or first option
       const defaultOption =
         options.find((option) => option.default) || options[0];
@@ -1166,7 +1183,7 @@ export default {
         loadingShippingOptions.value = false;
         return;
       }
-      
+
       loadingShippingOptions.value = true;
       try {
         const options = await firebaseService.getShippingOptions();
@@ -1261,7 +1278,7 @@ export default {
           return customTotal;
         }
       }
-      
+
       // Otherwise calculate from cart
       let total = cartSubtotal.value;
       // Only add shipping cost if shipping type is selected (not pickup)
@@ -1447,7 +1464,10 @@ export default {
           if (!addressIsComplete(billingAddress.value)) {
             return false;
           }
-        } else if (billingSameAsShipping.value && requiresShippingAddress.value) {
+        } else if (
+          billingSameAsShipping.value &&
+          requiresShippingAddress.value
+        ) {
           if (!addressIsComplete(shippingAddress.value)) {
             return false;
           }

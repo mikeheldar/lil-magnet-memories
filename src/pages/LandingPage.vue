@@ -3,11 +3,16 @@
     <!-- Market Event Banner -->
     <div v-if="hasActiveEvent" class="market-event-banner bg-green-5">
       <div class="market-event-content">
-        <q-icon name="event" size="24px" class="q-mr-sm" />
-        <div class="text-body1 text-white flex items-center q-gutter-md">
-          <div>
+        <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
+        <div class="text-body1 text-white flex items-center q-gutter-md banner-text">
+          <!-- Full text for larger screens -->
+          <div class="gt-xs">
             <strong>Market Event Live!</strong> We're at
             {{ activeMarketEventName }}.
+          </div>
+          <!-- Short text for mobile -->
+          <div class="lt-sm">
+            <strong>Market Event Live!</strong>
           </div>
           <q-toggle
             v-model="isCustomerAtEvent"
@@ -15,8 +20,10 @@
             checked-icon="check_circle"
             unchecked-icon="radio_button_unchecked"
             @update:model-value="toggleCustomerAtEvent"
+            class="banner-toggle"
           >
-            <span class="text-white text-body2 q-ml-sm">I'm at the event</span>
+            <span class="text-white text-body2 q-ml-sm lt-sm-hide">I'm at the event</span>
+            <span class="text-white text-body2 q-ml-sm gt-xs-hide">At event</span>
           </q-toggle>
         </div>
       </div>
@@ -798,6 +805,10 @@ export default {
   padding: 16px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  
+  @media (max-width: 600px) {
+    padding: 8px 12px;
+  }
 }
 
 .market-event-content {
@@ -807,6 +818,29 @@ export default {
   align-items: center;
   justify-content: center;
   text-align: center;
+  
+  @media (max-width: 600px) {
+    gap: 8px;
+  }
+}
+
+.banner-icon {
+  @media (max-width: 600px) {
+    font-size: 18px !important;
+  }
+}
+
+.banner-text {
+  @media (max-width: 600px) {
+    font-size: 0.875rem;
+    gap: 8px !important;
+  }
+}
+
+.banner-toggle {
+  @media (max-width: 600px) {
+    transform: scale(0.85);
+  }
 }
 
 .hero-title {
