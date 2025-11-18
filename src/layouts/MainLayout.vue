@@ -747,29 +747,47 @@ export default {
     
     :deep(.q-chip__content) {
       padding: 0 !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-      margin: 0;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      position: relative;
     }
     
     :deep(.q-chip__icon) {
       margin: 0 !important;
       padding: 0 !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: auto !important;
+      height: auto !important;
+    }
+    
+    :deep(.q-chip__icon-left) {
+      margin: 0 !important;
+      padding: 0 !important;
     }
     
     :deep(.q-icon) {
       font-size: 16px;
       margin: 0 !important;
+      padding: 0 !important;
       line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
+      width: 16px;
+      height: 16px;
+    }
+    
+    // Hide text on small screens
+    :deep(span) {
+      display: none !important;
     }
   }
 }
@@ -787,29 +805,47 @@ export default {
     
     :deep(.q-chip__content) {
       padding: 0 !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-      margin: 0;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      position: relative;
     }
     
     :deep(.q-chip__icon) {
       margin: 0 !important;
       padding: 0 !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: auto !important;
+      height: auto !important;
+    }
+    
+    :deep(.q-chip__icon-left) {
+      margin: 0 !important;
+      padding: 0 !important;
     }
     
     :deep(.q-icon) {
       font-size: 16px;
       margin: 0 !important;
+      padding: 0 !important;
       line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
+      width: 16px;
+      height: 16px;
+    }
+    
+    // Hide text on small screens
+    :deep(span) {
+      display: none !important;
     }
   }
 }
