@@ -9,13 +9,28 @@
       }
     }
   ],
-  "rewrites": [
+  "headers": [
     {
       "source": "/.well-known/apple-developer-merchantid-domain-association",
-      "destination": "/api/apple-pay-domain-association"
-    },
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        },
+        {
+          "key": "Content-Encoding",
+          "value": "identity"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
     {
-      "source": "/((?!assets/)(?!.well-known/)(?!api/).*)",
+      "source": "/((?!assets/)(?!.well-known/).*)",
       "destination": "/index.html"
     }
   ]
