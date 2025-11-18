@@ -377,8 +377,9 @@
                   </div>
                   <div class="text-body2 q-mb-md">
                     If you're at
-                    <strong>{{ checkedInEvent.name }}</strong>, you can pick up
-                    your order at the tent and save on shipping!
+                    <strong>{{ checkedInEvent.name }}</strong
+                    >, you can pick up your order at the tent and save on
+                    shipping!
                   </div>
                   <q-toggle
                     v-model="switchToMarketEventPickup"
@@ -1426,7 +1427,10 @@ export default {
         if (checkedInEvent.value) {
           switchToMarketEventPickup.value = true;
         }
-      } else if (newOption !== 'pay_at_event' && switchToMarketEventPickup.value) {
+      } else if (
+        newOption !== 'pay_at_event' &&
+        switchToMarketEventPickup.value
+      ) {
         // If user switches away from pay at event, turn off the toggle
         switchToMarketEventPickup.value = false;
       }
