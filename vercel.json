@@ -9,32 +9,13 @@
       }
     }
   ],
-  "headers": [
-    {
-      "source": "/.well-known/apple-developer-merchantid-domain-association",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/plain"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "identity"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        }
-      ]
-    }
-  ],
   "rewrites": [
     {
-      "source": "/((?!assets/)(?!.well-known/).*)",
+      "source": "/.well-known/apple-developer-merchantid-domain-association",
+      "destination": "/api/apple-pay-domain-association"
+    },
+    {
+      "source": "/((?!assets/).*)",
       "destination": "/index.html"
     }
   ]

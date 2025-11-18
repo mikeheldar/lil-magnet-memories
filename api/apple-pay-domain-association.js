@@ -106,7 +106,9 @@ module.exports = function handler(req, res) {
     );
 
     // Send the exact content with exact length
-    res.end(fileContent);
+    // Use write() then end() to ensure proper streaming
+    res.write(fileContent);
+    res.end();
 
     console.log('Response sent successfully');
     console.log('=== End Request ===\n');
