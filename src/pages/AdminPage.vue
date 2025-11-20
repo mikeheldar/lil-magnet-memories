@@ -320,8 +320,11 @@ export default {
 
       addingUser.value = true;
       try {
+        console.log(`Adding user role: ${newUserEmail.value} as ${newUserRole.value}`);
         await USERS_CONFIG.setUserRole(newUserEmail.value, newUserRole.value);
+        console.log('User role added successfully, reloading users...');
         await loadAllUsers();
+        console.log('Users reloaded successfully');
 
         $q.notify({
           type: 'positive',
@@ -335,11 +338,17 @@ export default {
         editingUser.value = null;
       } catch (error) {
         console.error('Error adding/updating user:', error);
+        console.error('Error details:', {
+          message: error.message,
+          code: error.code,
+          stack: error.stack,
+        });
         $q.notify({
           type: 'negative',
           message: editingUser.value ? 'Failed to update role' : 'Failed to add user',
-          caption: error.message || 'An error occurred',
+          caption: error.message || 'An error occurred. Please check console for details.',
           position: 'top',
+          timeout: 5000,
         });
       } finally {
         addingUser.value = false;

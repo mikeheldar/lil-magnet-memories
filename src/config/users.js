@@ -70,15 +70,25 @@ export const USERS_CONFIG = {
 
   // Save user roles to Firebase
   async saveUserRoles(rolesConfig) {
+    if (!rolesConfig || typeof rolesConfig !== 'object') {
+      throw new Error('Invalid rolesConfig: must be an object');
+    }
+    
     try {
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
       await setDoc(usersRef, {
         ...rolesConfig,
         updatedAt: new Date(),
-      });
+      }, { merge: false }); // Use setDoc with merge:false to replace entire document
       console.log('User roles saved to Firebase');
     } catch (error) {
       console.error('Error saving user roles:', error);
+      // Provide more helpful error message
+      if (error.code === 'permission-denied') {
+        throw new Error('Permission denied. Please check Firestore security rules.');
+      } else if (error.code === 'unavailable') {
+        throw new Error('Firebase is unavailable. Please check your internet connection.');
+      }
       throw error;
     }
   },
@@ -117,8 +127,33 @@ export const USERS_CONFIG = {
     }
     
     const normalizedEmail = email.toLowerCase().trim();
-    const rolesConfig = await USERS_CONFIG.loadUserRoles();
+    
+    // Load existing roles, but if it fails, start with empty object
+    let rolesConfig = {};
+    try {
+      rolesConfig = await USERS_CONFIG.loadUserRoles();
+    } catch (error) {
+      console.warn('Failed to load existing roles, starting fresh:', error);
+      // Continue with empty object - we'll still save the new role
+    }
+    
+    // Ensure we have an object (not null/undefined)
+    if (!rolesConfig || typeof rolesConfig !== 'object') {
+      rolesConfig = {};
+    }
+    
+    // Add the new role
     rolesConfig[normalizedEmail] = role;
+    
+    // Always ensure initial admins are preserved
+    for (const initialEmail of INITIAL_ADMIN_EMAILS) {
+      const normalizedInitialEmail = initialEmail.toLowerCase().trim();
+      if (!rolesConfig[normalizedInitialEmail] || rolesConfig[normalizedInitialEmail] !== USER_ROLES.ADMIN) {
+        rolesConfig[normalizedInitialEmail] = USER_ROLES.ADMIN;
+      }
+    }
+    
+    // Save to Firebase
     await USERS_CONFIG.saveUserRoles(rolesConfig);
     console.log(`Set role ${role} for ${normalizedEmail}`);
   },
@@ -126,7 +161,32 @@ export const USERS_CONFIG = {
   // Remove user role (downgrades to customer)
   async removeUserRole(email) {
     const normalizedEmail = email.toLowerCase().trim();
-    const rolesConfig = await USERS_CONFIG.loadUserRoles();
+    
+    // Load existing roles, but if it fails, start with empty object
+    let rolesConfig = {};
+    try {
+      rolesConfig = await USERS_CONFIG.loadUserRoles();
+    } catch (error) {
+      console.warn('Failed to load existing roles:', error);
+      // If we can't load, there's nothing to remove
+      return;
+    }
+    
+    // Ensure we have an object
+    if (!rolesConfig || typeof rolesConfig !== 'object') {
+      rolesConfig = {};
+    }
+    
+    // Don't allow removing initial admin roles
+    const INITIAL_ADMIN_EMAILS = [
+      'michael.helmandarley@gmail.com',
+      'amy.helmandarley@gmail.com',
+      'lilmagnetmemories@gmail.com',
+    ];
+    if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
+      throw new Error('Cannot remove role from initial admin user');
+    }
+    
     delete rolesConfig[normalizedEmail];
     await USERS_CONFIG.saveUserRoles(rolesConfig);
   },
