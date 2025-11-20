@@ -10,17 +10,9 @@ import { config } from './environment.js';
 
 // Admin Configuration
 // Initial admin emails (fallback if Firebase is not available)
-export const INITIAL_ADMIN_EMAILS = config.isTest 
-  ? [
-      'michael.helmandarley@gmail.com', // Primary admin
-      'amy.helmandarley@gmail.com', // Admin
-      'lilmagnetmemories@gmail.com', // Business email
-    ]
-  : [
-      'michael.helmandarley@gmail.com', // Primary admin
-      'amy.helmandarley@gmail.com', // Admin
-      'lilmagnetmemories@gmail.com', // Business email
-    ];
+// Note: Admins are now managed in Firebase via user_roles collection
+// This is only used as a fallback if Firebase is unavailable
+export const INITIAL_ADMIN_EMAILS = [];
 
 // Admin configuration
 export const ADMIN_CONFIG = {

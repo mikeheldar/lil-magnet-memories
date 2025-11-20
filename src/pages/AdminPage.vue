@@ -48,13 +48,13 @@
         </div>
 
         <div class="q-mb-md">
-          <div class="text-weight-medium q-mb-sm">Current Users:</div>
-          <div v-if="allUsers.length === 0" class="text-grey-6">
-            No users configured
+          <div class="text-weight-medium q-mb-sm">Admins and Operators:</div>
+          <div v-if="adminsAndOperators.length === 0" class="text-grey-6">
+            No admins or operators configured
           </div>
           <div v-else>
             <div
-              v-for="user in allUsers"
+              v-for="user in adminsAndOperators"
               :key="user.email"
               class="row items-center q-mb-sm"
             >
@@ -80,6 +80,18 @@
               </q-chip>
               <q-btn
                 v-if="user.email !== currentUser?.email"
+                icon="edit"
+                size="sm"
+                color="primary"
+                flat
+                round
+                @click="editUserRole(user)"
+                class="q-ml-sm"
+              >
+                <q-tooltip>Edit role</q-tooltip>
+              </q-btn>
+              <q-btn
+                v-if="user.email !== currentUser?.email"
                 icon="close"
                 size="sm"
                 color="negative"
@@ -88,19 +100,19 @@
                 @click="removeUserRole(user.email)"
                 class="q-ml-sm"
               >
-                <q-tooltip>Remove user role</q-tooltip>
+                <q-tooltip>Remove role (becomes customer)</q-tooltip>
               </q-btn>
             </div>
           </div>
         </div>
 
-        <!-- Add New User with Role -->
+        <!-- Add New Admin or Operator -->
         <q-form @submit="addUserRole" class="q-gutter-md">
           <div class="row q-col-gutter-md q-mb-md">
             <div class="col-12 col-md-5">
               <q-input
                 v-model="newUserEmail"
-                label="User Email"
+                label="Email Address"
                 type="email"
                 filled
                 hint="Enter an email address"
@@ -118,19 +130,29 @@
                 filled
                 emit-value
                 map-options
+                hint="Admin has full access, Operator has limited admin access"
               />
             </div>
             <div class="col-12 col-md-3">
               <q-btn
                 type="submit"
                 color="primary"
-                label="Add User"
+                :label="editingUser ? 'Update Role' : 'Add User'"
                 class="full-width"
                 :disable="!newUserEmail || !isValidEmail(newUserEmail) || !newUserRole"
                 :loading="addingUser"
               />
             </div>
           </div>
+          <q-btn
+            v-if="editingUser"
+            type="button"
+            color="grey"
+            label="Cancel"
+            flat
+            @click="cancelEdit"
+            class="q-mt-sm"
+          />
         </q-form>
 
       </q-card-section>
@@ -205,7 +227,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { authService } from '../services/authService';
 import { USERS_CONFIG, USER_ROLES } from '../config/users';
 import { useQuasar } from 'quasar';
@@ -220,6 +242,7 @@ export default {
     const newUserRole = ref('');
     const addingUser = ref(false);
     const allUsers = ref([]);
+    const editingUser = ref(null);
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -301,24 +324,37 @@ export default {
 
         $q.notify({
           type: 'positive',
-          message: 'User added successfully',
+          message: editingUser.value ? 'Role updated successfully' : 'User added successfully',
           caption: `${newUserEmail.value} is now a ${getRoleLabel(newUserRole.value)}`,
           position: 'top',
         });
 
         newUserEmail.value = '';
         newUserRole.value = '';
+        editingUser.value = null;
       } catch (error) {
-        console.error('Error adding user:', error);
+        console.error('Error adding/updating user:', error);
         $q.notify({
           type: 'negative',
-          message: 'Failed to add user',
+          message: editingUser.value ? 'Failed to update role' : 'Failed to add user',
           caption: error.message || 'An error occurred',
           position: 'top',
         });
       } finally {
         addingUser.value = false;
       }
+    };
+
+    const editUserRole = (user) => {
+      editingUser.value = user;
+      newUserEmail.value = user.email;
+      newUserRole.value = user.role;
+    };
+
+    const cancelEdit = () => {
+      editingUser.value = null;
+      newUserEmail.value = '';
+      newUserRole.value = '';
     };
 
     const removeUserRole = async (email) => {
@@ -366,11 +402,18 @@ export default {
       }
     };
 
+    const adminsAndOperators = computed(() => {
+      return allUsers.value.filter(
+        (user) => user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.OPERATOR
+      );
+    });
+
     onMounted(async () => {
       // Get current user info
       const user = authService.getCurrentUser();
       currentUser.value = user;
-      isAdmin.value = authService.isAdmin();
+      // Check admin status (async to check Firebase roles)
+      isAdmin.value = await authService.isAdminAsync();
       
       // Load all users with roles
       await loadAllUsers();
@@ -384,6 +427,8 @@ export default {
       newUserRole,
       addingUser,
       allUsers,
+      adminsAndOperators,
+      editingUser,
       roleOptions,
       getRoleLabel,
       getRoleIcon,
@@ -391,6 +436,8 @@ export default {
       getRoleBadgeColor,
       addUserRole,
       removeUserRole,
+      editUserRole,
+      cancelEdit,
     };
   },
 };
