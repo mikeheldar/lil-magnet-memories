@@ -27,9 +27,9 @@ export const USERS_CONFIG = {
   usersCollection: 'user_roles',
   
   // Load user roles from Firebase and seed initial admins if needed
+  // Returns empty object if offline/error - initial admins handled separately
   async loadUserRoles() {
     try {
-      console.log('Loading user roles from Firebase...');
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
       const usersSnap = await getDoc(usersRef);
 
@@ -38,46 +38,32 @@ export const USERS_CONFIG = {
         rolesData = usersSnap.data();
         // Remove timestamp field if it exists
         delete rolesData.updatedAt;
-        console.log('User roles loaded from Firebase:', rolesData);
-      } else {
-        console.log('No user roles config found in Firebase, creating initial config...');
       }
 
-      // Seed initial admin emails if they don't exist
-      let needsUpdate = false;
+      // Always ensure initial admins are in the data
       for (const email of INITIAL_ADMIN_EMAILS) {
         const normalizedEmail = email.toLowerCase().trim();
         if (!rolesData[normalizedEmail] || rolesData[normalizedEmail] !== USER_ROLES.ADMIN) {
           rolesData[normalizedEmail] = USER_ROLES.ADMIN;
-          needsUpdate = true;
-          console.log(`Seeding admin: ${normalizedEmail}`);
         }
       }
 
-      // Save if we added any admins
+      // Try to save if we updated anything (non-blocking)
+      const needsUpdate = INITIAL_ADMIN_EMAILS.some(email => {
+        const normalizedEmail = email.toLowerCase().trim();
+        return !rolesData[normalizedEmail] || rolesData[normalizedEmail] !== USER_ROLES.ADMIN;
+      });
+
       if (needsUpdate) {
-        try {
-          await USERS_CONFIG.saveUserRoles(rolesData);
-          console.log('Initial admins seeded successfully');
-        } catch (saveError) {
-          console.error('Error saving seeded admins:', saveError);
-          // If save fails (e.g., database doesn't exist), still return the data
-          // so the app can function with in-memory admin list
-          console.log('Continuing with in-memory admin list - admins will still work via fallback');
-        }
-      }
-      
-      // Always ensure initial admins are in the returned data, even if save failed
-      for (const email of INITIAL_ADMIN_EMAILS) {
-        const normalizedEmail = email.toLowerCase().trim();
-        if (!rolesData[normalizedEmail] || rolesData[normalizedEmail] !== USER_ROLES.ADMIN) {
-          rolesData[normalizedEmail] = USER_ROLES.ADMIN;
-        }
+        USERS_CONFIG.saveUserRoles(rolesData).catch(() => {
+          // Silently fail - initial admins work via hardcoded list anyway
+        });
       }
 
       return rolesData;
     } catch (error) {
-      console.error('Error loading user roles:', error);
+      // If offline or error, return empty - initial admins handled in getUserRole()
+      console.log('Firebase offline or error, using hardcoded admin list');
       return {};
     }
   },
