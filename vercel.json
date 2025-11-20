@@ -9,19 +9,6 @@
       }
     }
   ],
-  "routes": [
-    {
-      "src": "/.well-known/apple-developer-merchantid-domain-association",
-      "dest": "/.well-known/apple-developer-merchantid-domain-association",
-      "headers": {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Content-Encoding": "identity",
-        "Cache-Control": "no-cache, no-store, must-revalidate, proxy-revalidate",
-        "X-Content-Type-Options": "nosniff",
-        "Vary": "Accept-Encoding"
-      }
-    }
-  ],
   "headers": [
     {
       "source": "/.well-known/apple-developer-merchantid-domain-association",
