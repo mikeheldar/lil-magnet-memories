@@ -218,7 +218,12 @@
                   </div>
 
                   <!-- Other shipping options (expandable when pickup options exist) -->
-                  <div v-if="pickupOptions.length > 0 && otherShippingOptions.length > 0">
+                  <div
+                    v-if="
+                      pickupOptions.length > 0 &&
+                      otherShippingOptions.length > 0
+                    "
+                  >
                     <q-expansion-item
                       v-model="showOtherShippingOptions"
                       label="Other delivery options"
