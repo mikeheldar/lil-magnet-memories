@@ -193,8 +193,13 @@ export const USERS_CONFIG = {
 
   // Get all users with their roles
   async getAllUsersWithRoles() {
-    const rolesConfig = await USERS_CONFIG.loadUserRoles();
-    return rolesConfig;
+    try {
+      const rolesConfig = await USERS_CONFIG.loadUserRoles();
+      return rolesConfig || {};
+    } catch (error) {
+      console.warn('Failed to load all users, returning empty object:', error);
+      return {};
+    }
   },
 
   // Check if user is admin

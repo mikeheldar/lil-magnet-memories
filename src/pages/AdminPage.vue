@@ -323,8 +323,15 @@ export default {
         console.log(`Adding user role: ${newUserEmail.value} as ${newUserRole.value}`);
         await USERS_CONFIG.setUserRole(newUserEmail.value, newUserRole.value);
         console.log('User role added successfully, reloading users...');
-        await loadAllUsers();
-        console.log('Users reloaded successfully');
+        
+        // Try to reload users, but don't fail if it errors
+        try {
+          await loadAllUsers();
+          console.log('Users reloaded successfully');
+        } catch (reloadError) {
+          console.warn('Failed to reload users list (non-critical):', reloadError);
+          // Still show success - the user was added even if we can't reload the list
+        }
 
         $q.notify({
           type: 'positive',
@@ -402,13 +409,19 @@ export default {
 
     const loadAllUsers = async () => {
       try {
+        console.log('Loading all users...');
         const rolesConfig = await USERS_CONFIG.getAllUsersWithRoles();
+        console.log('Users loaded:', rolesConfig);
         allUsers.value = Object.entries(rolesConfig).map(([email, role]) => ({
           email,
           role,
         }));
+        console.log('Users list updated:', allUsers.value.length, 'users');
       } catch (error) {
         console.error('Error loading users:', error);
+        // Don't fail silently - show empty list if error
+        allUsers.value = [];
+        throw error; // Re-throw so caller knows it failed
       }
     };
 
