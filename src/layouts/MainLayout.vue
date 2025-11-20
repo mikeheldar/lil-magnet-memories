@@ -168,6 +168,41 @@
 
     <!-- Market Event Banner removed -->
 
+    <!-- Market Event Dialog -->
+    <q-dialog v-model="showMarketEventDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Market Event Active!</div>
+          <q-space />
+          <q-btn icon="close" flat round dense @click="goToOnlineOrder" />
+        </q-card-section>
+
+        <q-card-section>
+          <div class="text-body1 q-mb-md">
+            We're currently at <strong>{{ activeMarketEvent?.name }}</strong>!
+          </div>
+          <div class="text-body2 text-grey-7 q-mb-md">
+            Are you at the market event?
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="No, Order Online"
+            color="grey-8"
+            @click="goToOnlineOrder"
+          />
+          <q-btn
+            flat
+            label="Yes, I'm at the event"
+            color="primary"
+            @click="confirmAtMarketEvent"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <!-- Left Drawer for Navigation (always visible) -->
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-1">
       <q-list>
