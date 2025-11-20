@@ -397,12 +397,20 @@ export default {
           });
         } catch (error) {
           console.error('Error removing user role:', error);
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to remove user role',
-            caption: error.message || 'An error occurred',
-            position: 'top',
-          });
+          // Ensure $q is available - use a local reference
+          const notify = $q.notify;
+          if (notify && typeof notify === 'function') {
+            notify({
+              type: 'negative',
+              message: 'Failed to remove user role',
+              caption: error.message || 'An error occurred',
+              position: 'top',
+              timeout: 5000,
+            });
+          } else {
+            // Fallback if notify isn't available
+            alert(`Failed to remove user role: ${error.message || 'An error occurred'}`);
+          }
         }
       });
     };

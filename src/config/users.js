@@ -186,7 +186,7 @@ export const USERS_CONFIG = {
       'lilmagnetmemories@gmail.com',
     ];
     if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
-      throw new Error('Cannot remove role from initial admin user');
+      throw new Error(`${email} is an initial admin and cannot be removed. Initial admins are hardcoded for security.`);
     }
     
     delete rolesConfig[normalizedEmail];

@@ -406,10 +406,13 @@ export default {
       email: null,
     });
 
-    const { setCustomerType } = useCustomerType();
+    const { setCustomerType, isMarketCustomer } = useCustomerType();
     
     // Create a ref that gets updated periodically to trigger reactivity
     const marketEventCheckTrigger = ref(0);
+    
+    // Market event dialog state
+    const showMarketEventDialog = ref(false);
 
     // Initialize market event cache immediately
     const marketEventCacheInitialized = ref(false);
@@ -445,9 +448,40 @@ export default {
     });
 
     const handleUploadClick = () => {
-      // Always direct users to the market event upload experience
-      setCustomerType(CUSTOMER_TYPES.MARKET);
+      // Check if there's an active market event
+      const activeEvent = marketEventService.getCheckedInEvent();
+      
+      if (activeEvent) {
+        // If user has toggled "I'm at the event", go directly to market upload
+        if (isMarketCustomer.value) {
+          setCustomerType('market_customer');
+          router.push('/market-event-upload');
+        } else {
+          // Show popup to ask if they're at the event
+          showMarketEventDialog.value = true;
+        }
+      } else {
+        // No active event - go to online order
+        setCustomerType('online_customer');
+        router.push('/online-order');
+      }
+      leftDrawerOpen.value = false;
+    };
+    
+    const confirmAtMarketEvent = () => {
+      // Set the toggle state (this persists via localStorage in customerType composable)
+      setCustomerType('market_customer');
+      // Close dialog and navigate to market event upload
+      showMarketEventDialog.value = false;
       router.push('/market-event-upload');
+      leftDrawerOpen.value = false;
+    };
+
+    const goToOnlineOrder = () => {
+      // User said they're not at the event - go to online ordering
+      showMarketEventDialog.value = false;
+      setCustomerType('online_customer');
+      router.push('/online-order');
       leftDrawerOpen.value = false;
     };
 
@@ -661,6 +695,10 @@ export default {
       uploadLinkLabel,
       uploadLinkCaption,
       handleUploadClick,
+      showMarketEventDialog,
+      activeMarketEvent,
+      confirmAtMarketEvent,
+      goToOnlineOrder,
     };
   },
 };
