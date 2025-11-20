@@ -599,11 +599,15 @@ export default {
             photoURL: user.photoURL,
             email: user.email,
           };
-          // Wait a bit for admin config to load, then check admin status
-          setTimeout(() => {
+          // Check admin status asynchronously to ensure Firebase roles are checked
+          authService.isAdminAsync().then((adminStatus) => {
+            isAdmin.value = adminStatus;
+            console.log('Admin status updated:', adminStatus);
+          }).catch((error) => {
+            console.error('Error checking admin status:', error);
+            // Fallback to synchronous check
             isAdmin.value = authService.isAdmin();
-            console.log('Admin status updated:', isAdmin.value);
-          }, 100);
+          });
         } else {
           userProfile.value = {
             displayName: null,
