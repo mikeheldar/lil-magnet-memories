@@ -414,15 +414,25 @@ export default {
       const user = authService.getCurrentUser();
       currentUser.value = user;
       
-      // Load all users with roles first (this will trigger seeding if needed)
-      await loadAllUsers();
+      // Check admin status immediately (sync check works offline)
+      isAdmin.value = authService.isAdmin();
       
-      // Check admin status (async to check Firebase roles)
-      // Do this after loading users so seeding has a chance to complete
-      isAdmin.value = await authService.isAdminAsync();
+      // Load all users with roles (this will trigger seeding if needed)
+      // Do this in background - don't block on it
+      loadAllUsers().catch((error) => {
+        console.error('Error loading users (non-blocking):', error);
+      });
       
-      // Reload users after admin check to ensure we have the latest data
-      await loadAllUsers();
+      // Also check async for Firebase-based admins (non-blocking)
+      authService.isAdminAsync().then((adminStatus) => {
+        if (adminStatus !== isAdmin.value) {
+          isAdmin.value = adminStatus;
+        }
+        // Reload users after async check completes
+        return loadAllUsers();
+      }).catch((error) => {
+        console.error('Error in async admin check (non-blocking):', error);
+      });
     });
 
     return {

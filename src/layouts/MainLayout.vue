@@ -599,14 +599,18 @@ export default {
             photoURL: user.photoURL,
             email: user.email,
           };
-          // Check admin status asynchronously to ensure Firebase roles are checked
+          // Check admin status immediately (sync check is fast and works offline)
+          isAdmin.value = authService.isAdmin();
+          console.log('Admin status updated (immediate):', isAdmin.value);
+          
+          // Also check async in background for Firebase-based admins (non-blocking)
           authService.isAdminAsync().then((adminStatus) => {
-            isAdmin.value = adminStatus;
-            console.log('Admin status updated:', adminStatus);
-          }).catch((error) => {
-            console.error('Error checking admin status:', error);
-            // Fallback to synchronous check
-            isAdmin.value = authService.isAdmin();
+            if (adminStatus !== isAdmin.value) {
+              isAdmin.value = adminStatus;
+              console.log('Admin status updated (async):', adminStatus);
+            }
+          }).catch(() => {
+            // Silently fail - sync check already handled it
           });
         } else {
           userProfile.value = {

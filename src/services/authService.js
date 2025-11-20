@@ -130,38 +130,36 @@ class AuthService {
   }
 
   // Check if current user is an admin
-  // Note: This is synchronous for backward compatibility, but primarily checks Firebase roles
-  // For accurate Firebase role checking, use isAdminAsync() instead
+  // This is synchronous and checks hardcoded admin list first for immediate response
   isAdmin() {
     if (!this.user || !this.user.email) {
-      console.log('isAdmin: No user or email');
       return false;
     }
     
     const userEmail = this.user.email.toLowerCase().trim();
     
-    // Check email-based admin list (legacy fallback)
-    if (ADMIN_CONFIG.isAdminEmail(userEmail)) {
-      return true;
-    }
-    
-    // Fallback to initial admin emails list (hardcoded fallback)
+    // First check initial admin emails (hardcoded, always available)
     const INITIAL_ADMIN_EMAILS = [
       'michael.helmandarley@gmail.com',
       'amy.helmandarley@gmail.com',
       'lilmagnetmemories@gmail.com',
     ];
     if (INITIAL_ADMIN_EMAILS.includes(userEmail)) {
-      console.log('isAdmin: User is admin via initial admin list fallback');
       return true;
     }
     
-    // Note: Firebase role checking requires async call - use isAdminAsync() for full check
-    // This synchronous method is kept for backward compatibility
+    // Then check legacy admin config (may be loaded from Firebase)
+    if (ADMIN_CONFIG.isAdminEmail(userEmail)) {
+      return true;
+    }
+    
+    // Note: For Firebase role-based admins added via UI, use isAdminAsync()
+    // This sync method prioritizes speed and works offline
     return false;
   }
 
-  // Async version that checks Firebase user roles (primary method)
+  // Async version that checks Firebase user roles (for admins added via UI)
+  // Note: Initial admins are checked synchronously in isAdmin() for immediate response
   async isAdminAsync() {
     if (!this.user || !this.user.email) {
       return false;
@@ -169,34 +167,19 @@ class AuthService {
     
     const userEmail = this.user.email.toLowerCase().trim();
     
-    // Check Firebase user roles first (primary method)
+    // First check sync methods (fast, works offline)
+    if (this.isAdmin()) {
+      return true;
+    }
+    
+    // Then check Firebase for admins added via UI
     try {
       const role = await USERS_CONFIG.getUserRole(userEmail);
-      if (role === USER_ROLES.ADMIN) {
-        console.log('isAdminAsync: User is admin via Firebase role');
-        return true;
-      }
+      return role === USER_ROLES.ADMIN;
     } catch (error) {
-      console.error('Error checking user role:', error);
+      // If Firebase fails, we already checked sync methods above
+      return false;
     }
-    
-    // Fallback to email-based admin list (legacy support)
-    if (ADMIN_CONFIG.isAdminEmail(userEmail)) {
-      return true;
-    }
-    
-    // Final fallback: check if it's one of the initial admin emails
-    const INITIAL_ADMIN_EMAILS = [
-      'michael.helmandarley@gmail.com',
-      'amy.helmandarley@gmail.com',
-      'lilmagnetmemories@gmail.com',
-    ];
-    if (INITIAL_ADMIN_EMAILS.includes(userEmail)) {
-      console.log('isAdminAsync: User is admin via initial admin list fallback');
-      return true;
-    }
-    
-    return false;
   }
   
   // Check if current user is an operator (includes admins)

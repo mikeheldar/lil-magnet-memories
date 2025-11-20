@@ -98,31 +98,28 @@ export const USERS_CONFIG = {
   },
 
   // Get role for a specific user
+  // Always checks initial admin list first for immediate response
   async getUserRole(email) {
     const normalizedEmail = email.toLowerCase().trim();
     
-    // First check if it's one of the initial admins (fast path)
+    // ALWAYS check initial admins first - this is the fast path
     if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
-      console.log(`getUserRole: ${normalizedEmail} is in initial admin list, returning admin`);
-      // Still try to load from Firebase to sync, but return admin immediately
-      USERS_CONFIG.loadUserRoles().catch(err => {
-        console.error('Error loading user roles (non-blocking):', err);
+      console.log(`getUserRole: ${normalizedEmail} is in initial admin list, returning admin immediately`);
+      // Try to sync with Firebase in background (non-blocking)
+      USERS_CONFIG.loadUserRoles().catch(() => {
+        // Silently fail - we already have the answer
       });
       return USER_ROLES.ADMIN;
     }
     
+    // For other users, try Firebase (but don't block if offline)
     try {
       const rolesConfig = await USERS_CONFIG.loadUserRoles();
       const role = rolesConfig[normalizedEmail] || USER_ROLES.CUSTOMER;
-      console.log(`getUserRole: ${normalizedEmail} has role ${role} from Firebase`);
       return role;
     } catch (error) {
-      console.error('Error getting user role:', error);
-      // Final fallback: check if it's one of the initial admins
-      if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
-        console.log(`getUserRole: ${normalizedEmail} is in initial admin list (fallback)`);
-        return USER_ROLES.ADMIN;
-      }
+      // If Firebase fails (offline, etc), default to customer
+      // Initial admins already handled above
       return USER_ROLES.CUSTOMER;
     }
   },
