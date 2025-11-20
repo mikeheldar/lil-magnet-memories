@@ -263,6 +263,14 @@ class AuthService {
   init() {
     console.log('Initializing Firebase Auth...');
     onAuthStateChanged(auth, (user) => {
+      // Ignore anonymous users - they're only used for Storage rules, not for UI
+      if (user && user.isAnonymous) {
+        console.log('Auth state changed: Anonymous user (ignored for UI)');
+        // Don't set this.user for anonymous users - keep previous user if exists
+        // This allows real users to stay logged in on refresh
+        return;
+      }
+      
       console.log(
         'Auth state changed:',
         user ? `User: ${user.email}` : 'No user'
