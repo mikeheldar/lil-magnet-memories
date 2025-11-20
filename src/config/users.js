@@ -56,8 +56,15 @@ export const USERS_CONFIG = {
 
       // Save if we added any admins
       if (needsUpdate) {
-        await USERS_CONFIG.saveUserRoles(rolesData);
-        console.log('Initial admins seeded successfully');
+        try {
+          await USERS_CONFIG.saveUserRoles(rolesData);
+          console.log('Initial admins seeded successfully');
+        } catch (saveError) {
+          console.error('Error saving seeded admins:', saveError);
+          // If save fails (e.g., database doesn't exist), still return the data
+          // so the app can function with in-memory admin list
+          console.log('Continuing with in-memory admin list');
+        }
       }
 
       return rolesData;
@@ -85,8 +92,17 @@ export const USERS_CONFIG = {
   // Get role for a specific user
   async getUserRole(email) {
     const normalizedEmail = email.toLowerCase().trim();
-    const rolesConfig = await USERS_CONFIG.loadUserRoles();
-    return rolesConfig[normalizedEmail] || USER_ROLES.CUSTOMER;
+    try {
+      const rolesConfig = await USERS_CONFIG.loadUserRoles();
+      return rolesConfig[normalizedEmail] || USER_ROLES.CUSTOMER;
+    } catch (error) {
+      console.error('Error getting user role:', error);
+      // Check if it's one of the initial admins as fallback
+      if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
+        return USER_ROLES.ADMIN;
+      }
+      return USER_ROLES.CUSTOMER;
+    }
   },
 
   // Set role for a specific user

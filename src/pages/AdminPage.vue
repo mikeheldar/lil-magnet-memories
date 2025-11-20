@@ -412,10 +412,15 @@ export default {
       // Get current user info
       const user = authService.getCurrentUser();
       currentUser.value = user;
+      
+      // Load all users with roles first (this will trigger seeding if needed)
+      await loadAllUsers();
+      
       // Check admin status (async to check Firebase roles)
+      // Do this after loading users so seeding has a chance to complete
       isAdmin.value = await authService.isAdminAsync();
       
-      // Load all users with roles
+      // Reload users after admin check to ensure we have the latest data
       await loadAllUsers();
     });
 
