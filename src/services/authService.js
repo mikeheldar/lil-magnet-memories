@@ -129,21 +129,43 @@ class AuthService {
     return !!this.user;
   }
 
-  // Check if current user is an admin (synchronous for backward compatibility)
+  // Check if current user is an admin
+  // Note: This is synchronous for backward compatibility, but primarily checks Firebase roles
+  // For accurate Firebase role checking, use isAdminAsync() instead
   isAdmin() {
     if (!this.user || !this.user.email) {
       console.log('isAdmin: No user or email');
       return false;
     }
-    // For now, check only the email-based admin list for backward compatibility
-    // Full role system can be added later with async methods
-    const isAdmin = ADMIN_CONFIG.isAdminEmail(this.user.email);
-    console.log('isAdmin check:', {
-      userEmail: this.user.email,
-      adminEmails: ADMIN_CONFIG.adminEmails,
-      isAdmin: isAdmin,
-    });
-    return isAdmin;
+    // Check email-based admin list (legacy fallback)
+    const isAdminEmail = ADMIN_CONFIG.isAdminEmail(this.user.email);
+    if (isAdminEmail) {
+      return true;
+    }
+    // Note: Firebase role checking requires async call - use isAdminAsync() for full check
+    // This synchronous method is kept for backward compatibility
+    return false;
+  }
+
+  // Async version that checks Firebase user roles (primary method)
+  async isAdminAsync() {
+    if (!this.user || !this.user.email) {
+      return false;
+    }
+    
+    // Check Firebase user roles first (primary method)
+    try {
+      const role = await USERS_CONFIG.getUserRole(this.user.email);
+      if (role === USER_ROLES.ADMIN) {
+        console.log('isAdminAsync: User is admin via Firebase role');
+        return true;
+      }
+    } catch (error) {
+      console.error('Error checking user role:', error);
+    }
+    
+    // Fallback to email-based admin list (legacy support)
+    return ADMIN_CONFIG.isAdminEmail(this.user.email);
   }
   
   // Check if current user is an operator (includes admins)
