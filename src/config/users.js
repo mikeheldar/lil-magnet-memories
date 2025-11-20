@@ -14,28 +14,53 @@ export const USER_ROLES = {
   ADMIN: 'admin',
 };
 
+// Initial admin emails to seed on first load
+const INITIAL_ADMIN_EMAILS = [
+  'michael.helmandarley@gmail.com',
+  'amy.helmandarley@gmail.com',
+  'lilmagnetmemories@gmail.com',
+];
+
 // User roles configuration
 export const USERS_CONFIG = {
   // Firebase collection reference
   usersCollection: 'user_roles',
   
-  // Load user roles from Firebase
+  // Load user roles from Firebase and seed initial admins if needed
   async loadUserRoles() {
     try {
       console.log('Loading user roles from Firebase...');
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
       const usersSnap = await getDoc(usersRef);
 
+      let rolesData = {};
       if (usersSnap.exists()) {
-        const data = usersSnap.data();
-        console.log('User roles loaded from Firebase:', data);
-        return data;
+        rolesData = usersSnap.data();
+        // Remove timestamp field if it exists
+        delete rolesData.updatedAt;
+        console.log('User roles loaded from Firebase:', rolesData);
       } else {
         console.log('No user roles config found in Firebase, creating initial config...');
-        // Create initial config
-        await USERS_CONFIG.saveUserRoles({});
-        return {};
       }
+
+      // Seed initial admin emails if they don't exist
+      let needsUpdate = false;
+      for (const email of INITIAL_ADMIN_EMAILS) {
+        const normalizedEmail = email.toLowerCase().trim();
+        if (!rolesData[normalizedEmail] || rolesData[normalizedEmail] !== USER_ROLES.ADMIN) {
+          rolesData[normalizedEmail] = USER_ROLES.ADMIN;
+          needsUpdate = true;
+          console.log(`Seeding admin: ${normalizedEmail}`);
+        }
+      }
+
+      // Save if we added any admins
+      if (needsUpdate) {
+        await USERS_CONFIG.saveUserRoles(rolesData);
+        console.log('Initial admins seeded successfully');
+      }
+
+      return rolesData;
     } catch (error) {
       console.error('Error loading user roles:', error);
       return {};
