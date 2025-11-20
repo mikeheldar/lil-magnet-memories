@@ -375,7 +375,10 @@ export default {
     };
 
     const removeUserRole = async (email) => {
-      $q.dialog({
+      // Capture $q at the start to ensure it's in scope for the callback
+      const quasar = $q;
+      
+      quasar.dialog({
         title: 'Remove User Role',
         message: `Are you sure you want to remove the role from ${email}?`,
         cancel: true,
@@ -389,7 +392,7 @@ export default {
           await USERS_CONFIG.removeUserRole(email);
           await loadAllUsers();
 
-          $q.notify({
+          quasar.notify({
             type: 'positive',
             message: 'User role removed successfully',
             caption: `${email} is now a regular customer`,
@@ -397,18 +400,18 @@ export default {
           });
         } catch (error) {
           console.error('Error removing user role:', error);
-          // Ensure $q is available - use a local reference
-          const notify = $q.notify;
-          if (notify && typeof notify === 'function') {
-            notify({
+          // Use the captured quasar reference
+          try {
+            quasar.notify({
               type: 'negative',
               message: 'Failed to remove user role',
               caption: error.message || 'An error occurred',
               position: 'top',
               timeout: 5000,
             });
-          } else {
-            // Fallback if notify isn't available
+          } catch (notifyError) {
+            // Fallback if notify fails
+            console.error('Failed to show notification:', notifyError);
             alert(`Failed to remove user role: ${error.message || 'An error occurred'}`);
           }
         }
