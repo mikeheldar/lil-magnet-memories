@@ -63,7 +63,15 @@ export const USERS_CONFIG = {
           console.error('Error saving seeded admins:', saveError);
           // If save fails (e.g., database doesn't exist), still return the data
           // so the app can function with in-memory admin list
-          console.log('Continuing with in-memory admin list');
+          console.log('Continuing with in-memory admin list - admins will still work via fallback');
+        }
+      }
+      
+      // Always ensure initial admins are in the returned data, even if save failed
+      for (const email of INITIAL_ADMIN_EMAILS) {
+        const normalizedEmail = email.toLowerCase().trim();
+        if (!rolesData[normalizedEmail] || rolesData[normalizedEmail] !== USER_ROLES.ADMIN) {
+          rolesData[normalizedEmail] = USER_ROLES.ADMIN;
         }
       }
 
@@ -92,13 +100,27 @@ export const USERS_CONFIG = {
   // Get role for a specific user
   async getUserRole(email) {
     const normalizedEmail = email.toLowerCase().trim();
+    
+    // First check if it's one of the initial admins (fast path)
+    if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
+      console.log(`getUserRole: ${normalizedEmail} is in initial admin list, returning admin`);
+      // Still try to load from Firebase to sync, but return admin immediately
+      USERS_CONFIG.loadUserRoles().catch(err => {
+        console.error('Error loading user roles (non-blocking):', err);
+      });
+      return USER_ROLES.ADMIN;
+    }
+    
     try {
       const rolesConfig = await USERS_CONFIG.loadUserRoles();
-      return rolesConfig[normalizedEmail] || USER_ROLES.CUSTOMER;
+      const role = rolesConfig[normalizedEmail] || USER_ROLES.CUSTOMER;
+      console.log(`getUserRole: ${normalizedEmail} has role ${role} from Firebase`);
+      return role;
     } catch (error) {
       console.error('Error getting user role:', error);
-      // Check if it's one of the initial admins as fallback
+      // Final fallback: check if it's one of the initial admins
       if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
+        console.log(`getUserRole: ${normalizedEmail} is in initial admin list (fallback)`);
         return USER_ROLES.ADMIN;
       }
       return USER_ROLES.CUSTOMER;
