@@ -39,13 +39,23 @@ export default route(function (/* { store, ssrContext } */) {
   authService.init();
 
   // Add authentication and admin guards
-  Router.beforeEach((to, from, next) => {
+  Router.beforeEach(async (to, from, next) => {
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
     const requiresAdmin = to.matched.some(
       (record) => record.meta.requiresAdmin
     );
     const isAuthenticated = authService.isAuthenticated();
-    const isAdmin = authService.isAdmin();
+    
+    // Use async admin check for better accuracy, but fallback to sync if needed
+    let isAdmin = authService.isAdmin(); // Quick sync check first
+    if (requiresAdmin && !isAdmin) {
+      // If sync check says not admin but route requires admin, do async check
+      try {
+        isAdmin = await authService.isAdminAsync();
+      } catch (error) {
+        console.error('Error in async admin check, using sync result:', error);
+      }
+    }
 
     console.log('Route guard:', {
       to: to.path,

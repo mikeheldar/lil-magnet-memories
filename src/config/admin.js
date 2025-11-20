@@ -26,7 +26,20 @@ export const ADMIN_CONFIG = {
   // Check if an email address is an admin
   isAdminEmail: (email) => {
     if (!email) return false;
-    return ADMIN_CONFIG.adminEmails.includes(email.toLowerCase().trim());
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    // Check loaded admin emails first
+    if (ADMIN_CONFIG.adminEmails.includes(normalizedEmail)) {
+      return true;
+    }
+    
+    // Fallback to initial admin emails (hardcoded fallback)
+    const INITIAL_ADMIN_EMAILS = [
+      'michael.helmandarley@gmail.com',
+      'amy.helmandarley@gmail.com',
+      'lilmagnetmemories@gmail.com',
+    ];
+    return INITIAL_ADMIN_EMAILS.includes(normalizedEmail);
   },
 
   // Load admin emails from Firebase

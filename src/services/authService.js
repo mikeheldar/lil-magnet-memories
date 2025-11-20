@@ -137,11 +137,25 @@ class AuthService {
       console.log('isAdmin: No user or email');
       return false;
     }
+    
+    const userEmail = this.user.email.toLowerCase().trim();
+    
     // Check email-based admin list (legacy fallback)
-    const isAdminEmail = ADMIN_CONFIG.isAdminEmail(this.user.email);
-    if (isAdminEmail) {
+    if (ADMIN_CONFIG.isAdminEmail(userEmail)) {
       return true;
     }
+    
+    // Fallback to initial admin emails list (hardcoded fallback)
+    const INITIAL_ADMIN_EMAILS = [
+      'michael.helmandarley@gmail.com',
+      'amy.helmandarley@gmail.com',
+      'lilmagnetmemories@gmail.com',
+    ];
+    if (INITIAL_ADMIN_EMAILS.includes(userEmail)) {
+      console.log('isAdmin: User is admin via initial admin list fallback');
+      return true;
+    }
+    
     // Note: Firebase role checking requires async call - use isAdminAsync() for full check
     // This synchronous method is kept for backward compatibility
     return false;
