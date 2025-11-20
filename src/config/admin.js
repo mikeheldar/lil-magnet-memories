@@ -12,12 +12,13 @@ import { config } from './environment.js';
 // Initial admin emails (fallback if Firebase is not available)
 export const INITIAL_ADMIN_EMAILS = config.isTest 
   ? [
-      'test-admin@lilmagnetmemories.com', // Test admin email
-      'lilmagnetmemories@gmail.com', // Your email for testing
+      'michael.helmandarley@gmail.com', // Primary admin
+      'amy.helmandarley@gmail.com', // Admin
+      'lilmagnetmemories@gmail.com', // Business email
     ]
   : [
       'michael.helmandarley@gmail.com', // Primary admin
-      'am.helmandarley@gmail.com', // Admin
+      'amy.helmandarley@gmail.com', // Admin
       'lilmagnetmemories@gmail.com', // Business email
     ];
 

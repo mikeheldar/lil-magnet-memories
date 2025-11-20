@@ -133,70 +133,6 @@
           </div>
         </q-form>
 
-        <!-- Legacy Admin Email Management (for backward compatibility) -->
-        <q-expansion-item
-          label="Legacy Admin Emails"
-          caption="Traditional email-based admin list"
-          icon="info"
-          class="q-mt-md"
-        >
-          <div class="q-mb-md">
-            <div class="text-weight-medium q-mb-sm">Legacy Admin Emails:</div>
-            <div v-if="adminEmails.length === 0" class="text-grey-6">
-              No admin emails configured
-            </div>
-            <div v-else>
-              <div
-                v-for="email in adminEmails"
-                :key="email"
-                class="row items-center q-mb-sm"
-              >
-                <q-chip color="primary" text-color="white" class="col">
-                  {{ email }}
-                </q-chip>
-                <q-btn
-                  v-if="email !== currentUser?.email"
-                  icon="close"
-                  size="sm"
-                  color="negative"
-                  flat
-                  round
-                  @click="removeAdminEmail(email)"
-                  class="q-ml-sm"
-                >
-                  <q-tooltip>Remove admin access</q-tooltip>
-                </q-btn>
-              </div>
-            </div>
-          </div>
-
-          <q-form @submit="addAdminEmail" class="q-gutter-md">
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-8">
-                <q-input
-                  v-model="newAdminEmail"
-                  label="Add New Admin Email"
-                  type="email"
-                  filled
-                  hint="Enter an email address to grant admin access"
-                  :rules="[
-                    (val) => !!val || 'Email is required',
-                    (val) => isValidEmail(val) || 'Please enter a valid email',
-                  ]"
-                />
-              </div>
-              <div class="col-12 col-md-4">
-                <q-btn
-                  type="submit"
-                  color="primary"
-                  label="Add Admin"
-                  class="full-width"
-                  :disable="!newAdminEmail || !isValidEmail(newAdminEmail)"
-                />
-              </div>
-            </div>
-          </q-form>
-        </q-expansion-item>
       </q-card-section>
     </q-card>
 
@@ -269,9 +205,8 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { authService } from '../services/authService';
-import { ADMIN_CONFIG } from '../config/admin';
 import { USERS_CONFIG, USER_ROLES } from '../config/users';
 import { useQuasar } from 'quasar';
 
@@ -281,8 +216,6 @@ export default {
     const $q = useQuasar();
     const currentUser = ref(null);
     const isAdmin = ref(false);
-    const newAdminEmail = ref('');
-    const adminEmails = ref([]);
     const newUserEmail = ref('');
     const newUserRole = ref('');
     const addingUser = ref(false);
@@ -294,7 +227,6 @@ export default {
     };
 
     const roleOptions = [
-      { label: 'Customer', value: USER_ROLES.CUSTOMER },
       { label: 'Operator', value: USER_ROLES.OPERATOR },
       { label: 'Admin', value: USER_ROLES.ADMIN },
     ];
@@ -305,8 +237,6 @@ export default {
           return 'Admin';
         case USER_ROLES.OPERATOR:
           return 'Operator';
-        case USER_ROLES.CUSTOMER:
-          return 'Customer';
         default:
           return 'Customer';
       }
@@ -318,8 +248,6 @@ export default {
           return 'admin_panel_settings';
         case USER_ROLES.OPERATOR:
           return 'work';
-        case USER_ROLES.CUSTOMER:
-          return 'person';
         default:
           return 'person';
       }
@@ -331,8 +259,6 @@ export default {
           return 'purple';
         case USER_ROLES.OPERATOR:
           return 'blue';
-        case USER_ROLES.CUSTOMER:
-          return 'grey-7';
         default:
           return 'grey-7';
       }
@@ -344,78 +270,9 @@ export default {
           return 'purple-7';
         case USER_ROLES.OPERATOR:
           return 'blue-7';
-        case USER_ROLES.CUSTOMER:
-          return 'grey-6';
         default:
           return 'grey-6';
       }
-    };
-
-    const addAdminEmail = async () => {
-      if (!newAdminEmail.value || !isValidEmail(newAdminEmail.value)) {
-        $q.notify({
-          type: 'negative',
-          message: 'Please enter a valid email address',
-          position: 'top',
-        });
-        return;
-      }
-
-      try {
-        await ADMIN_CONFIG.addAdminEmail(newAdminEmail.value);
-        adminEmails.value = ADMIN_CONFIG.getAdminEmails();
-
-        $q.notify({
-          type: 'positive',
-          message: 'Admin email added successfully',
-          caption: `${newAdminEmail.value} now has admin access`,
-          position: 'top',
-        });
-
-        newAdminEmail.value = '';
-      } catch (error) {
-        console.error('Error adding admin email:', error);
-        $q.notify({
-          type: 'negative',
-          message: 'Failed to add admin email',
-          caption: error.message || 'An error occurred',
-          position: 'top',
-        });
-      }
-    };
-
-    const removeAdminEmail = async (email) => {
-      // Confirm removal
-      $q.dialog({
-        title: 'Remove Admin Access',
-        message: `Are you sure you want to remove admin access from ${email}?`,
-        cancel: true,
-        persistent: true,
-        ok: {
-          label: 'Remove',
-          color: 'negative',
-        },
-      }).onOk(async () => {
-        try {
-          await ADMIN_CONFIG.removeAdminEmail(email);
-          adminEmails.value = ADMIN_CONFIG.getAdminEmails();
-
-          $q.notify({
-            type: 'positive',
-            message: 'Admin access removed successfully',
-            caption: `${email} no longer has admin access`,
-            position: 'top',
-          });
-        } catch (error) {
-          console.error('Error removing admin email:', error);
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to remove admin access',
-            caption: error.message || 'An error occurred',
-            position: 'top',
-          });
-        }
-      });
     };
 
     const addUserRole = async () => {
@@ -514,9 +371,6 @@ export default {
       const user = authService.getCurrentUser();
       currentUser.value = user;
       isAdmin.value = authService.isAdmin();
-
-      // Load admin emails
-      adminEmails.value = ADMIN_CONFIG.getAdminEmails();
       
       // Load all users with roles
       await loadAllUsers();
@@ -525,11 +379,7 @@ export default {
     return {
       currentUser,
       isAdmin,
-      newAdminEmail,
-      adminEmails,
       isValidEmail,
-      addAdminEmail,
-      removeAdminEmail,
       newUserEmail,
       newUserRole,
       addingUser,
