@@ -412,10 +412,19 @@ export default {
         console.log('Loading all users...');
         const rolesConfig = await USERS_CONFIG.getAllUsersWithRoles();
         console.log('Users loaded:', rolesConfig);
-        allUsers.value = Object.entries(rolesConfig).map(([email, role]) => ({
-          email,
-          role,
-        }));
+        allUsers.value = Object.entries(rolesConfig)
+          .map(([email, role]) => ({
+            email,
+            role,
+          }))
+          .sort((a, b) => {
+            // Sort: admins first, then operators, then customers
+            // Within each group, sort alphabetically
+            const roleOrder = { [USER_ROLES.ADMIN]: 0, [USER_ROLES.OPERATOR]: 1, [USER_ROLES.CUSTOMER]: 2 };
+            const roleDiff = (roleOrder[a.role] || 2) - (roleOrder[b.role] || 2);
+            if (roleDiff !== 0) return roleDiff;
+            return a.email.localeCompare(b.email);
+          });
         console.log('Users list updated:', allUsers.value.length, 'users');
       } catch (error) {
         console.error('Error loading users:', error);

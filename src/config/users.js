@@ -86,8 +86,10 @@ export const USERS_CONFIG = {
       // Provide more helpful error message
       if (error.code === 'permission-denied') {
         throw new Error('Permission denied. Please check Firestore security rules.');
-      } else if (error.code === 'unavailable') {
-        throw new Error('Firebase is unavailable. Please check your internet connection.');
+      } else if (error.code === 'unavailable' || error.message?.includes('offline')) {
+        throw new Error('Firebase is offline. Changes will be saved when connection is restored. Please check your internet connection.');
+      } else if (error.code === 'failed-precondition') {
+        throw new Error('Firebase is not available. Please check your connection and try again.');
       }
       throw error;
     }
@@ -192,14 +194,28 @@ export const USERS_CONFIG = {
   },
 
   // Get all users with their roles
+  // Always includes initial admins even when offline
   async getAllUsersWithRoles() {
+    let rolesConfig = {};
     try {
-      const rolesConfig = await USERS_CONFIG.loadUserRoles();
-      return rolesConfig || {};
+      rolesConfig = await USERS_CONFIG.loadUserRoles();
     } catch (error) {
-      console.warn('Failed to load all users, returning empty object:', error);
-      return {};
+      console.warn('Failed to load all users from Firebase:', error);
+      // Continue with empty object - we'll add initial admins below
     }
+    
+    // Ensure we have an object
+    if (!rolesConfig || typeof rolesConfig !== 'object') {
+      rolesConfig = {};
+    }
+    
+    // Always include initial admins, even when offline
+    for (const email of INITIAL_ADMIN_EMAILS) {
+      const normalizedEmail = email.toLowerCase().trim();
+      rolesConfig[normalizedEmail] = USER_ROLES.ADMIN;
+    }
+    
+    return rolesConfig;
   },
 
   // Check if user is admin
