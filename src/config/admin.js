@@ -16,10 +16,9 @@ export const INITIAL_ADMIN_EMAILS = config.isTest
       'lilmagnetmemories@gmail.com', // Your email for testing
     ]
   : [
-      'lilmagnetmemories@gmail.com', // Your email
-      // Add more admin emails here as needed
-      // 'admin2@example.com',
-      // 'admin3@example.com',
+      'michael.helmandarley@gmail.com', // Primary admin
+      'am.helmandarley@gmail.com', // Admin
+      'lilmagnetmemories@gmail.com', // Business email
     ];
 
 // Admin configuration
