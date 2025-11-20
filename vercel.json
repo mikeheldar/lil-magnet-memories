@@ -38,6 +38,10 @@
       "destination": "/api/apple-pay-domain-association"
     },
     {
+      "source": "/apple-pay-domain-association",
+      "destination": "/api/apple-pay-domain-association"
+    },
+    {
       "source": "/((?!assets/)(?!.well-known/).*)",
       "destination": "/index.html"
     }
