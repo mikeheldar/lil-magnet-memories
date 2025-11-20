@@ -8,6 +8,7 @@
       <div class="text-subtitle1 text-grey-7">
         Manage system configuration and admin users
       </div>
+      <!-- Admin page loaded -->
     </div>
 
     <!-- Admin Status Card -->
