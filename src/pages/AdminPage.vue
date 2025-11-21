@@ -501,8 +501,12 @@ export default {
         allUsers.value = Object.entries(rolesConfig)
           .map(([email, role]) => ({
             email,
-            role,
+            role: role || USER_ROLES.CUSTOMER, // Ensure role is always defined
           }))
+          .filter((user) => {
+            // Only include users with valid roles (exclude undefined/null)
+            return user.role && Object.values(USER_ROLES).includes(user.role);
+          })
           .sort((a, b) => {
             // Sort: admins first, then operators, then customers
             // Within each group, sort alphabetically

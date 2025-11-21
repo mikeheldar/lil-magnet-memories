@@ -17,7 +17,6 @@ export const USER_ROLES = {
 // Initial admin emails to seed on first load
 const INITIAL_ADMIN_EMAILS = [
   'michael.helmandarley@gmail.com',
-  'amy.helmandarley@gmail.com',
   'lilmagnetmemories@gmail.com',
 ];
 
