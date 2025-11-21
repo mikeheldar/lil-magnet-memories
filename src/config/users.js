@@ -30,6 +30,17 @@ export const USERS_CONFIG = {
   async loadUserRoles() {
     try {
       console.log('Loading user roles from Firebase...');
+      console.log('Network status:', typeof navigator !== 'undefined' ? (navigator.onLine ? 'online' : 'offline') : 'unknown');
+      
+      // Try to ensure network is enabled before making request
+      try {
+        const { enableNetwork } = await import('firebase/firestore');
+        await enableNetwork(db);
+        console.log('Firestore network explicitly enabled');
+      } catch (networkError) {
+        console.warn('Could not explicitly enable network (may already be enabled):', networkError);
+      }
+      
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
       
       // Add timeout to prevent hanging
@@ -86,6 +97,19 @@ export const USERS_CONFIG = {
         code: error.code,
         name: error.name,
       });
+      
+      // If we get an "unavailable" or "offline" error, try to force network enable
+      if (error.code === 'unavailable' || error.message?.includes('offline')) {
+        console.log('Attempting to force Firestore online...');
+        try {
+          const { enableNetwork } = await import('firebase/firestore');
+          await enableNetwork(db);
+          console.log('Network force-enabled, but returning empty for this request');
+        } catch (networkError) {
+          console.warn('Could not force enable network:', networkError);
+        }
+      }
+      
       return {};
     }
   },

@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, enableNetwork, disableNetwork } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 import { config } from '../config/environment.js';
@@ -60,6 +60,38 @@ if (appCheckSiteKey) {
 
 // Initialize Firestore (use default database - Firebase creates it automatically)
 export const db = getFirestore(app);
+
+// Ensure Firestore is online - force network connection
+// This helps prevent "client is offline" errors
+enableNetwork(db).then(() => {
+  console.log('✅ Firestore network enabled');
+}).catch((error) => {
+  console.warn('⚠️ Could not enable Firestore network:', error);
+  // Continue anyway - Firestore will try to connect automatically
+});
+
+// Log connection status periodically (for debugging)
+if (typeof window !== 'undefined') {
+  // Check if we can access navigator.onLine
+  const checkConnection = () => {
+    console.log('Network status:', navigator.onLine ? 'online' : 'offline');
+  };
+  
+  // Check immediately
+  checkConnection();
+  
+  // Listen for online/offline events
+  window.addEventListener('online', () => {
+    console.log('🟢 Browser came online - re-enabling Firestore network');
+    enableNetwork(db).catch(err => console.warn('Failed to enable network:', err));
+    checkConnection();
+  });
+  
+  window.addEventListener('offline', () => {
+    console.log('🔴 Browser went offline');
+    checkConnection();
+  });
+}
 
 // Initialize Storage
 export const storage = getStorage(app);
