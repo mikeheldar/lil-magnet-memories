@@ -60,16 +60,21 @@ export const USERS_CONFIG = {
         }
       }
 
-      // Try to save if we updated anything (non-blocking)
+      // Try to save if we updated anything (non-blocking, don't wait for it)
+      // This should not block the UI - initial admins work via hardcoded list
       const needsUpdate = INITIAL_ADMIN_EMAILS.some(email => {
         const normalizedEmail = email.toLowerCase().trim();
         return !rolesData[normalizedEmail] || rolesData[normalizedEmail] !== USER_ROLES.ADMIN;
       });
 
       if (needsUpdate) {
-        USERS_CONFIG.saveUserRoles(rolesData).catch(() => {
-          // Silently fail - initial admins work via hardcoded list anyway
-        });
+        // Fire and forget - don't block on this
+        setTimeout(() => {
+          USERS_CONFIG.saveUserRoles(rolesData).catch(() => {
+            // Silently fail - initial admins work via hardcoded list anyway
+            console.log('Background save of initial admins failed (non-critical)');
+          });
+        }, 0);
       }
 
       return rolesData;
@@ -231,20 +236,26 @@ export const USERS_CONFIG = {
   // Get all users with their roles
   // Always includes initial admins even when offline
   async getAllUsersWithRoles() {
-    let rolesConfig = {};
+    // Start with initial admins immediately (fast path)
+    const rolesConfig = {};
+    for (const email of INITIAL_ADMIN_EMAILS) {
+      const normalizedEmail = email.toLowerCase().trim();
+      rolesConfig[normalizedEmail] = USER_ROLES.ADMIN;
+    }
+    
+    // Try to load from Firebase, but don't block if it's slow
     try {
-      rolesConfig = await USERS_CONFIG.loadUserRoles();
+      const firebaseRoles = await USERS_CONFIG.loadUserRoles();
+      // Merge Firebase roles into our config (Firebase takes precedence)
+      if (firebaseRoles && typeof firebaseRoles === 'object') {
+        Object.assign(rolesConfig, firebaseRoles);
+      }
     } catch (error) {
-      console.warn('Failed to load all users from Firebase:', error);
-      // Continue with empty object - we'll add initial admins below
+      console.warn('Failed to load all users from Firebase (using initial admins only):', error);
+      // Continue with initial admins - they're already in rolesConfig
     }
     
-    // Ensure we have an object
-    if (!rolesConfig || typeof rolesConfig !== 'object') {
-      rolesConfig = {};
-    }
-    
-    // Always include initial admins, even when offline
+    // Ensure initial admins are always present (in case Firebase overwrote them)
     for (const email of INITIAL_ADMIN_EMAILS) {
       const normalizedEmail = email.toLowerCase().trim();
       rolesConfig[normalizedEmail] = USER_ROLES.ADMIN;

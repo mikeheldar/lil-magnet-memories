@@ -575,10 +575,22 @@ export default {
       // Check admin status immediately (sync check works offline)
       isAdmin.value = authService.isAdmin();
       
-      // Load all users with roles (this will trigger seeding if needed)
-      // Do this in background - don't block on it
+      // Show initial admins immediately (from hardcoded list) so UI appears fast
+      const initialAdmins = [
+        'michael.helmandarley@gmail.com',
+        'lilmagnetmemories@gmail.com',
+      ];
+      allUsers.value = initialAdmins.map(email => ({
+        email,
+        role: USER_ROLES.ADMIN,
+      }));
+      console.log('Showing initial admins immediately:', initialAdmins);
+      
+      // Load all users with roles from Firebase in background (non-blocking)
+      // This will update the list once Firebase responds
       loadAllUsers().catch((error) => {
         console.error('Error loading users (non-blocking):', error);
+        // Keep initial admins visible even if Firebase fails
       });
       
       // Also check async for Firebase-based admins (non-blocking)
