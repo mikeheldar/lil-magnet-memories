@@ -369,9 +369,30 @@ export default {
       }
 
       addingUser.value = true;
+      
+      // Add timeout to prevent infinite spinning
+      const timeoutId = setTimeout(() => {
+        if (addingUser.value) {
+          console.error('Add user role timeout - operation took too long');
+          addingUser.value = false;
+          $q.notify({
+            type: 'negative',
+            message: 'Operation timed out',
+            caption: 'The request took too long. Please check your connection and try again.',
+            position: 'top',
+            timeout: 5000,
+          });
+        }
+      }, 30000); // 30 second timeout
+      
       try {
         console.log(`Adding user role: ${newUserEmail.value} as ${newUserRole.value}`);
-        await USERS_CONFIG.setUserRole(newUserEmail.value, newUserRole.value);
+        console.log('Environment:', window.location.hostname);
+        
+        const setRolePromise = USERS_CONFIG.setUserRole(newUserEmail.value, newUserRole.value);
+        await setRolePromise;
+        clearTimeout(timeoutId);
+        
         console.log('User role added successfully, reloading users...');
         
         // Try to reload users, but don't fail if it errors
@@ -394,20 +415,36 @@ export default {
         newUserRole.value = '';
         editingUser.value = null;
       } catch (error) {
+        clearTimeout(timeoutId);
         console.error('Error adding/updating user:', error);
         console.error('Error details:', {
           message: error.message,
           code: error.code,
           stack: error.stack,
+          name: error.name,
         });
+        console.error('Full error object:', error);
+        
+        let errorMessage = error.message || 'An error occurred. Please check console for details.';
+        if (error.code === 'permission-denied') {
+          errorMessage = 'Permission denied. Please check Firestore security rules.';
+        } else if (error.code === 'unavailable' || error.message?.includes('offline')) {
+          errorMessage = 'Firebase is offline. Please check your internet connection.';
+        } else if (error.code === 'failed-precondition') {
+          errorMessage = 'Firebase is not available. Please check your connection and try again.';
+        } else if (error.message?.includes('timeout') || error.message?.includes('timed out')) {
+          errorMessage = 'Request timed out. Please try again.';
+        }
+        
         $q.notify({
           type: 'negative',
           message: editingUser.value ? 'Failed to update role' : 'Failed to add user',
-          caption: error.message || 'An error occurred. Please check console for details.',
+          caption: errorMessage,
           position: 'top',
           timeout: 5000,
         });
       } finally {
+        clearTimeout(timeoutId);
         addingUser.value = false;
       }
     };

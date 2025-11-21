@@ -29,14 +29,27 @@ export const USERS_CONFIG = {
   // Returns empty object if offline/error - initial admins handled separately
   async loadUserRoles() {
     try {
+      console.log('Loading user roles from Firebase...');
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
-      const usersSnap = await getDoc(usersRef);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('loadUserRoles timeout after 15 seconds')), 15000);
+      });
+      
+      const usersSnap = await Promise.race([
+        getDoc(usersRef),
+        timeoutPromise,
+      ]);
 
       let rolesData = {};
       if (usersSnap.exists()) {
         rolesData = usersSnap.data();
         // Remove timestamp field if it exists
         delete rolesData.updatedAt;
+        console.log('Loaded user roles from Firebase:', Object.keys(rolesData).length, 'users');
+      } else {
+        console.log('No user roles document found in Firebase');
       }
 
       // Always ensure initial admins are in the data
@@ -62,7 +75,12 @@ export const USERS_CONFIG = {
       return rolesData;
     } catch (error) {
       // If offline or error, return empty - initial admins handled in getUserRole()
-      console.log('Firebase offline or error, using hardcoded admin list');
+      console.error('Firebase offline or error loading user roles:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        name: error.name,
+      });
       return {};
     }
   },
@@ -74,14 +92,31 @@ export const USERS_CONFIG = {
     }
     
     try {
+      console.log('Saving user roles to Firebase...', Object.keys(rolesConfig).length, 'users');
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
-      await setDoc(usersRef, {
-        ...rolesConfig,
-        updatedAt: new Date(),
-      }, { merge: false }); // Use setDoc with merge:false to replace entire document
-      console.log('User roles saved to Firebase');
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('saveUserRoles timeout after 15 seconds')), 15000);
+      });
+      
+      await Promise.race([
+        setDoc(usersRef, {
+          ...rolesConfig,
+          updatedAt: new Date(),
+        }, { merge: false }), // Use setDoc with merge:false to replace entire document
+        timeoutPromise,
+      ]);
+      
+      console.log('User roles saved to Firebase successfully');
     } catch (error) {
       console.error('Error saving user roles:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        name: error.name,
+        stack: error.stack,
+      });
       // Provide more helpful error message
       if (error.code === 'permission-denied') {
         throw new Error('Permission denied. Please check Firestore security rules.');
@@ -89,6 +124,8 @@ export const USERS_CONFIG = {
         throw new Error('Firebase is offline. Changes will be saved when connection is restored. Please check your internet connection.');
       } else if (error.code === 'failed-precondition') {
         throw new Error('Firebase is not available. Please check your connection and try again.');
+      } else if (error.message?.includes('timeout')) {
+        throw new Error('Request timed out. Please check your connection and try again.');
       }
       throw error;
     }
