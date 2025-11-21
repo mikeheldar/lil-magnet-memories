@@ -420,10 +420,7 @@ import { useCart } from '../composables/useCart.js';
 import { useQuasar } from 'quasar';
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
-import {
-  useCustomerType,
-  CUSTOMER_TYPES,
-} from '../composables/useCustomerType.js';
+import { useCustomerType } from '../composables/useCustomerType.js';
 
 export default {
   name: 'MainLayout',
@@ -731,7 +728,6 @@ export default {
       uploadLinkCaption,
       handleUploadClick,
       showMarketEventDialog,
-      activeMarketEvent,
       confirmAtMarketEvent,
       goToOnlineOrder,
     };
