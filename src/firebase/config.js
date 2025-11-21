@@ -77,22 +77,40 @@ const initializeNetwork = async () => {
   
   networkInitializingPromise = (async () => {
     try {
-      // First, try to disable to reset any stuck offline state
+      // Try to clear persistence first (if possible) to reset any stuck state
+      // This requires the database to not be in use, so we do it early
       try {
-        await disableNetwork(db);
-        console.log('Network disabled (reset)');
-        await new Promise(resolve => setTimeout(resolve, 200));
-      } catch (e) {
-        // Ignore - might already be disabled or not initialized yet
-        console.log('Network disable attempt:', e.message);
+        // Note: clearIndexedDbPersistence requires all connections to be closed
+        // We'll try it but it might fail if db is already in use
+        await clearIndexedDbPersistence(db);
+        console.log('✅ Cleared Firestore persistence');
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (persistenceError) {
+        // Expected to fail if db is already in use - that's okay
+        if (persistenceError.code !== 'failed-precondition') {
+          console.log('Persistence clear attempt:', persistenceError.message);
+        }
       }
       
-      // Now enable network
-      await enableNetwork(db);
+      // Multiple disable/enable cycles to force reset
+      for (let cycle = 0; cycle < 3; cycle++) {
+        try {
+          await disableNetwork(db);
+          await new Promise(resolve => setTimeout(resolve, 300));
+          await enableNetwork(db);
+          await new Promise(resolve => setTimeout(resolve, 500));
+          if (cycle === 0) {
+            console.log('Network reset cycle', cycle + 1);
+          }
+        } catch (e) {
+          // Ignore errors - might already be in desired state
+        }
+      }
+      
       console.log('✅ Firestore network enabled');
       
       // Wait longer to ensure connection is established
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Verify connection by attempting to read from an existing collection
       // This actually tests if we can connect, not just trigger an attempt
@@ -187,20 +205,30 @@ export const retryOnOffline = async (operation, maxRetries = 5) => {
         console.warn(`⚠️ Operation failed with offline error (attempt ${attempt + 1}/${maxRetries}):`, error.message);
         
         if (attempt < maxRetries - 1) {
-          // More aggressive network reset
+          // More aggressive network reset with multiple cycles
           try {
             console.log(`🔄 Resetting network connection (attempt ${attempt + 1})...`);
             
-            // Disable network
-            await disableNetwork(db);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Try to clear persistence if possible (might fail if db is in use)
+            try {
+              await clearIndexedDbPersistence(db);
+              console.log('✅ Cleared persistence during retry');
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (persistenceError) {
+              // Expected to fail if db is in use - that's okay
+            }
             
-            // Enable network
-            await enableNetwork(db);
+            // Multiple disable/enable cycles for more aggressive reset
+            for (let cycle = 0; cycle < 2; cycle++) {
+              await disableNetwork(db);
+              await new Promise(resolve => setTimeout(resolve, 500));
+              await enableNetwork(db);
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
             console.log('✅ Network re-enabled');
             
             // Wait longer for connection to establish (exponential backoff)
-            const waitTime = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s, 8s
+            const waitTime = 2000 * Math.pow(2, attempt); // 2s, 4s, 8s, 16s
             console.log(`⏳ Waiting ${waitTime}ms for connection to stabilize...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
             
