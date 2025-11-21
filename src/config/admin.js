@@ -46,12 +46,39 @@ export const ADMIN_CONFIG = {
   async loadAdminEmails() {
     try {
       console.log('Loading admin emails from Firebase...');
+      
+      // Ensure network is ready before making request
+      try {
+        const { ensureNetworkReady } = await import('../firebase/config.js');
+        await ensureNetworkReady();
+        console.log('Network ready for admin emails');
+      } catch (networkError) {
+        console.warn('Could not ensure network ready:', networkError);
+        // Try direct enable as fallback
+        try {
+          const { enableNetwork } = await import('firebase/firestore');
+          await enableNetwork(db);
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (fallbackError) {
+          console.warn('Fallback network enable also failed:', fallbackError);
+        }
+      }
+      
       const adminRef = doc(
         db,
         ADMIN_CONFIG.adminCollection,
         ADMIN_CONFIG.adminDocId
       );
-      const adminSnap = await getDoc(adminRef);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('loadAdminEmails timeout after 10 seconds')), 10000);
+      });
+      
+      const adminSnap = await Promise.race([
+        getDoc(adminRef),
+        timeoutPromise,
+      ]);
 
       if (adminSnap.exists()) {
         const data = adminSnap.data();
@@ -78,15 +105,42 @@ export const ADMIN_CONFIG = {
   // Save admin emails to Firebase
   async saveAdminEmails(emails) {
     try {
+      // Ensure network is ready before saving
+      try {
+        const { ensureNetworkReady } = await import('../firebase/config.js');
+        await ensureNetworkReady();
+        console.log('Network ready for saving admin emails');
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (networkError) {
+        console.warn('Could not ensure network ready:', networkError);
+        // Try direct enable as fallback
+        try {
+          const { enableNetwork } = await import('firebase/firestore');
+          await enableNetwork(db);
+          await new Promise(resolve => setTimeout(resolve, 300));
+        } catch (fallbackError) {
+          console.warn('Fallback network enable also failed:', fallbackError);
+        }
+      }
+      
       const adminRef = doc(
         db,
         ADMIN_CONFIG.adminCollection,
         ADMIN_CONFIG.adminDocId
       );
-      await setDoc(adminRef, {
-        emails: emails,
-        updatedAt: new Date(),
+      
+      // Add timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('saveAdminEmails timeout after 10 seconds')), 10000);
       });
+      
+      await Promise.race([
+        setDoc(adminRef, {
+          emails: emails,
+          updatedAt: new Date(),
+        }),
+        timeoutPromise,
+      ]);
       ADMIN_CONFIG.adminEmails = [...emails];
       console.log('Admin emails saved to Firebase:', ADMIN_CONFIG.adminEmails);
     } catch (error) {

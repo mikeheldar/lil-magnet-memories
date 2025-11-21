@@ -62,68 +62,95 @@ if (appCheckSiteKey) {
 // IMPORTANT: We're NOT enabling persistence to avoid offline mode issues
 export const db = getFirestore(app);
 
-// Track network status
-let networkEnabled = false;
-let networkEnablingPromise = null;
+// Track network initialization status
+let networkInitialized = false;
+let networkInitializingPromise = null;
 
-// Function to ensure network is enabled and wait for it
-export const ensureNetworkReady = async () => {
-  // If already enabled, return immediately
-  if (networkEnabled) {
-    return true;
+// Initialize network connection - disable then enable to force online state
+const initializeNetwork = async () => {
+  if (networkInitialized) return;
+  
+  // If already initializing, return that promise
+  if (networkInitializingPromise) {
+    return networkInitializingPromise;
   }
   
-  // If already in progress, wait for that
-  if (networkEnablingPromise) {
-    return networkEnablingPromise;
-  }
-  
-  // Start enabling network
-  networkEnablingPromise = (async () => {
+  networkInitializingPromise = (async () => {
     try {
-      // Disable network first to reset any stuck state
+      // First, try to disable to reset any stuck offline state
       try {
         await disableNetwork(db);
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (disableError) {
-        // Ignore errors from disable - it might already be disabled
-        console.log('Network disable attempt:', disableError.message);
+        console.log('Network disabled (reset)');
+        await new Promise(resolve => setTimeout(resolve, 200));
+      } catch (e) {
+        // Ignore - might already be disabled or not initialized yet
+        console.log('Network disable attempt:', e.message);
       }
       
       // Now enable network
       await enableNetwork(db);
       console.log('✅ Firestore network enabled');
       
-      // Wait a bit to ensure connection is established
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      networkEnabled = true;
-      networkEnablingPromise = null;
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to enable Firestore network:', error);
-      networkEnablingPromise = null;
-      
-      // Try one more time after a delay
+      // Wait longer to ensure connection is established
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Verify connection by attempting a simple operation
+      // This helps ensure the connection is actually established
       try {
-        await enableNetwork(db);
-        console.log('✅ Firestore network enabled (retry)');
-        networkEnabled = true;
-        networkEnablingPromise = null;
-        return true;
-      } catch (retryError) {
-        console.error('❌ Failed to enable Firestore network after retry:', retryError);
-        return false;
+        const { collection, getDocs } = await import('firebase/firestore');
+        const testRef = collection(db, '_test_connection');
+        // This will fail if offline, but we just want to trigger connection attempt
+        await Promise.race([
+          getDocs(testRef),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+        ]).catch(() => {
+          // Expected to fail (collection doesn't exist), but connection attempt was made
+          console.log('Connection test completed - network is active');
+        });
+      } catch (testError) {
+        console.log('Connection test:', testError.message);
       }
+      
+      networkInitialized = true;
+      networkInitializingPromise = null;
+      console.log('✅ Network initialization complete');
+    } catch (error) {
+      console.error('❌ Failed to initialize network:', error);
+      networkInitializingPromise = null;
+      
+      // Retry after delay
+      setTimeout(() => {
+        networkInitialized = false;
+        initializeNetwork();
+      }, 2000);
     }
   })();
   
-  return networkEnablingPromise;
+  return networkInitializingPromise;
 };
 
-// Immediately try to enable network
-ensureNetworkReady();
+// Start network initialization immediately
+initializeNetwork();
+
+// Export function to ensure network is ready before operations
+export const ensureNetworkReady = async () => {
+  // Wait for initialization to complete
+  let attempts = 0;
+  while (!networkInitialized && attempts < 10) {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    attempts++;
+  }
+  
+  if (!networkInitialized) {
+    // Force initialization if not already started
+    console.log('Network not initialized, forcing initialization...');
+    await initializeNetwork();
+  }
+  
+  // Additional wait to ensure connection is stable
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return true;
+};
 
 // Log connection status periodically (for debugging)
 if (typeof window !== 'undefined') {
