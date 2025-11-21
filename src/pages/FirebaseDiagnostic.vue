@@ -45,6 +45,16 @@
 
         <div class="q-gutter-md">
           <q-btn
+            @click="runDiagnosticInfo"
+            color="info"
+            :loading="diagnosticLoading"
+            class="full-width"
+            icon="info"
+          >
+            Run Full Diagnostic
+          </q-btn>
+
+          <q-btn
             @click="runConnectionTest"
             color="primary"
             :loading="connectionTestLoading"
@@ -63,6 +73,15 @@
           </q-btn>
 
           <q-btn
+            @click="runRetryTest"
+            color="orange"
+            :loading="retryTestLoading"
+            class="full-width"
+          >
+            Test with Retry Mechanism
+          </q-btn>
+
+          <q-btn
             @click="runMinimalOrderTest"
             color="accent"
             :loading="minimalOrderTestLoading"
@@ -71,6 +90,22 @@
             Test Minimal Order Write
           </q-btn>
         </div>
+      </q-card-section>
+
+      <q-separator v-if="diagnosticInfo" />
+
+      <q-card-section v-if="diagnosticInfo">
+        <div class="text-h6 q-mb-md">Diagnostic Information</div>
+        <q-expansion-item
+          v-for="(section, key) in diagnosticInfo"
+          :key="key"
+          :label="formatLabel(key)"
+          :caption="getSectionSummary(section)"
+          icon="info"
+          class="q-mb-sm"
+        >
+          <pre class="q-pa-md bg-grey-1 rounded-borders text-caption">{{ JSON.stringify(section, null, 2) }}</pre>
+        </q-expansion-item>
       </q-card-section>
 
       <q-separator />
@@ -100,7 +135,16 @@
               <q-item-label caption>
                 {{ result.success ? 'Success' : 'Failed' }}:
                 {{ result.message }}
+                <span v-if="result.code" class="text-grey-6"> ({{ result.code }})</span>
               </q-item-label>
+              <q-expansion-item
+                v-if="result.details"
+                label="View Details"
+                dense
+                class="q-mt-xs"
+              >
+                <pre class="q-pa-sm bg-grey-1 rounded-borders text-caption">{{ JSON.stringify(result.details, null, 2) }}</pre>
+              </q-expansion-item>
             </q-item-section>
           </q-item>
         </q-list>
@@ -161,7 +205,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { firebaseTest } from '../services/firebaseTest';
 import { useQuasar } from 'quasar';
 
@@ -172,13 +216,18 @@ export default {
     const connectionTestLoading = ref(false);
     const basicWriteTestLoading = ref(false);
     const minimalOrderTestLoading = ref(false);
+    const retryTestLoading = ref(false);
+    const diagnosticLoading = ref(false);
     const testResults = ref([]);
+    const diagnosticInfo = ref(null);
 
-    const addTestResult = (test, success, message) => {
+    const addTestResult = (test, success, message, details = null) => {
       testResults.value.push({
         test,
         success,
         message,
+        code: details?.code,
+        details,
         timestamp: new Date().toLocaleTimeString(),
       });
     };
@@ -190,10 +239,11 @@ export default {
         addTestResult(
           'Firebase Connection',
           result.success,
-          result.success ? 'Connected successfully' : result.error
+          result.success ? 'Connected successfully' : result.error,
+          result
         );
       } catch (error) {
-        addTestResult('Firebase Connection', false, error.message);
+        addTestResult('Firebase Connection', false, error.message, { error: error.message, code: error.code });
       } finally {
         connectionTestLoading.value = false;
       }
@@ -206,10 +256,11 @@ export default {
         addTestResult(
           'Basic Write Test',
           result.success,
-          result.success ? `Document created: ${result.docId}` : result.error
+          result.success ? `Document created: ${result.docId}` : result.error,
+          result
         );
       } catch (error) {
-        addTestResult('Basic Write Test', false, error.message);
+        addTestResult('Basic Write Test', false, error.message, { error: error.message, code: error.code });
       } finally {
         basicWriteTestLoading.value = false;
       }
@@ -222,23 +273,109 @@ export default {
         addTestResult(
           'Minimal Order Write',
           result.success,
-          result.success ? `Order created: ${result.docId}` : result.error
+          result.success ? `Order created: ${result.docId}` : result.error,
+          result
         );
       } catch (error) {
-        addTestResult('Minimal Order Write', false, error.message);
+        addTestResult('Minimal Order Write', false, error.message, { error: error.message, code: error.code });
       } finally {
         minimalOrderTestLoading.value = false;
       }
     };
 
+    const runRetryTest = async () => {
+      retryTestLoading.value = true;
+      try {
+        const result = await firebaseTest.testWithRetry();
+        addTestResult(
+          'Retry Mechanism Test',
+          result.success,
+          result.success ? `Document created with retry: ${result.docId}` : result.error,
+          result
+        );
+      } catch (error) {
+        addTestResult('Retry Mechanism Test', false, error.message, { error: error.message, code: error.code });
+      } finally {
+        retryTestLoading.value = false;
+      }
+    };
+
+    const runDiagnosticInfo = async () => {
+      diagnosticLoading.value = true;
+      try {
+        const info = await firebaseTest.getDiagnosticInfo();
+        diagnosticInfo.value = info;
+        addTestResult(
+          'Full Diagnostic',
+          info.errors.length === 0 && info.firestore.canRead,
+          info.errors.length === 0 
+            ? 'All checks passed' 
+            : `${info.errors.length} issue(s) found - see diagnostic info below`,
+          info
+        );
+      } catch (error) {
+        addTestResult('Full Diagnostic', false, error.message, { error: error.message });
+      } finally {
+        diagnosticLoading.value = false;
+      }
+    };
+
+    const formatLabel = (key) => {
+      const labels = {
+        timestamp: 'Timestamp',
+        environment: 'Environment',
+        browser: 'Browser Info',
+        firebase: 'Firebase Config',
+        auth: 'Authentication',
+        firestore: 'Firestore Status',
+        indexedDB: 'IndexedDB',
+        errors: 'Errors',
+      };
+      return labels[key] || key;
+    };
+
+    const getSectionSummary = (section) => {
+      if (typeof section === 'object' && section !== null) {
+        if (section.online !== undefined) return `Online: ${section.online}`;
+        if (section.canRead !== undefined) return `Can Read: ${section.canRead}, Can Write: ${section.canWrite || 'unknown'}`;
+        if (section.hasUser !== undefined) return `User: ${section.hasUser ? (section.email || 'anonymous') : 'none'}`;
+        if (Array.isArray(section)) return `${section.length} items`;
+        if (section.available !== undefined) return `Available: ${section.available}`;
+      }
+      return '';
+    };
+
+    const addTestResult = (test, success, message, details = null) => {
+      testResults.value.push({
+        test,
+        success,
+        message,
+        code: details?.code,
+        details,
+        timestamp: new Date().toLocaleTimeString(),
+      });
+    };
+
+    // Auto-run diagnostic on mount
+    onMounted(() => {
+      runDiagnosticInfo();
+    });
+
     return {
       connectionTestLoading,
       basicWriteTestLoading,
       minimalOrderTestLoading,
+      retryTestLoading,
+      diagnosticLoading,
       testResults,
+      diagnosticInfo,
       runConnectionTest,
       runBasicWriteTest,
       runMinimalOrderTest,
+      runRetryTest,
+      runDiagnosticInfo,
+      formatLabel,
+      getSectionSummary,
     };
   },
 };
