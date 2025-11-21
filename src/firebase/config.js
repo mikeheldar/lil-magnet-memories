@@ -96,6 +96,7 @@ const initializeNetwork = async () => {
       
       // Verify connection by attempting to read from an existing collection
       // This actually tests if we can connect, not just trigger an attempt
+      // Use a longer timeout since connection might be slow to establish
       try {
         const { collection, getDocs, query, limit } = await import('firebase/firestore');
         // Try to read from a collection that should exist (user_roles or admin_config)
@@ -105,12 +106,12 @@ const initializeNetwork = async () => {
         
         await Promise.race([
           getDocs(testQuery),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
         ]);
         
         console.log('✅ Connection verified - successfully read from Firestore');
       } catch (testError) {
-        // If user_roles doesn't exist, try admin_config
+        // If user_roles doesn't exist or times out, try admin_config
         try {
           const { collection, getDocs, query, limit } = await import('firebase/firestore');
           const testRef = collection(db, 'admin_config');
@@ -118,15 +119,19 @@ const initializeNetwork = async () => {
           
           await Promise.race([
             getDocs(testQuery),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
           ]);
           
           console.log('✅ Connection verified - successfully read from Firestore');
         } catch (secondTestError) {
-          // If both fail, it might be offline or collections don't exist
+          // If both fail or timeout, it might be offline or connection is slow
           // But we'll still mark as initialized - the retry mechanism will handle it
-          console.warn('⚠️ Connection test inconclusive:', testError.message, secondTestError.message);
-          console.log('⚠️ Will rely on retry mechanism for actual operations');
+          if (testError.message.includes('timeout') || secondTestError.message.includes('timeout')) {
+            console.log('⏭️ Connection test timed out - will rely on retry mechanism');
+          } else {
+            console.warn('⚠️ Connection test inconclusive:', testError.message);
+            console.log('⚠️ Will rely on retry mechanism for actual operations');
+          }
         }
       }
       
@@ -199,18 +204,24 @@ export const retryOnOffline = async (operation, maxRetries = 5) => {
             console.log(`⏳ Waiting ${waitTime}ms for connection to stabilize...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
             
-            // Try to verify connection with a simple read
+            // Try to verify connection with a simple read (skip if it takes too long)
+            // Don't block retries if verification is slow
             try {
               const { collection, getDocs, query, limit } = await import('firebase/firestore');
               const testRef = collection(db, 'user_roles');
               const testQuery = query(testRef, limit(1));
               await Promise.race([
                 getDocs(testQuery),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
               ]);
               console.log('✅ Connection verified before retry');
             } catch (verifyError) {
-              console.warn('⚠️ Connection verification failed, but proceeding with retry:', verifyError.message);
+              // Don't log timeout as warning - it's expected if connection is slow
+              if (!verifyError.message.includes('timeout')) {
+                console.warn('⚠️ Connection verification failed, but proceeding with retry:', verifyError.message);
+              } else {
+                console.log('⏭️ Skipping connection verification (timeout) - proceeding with retry');
+              }
             }
           } catch (networkError) {
             console.warn('⚠️ Failed to reset network:', networkError);

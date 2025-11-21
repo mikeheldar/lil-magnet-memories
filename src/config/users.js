@@ -60,9 +60,9 @@ export const USERS_CONFIG = {
       // Use retry mechanism for offline errors
       const { retryOnOffline } = await import('../firebase/config.js');
       
-      // Add timeout to prevent hanging
+      // Add timeout to prevent hanging (increased to 60 seconds to allow for retries)
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('loadUserRoles timeout after 15 seconds')), 15000);
+        setTimeout(() => reject(new Error('loadUserRoles timeout after 60 seconds')), 60000);
       });
       
       const usersSnap = await retryOnOffline(async () => {
