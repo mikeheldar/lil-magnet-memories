@@ -80,28 +80,28 @@
                 {{ getRoleLabel(user.role) }}
               </q-chip>
               <q-btn
-                v-if="user.email !== currentUser?.email"
                 icon="edit"
                 size="sm"
-                color="primary"
+                :color="canEditOrRemove(user.email) ? 'primary' : 'grey-5'"
                 flat
                 round
-                @click="editUserRole(user)"
+                :disable="!canEditOrRemove(user.email)"
+                @click="canEditOrRemove(user.email) && editUserRole(user)"
                 class="q-ml-sm"
               >
-                <q-tooltip>Edit role</q-tooltip>
+                <q-tooltip>{{ getEditTooltip(user.email) }}</q-tooltip>
               </q-btn>
               <q-btn
-                v-if="user.email !== currentUser?.email"
                 icon="close"
                 size="sm"
-                color="negative"
+                :color="canEditOrRemove(user.email) ? 'negative' : 'grey-5'"
                 flat
                 round
-                @click="removeUserRole(user.email)"
+                :disable="!canEditOrRemove(user.email)"
+                @click="canEditOrRemove(user.email) && removeUserRole(user.email)"
                 class="q-ml-sm"
               >
-                <q-tooltip>Remove role (becomes customer)</q-tooltip>
+                <q-tooltip>{{ getRemoveTooltip(user.email) }}</q-tooltip>
               </q-btn>
             </div>
           </div>
@@ -250,6 +250,56 @@ export default {
       return emailRegex.test(email);
     };
 
+    // Initial admin emails (hardcoded for security)
+    const INITIAL_ADMIN_EMAILS = [
+      'michael.helmandarley@gmail.com',
+      'lilmagnetmemories@gmail.com',
+    ];
+
+    const isInitialAdmin = (email) => {
+      if (!email) return false;
+      const normalizedEmail = email.toLowerCase().trim();
+      return INITIAL_ADMIN_EMAILS.includes(normalizedEmail);
+    };
+
+    const canEditOrRemove = (userEmail) => {
+      if (!userEmail) return false;
+      const normalizedEmail = userEmail.toLowerCase().trim();
+      // Can't edit/remove if it's the current user
+      if (currentUser.value?.email?.toLowerCase().trim() === normalizedEmail) {
+        return false;
+      }
+      // Can't edit/remove if it's an initial admin
+      if (isInitialAdmin(normalizedEmail)) {
+        return false;
+      }
+      return true;
+    };
+
+    const getEditTooltip = (userEmail) => {
+      if (!userEmail) return 'Edit role';
+      const normalizedEmail = userEmail.toLowerCase().trim();
+      if (currentUser.value?.email?.toLowerCase().trim() === normalizedEmail) {
+        return 'You cannot remove or edit your own admin account';
+      }
+      if (isInitialAdmin(normalizedEmail)) {
+        return 'Initial admin - cannot be removed or edited';
+      }
+      return 'Edit role';
+    };
+
+    const getRemoveTooltip = (userEmail) => {
+      if (!userEmail) return 'Remove role (becomes customer)';
+      const normalizedEmail = userEmail.toLowerCase().trim();
+      if (currentUser.value?.email?.toLowerCase().trim() === normalizedEmail) {
+        return 'You cannot remove or edit your own admin account';
+      }
+      if (isInitialAdmin(normalizedEmail)) {
+        return 'Initial admin - cannot be removed or edited';
+      }
+      return 'Remove role (becomes customer)';
+    };
+
     const roleOptions = [
       { label: 'Operator', value: USER_ROLES.OPERATOR },
       { label: 'Admin', value: USER_ROLES.ADMIN },
@@ -363,6 +413,33 @@ export default {
     };
 
     const editUserRole = (user) => {
+      if (!canEditOrRemove(user.email)) {
+        const showNotification = (type, message, caption) => {
+          try {
+            if ($q && $q.notify && typeof $q.notify === 'function') {
+              $q.notify({
+                type,
+                message,
+                caption,
+                position: 'top',
+                timeout: 5000,
+              });
+            } else {
+              alert(`${message}: ${caption}`);
+            }
+          } catch (err) {
+            console.error('Notification error:', err);
+            alert(`${message}: ${caption}`);
+          }
+        };
+        const normalizedEmail = user.email?.toLowerCase().trim();
+        if (currentUser.value?.email?.toLowerCase().trim() === normalizedEmail) {
+          showNotification('negative', 'Cannot edit', 'You cannot remove or edit your own admin account');
+        } else if (isInitialAdmin(normalizedEmail)) {
+          showNotification('negative', 'Cannot edit', 'Initial admin - cannot be removed or edited');
+        }
+        return;
+      }
       editingUser.value = user;
       newUserEmail.value = user.email;
       newUserRole.value = user.role;
@@ -494,6 +571,10 @@ export default {
       removeUserRole,
       editUserRole,
       cancelEdit,
+      canEditOrRemove,
+      getEditTooltip,
+      getRemoveTooltip,
+      isInitialAdmin,
     };
   },
 };

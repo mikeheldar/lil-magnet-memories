@@ -182,7 +182,6 @@ export const USERS_CONFIG = {
     // Don't allow removing initial admin roles
     const INITIAL_ADMIN_EMAILS = [
       'michael.helmandarley@gmail.com',
-      'amy.helmandarley@gmail.com',
       'lilmagnetmemories@gmail.com',
     ];
     if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
