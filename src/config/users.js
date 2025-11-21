@@ -57,15 +57,20 @@ export const USERS_CONFIG = {
       
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
       
+      // Use retry mechanism for offline errors
+      const { retryOnOffline } = await import('../firebase/config.js');
+      
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('loadUserRoles timeout after 15 seconds')), 15000);
       });
       
-      const usersSnap = await Promise.race([
-        getDoc(usersRef),
-        timeoutPromise,
-      ]);
+      const usersSnap = await retryOnOffline(async () => {
+        return await Promise.race([
+          getDoc(usersRef),
+          timeoutPromise,
+        ]);
+      });
 
       let rolesData = {};
       if (usersSnap.exists()) {
@@ -167,13 +172,18 @@ export const USERS_CONFIG = {
         setTimeout(() => reject(new Error('saveUserRoles timeout after 20 seconds')), 20000);
       });
       
-      await Promise.race([
-        setDoc(usersRef, {
-          ...rolesConfig,
-          updatedAt: new Date(),
-        }, { merge: false }), // Use setDoc with merge:false to replace entire document
-        timeoutPromise,
-      ]);
+      // Use retry mechanism for offline errors
+      const { retryOnOffline } = await import('../firebase/config.js');
+      
+      await retryOnOffline(async () => {
+        return await Promise.race([
+          setDoc(usersRef, {
+            ...rolesConfig,
+            updatedAt: new Date(),
+          }, { merge: false }), // Use setDoc with merge:false to replace entire document
+          timeoutPromise,
+        ]);
+      });
       
       console.log('User roles saved to Firebase successfully');
     } catch (error) {

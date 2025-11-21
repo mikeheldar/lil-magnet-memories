@@ -152,6 +152,40 @@ export const ensureNetworkReady = async () => {
   return true;
 };
 
+// Helper function to retry Firestore operations when offline
+export const retryOnOffline = async (operation, maxRetries = 3) => {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      // Check if it's an offline error
+      if (error.code === 'unavailable' || error.message?.includes('offline')) {
+        console.warn(`Operation failed with offline error (attempt ${attempt + 1}/${maxRetries}):`, error.message);
+        
+        if (attempt < maxRetries - 1) {
+          // Force network enable again
+          try {
+            await disableNetwork(db);
+            await new Promise(resolve => setTimeout(resolve, 200));
+            await enableNetwork(db);
+            console.log('Network re-enabled after offline error');
+            // Wait longer for connection to establish
+            await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          } catch (networkError) {
+            console.warn('Failed to re-enable network:', networkError);
+          }
+          
+          // Continue to retry
+          continue;
+        }
+      }
+      
+      // If not an offline error, or we've exhausted retries, throw
+      throw error;
+    }
+  }
+};
+
 // Log connection status periodically (for debugging)
 if (typeof window !== 'undefined') {
   // Check if we can access navigator.onLine

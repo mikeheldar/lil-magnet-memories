@@ -70,15 +70,20 @@ export const ADMIN_CONFIG = {
         ADMIN_CONFIG.adminDocId
       );
       
+      // Use retry mechanism for offline errors
+      const { retryOnOffline } = await import('../firebase/config.js');
+      
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('loadAdminEmails timeout after 10 seconds')), 10000);
       });
       
-      const adminSnap = await Promise.race([
-        getDoc(adminRef),
-        timeoutPromise,
-      ]);
+      const adminSnap = await retryOnOffline(async () => {
+        return await Promise.race([
+          getDoc(adminRef),
+          timeoutPromise,
+        ]);
+      });
 
       if (adminSnap.exists()) {
         const data = adminSnap.data();
@@ -129,18 +134,23 @@ export const ADMIN_CONFIG = {
         ADMIN_CONFIG.adminDocId
       );
       
+      // Use retry mechanism for offline errors
+      const { retryOnOffline } = await import('../firebase/config.js');
+      
       // Add timeout
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('saveAdminEmails timeout after 10 seconds')), 10000);
       });
       
-      await Promise.race([
-        setDoc(adminRef, {
-          emails: emails,
-          updatedAt: new Date(),
-        }),
-        timeoutPromise,
-      ]);
+      await retryOnOffline(async () => {
+        return await Promise.race([
+          setDoc(adminRef, {
+            emails: emails,
+            updatedAt: new Date(),
+          }),
+          timeoutPromise,
+        ]);
+      });
       ADMIN_CONFIG.adminEmails = [...emails];
       console.log('Admin emails saved to Firebase:', ADMIN_CONFIG.adminEmails);
     } catch (error) {
