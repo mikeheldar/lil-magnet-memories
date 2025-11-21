@@ -237,6 +237,8 @@ export default {
   name: 'AdminPage',
   setup() {
     const $q = useQuasar();
+    // Store quasar instance in a ref to ensure it's always available
+    const quasarInstance = ref($q);
     const currentUser = ref(null);
     const isAdmin = ref(false);
     const newUserEmail = ref('');
@@ -375,10 +377,10 @@ export default {
     };
 
     const removeUserRole = async (email) => {
-      // Capture $q at the start to ensure it's in scope for the callback
-      const quasar = $q;
+      // Use the quasar instance from ref to ensure it's always available
+      const q = quasarInstance.value;
       
-      quasar.dialog({
+      q.dialog({
         title: 'Remove User Role',
         message: `Are you sure you want to remove the role from ${email}?`,
         cancel: true,
@@ -392,7 +394,7 @@ export default {
           await USERS_CONFIG.removeUserRole(email);
           await loadAllUsers();
 
-          quasar.notify({
+          q.notify({
             type: 'positive',
             message: 'User role removed successfully',
             caption: `${email} is now a regular customer`,
@@ -400,18 +402,23 @@ export default {
           });
         } catch (error) {
           console.error('Error removing user role:', error);
-          // Use the captured quasar reference
-          try {
-            quasar.notify({
-              type: 'negative',
-              message: 'Failed to remove user role',
-              caption: error.message || 'An error occurred',
-              position: 'top',
-              timeout: 5000,
-            });
-          } catch (notifyError) {
-            // Fallback if notify fails
-            console.error('Failed to show notification:', notifyError);
+          // Use the quasar instance from ref
+          const notifyFn = q && q.notify;
+          if (notifyFn && typeof notifyFn === 'function') {
+            try {
+              notifyFn.call(q, {
+                type: 'negative',
+                message: 'Failed to remove user role',
+                caption: error.message || 'An error occurred',
+                position: 'top',
+                timeout: 5000,
+              });
+            } catch (notifyError) {
+              console.error('Failed to show notification:', notifyError);
+              alert(`Failed to remove user role: ${error.message || 'An error occurred'}`);
+            }
+          } else {
+            // Fallback if notify isn't available
             alert(`Failed to remove user role: ${error.message || 'An error occurred'}`);
           }
         }
