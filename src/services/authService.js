@@ -120,23 +120,50 @@ class AuthService {
   }
 
   // Get current user
+  // Also check auth.currentUser directly for immediate availability on page refresh
   getCurrentUser() {
+    // Check cached user first (synchronously available on page load)
+    const currentUser = auth.currentUser;
+    if (currentUser && !currentUser.isAnonymous) {
+      // If we have a cached authenticated user but this.user is null, restore it
+      if (!this.user) {
+        console.log('Restoring user from auth.currentUser in getCurrentUser:', currentUser.email);
+        this.user = currentUser;
+        this.notifyListeners();
+      }
+      return this.user;
+    }
+    // Fallback to this.user (set by auth state listener)
     return this.user;
   }
 
   // Check if user is authenticated
+  // Also check auth.currentUser directly for immediate availability on page refresh
   isAuthenticated() {
+    // Check cached user first (synchronously available on page load)
+    const currentUser = auth.currentUser;
+    if (currentUser && !currentUser.isAnonymous) {
+      // If we have a cached authenticated user but this.user is null, restore it
+      if (!this.user) {
+        console.log('Restoring user from auth.currentUser:', currentUser.email);
+        this.user = currentUser;
+        this.notifyListeners();
+      }
+      return true;
+    }
+    // Fallback to this.user (set by auth state listener)
     return !!this.user;
   }
 
   // Check if current user is an admin
   // This is synchronous and checks hardcoded admin list first for immediate response
   isAdmin() {
-    if (!this.user || !this.user.email) {
+    const user = this.getCurrentUser(); // Use getCurrentUser to ensure user is restored from cache
+    if (!user || !user.email) {
       return false;
     }
     
-    const userEmail = this.user.email.toLowerCase().trim();
+    const userEmail = user.email.toLowerCase().trim();
     
     // First check initial admin emails (hardcoded, always available)
     const INITIAL_ADMIN_EMAILS = [
@@ -161,11 +188,12 @@ class AuthService {
   // Async version that checks Firebase user roles (for admins added via UI)
   // Note: Initial admins are checked synchronously in isAdmin() for immediate response
   async isAdminAsync() {
-    if (!this.user || !this.user.email) {
+    const user = this.getCurrentUser(); // Use getCurrentUser to ensure user is restored from cache
+    if (!user || !user.email) {
       return false;
     }
     
-    const userEmail = this.user.email.toLowerCase().trim();
+    const userEmail = user.email.toLowerCase().trim();
     
     // First check sync methods (fast, works offline)
     if (this.isAdmin()) {
@@ -184,27 +212,29 @@ class AuthService {
   
   // Check if current user is an operator (includes admins)
   async isOperator() {
-    if (!this.user || !this.user.email) {
+    const user = this.getCurrentUser(); // Use getCurrentUser to ensure user is restored from cache
+    if (!user || !user.email) {
       return false;
     }
     const isAdminUser = this.isAdmin();
     if (isAdminUser) {
       return true; // Admins are also operators
     }
-    const userRole = await USERS_CONFIG.getUserRole(this.user.email);
+    const userRole = await USERS_CONFIG.getUserRole(user.email);
     return userRole === USER_ROLES.OPERATOR;
   }
   
   // Get current user's role
   async getUserRole() {
-    if (!this.user || !this.user.email) {
+    const user = this.getCurrentUser(); // Use getCurrentUser to ensure user is restored from cache
+    if (!user || !user.email) {
       return null;
     }
     // Check if admin first
     if (this.isAdmin()) {
       return USER_ROLES.ADMIN;
     }
-    return await USERS_CONFIG.getUserRole(this.user.email);
+    return await USERS_CONFIG.getUserRole(user.email);
   }
   
   // Check if a specific email is admin
@@ -236,12 +266,13 @@ class AuthService {
 
   // Get current user with admin status
   getCurrentUserWithAdminStatus() {
-    if (!this.user) {
+    const user = this.getCurrentUser(); // Use getCurrentUser to ensure user is restored from cache
+    if (!user) {
       return null;
     }
 
     return {
-      ...this.user,
+      ...user,
       isAdmin: this.isAdmin(),
     };
   }
@@ -262,6 +293,16 @@ class AuthService {
   // Initialize auth state listener
   init() {
     console.log('Initializing Firebase Auth...');
+    
+    // Immediately check for cached user (available synchronously on page load)
+    const currentUser = auth.currentUser;
+    if (currentUser && !currentUser.isAnonymous) {
+      console.log('Restoring authenticated user from cache:', currentUser.email);
+      this.user = currentUser;
+      this.notifyListeners();
+    }
+    
+    // Set up listener for future auth state changes
     onAuthStateChanged(auth, (user) => {
       // Ignore anonymous users - they're only used for Storage rules, not for UI
       if (user && user.isAnonymous) {
