@@ -88,3 +88,4 @@ jspm_packages/
 service-account*.json
 prod-service-account.json
 test-service-account.json
+firestore-admin-service-account.json
