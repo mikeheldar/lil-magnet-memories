@@ -33,17 +33,26 @@ export const USERS_CONFIG = {
       console.log('Network status:', typeof navigator !== 'undefined' ? (navigator.onLine ? 'online' : 'offline') : 'unknown');
       
       // Try to ensure network is enabled before making request
-      // Import the ensureNetworkEnabled function from firebase config
       try {
-        // Wait a bit for network to be ready
-        await new Promise(resolve => setTimeout(resolve, 100));
-        const { enableNetwork } = await import('firebase/firestore');
-        await enableNetwork(db);
-        console.log('Firestore network explicitly enabled');
+        // Import and use the ensureNetworkReady function from firebase config
+        const { ensureNetworkReady } = await import('../firebase/config.js');
+        const networkReady = await ensureNetworkReady();
+        if (!networkReady) {
+          console.warn('⚠️ Network may not be ready, proceeding anyway...');
+        }
+        console.log('Firestore network explicitly enabled and ready');
         // Wait a bit more to ensure it's fully connected
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 300));
       } catch (networkError) {
         console.warn('Could not explicitly enable network (may already be enabled):', networkError);
+        // Try direct enable as fallback
+        try {
+          const { enableNetwork } = await import('firebase/firestore');
+          await enableNetwork(db);
+          await new Promise(resolve => setTimeout(resolve, 300));
+        } catch (fallbackError) {
+          console.warn('Fallback network enable also failed:', fallbackError);
+        }
       }
       
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
@@ -130,13 +139,25 @@ export const USERS_CONFIG = {
       
       // Ensure network is enabled before saving
       try {
-        const { enableNetwork } = await import('firebase/firestore');
-        await enableNetwork(db);
-        console.log('Network enabled before save');
+        // Import and use the ensureNetworkReady function from firebase config
+        const { ensureNetworkReady } = await import('../firebase/config.js');
+        const networkReady = await ensureNetworkReady();
+        if (!networkReady) {
+          console.warn('⚠️ Network may not be ready, proceeding anyway...');
+        }
+        console.log('Network enabled and ready before save');
         // Small delay to ensure connection is established
         await new Promise(resolve => setTimeout(resolve, 300));
       } catch (networkError) {
         console.warn('Could not enable network before save:', networkError);
+        // Try direct enable as fallback
+        try {
+          const { enableNetwork } = await import('firebase/firestore');
+          await enableNetwork(db);
+          await new Promise(resolve => setTimeout(resolve, 300));
+        } catch (fallbackError) {
+          console.warn('Fallback network enable also failed:', fallbackError);
+        }
       }
       
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');

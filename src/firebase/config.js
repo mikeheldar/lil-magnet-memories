@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, enableNetwork, disableNetwork, clearIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, enableNetwork, disableNetwork, clearIndexedDbPersistence, waitForPendingWrites } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 import { config } from '../config/environment.js';
@@ -59,53 +59,71 @@ if (appCheckSiteKey) {
 }
 
 // Initialize Firestore (use default database - Firebase creates it automatically)
+// IMPORTANT: We're NOT enabling persistence to avoid offline mode issues
 export const db = getFirestore(app);
 
-// Force Firestore to be online - enable network immediately
-// This prevents "client is offline" errors
-// If persistence is causing issues, we'll try to clear it first
-(async () => {
-  try {
-    // First, try to enable network
-    await enableNetwork(db);
-    console.log('✅ Firestore network enabled');
-  } catch (error) {
-    console.warn('⚠️ Could not enable Firestore network:', error);
-    // If enabling network fails, it might be due to persistence issues
-    // Try clearing persistence and then enabling network
-    if (error.code === 'failed-precondition') {
-      try {
-        console.log('Attempting to clear Firestore persistence...');
-        await clearIndexedDbPersistence(db);
-        console.log('✅ Cleared Firestore persistence');
-        // Try enabling network again after clearing persistence
-        await enableNetwork(db);
-        console.log('✅ Firestore network enabled after clearing persistence');
-      } catch (clearError) {
-        console.warn('⚠️ Could not clear persistence (may require page reload):', clearError);
-        // Try enabling network anyway
-        setTimeout(async () => {
-          try {
-            await enableNetwork(db);
-            console.log('✅ Firestore network enabled (delayed retry)');
-          } catch (retryError) {
-            console.error('❌ Failed to enable Firestore network after all retries:', retryError);
-          }
-        }, 1000);
-      }
-    } else {
-      // For other errors, just retry after a delay
-      setTimeout(async () => {
-        try {
-          await enableNetwork(db);
-          console.log('✅ Firestore network enabled (retry)');
-        } catch (retryError) {
-          console.error('❌ Failed to enable Firestore network after retry:', retryError);
-        }
-      }, 1000);
-    }
+// Track network status
+let networkEnabled = false;
+let networkEnablingPromise = null;
+
+// Function to ensure network is enabled and wait for it
+export const ensureNetworkReady = async () => {
+  // If already enabled, return immediately
+  if (networkEnabled) {
+    return true;
   }
-})();
+  
+  // If already in progress, wait for that
+  if (networkEnablingPromise) {
+    return networkEnablingPromise;
+  }
+  
+  // Start enabling network
+  networkEnablingPromise = (async () => {
+    try {
+      // Disable network first to reset any stuck state
+      try {
+        await disableNetwork(db);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (disableError) {
+        // Ignore errors from disable - it might already be disabled
+        console.log('Network disable attempt:', disableError.message);
+      }
+      
+      // Now enable network
+      await enableNetwork(db);
+      console.log('✅ Firestore network enabled');
+      
+      // Wait a bit to ensure connection is established
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      networkEnabled = true;
+      networkEnablingPromise = null;
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to enable Firestore network:', error);
+      networkEnablingPromise = null;
+      
+      // Try one more time after a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        await enableNetwork(db);
+        console.log('✅ Firestore network enabled (retry)');
+        networkEnabled = true;
+        networkEnablingPromise = null;
+        return true;
+      } catch (retryError) {
+        console.error('❌ Failed to enable Firestore network after retry:', retryError);
+        return false;
+      }
+    }
+  })();
+  
+  return networkEnablingPromise;
+};
+
+// Immediately try to enable network
+ensureNetworkReady();
 
 // Log connection status periodically (for debugging)
 if (typeof window !== 'undefined') {
