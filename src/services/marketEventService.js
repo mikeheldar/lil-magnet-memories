@@ -3,6 +3,10 @@ import { firebaseService } from './firebaseService.js';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 
+// Track if we've waited for auth state restoration on this page load
+let authStateWaitCompleted = false;
+const AUTH_STATE_WAIT_TIME = 500; // ms to wait for Firebase to restore auth state
+
 class MarketEventService {
   constructor() {
     this.eventsCache = [];
@@ -24,10 +28,17 @@ class MarketEventService {
   }
 
   // Ensure we have an auth context (anonymous if needed) for Firestore reads
+  // Only sign in anonymously if there's no user OR the current user is anonymous
+  // Never replace an authenticated user with anonymous
   async ensureAuth() {
     try {
+      // Wait once per page load to allow Firebase to restore authenticated sessions
+      if (!authStateWaitCompleted) {
+        await new Promise((resolve) => setTimeout(resolve, AUTH_STATE_WAIT_TIME));
+        authStateWaitCompleted = true;
+      }
       const currentUser = auth.currentUser;
-      if (!currentUser) {
+      if (!currentUser || currentUser.isAnonymous) {
         // Sign in anonymously to ensure we can read market events
         // This is silent - users won't see any indication
         await signInAnonymously(auth);

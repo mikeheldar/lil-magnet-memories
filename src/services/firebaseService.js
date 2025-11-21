@@ -50,12 +50,23 @@ export const DEFAULT_SHIPPING_OPTIONS = [
   },
 ];
 
+// Track if we've waited for auth state restoration on this page load
+let authStateWaitCompleted = false;
+const AUTH_STATE_WAIT_TIME = 500; // ms to wait for Firebase to restore auth state
+
 class FirebaseService {
   // Upload photos to Firebase Storage
   async uploadPhotos(photos) {
     // Ensure we have an auth context for Storage rules (request.auth != null)
     // Do this silently - don't expose anonymous auth to users
-    if (!auth?.currentUser) {
+    // Only sign in anonymously if there's no user OR the current user is anonymous
+    // Wait once per page load to allow Firebase to restore authenticated sessions
+    if (!authStateWaitCompleted) {
+      await new Promise((resolve) => setTimeout(resolve, AUTH_STATE_WAIT_TIME));
+      authStateWaitCompleted = true;
+    }
+    const currentUser = auth?.currentUser;
+    if (!currentUser || currentUser.isAnonymous) {
       try {
         const userCredential = await signInAnonymously(auth);
         // Wait a moment for auth state to propagate
@@ -144,7 +155,15 @@ class FirebaseService {
 
       // Ensure we have an auth context for Firestore rules (request.auth != null)
       // This is critical - Firestore rules require authentication
-      if (!auth?.currentUser) {
+      // Only sign in anonymously if there's no user OR the current user is anonymous
+      // Never replace an authenticated user with anonymous
+      // Wait once per page load to allow Firebase to restore authenticated sessions
+      if (!authStateWaitCompleted) {
+        await new Promise((resolve) => setTimeout(resolve, AUTH_STATE_WAIT_TIME));
+        authStateWaitCompleted = true;
+      }
+      const currentUser = auth?.currentUser;
+      if (!currentUser || currentUser.isAnonymous) {
         console.log('No authenticated user before Firestore save, signing in anonymously...');
         try {
           await signInAnonymously(auth);
