@@ -370,18 +370,30 @@ export default {
 
       addingUser.value = true;
       
+      // Capture $q in a local variable to ensure it's available
+      const quasar = $q;
+      
       // Add timeout to prevent infinite spinning
       const timeoutId = setTimeout(() => {
         if (addingUser.value) {
           console.error('Add user role timeout - operation took too long');
           addingUser.value = false;
-          $q.notify({
-            type: 'negative',
-            message: 'Operation timed out',
-            caption: 'The request took too long. Please check your connection and try again.',
-            position: 'top',
-            timeout: 5000,
-          });
+          try {
+            if (quasar && quasar.notify && typeof quasar.notify === 'function') {
+              quasar.notify({
+                type: 'negative',
+                message: 'Operation timed out',
+                caption: 'The request took too long. Please check your connection and try again.',
+                position: 'top',
+                timeout: 5000,
+              });
+            } else {
+              alert('Operation timed out. The request took too long. Please check your connection and try again.');
+            }
+          } catch (err) {
+            console.error('Notification error:', err);
+            alert('Operation timed out. The request took too long. Please check your connection and try again.');
+          }
         }
       }, 30000); // 30 second timeout
       
@@ -404,12 +416,21 @@ export default {
           // Still show success - the user was added even if we can't reload the list
         }
 
-        $q.notify({
-          type: 'positive',
-          message: editingUser.value ? 'Role updated successfully' : 'User added successfully',
-          caption: `${newUserEmail.value} is now a ${getRoleLabel(newUserRole.value)}`,
-          position: 'top',
-        });
+        try {
+          if (quasar && quasar.notify && typeof quasar.notify === 'function') {
+            quasar.notify({
+              type: 'positive',
+              message: editingUser.value ? 'Role updated successfully' : 'User added successfully',
+              caption: `${newUserEmail.value} is now a ${getRoleLabel(newUserRole.value)}`,
+              position: 'top',
+            });
+          } else {
+            alert(`${editingUser.value ? 'Role updated' : 'User added'} successfully: ${newUserEmail.value} is now a ${getRoleLabel(newUserRole.value)}`);
+          }
+        } catch (err) {
+          console.error('Notification error:', err);
+          alert(`${editingUser.value ? 'Role updated' : 'User added'} successfully: ${newUserEmail.value} is now a ${getRoleLabel(newUserRole.value)}`);
+        }
 
         newUserEmail.value = '';
         newUserRole.value = '';
@@ -436,13 +457,22 @@ export default {
           errorMessage = 'Request timed out. Please try again.';
         }
         
-        $q.notify({
-          type: 'negative',
-          message: editingUser.value ? 'Failed to update role' : 'Failed to add user',
-          caption: errorMessage,
-          position: 'top',
-          timeout: 5000,
-        });
+        try {
+          if (quasar && quasar.notify && typeof quasar.notify === 'function') {
+            quasar.notify({
+              type: 'negative',
+              message: editingUser.value ? 'Failed to update role' : 'Failed to add user',
+              caption: errorMessage,
+              position: 'top',
+              timeout: 5000,
+            });
+          } else {
+            alert(`${editingUser.value ? 'Failed to update role' : 'Failed to add user'}: ${errorMessage}`);
+          }
+        } catch (err) {
+          console.error('Notification error:', err);
+          alert(`${editingUser.value ? 'Failed to update role' : 'Failed to add user'}: ${errorMessage}`);
+        }
       } finally {
         clearTimeout(timeoutId);
         addingUser.value = false;

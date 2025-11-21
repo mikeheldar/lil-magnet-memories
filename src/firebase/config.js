@@ -61,14 +61,42 @@ if (appCheckSiteKey) {
 // Initialize Firestore (use default database - Firebase creates it automatically)
 export const db = getFirestore(app);
 
-// Ensure Firestore is online - force network connection
-// This helps prevent "client is offline" errors
-enableNetwork(db).then(() => {
-  console.log('✅ Firestore network enabled');
-}).catch((error) => {
-  console.warn('⚠️ Could not enable Firestore network:', error);
-  // Continue anyway - Firestore will try to connect automatically
-});
+// Create a promise that resolves when network is enabled
+// This ensures Firestore is online before any operations
+let networkEnabledPromise = null;
+
+const ensureNetworkEnabled = async () => {
+  if (networkEnabledPromise) {
+    return networkEnabledPromise;
+  }
+  
+  networkEnabledPromise = (async () => {
+    try {
+      await enableNetwork(db);
+      console.log('✅ Firestore network enabled');
+      return true;
+    } catch (error) {
+      console.warn('⚠️ Could not enable Firestore network:', error);
+      // Try again after a short delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      try {
+        await enableNetwork(db);
+        console.log('✅ Firestore network enabled (retry)');
+        return true;
+      } catch (retryError) {
+        console.error('❌ Failed to enable Firestore network after retry:', retryError);
+        // Reset promise so we can try again
+        networkEnabledPromise = null;
+        return false;
+      }
+    }
+  })();
+  
+  return networkEnabledPromise;
+};
+
+// Immediately try to enable network
+ensureNetworkEnabled();
 
 // Log connection status periodically (for debugging)
 if (typeof window !== 'undefined') {

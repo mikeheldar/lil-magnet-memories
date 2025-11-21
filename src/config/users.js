@@ -33,10 +33,15 @@ export const USERS_CONFIG = {
       console.log('Network status:', typeof navigator !== 'undefined' ? (navigator.onLine ? 'online' : 'offline') : 'unknown');
       
       // Try to ensure network is enabled before making request
+      // Import the ensureNetworkEnabled function from firebase config
       try {
+        // Wait a bit for network to be ready
+        await new Promise(resolve => setTimeout(resolve, 100));
         const { enableNetwork } = await import('firebase/firestore');
         await enableNetwork(db);
         console.log('Firestore network explicitly enabled');
+        // Wait a bit more to ensure it's fully connected
+        await new Promise(resolve => setTimeout(resolve, 200));
       } catch (networkError) {
         console.warn('Could not explicitly enable network (may already be enabled):', networkError);
       }
@@ -122,11 +127,23 @@ export const USERS_CONFIG = {
     
     try {
       console.log('Saving user roles to Firebase...', Object.keys(rolesConfig).length, 'users');
+      
+      // Ensure network is enabled before saving
+      try {
+        const { enableNetwork } = await import('firebase/firestore');
+        await enableNetwork(db);
+        console.log('Network enabled before save');
+        // Small delay to ensure connection is established
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (networkError) {
+        console.warn('Could not enable network before save:', networkError);
+      }
+      
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
       
-      // Add timeout to prevent hanging
+      // Add timeout to prevent hanging (increased to 20 seconds)
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('saveUserRoles timeout after 15 seconds')), 15000);
+        setTimeout(() => reject(new Error('saveUserRoles timeout after 20 seconds')), 20000);
       });
       
       await Promise.race([
