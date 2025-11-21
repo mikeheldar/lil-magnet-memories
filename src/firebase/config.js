@@ -94,21 +94,40 @@ const initializeNetwork = async () => {
       // Wait longer to ensure connection is established
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Verify connection by attempting a simple operation
-      // This helps ensure the connection is actually established
+      // Verify connection by attempting to read from an existing collection
+      // This actually tests if we can connect, not just trigger an attempt
       try {
-        const { collection, getDocs } = await import('firebase/firestore');
-        const testRef = collection(db, '_test_connection');
-        // This will fail if offline, but we just want to trigger connection attempt
+        const { collection, getDocs, query, limit } = await import('firebase/firestore');
+        // Try to read from a collection that should exist (user_roles or admin_config)
+        // This will succeed if online, fail if offline
+        const testRef = collection(db, 'user_roles');
+        const testQuery = query(testRef, limit(1));
+        
         await Promise.race([
-          getDocs(testRef),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
-        ]).catch(() => {
-          // Expected to fail (collection doesn't exist), but connection attempt was made
-          console.log('Connection test completed - network is active');
-        });
+          getDocs(testQuery),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+        ]);
+        
+        console.log('✅ Connection verified - successfully read from Firestore');
       } catch (testError) {
-        console.log('Connection test:', testError.message);
+        // If user_roles doesn't exist, try admin_config
+        try {
+          const { collection, getDocs, query, limit } = await import('firebase/firestore');
+          const testRef = collection(db, 'admin_config');
+          const testQuery = query(testRef, limit(1));
+          
+          await Promise.race([
+            getDocs(testQuery),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+          ]);
+          
+          console.log('✅ Connection verified - successfully read from Firestore');
+        } catch (secondTestError) {
+          // If both fail, it might be offline or collections don't exist
+          // But we'll still mark as initialized - the retry mechanism will handle it
+          console.warn('⚠️ Connection test inconclusive:', testError.message, secondTestError.message);
+          console.log('⚠️ Will rely on retry mechanism for actual operations');
+        }
       }
       
       networkInitialized = true;
@@ -153,26 +172,48 @@ export const ensureNetworkReady = async () => {
 };
 
 // Helper function to retry Firestore operations when offline
-export const retryOnOffline = async (operation, maxRetries = 3) => {
+export const retryOnOffline = async (operation, maxRetries = 5) => {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error) {
       // Check if it's an offline error
       if (error.code === 'unavailable' || error.message?.includes('offline')) {
-        console.warn(`Operation failed with offline error (attempt ${attempt + 1}/${maxRetries}):`, error.message);
+        console.warn(`⚠️ Operation failed with offline error (attempt ${attempt + 1}/${maxRetries}):`, error.message);
         
         if (attempt < maxRetries - 1) {
-          // Force network enable again
+          // More aggressive network reset
           try {
+            console.log(`🔄 Resetting network connection (attempt ${attempt + 1})...`);
+            
+            // Disable network
             await disableNetwork(db);
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Enable network
             await enableNetwork(db);
-            console.log('Network re-enabled after offline error');
-            // Wait longer for connection to establish
-            await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+            console.log('✅ Network re-enabled');
+            
+            // Wait longer for connection to establish (exponential backoff)
+            const waitTime = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s, 8s
+            console.log(`⏳ Waiting ${waitTime}ms for connection to stabilize...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            
+            // Try to verify connection with a simple read
+            try {
+              const { collection, getDocs, query, limit } = await import('firebase/firestore');
+              const testRef = collection(db, 'user_roles');
+              const testQuery = query(testRef, limit(1));
+              await Promise.race([
+                getDocs(testQuery),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+              ]);
+              console.log('✅ Connection verified before retry');
+            } catch (verifyError) {
+              console.warn('⚠️ Connection verification failed, but proceeding with retry:', verifyError.message);
+            }
           } catch (networkError) {
-            console.warn('Failed to re-enable network:', networkError);
+            console.warn('⚠️ Failed to reset network:', networkError);
           }
           
           // Continue to retry
@@ -184,6 +225,9 @@ export const retryOnOffline = async (operation, maxRetries = 3) => {
       throw error;
     }
   }
+  
+  // If we get here, all retries failed
+  throw new Error('Operation failed after all retries');
 };
 
 // Log connection status periodically (for debugging)
