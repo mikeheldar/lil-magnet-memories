@@ -4,7 +4,12 @@
       <div class="col-12 col-md-10 col-lg-8">
         <div class="text-h4 q-mb-md">Shopping Cart</div>
 
-        <div v-if="cartItems.length === 0" class="text-center q-pa-xl">
+        <div v-if="loading" class="text-center q-pa-xl">
+          <q-spinner color="primary" size="3em" />
+          <div class="text-h6 text-grey-6 q-mt-md">Loading cart...</div>
+        </div>
+
+        <div v-else-if="cartItems.length === 0" class="text-center q-pa-xl">
           <q-icon
             name="shopping_cart"
             size="64px"
@@ -200,6 +205,9 @@
 <script>
 import { useCart } from '../composables/useCart.js';
 import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+import { auth } from '../firebase/config.js';
+import { firebaseService } from '../services/firebaseService.js';
 
 export default {
   name: 'CartPage',
@@ -207,6 +215,30 @@ export default {
     const router = useRouter();
     const { cartItems, cartSubtotal, updateQuantity, removeFromCart } =
       useCart();
+    const loading = ref(true);
+
+    // Ensure cart is loaded when page mounts
+    onMounted(async () => {
+      console.log('🛒 CartPage mounted, checking cart...');
+      const user = auth.currentUser;
+      if (user && !user.isAnonymous) {
+        console.log('👤 User logged in, loading cart from Firestore:', user.uid);
+        try {
+          const firestoreCart = await firebaseService.loadUserCart(user.uid);
+          console.log('📦 Cart loaded on CartPage mount:', firestoreCart?.length || 0, 'items');
+          if (firestoreCart && firestoreCart.length > 0) {
+            // Update cart items if Firestore has more recent data
+            cartItems.value = firestoreCart;
+            console.log('✅ Cart updated from Firestore on CartPage');
+          }
+        } catch (error) {
+          console.error('❌ Error loading cart on CartPage mount:', error);
+        }
+      } else {
+        console.log('ℹ️ User not logged in or anonymous, using localStorage cart');
+      }
+      loading.value = false;
+    });
 
     const goToCheckout = () => {
       router.push('/checkout');
@@ -218,6 +250,7 @@ export default {
       updateQuantity,
       removeFromCart,
       goToCheckout,
+      loading,
     };
   },
 };
