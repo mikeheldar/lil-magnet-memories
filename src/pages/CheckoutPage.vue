@@ -2081,24 +2081,53 @@ export default {
           squarePaymentRequest.value = paymentRequest;
 
           try {
-            console.log('🍎 Initializing Apple Pay...');
+            // Check if we're in Safari
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isMac = /Mac/.test(navigator.platform);
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            
+            console.log('🍎 Initializing Apple Pay...', {
+              isSafari,
+              isMac,
+              isIOS,
+              userAgent: navigator.userAgent,
+              platform: navigator.platform,
+              hasApplePaySession: !!window.ApplePaySession,
+              canMakePayments: window.ApplePaySession ? ApplePaySession.canMakePayments() : 'N/A'
+            });
+            
             const applePay = await payments.applePay(paymentRequest);
             console.log(
               '🍎 Apple Pay object created, checking availability...'
             );
             const canMakePayment = await applePay.canMakePayment();
             console.log('🍎 Apple Pay canMakePayment result:', canMakePayment);
+            
             if (canMakePayment) {
               squareApplePay.value = applePay;
               applePayReady.value = true;
               console.log('✅ Apple Pay is available and ready');
             } else {
               console.warn(
-                '⚠️ Apple Pay is not available on this device/browser'
+                '⚠️ Apple Pay is not available on this device/browser',
+                {
+                  isSafari,
+                  isMac,
+                  isIOS,
+                  hasApplePaySession: !!window.ApplePaySession,
+                  nativeCanMakePayments: window.ApplePaySession ? ApplePaySession.canMakePayments() : false
+                }
               );
               applePayReady.value = false;
-              applePayError.value =
-                'Apple Pay is not available on this device. Make sure you are using Safari or Chrome on a device with Apple Pay set up.';
+              
+              // Provide more specific error message
+              if (isSafari && (isMac || isIOS)) {
+                applePayError.value =
+                  'Apple Pay is not set up on this device. Please add a payment method in Settings > Wallet & Apple Pay.';
+              } else {
+                applePayError.value =
+                  'Apple Pay is not available on this device. Make sure you are using Safari or Chrome on a device with Apple Pay set up.';
+              }
             }
           } catch (appleError) {
             console.error('❌ Apple Pay initialization error:', appleError);
