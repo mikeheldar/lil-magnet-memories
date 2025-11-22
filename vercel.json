@@ -55,10 +55,6 @@
   ],
   "rewrites": [
     {
-      "source": "/.well-known/apple-developer-merchantid-domain-association",
-      "destination": "/api/.well-known/apple-developer-merchantid-domain-association"
-    },
-    {
       "source": "/((?!assets/)(?!api/)(?!.well-known/).*)",
       "destination": "/index.html"
     }
