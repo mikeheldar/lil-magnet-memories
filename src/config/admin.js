@@ -1,12 +1,10 @@
 import {
-  collection,
   doc,
   getDoc,
   setDoc,
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
-import { config } from './environment.js';
 
 // Admin Configuration
 // Initial admin emails (fallback if Firebase is not available)

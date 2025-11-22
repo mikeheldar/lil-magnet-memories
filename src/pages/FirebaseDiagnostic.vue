@@ -345,17 +345,6 @@ export default {
       return '';
     };
 
-    const addTestResult = (test, success, message, details = null) => {
-      testResults.value.push({
-        test,
-        success,
-        message,
-        code: details?.code,
-        details,
-        timestamp: new Date().toLocaleTimeString(),
-      });
-    };
-
     // Auto-run diagnostic on mount
     onMounted(() => {
       runDiagnosticInfo();

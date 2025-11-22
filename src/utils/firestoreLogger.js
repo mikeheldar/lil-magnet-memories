@@ -23,8 +23,8 @@ function getStateSnapshot() {
   return {
     timestamp: new Date().toISOString(),
     browser: {
-      online: navigator.onLine,
-      connection: navigator.connection ? {
+      online: typeof navigator !== 'undefined' ? navigator.onLine : false,
+      connection: typeof navigator !== 'undefined' && navigator.connection ? {
         effectiveType: navigator.connection.effectiveType,
         downlink: navigator.connection.downlink,
         rtt: navigator.connection.rtt,
@@ -51,7 +51,7 @@ export function logOperation(operation, details) {
     operation,
     state: getStateSnapshot(),
     details,
-    startTime: performance.now(),
+    startTime: typeof performance !== 'undefined' ? performance.now() : Date.now(),
   };
   
   operationLogs.push(log);
@@ -76,7 +76,8 @@ export function completeOperation(logId, result) {
   const log = operationLogs.find(l => l.id === logId);
   if (!log) return;
   
-  const duration = performance.now() - log.startTime;
+  const endTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  const duration = endTime - log.startTime;
   
   log.result = {
     success: !result.error,
@@ -89,7 +90,7 @@ export function completeOperation(logId, result) {
     duration: `${duration.toFixed(2)}ms`,
   };
   
-  log.endTime = performance.now();
+  log.endTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
   log.completed = true;
   
   if (result.error) {
