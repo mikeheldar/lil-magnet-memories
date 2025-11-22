@@ -34,9 +34,34 @@
           "value": "attachment; filename=\"apple-developer-merchantid-domain-association\""
         }
       ]
+    },
+    {
+      "source": "/.well-known/apple-developer-merchantid-domain-association.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Content-Encoding",
+          "value": "identity"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"apple-developer-merchantid-domain-association\""
+        }
+      ]
     }
   ],
   "rewrites": [
+    {
+      "source": "/.well-known/apple-developer-merchantid-domain-association",
+      "destination": "/.well-known/apple-developer-merchantid-domain-association.txt"
+    },
     {
       "source": "/((?!assets/)(?!api/)(?!.well-known/).*)",
       "destination": "/index.html"
