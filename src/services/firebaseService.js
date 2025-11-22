@@ -510,7 +510,7 @@ class FirebaseService {
   }
 
   // Product Management Methods
-  async getProducts() {
+  async getProducts(includeTesting = false) {
     try {
       const productsCollection = collection(db, 'products');
       const q = query(productsCollection, orderBy('description', 'asc'));
@@ -518,10 +518,15 @@ class FirebaseService {
 
       const products = [];
       querySnapshot.forEach((doc) => {
-        products.push({
+        const productData = {
           id: doc.id,
           ...doc.data(),
-        });
+        };
+        // Filter out testing products unless explicitly requested (for admins)
+        if (!includeTesting && productData.isTesting === true) {
+          return;
+        }
+        products.push(productData);
       });
 
       return products;

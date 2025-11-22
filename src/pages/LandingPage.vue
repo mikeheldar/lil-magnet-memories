@@ -579,18 +579,25 @@ export default {
 
     const loadProducts = async () => {
       try {
-        const productsData = await firebaseService.getProducts();
+        // Non-admins should not see testing products
+        const isAdmin = authService.isAdmin();
+        const productsData = await firebaseService.getProducts(isAdmin);
         products.value = productsData || [];
       } catch (error) {
         console.error('Error loading products:', error);
       }
     };
 
-    // Separate products into custom and pre-designed
-    // For now, all products are custom. Pre-designed products will have a productType field
+    // Separate products into custom and designer
     const customProducts = computed(() => {
       return products.value.filter(
-        (p) => !p.productType || p.productType === 'custom'
+        (p) => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom'))
+      );
+    });
+    
+    const designerProducts = computed(() => {
+      return products.value.filter(
+        (p) => p.category === 'designer'
       );
     });
 

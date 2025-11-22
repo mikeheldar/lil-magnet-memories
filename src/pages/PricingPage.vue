@@ -27,10 +27,28 @@
                 </q-avatar>
               </q-item-section>
               <q-item-section>
-                <q-item-label class="text-h6">{{
-                  product.description
-                }}</q-item-label>
+                <q-item-label class="text-h6">
+                  {{ product.description }}
+                  <q-chip
+                    v-if="product.isTesting"
+                    color="orange"
+                    text-color="white"
+                    size="sm"
+                    class="q-ml-sm"
+                  >
+                    Testing Only
+                  </q-chip>
+                </q-item-label>
                 <q-item-label caption>
+                  <div class="q-mb-xs">
+                    <q-chip
+                      :color="product.category === 'designer' ? 'purple' : 'primary'"
+                      text-color="white"
+                      size="sm"
+                    >
+                      {{ product.category === 'designer' ? 'Designer Products' : 'Custom Products' }}
+                    </q-chip>
+                  </div>
                   <div
                     v-for="(price, qty) in product.pricing"
                     :key="qty"
@@ -180,6 +198,25 @@
               rows="4"
               class="q-mb-md"
               hint="This will appear on the landing page"
+            />
+
+            <q-select
+              v-model="editingProduct.category"
+              :options="[
+                { label: 'Custom Products', value: 'custom' },
+                { label: 'Designer Products', value: 'designer' }
+              ]"
+              label="Category *"
+              filled
+              class="q-mb-md"
+              hint="Which section this product appears in"
+            />
+
+            <q-toggle
+              v-model="editingProduct.isTesting"
+              label="Testing Only (Admin Only)"
+              class="q-mb-md"
+              hint="This product will only be visible to admins for testing"
             />
 
             <div class="text-body2 q-mb-sm">Product Image</div>
@@ -468,7 +505,8 @@ export default {
 
     const loadProducts = async () => {
       try {
-        const productsData = await firebaseService.getProducts();
+        // Admins see all products including testing ones
+        const productsData = await firebaseService.getProducts(true);
         products.value = productsData || [];
       } catch (error) {
         console.error('Error loading products:', error);
@@ -694,6 +732,8 @@ export default {
         description: '',
         detailedDescription: '',
         imageUrl: '',
+        category: 'custom',
+        isTesting: false,
         pricing: {
           1: 0.0,
         },
@@ -707,6 +747,8 @@ export default {
         description: products.value[index].description,
         detailedDescription: products.value[index].detailedDescription || '',
         imageUrl: products.value[index].imageUrl || '',
+        category: products.value[index].category || 'custom',
+        isTesting: products.value[index].isTesting || false,
         pricing: { ...products.value[index].pricing },
       };
       imageFile.value = null;
@@ -762,10 +804,21 @@ export default {
         pricing[entry.qty] = entry.price;
       });
 
+      if (!editingProduct.value.category) {
+        safeNotify({
+          type: 'negative',
+          message: 'Please select a category for the product',
+          position: 'top',
+        });
+        return;
+      }
+
       const product = {
         description: editingProduct.value.description,
         detailedDescription: editingProduct.value.detailedDescription || '',
         imageUrl: editingProduct.value.imageUrl || '',
+        category: editingProduct.value.category,
+        isTesting: editingProduct.value.isTesting || false,
         pricing,
       };
 

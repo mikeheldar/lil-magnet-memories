@@ -289,11 +289,11 @@
 
             <q-item clickable v-ripple @click="navigateTo('/pricing')">
               <q-item-section avatar>
-                <q-icon name="attach_money" color="green" />
+                <q-icon name="inventory_2" color="green" />
               </q-item-section>
               <q-item-section>
-                <q-item-label>Pricing</q-item-label>
-                <q-item-label caption>Manage product pricing</q-item-label>
+                <q-item-label>Manage Products</q-item-label>
+                <q-item-label caption>Manage products and pricing</q-item-label>
               </q-item-section>
             </q-item>
           </template>
@@ -541,7 +541,7 @@ export default {
           case '/magnet-studio':
             return 'Admin - Magnet Studio';
           case '/pricing':
-            return 'Admin - Pricing';
+            return 'Admin - Manage Products';
           case '/':
           default:
             return 'Lil Magnet Memories';

@@ -769,11 +769,13 @@ export default {
 
     const loadProducts = async () => {
       try {
-        const productsData = await firebaseService.getProducts();
+        // Non-admins should not see testing products
+        const isAdmin = authService.isAdmin();
+        const productsData = await firebaseService.getProducts(isAdmin);
         products.value = productsData || [];
         // Select the first custom product by default
         if (products.value.length > 0) {
-          const customProduct = products.value.find(p => !p.productType || p.productType === 'custom');
+          const customProduct = products.value.find(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
           if (customProduct) {
             selectedProduct.value = customProduct;
           }
