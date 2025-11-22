@@ -195,10 +195,19 @@ export const ensureNetworkReady = async () => {
 };
 
 // Helper function to retry Firestore operations when offline
-export const retryOnOffline = async (operation, maxRetries = 5) => {
+// Each attempt has its own timeout to detect hanging operations
+export const retryOnOffline = async (operation, maxRetries = 5, perAttemptTimeout = 8000) => {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      return await operation();
+      // Wrap each attempt in its own timeout to detect hanging operations
+      const attemptWithTimeout = Promise.race([
+        operation(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Operation timeout after ${perAttemptTimeout}ms (attempt ${attempt + 1})`)), perAttemptTimeout)
+        )
+      ]);
+      
+      return await attemptWithTimeout;
     } catch (error) {
       // Check if it's an offline error OR a timeout (which indicates connection issues)
       const isOfflineError = error.code === 'unavailable' || error.message?.toLowerCase().includes('offline');

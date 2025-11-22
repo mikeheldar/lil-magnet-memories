@@ -18,6 +18,7 @@ This guide will help you create a service account with proper permissions to pro
 ## Step 3: Grant Permissions
 
 1. **In "Grant this service account access to project"**:
+
    - **Role**: Search for and select **"Cloud Datastore User"** or **"Firestore Admin"**
    - For full admin access, select: **"Cloud Datastore User"** (allows read/write)
    - Or for more restricted access: **"Firestore Service Agent"**
@@ -49,6 +50,7 @@ This guide will help you create a service account with proper permissions to pro
 1. **Rename the downloaded file** to: `firestore-admin-service-account.json`
 
 2. **Move it to your project root**:
+
    ```bash
    mv ~/Downloads/[downloaded-file].json /Users/michaelhelman-darley/projects/lil-magnet-memories/firestore-admin-service-account.json
    ```
@@ -85,11 +87,13 @@ For Firestore operations, the service account needs one of these roles:
 ## Verification
 
 After setting up, test with:
+
 ```bash
 node scripts/create-prod-user-roles.js
 ```
 
 If it works, you'll see:
+
 ```
 ✅ Successfully created user_roles/roles_config in production!
 ```
@@ -97,8 +101,8 @@ If it works, you'll see:
 ## Security Notes
 
 ⚠️ **IMPORTANT**:
+
 - Never commit service account JSON files to git
 - Keep them secure and private
 - Only grant minimum necessary permissions
 - Rotate keys periodically
-

@@ -78,18 +78,12 @@ export const ADMIN_CONFIG = {
       // Use retry mechanism for offline errors
       const { retryOnOffline } = await import('../firebase/config.js');
       
-      // Add timeout to prevent hanging (increased to allow for retries)
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('loadAdminEmails timeout after 30 seconds')), 30000);
-      });
-      
       let adminSnap;
       try {
+        // retryOnOffline now handles timeouts per attempt (8s each, 5 retries = up to 40s total)
+        // No need for separate timeout wrapper
         adminSnap = await retryOnOffline(async () => {
-          return await Promise.race([
-            getDoc(adminRef),
-            timeoutPromise,
-          ]);
+          return await getDoc(adminRef);
         });
         completeOperation(logId, { data: { exists: adminSnap.exists() } });
       } catch (error) {
@@ -149,19 +143,12 @@ export const ADMIN_CONFIG = {
       // Use retry mechanism for offline errors
       const { retryOnOffline } = await import('../firebase/config.js');
       
-      // Add timeout
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('saveAdminEmails timeout after 10 seconds')), 10000);
-      });
-      
+      // retryOnOffline now handles timeouts per attempt (8s each, 5 retries = up to 40s total)
       await retryOnOffline(async () => {
-        return await Promise.race([
-          setDoc(adminRef, {
-            emails: emails,
-            updatedAt: new Date(),
-          }),
-          timeoutPromise,
-        ]);
+        return await setDoc(adminRef, {
+          emails: emails,
+          updatedAt: new Date(),
+        });
       });
       ADMIN_CONFIG.adminEmails = [...emails];
       console.log('Admin emails saved to Firebase:', ADMIN_CONFIG.adminEmails);
