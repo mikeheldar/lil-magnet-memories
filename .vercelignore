@@ -1,0 +1,3 @@
+# Exclude .well-known from static build - served via API route
+.well-known/
+

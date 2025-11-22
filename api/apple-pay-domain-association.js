@@ -34,17 +34,23 @@ module.exports = function handler(req, res) {
     }
   }
   
-  // If still not found, try reading the file content directly (embedded fallback)
+  // If still not found, try reading from source (public directory in repo)
   if (!fileContent) {
-    // Last resort: try to read from the source file that should be in the repo
-    const fallbackPath = path.join(__dirname, '../../public/.well-known/apple-developer-merchantid-domain-association');
-    try {
-      if (fs.existsSync(fallbackPath)) {
-        fileContent = fs.readFileSync(fallbackPath, 'utf8');
-        filePath = fallbackPath;
+    const sourcePaths = [
+      path.join(__dirname, '../../public/.well-known/apple-developer-merchantid-domain-association'),
+      path.join(process.cwd(), 'public/.well-known/apple-developer-merchantid-domain-association'),
+    ];
+    
+    for (const sourcePath of sourcePaths) {
+      try {
+        if (fs.existsSync(sourcePath)) {
+          fileContent = fs.readFileSync(sourcePath, 'utf8');
+          filePath = sourcePath;
+          break;
+        }
+      } catch (err) {
+        // Continue to next path
       }
-    } catch (err) {
-      // Ignore
     }
   }
   
