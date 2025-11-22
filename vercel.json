@@ -30,8 +30,8 @@
           "value": "nosniff"
         },
         {
-          "key": "CF-Cache-Status",
-          "value": "BYPASS"
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"apple-developer-merchantid-domain-association\""
         }
       ]
     },
