@@ -78,9 +78,9 @@ export const ADMIN_CONFIG = {
       // Use retry mechanism for offline errors
       const { retryOnOffline } = await import('../firebase/config.js');
       
-      // Add timeout to prevent hanging
+      // Add timeout to prevent hanging (increased to allow for retries)
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('loadAdminEmails timeout after 10 seconds')), 10000);
+        setTimeout(() => reject(new Error('loadAdminEmails timeout after 30 seconds')), 30000);
       });
       
       let adminSnap;

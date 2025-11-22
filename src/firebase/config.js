@@ -200,9 +200,13 @@ export const retryOnOffline = async (operation, maxRetries = 5) => {
     try {
       return await operation();
     } catch (error) {
-      // Check if it's an offline error
-      if (error.code === 'unavailable' || error.message?.includes('offline')) {
-        console.warn(`⚠️ Operation failed with offline error (attempt ${attempt + 1}/${maxRetries}):`, error.message);
+      // Check if it's an offline error OR a timeout (which indicates connection issues)
+      const isOfflineError = error.code === 'unavailable' || error.message?.toLowerCase().includes('offline');
+      const isTimeoutError = error.message?.toLowerCase().includes('timeout') || error.name === 'TimeoutError';
+      
+      if (isOfflineError || isTimeoutError) {
+        const errorType = isTimeoutError ? 'timeout' : 'offline';
+        console.warn(`⚠️ Operation failed with ${errorType} error (attempt ${attempt + 1}/${maxRetries}):`, error.message);
         
         if (attempt < maxRetries - 1) {
           // More aggressive network reset with multiple cycles
@@ -260,7 +264,7 @@ export const retryOnOffline = async (operation, maxRetries = 5) => {
         }
       }
       
-      // If not an offline error, or we've exhausted retries, throw
+      // If not an offline/timeout error, throw immediately (don't retry)
       throw error;
     }
   }
