@@ -175,22 +175,15 @@ export const USERS_CONFIG = {
       
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
       
-      // Add timeout to prevent hanging (increased to 20 seconds)
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('saveUserRoles timeout after 20 seconds')), 20000);
-      });
-      
       // Use retry mechanism for offline errors
       const { retryOnOffline } = await import('../firebase/config.js');
       
+      // retryOnOffline now handles timeouts per attempt (8s each, 5 retries = up to 40s total)
       await retryOnOffline(async () => {
-        return await Promise.race([
-          setDoc(usersRef, {
-            ...rolesConfig,
-            updatedAt: new Date(),
-          }, { merge: false }), // Use setDoc with merge:false to replace entire document
-          timeoutPromise,
-        ]);
+        return await setDoc(usersRef, {
+          ...rolesConfig,
+          updatedAt: new Date(),
+        }, { merge: false }); // Use setDoc with merge:false to replace entire document
       });
       
       console.log('User roles saved to Firebase successfully');
