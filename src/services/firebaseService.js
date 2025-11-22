@@ -644,7 +644,7 @@ class FirebaseService {
   async saveUserCart(userId, cartItems) {
     try {
       if (!userId) {
-        console.warn('Cannot save cart: no user ID');
+        console.warn('⚠️ Cannot save cart: no user ID');
         return;
       }
       const cartDocRef = doc(db, 'user_carts', userId);
@@ -656,9 +656,9 @@ class FirebaseService {
         },
         { merge: true }
       );
-      console.log('Cart saved to Firestore for user:', userId);
+      console.log('✅ Cart saved to Firestore for user:', userId, cartItems.length, 'items');
     } catch (error) {
-      console.error('Error saving cart to Firestore:', error);
+      console.error('❌ Error saving cart to Firestore:', error);
       throw error;
     }
   }
@@ -666,19 +666,22 @@ class FirebaseService {
   async loadUserCart(userId) {
     try {
       if (!userId) {
-        console.warn('Cannot load cart: no user ID');
+        console.warn('⚠️ Cannot load cart: no user ID');
         return [];
       }
+      console.log('📦 Loading cart from Firestore for user:', userId);
       const cartDocRef = doc(db, 'user_carts', userId);
       const snapshot = await getDoc(cartDocRef);
       if (snapshot.exists()) {
         const data = snapshot.data();
-        console.log('Cart loaded from Firestore for user:', userId);
-        return data.items || [];
+        const items = data.items || [];
+        console.log('✅ Cart loaded from Firestore for user:', userId, items.length, 'items');
+        return items;
       }
+      console.log('ℹ️ No cart found in Firestore for user:', userId);
       return [];
     } catch (error) {
-      console.error('Error loading cart from Firestore:', error);
+      console.error('❌ Error loading cart from Firestore:', error);
       return [];
     }
   }

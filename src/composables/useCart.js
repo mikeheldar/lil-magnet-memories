@@ -26,6 +26,7 @@ const saveCart = async (items) => {
   try {
     // Always save to localStorage as backup
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    console.log('🛒 Cart saved to localStorage:', items.length, 'items');
     
     // If user is logged in, also save to Firestore
     const user = auth.currentUser;
@@ -33,15 +34,21 @@ const saveCart = async (items) => {
       if (!isSyncingToFirestore) {
         isSyncingToFirestore = true;
         try {
+          console.log('🛒 Saving cart to Firestore for user:', user.uid, items.length, 'items');
           await firebaseService.saveUserCart(user.uid, items);
           currentUserId = user.uid;
+          console.log('✅ Cart saved to Firestore successfully');
         } catch (error) {
-          console.error('Error saving cart to Firestore:', error);
+          console.error('❌ Error saving cart to Firestore:', error);
           // Don't throw - localStorage save succeeded
         } finally {
           isSyncingToFirestore = false;
         }
+      } else {
+        console.log('⏳ Cart sync already in progress, skipping...');
       }
+    } else {
+      console.log('ℹ️ User not logged in (or anonymous), cart saved to localStorage only');
     }
   } catch (error) {
     console.error('Error saving cart to storage:', error);
@@ -60,16 +67,57 @@ watch(
 // Initialize cart on module load
 loadCartFromStorage();
 
-// Listen for auth state changes to load/sync cart
-onAuthStateChanged(auth, async (user) => {
+// Check if user is already logged in on page load
+const checkInitialAuthState = async () => {
+  const user = auth.currentUser;
   if (user && !user.isAnonymous) {
-    // User logged in - load cart from Firestore
+    console.log('🔄 Initial auth check: User already logged in:', user.uid);
     try {
       const firestoreCart = await firebaseService.loadUserCart(user.uid);
       if (firestoreCart && firestoreCart.length > 0) {
-        console.log('Loaded cart from Firestore for user:', user.uid);
+        console.log('✅ Initial load: Cart from Firestore:', firestoreCart.length, 'items');
         cartItems.value = firestoreCart;
         currentUserId = user.uid;
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(firestoreCart));
+      } else {
+        // Check localStorage and merge if needed
+        const localCart = localStorage.getItem(CART_STORAGE_KEY);
+        if (localCart) {
+          const parsed = JSON.parse(localCart);
+          if (parsed && parsed.length > 0) {
+            console.log('🔄 Initial load: Merging localStorage cart to Firestore:', parsed.length, 'items');
+            cartItems.value = parsed;
+            await firebaseService.saveUserCart(user.uid, parsed);
+            currentUserId = user.uid;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error in initial cart load:', error);
+    }
+  }
+};
+
+// Check initial auth state after a short delay to ensure auth is initialized
+setTimeout(checkInitialAuthState, 500);
+
+// Listen for auth state changes to load/sync cart
+onAuthStateChanged(auth, async (user) => {
+  console.log('🔄 Auth state changed in cart composable:', user ? (user.isAnonymous ? 'anonymous' : user.email) : 'logged out');
+  
+  if (user && !user.isAnonymous) {
+    // User logged in - load cart from Firestore
+    console.log('👤 User logged in, loading cart from Firestore for:', user.uid);
+    try {
+      const firestoreCart = await firebaseService.loadUserCart(user.uid);
+      console.log('📦 Firestore cart loaded:', firestoreCart?.length || 0, 'items');
+      
+      if (firestoreCart && firestoreCart.length > 0) {
+        console.log('✅ Loaded cart from Firestore for user:', user.uid, firestoreCart.length, 'items');
+        cartItems.value = firestoreCart;
+        currentUserId = user.uid;
+        // Also update localStorage to keep in sync
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(firestoreCart));
       } else {
         // No Firestore cart, but check localStorage for items added while anonymous
         const localCart = localStorage.getItem(CART_STORAGE_KEY);
@@ -77,28 +125,35 @@ onAuthStateChanged(auth, async (user) => {
           const parsed = JSON.parse(localCart);
           if (parsed && parsed.length > 0) {
             // Merge local cart to Firestore (user was anonymous, now logged in)
-            console.log('Merging localStorage cart to Firestore for logged-in user');
+            console.log('🔄 Merging localStorage cart to Firestore for logged-in user:', parsed.length, 'items');
             cartItems.value = parsed;
             await firebaseService.saveUserCart(user.uid, parsed);
+            currentUserId = user.uid;
+          } else {
+            console.log('ℹ️ No items in localStorage cart');
+            currentUserId = user.uid;
           }
+        } else {
+          console.log('ℹ️ No Firestore cart and no localStorage cart');
+          currentUserId = user.uid;
         }
-        currentUserId = user.uid;
       }
     } catch (error) {
-      console.error('Error loading cart from Firestore:', error);
+      console.error('❌ Error loading cart from Firestore:', error);
       // Fallback to localStorage
+      console.log('📦 Falling back to localStorage cart');
       loadCartFromStorage();
       currentUserId = user.uid;
     }
   } else if (user && user.isAnonymous) {
     // User is anonymous - keep using localStorage, don't sync to Firestore
     // Don't clear cart - anonymous users can have items in cart
-    console.log('User is anonymous - using localStorage for cart');
+    console.log('👤 User is anonymous - using localStorage for cart');
     loadCartFromStorage();
     currentUserId = null; // Don't track anonymous user ID
   } else {
     // User explicitly logged out - clear cart from both localStorage and Firestore
-    console.log('User logged out - clearing cart from session and Firestore');
+    console.log('👋 User logged out - clearing cart from session and Firestore');
     const previousUserId = currentUserId;
     cartItems.value = [];
     localStorage.removeItem(CART_STORAGE_KEY);
@@ -108,9 +163,9 @@ onAuthStateChanged(auth, async (user) => {
     if (previousUserId) {
       try {
         await firebaseService.clearUserCart(previousUserId);
-        console.log('Cart cleared from Firestore for logged out user');
+        console.log('✅ Cart cleared from Firestore for logged out user');
       } catch (error) {
-        console.error('Error clearing cart from Firestore:', error);
+        console.error('❌ Error clearing cart from Firestore:', error);
       }
     }
   }
