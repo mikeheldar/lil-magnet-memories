@@ -2,11 +2,14 @@ import { ref, computed, watch } from 'vue';
 import { auth } from '../firebase/config.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { firebaseService } from '../services/firebaseService.js';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config.js';
 
 const cartItems = ref([]);
 const CART_STORAGE_KEY = 'lil_magnet_cart';
 let currentUserId = null;
 let isSyncingToFirestore = false;
+let cartListenerUnsubscribe = null;
 
 // Load cart from localStorage on initialization (for anonymous users)
 const loadCartFromStorage = () => {
@@ -101,12 +104,70 @@ const checkInitialAuthState = async () => {
 // Check initial auth state after a short delay to ensure auth is initialized
 setTimeout(checkInitialAuthState, 500);
 
+// Set up real-time listener for cart changes
+const setupCartListener = (userId) => {
+  // Clean up existing listener
+  if (cartListenerUnsubscribe) {
+    cartListenerUnsubscribe();
+    cartListenerUnsubscribe = null;
+  }
+
+  if (!userId) return;
+
+  console.log('👂 Setting up real-time cart listener for user:', userId);
+  const cartDocRef = doc(db, 'user_carts', userId);
+  
+  cartListenerUnsubscribe = onSnapshot(
+    cartDocRef,
+    (snapshot) => {
+      // Don't update if we're currently syncing (prevents infinite loops)
+      if (isSyncingToFirestore) {
+        console.log('⏭️ Skipping listener update - sync in progress');
+        return;
+      }
+      
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        const items = data.items || [];
+        console.log('🔄 Real-time cart update received:', items.length, 'items');
+        
+        // Only update if different to avoid unnecessary updates
+        const currentItemsStr = JSON.stringify(cartItems.value);
+        const newItemsStr = JSON.stringify(items);
+        if (currentItemsStr !== newItemsStr) {
+          console.log('✅ Updating cart from real-time listener');
+          // Temporarily set flag to prevent watch from triggering save
+          isSyncingToFirestore = true;
+          cartItems.value = items;
+          // Update localStorage to keep in sync
+          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+          // Reset flag after a short delay
+          setTimeout(() => {
+            isSyncingToFirestore = false;
+          }, 100);
+        }
+      } else {
+        console.log('ℹ️ Cart document does not exist in Firestore');
+      }
+    },
+    (error) => {
+      console.error('❌ Error in real-time cart listener:', error);
+    }
+  );
+};
+
 // Listen for auth state changes to load/sync cart
 onAuthStateChanged(auth, async (user) => {
   console.log('🔄 Auth state changed in cart composable:', user ? (user.isAnonymous ? 'anonymous' : user.email) : 'logged out');
   
+  // Clean up listener when user changes
+  if (cartListenerUnsubscribe) {
+    cartListenerUnsubscribe();
+    cartListenerUnsubscribe = null;
+  }
+  
   if (user && !user.isAnonymous) {
-    // User logged in - load cart from Firestore
+    // User logged in - load cart from Firestore and set up real-time listener
     console.log('👤 User logged in, loading cart from Firestore for:', user.uid);
     try {
       const firestoreCart = await firebaseService.loadUserCart(user.uid);
@@ -138,12 +199,17 @@ onAuthStateChanged(auth, async (user) => {
           currentUserId = user.uid;
         }
       }
+      
+      // Set up real-time listener for immediate updates across devices
+      setupCartListener(user.uid);
     } catch (error) {
       console.error('❌ Error loading cart from Firestore:', error);
       // Fallback to localStorage
       console.log('📦 Falling back to localStorage cart');
       loadCartFromStorage();
       currentUserId = user.uid;
+      // Still try to set up listener
+      setupCartListener(user.uid);
     }
   } else if (user && user.isAnonymous) {
     // User is anonymous - keep using localStorage, don't sync to Firestore
@@ -244,6 +310,8 @@ export function useCart() {
         productPricing: product.pricing, // Store full pricing structure for recalculation
       });
     }
+    // Explicitly trigger save to ensure immediate sync
+    saveCart(cartItems.value);
   };
 
   const addCustomUploadToCart = (uploadData) => {
@@ -260,6 +328,8 @@ export function useCart() {
       costBreakdown: uploadData.costBreakdown,
       pricing: uploadData.pricing,
     });
+    // Explicitly trigger save to ensure immediate sync
+    saveCart(cartItems.value);
   };
 
   const updateQuantity = (productId, newQuantity) => {
@@ -287,6 +357,8 @@ export function useCart() {
         pricingTier,
         totalPrice: pricePerUnit * newQuantity,
       };
+      // Explicitly trigger save to ensure immediate sync
+      saveCart(cartItems.value);
     }
   };
 
@@ -296,6 +368,8 @@ export function useCart() {
     );
     if (index >= 0) {
       cartItems.value.splice(index, 1);
+      // Explicitly trigger save to ensure immediate sync
+      saveCart(cartItems.value);
     }
   };
 
