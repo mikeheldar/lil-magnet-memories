@@ -19,6 +19,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/FirebaseDiagnostic.vue'),
       },
       {
+        path: 'firestore-debug',
+        component: () => import('pages/FirestoreDebugPage.vue'),
+      },
+      {
         path: 'orders',
         component: () => import('pages/OrderList.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },

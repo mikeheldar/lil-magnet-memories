@@ -70,6 +70,13 @@ export const ADMIN_CONFIG = {
         ADMIN_CONFIG.adminDocId
       );
       
+      // Log the operation (Step 1: Track when errors occur)
+      const { logOperation, completeOperation } = await import('../utils/firestoreLogger.js');
+      const logId = logOperation('loadAdminEmails', {
+        collection: ADMIN_CONFIG.adminCollection,
+        document: ADMIN_CONFIG.adminDocId,
+      });
+      
       // Use retry mechanism for offline errors
       const { retryOnOffline } = await import('../firebase/config.js');
       
@@ -78,12 +85,19 @@ export const ADMIN_CONFIG = {
         setTimeout(() => reject(new Error('loadAdminEmails timeout after 10 seconds')), 10000);
       });
       
-      const adminSnap = await retryOnOffline(async () => {
-        return await Promise.race([
-          getDoc(adminRef),
-          timeoutPromise,
-        ]);
-      });
+      let adminSnap;
+      try {
+        adminSnap = await retryOnOffline(async () => {
+          return await Promise.race([
+            getDoc(adminRef),
+            timeoutPromise,
+          ]);
+        });
+        completeOperation(logId, { data: { exists: adminSnap.exists() } });
+      } catch (error) {
+        completeOperation(logId, { error });
+        throw error;
+      }
 
       if (adminSnap.exists()) {
         const data = adminSnap.data();

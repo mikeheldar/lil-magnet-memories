@@ -57,6 +57,13 @@ export const USERS_CONFIG = {
       
       const usersRef = doc(db, USERS_CONFIG.usersCollection, 'roles_config');
       
+      // Log the operation (Step 1: Track when errors occur)
+      const { logOperation, completeOperation } = await import('../utils/firestoreLogger.js');
+      const logId = logOperation('loadUserRoles', {
+        collection: USERS_CONFIG.usersCollection,
+        document: 'roles_config',
+      });
+      
       // Use retry mechanism for offline errors
       const { retryOnOffline } = await import('../firebase/config.js');
       
@@ -65,12 +72,19 @@ export const USERS_CONFIG = {
         setTimeout(() => reject(new Error('loadUserRoles timeout after 60 seconds')), 60000);
       });
       
-      const usersSnap = await retryOnOffline(async () => {
-        return await Promise.race([
-          getDoc(usersRef),
-          timeoutPromise,
-        ]);
-      });
+      let usersSnap;
+      try {
+        usersSnap = await retryOnOffline(async () => {
+          return await Promise.race([
+            getDoc(usersRef),
+            timeoutPromise,
+          ]);
+        });
+        completeOperation(logId, { data: { exists: usersSnap.exists() } });
+      } catch (error) {
+        completeOperation(logId, { error });
+        throw error;
+      }
 
       let rolesData = {};
       if (usersSnap.exists()) {

@@ -177,18 +177,32 @@ class FirebaseService {
         console.log('User already authenticated:', auth.currentUser.uid);
       }
 
+      // Log the operation (Step 1: Track when errors occur)
+      const { logOperation, completeOperation } = await import('../utils/firestoreLogger.js');
+      const logId = logOperation('saveOrder', {
+        collection: 'orders',
+        orderNumber: orderData.orderNumber,
+        photoCount: orderDoc.photos.length,
+      });
+      
       // Add to Firestore with timeout (increased to 30 seconds to account for slow uploads)
       console.log('Saving order to Firestore...');
       console.log('Firestore database:', db.app.options.projectId);
       console.log('Current auth user:', auth?.currentUser?.uid || 'null');
       console.log('Order document to save:', { ...orderDoc, photos: `[${orderDoc.photos.length} photos]` });
       
-      const savePromise = addDoc(collection(db, 'orders'), orderDoc).catch((error) => {
-        console.error('Firestore save error details:', error);
-        console.error('Error code:', error.code);
-        console.error('Error message:', error.message);
-        throw error;
-      });
+      const savePromise = addDoc(collection(db, 'orders'), orderDoc)
+        .then((docRef) => {
+          completeOperation(logId, { data: { docId: docRef.id } });
+          return docRef;
+        })
+        .catch((error) => {
+          completeOperation(logId, { error });
+          console.error('Firestore save error details:', error);
+          console.error('Error code:', error.code);
+          console.error('Error message:', error.message);
+          throw error;
+        });
       
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
