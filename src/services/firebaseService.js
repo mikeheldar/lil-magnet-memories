@@ -11,7 +11,7 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 import { db, storage } from '../firebase/config.js';
@@ -536,20 +536,37 @@ class FirebaseService {
     }
   }
 
-  async getShippingOptions() {
+  async getShippingOptions(includeTesting = false) {
     try {
       const shippingDocRef = doc(db, 'settings', 'shippingOptions');
       const snapshot = await getDoc(shippingDocRef);
+      let options = [];
       if (snapshot.exists()) {
         const data = snapshot.data();
         if (Array.isArray(data?.options) && data.options.length > 0) {
-          return data.options;
+          options = data.options;
         }
       }
-      return DEFAULT_SHIPPING_OPTIONS;
+      
+      // If no options in database, use defaults
+      if (options.length === 0) {
+        options = DEFAULT_SHIPPING_OPTIONS.map((option) => ({ ...option }));
+      }
+      
+      // Filter out testing options unless explicitly requested (for admins)
+      if (!includeTesting) {
+        options = options.filter((option) => !option.isTesting);
+      }
+      
+      return options;
     } catch (error) {
       console.error('Error loading shipping options:', error);
-      return DEFAULT_SHIPPING_OPTIONS;
+      // Return defaults filtered by testing flag
+      const defaults = DEFAULT_SHIPPING_OPTIONS.map((option) => ({ ...option }));
+      if (!includeTesting) {
+        return defaults.filter((option) => !option.isTesting);
+      }
+      return defaults;
     }
   }
 
@@ -619,6 +636,64 @@ class FirebaseService {
       return downloadURL;
     } catch (error) {
       console.error('Error uploading product image:', error);
+      throw error;
+    }
+  }
+
+  // Cart Management Methods
+  async saveUserCart(userId, cartItems) {
+    try {
+      if (!userId) {
+        console.warn('Cannot save cart: no user ID');
+        return;
+      }
+      const cartDocRef = doc(db, 'user_carts', userId);
+      await setDoc(
+        cartDocRef,
+        {
+          items: cartItems,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+      console.log('Cart saved to Firestore for user:', userId);
+    } catch (error) {
+      console.error('Error saving cart to Firestore:', error);
+      throw error;
+    }
+  }
+
+  async loadUserCart(userId) {
+    try {
+      if (!userId) {
+        console.warn('Cannot load cart: no user ID');
+        return [];
+      }
+      const cartDocRef = doc(db, 'user_carts', userId);
+      const snapshot = await getDoc(cartDocRef);
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        console.log('Cart loaded from Firestore for user:', userId);
+        return data.items || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error loading cart from Firestore:', error);
+      return [];
+    }
+  }
+
+  async clearUserCart(userId) {
+    try {
+      if (!userId) {
+        console.warn('Cannot clear cart: no user ID');
+        return;
+      }
+      const cartDocRef = doc(db, 'user_carts', userId);
+      await deleteDoc(cartDocRef);
+      console.log('Cart cleared from Firestore for user:', userId);
+    } catch (error) {
+      console.error('Error clearing cart from Firestore:', error);
       throw error;
     }
   }
@@ -822,3 +897,4 @@ class FirebaseService {
 }
 
 export const firebaseService = new FirebaseService();
+

@@ -741,9 +741,12 @@
                     v-if="selectedPaymentOption === 'apple_pay'"
                     class="q-pt-md border-top"
                   >
-                    <div v-if="!applePayReady" class="text-body2 text-grey-6">
+                    <div
+                      v-if="!applePayReady && !applePayError"
+                      class="text-body2 text-grey-6"
+                    >
                       <q-spinner size="20px" class="q-mr-sm" />
-                      Checking Apple Pay...
+                      Checking Apple Pay availability...
                     </div>
                     <div
                       v-show="applePayReady"
@@ -752,9 +755,19 @@
                     ></div>
                     <div
                       v-if="applePayError"
-                      class="text-negative text-caption q-mt-sm"
+                      class="text-negative q-mt-sm q-pa-sm bg-red-1 rounded-borders"
                     >
-                      {{ applePayError }}
+                      <q-icon name="error" class="q-mr-sm" />
+                      <span v-if="typeof applePayError === 'string'">{{
+                        applePayError
+                      }}</span>
+                      <span v-else>{{
+                        applePayError?.message || 'Apple Pay is not available'
+                      }}</span>
+                      <div class="text-caption q-mt-xs">
+                        Apple Pay requires Safari or Chrome on a device with
+                        Apple Pay set up.
+                      </div>
                     </div>
                   </q-card-section>
 
@@ -1276,7 +1289,9 @@ export default {
 
       loadingShippingOptions.value = true;
       try {
-        const options = await firebaseService.getShippingOptions();
+        // Non-admins should not see testing shipping options
+        const isAdmin = authService.isAdmin();
+        const options = await firebaseService.getShippingOptions(isAdmin);
         shippingOptionsData.value = Array.isArray(options)
           ? options
           : DEFAULT_SHIPPING_OPTIONS;
@@ -1310,6 +1325,17 @@ export default {
         !!paypalClientId &&
         paypalClientId !== 'YOUR_PAYPAL_CLIENT_ID' &&
         paypalClientId.trim() !== '';
+
+      // Debug logging for payment methods
+      if (applePayReady.value) {
+        console.log('✅ Apple Pay is available');
+      } else if (squarePayments.value) {
+        console.log('❌ Apple Pay not available:', {
+          applePayReady: applePayReady.value,
+          applePayError: applePayError.value,
+          hasSquarePayments: !!squarePayments.value,
+        });
+      }
 
       return {
         applePay: applePayReady.value,
@@ -2055,17 +2081,59 @@ export default {
           squarePaymentRequest.value = paymentRequest;
 
           try {
+            console.log('🍎 Initializing Apple Pay...');
             const applePay = await payments.applePay(paymentRequest);
+            console.log(
+              '🍎 Apple Pay object created, checking availability...'
+            );
             const canMakePayment = await applePay.canMakePayment();
+            console.log('🍎 Apple Pay canMakePayment result:', canMakePayment);
             if (canMakePayment) {
               squareApplePay.value = applePay;
               applePayReady.value = true;
+              console.log('✅ Apple Pay is available and ready');
             } else {
+              console.warn(
+                '⚠️ Apple Pay is not available on this device/browser'
+              );
               applePayReady.value = false;
+              applePayError.value =
+                'Apple Pay is not available on this device. Make sure you are using Safari or Chrome on a device with Apple Pay set up.';
             }
           } catch (appleError) {
-            console.warn('Apple Pay not available:', appleError);
-            applePayError.value = appleError;
+            console.error('❌ Apple Pay initialization error:', appleError);
+
+            // Check if error is about Safari-only restriction but we're on Chrome on macOS/iOS
+            const isChromeOnMac =
+              /Chrome/.test(navigator.userAgent) &&
+              /Mac/.test(navigator.platform);
+            const isChromeOnIOS =
+              /CriOS/.test(navigator.userAgent) ||
+              (/Chrome/.test(navigator.userAgent) &&
+                /iPhone|iPad|iPod/.test(navigator.userAgent));
+            const isSafariOnlyError =
+              appleError?.message?.includes('Safari') ||
+              appleError?.message?.includes('Method unsupported');
+
+            if ((isChromeOnMac || isChromeOnIOS) && isSafariOnlyError) {
+              console.warn(
+                '⚠️ Square SDK says Safari-only, but Apple Pay should work in Chrome on Apple devices'
+              );
+              // Check if native Apple Pay API is available
+              if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
+                console.log(
+                  '✅ Native Apple Pay API is available - Square SDK restriction detected'
+                );
+                applePayError.value =
+                  "Apple Pay works in Chrome, but Square's SDK currently requires Safari. Please use Safari for Apple Pay, or use Credit Card payment.";
+              } else {
+                applePayError.value =
+                  appleError?.message || 'Apple Pay initialization failed';
+              }
+            } else {
+              applePayError.value =
+                appleError?.message || 'Apple Pay initialization failed';
+            }
             applePayReady.value = false;
           }
 

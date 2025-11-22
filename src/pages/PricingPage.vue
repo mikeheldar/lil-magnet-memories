@@ -18,13 +18,28 @@
           <q-list separator>
             <q-item
               v-for="(product, index) in products"
-              :key="index"
+              :key="product.id || index"
               class="product-item"
             >
-              <q-item-section avatar v-if="product.imageUrl">
-                <q-avatar size="60px">
-                  <img :src="product.imageUrl" :alt="product.description" />
+              <q-item-section avatar>
+                <q-avatar 
+                  v-if="product.imageUrl" 
+                  size="80px"
+                  square
+                >
+                  <img 
+                    :src="product.imageUrl" 
+                    :alt="product.description"
+                    style="object-fit: cover; width: 100%; height: 100%;"
+                  />
                 </q-avatar>
+                <q-avatar 
+                  v-else 
+                  size="80px"
+                  square
+                  color="grey-3"
+                  icon="image"
+                />
               </q-item-section>
               <q-item-section>
                 <q-item-label class="text-h6">
@@ -113,6 +128,15 @@
               <q-item-section>
                 <q-item-label class="text-weight-medium">
                   {{ option.label || option.value }}
+                  <q-chip
+                    v-if="option.isTesting"
+                    color="orange"
+                    text-color="white"
+                    size="sm"
+                    class="q-ml-sm"
+                  >
+                    Testing Only
+                  </q-chip>
                   <q-chip
                     v-if="option.default"
                     color="primary"
@@ -390,6 +414,12 @@
             class="q-mb-sm"
           />
           <q-toggle
+            v-model="editingShippingOption.isTesting"
+            label="Testing Only (Admin Only)"
+            class="q-mb-sm"
+            hint="This shipping option will only be visible to admins for testing"
+          />
+          <q-toggle
             v-model="editingShippingOption.default"
             label="Make this the default option"
           />
@@ -437,7 +467,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
 import { useQuasar } from 'quasar';
 import { authService } from '../services/authService';
 import { useRouter } from 'vue-router';
@@ -520,7 +550,8 @@ export default {
 
     const loadShippingOptions = async () => {
       try {
-        const options = await firebaseService.getShippingOptions();
+        // Admins see all shipping options including testing ones
+        const options = await firebaseService.getShippingOptions(true);
         shippingOptions.value = Array.isArray(options)
           ? options
           : DEFAULT_SHIPPING_OPTIONS.map((option) => ({ ...option }));
@@ -555,6 +586,7 @@ export default {
           cost: Number(option.cost ?? 0),
           type: option.type || 'shipping',
           allowAddress: option.allowAddress !== false,
+          isTesting: option.isTesting || false,
           default: option.default || false,
         };
         shippingOptionIndex.value = index;
@@ -567,6 +599,7 @@ export default {
           cost: 0,
           type: 'shipping',
           allowAddress: true,
+          isTesting: false,
           default: shippingOptions.value.length === 0,
         };
         shippingOptionIndex.value = -1;
@@ -626,6 +659,7 @@ export default {
         cost: Number(option.cost ?? 0),
         type: option.type || 'shipping',
         allowAddress: option.allowAddress !== false,
+        isTesting: option.isTesting || false,
         default: option.default || false,
       };
 
@@ -827,10 +861,13 @@ export default {
           // Update existing
           const existingProduct = products.value[editingProduct.value.index];
           await firebaseService.updateProduct(existingProduct.id, product);
-          products.value[editingProduct.value.index] = {
+          // Update the product in the array, preserving all fields including imageUrl
+          const updatedProduct = {
             ...product,
             id: existingProduct.id,
+            imageUrl: product.imageUrl || existingProduct.imageUrl || '',
           };
+          products.value[editingProduct.value.index] = updatedProduct;
           safeNotify({
             type: 'positive',
             message: 'Product updated',
@@ -839,15 +876,23 @@ export default {
         } else {
           // Add new
           const id = await firebaseService.addProduct(product);
-          products.value.push({ ...product, id });
+          const newProduct = { 
+            ...product, 
+            id,
+            imageUrl: product.imageUrl || '',
+          };
+          products.value.push(newProduct);
           safeNotify({
             type: 'positive',
             message: 'Product added',
             position: 'top',
           });
         }
+        // Clear the editing form
         editingProduct.value = null;
         imageFile.value = null;
+        // Force reactivity update
+        await nextTick();
       } catch (error) {
         console.error('Error saving product:', error);
         safeNotify({
@@ -966,6 +1011,13 @@ export default {
 <style scoped>
 .product-item {
   padding: 16px;
+  min-height: 100px;
+}
+
+.product-item img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
 
 .price-info {

@@ -605,6 +605,11 @@ export default {
     const handleSignOut = async () => {
       try {
         console.log('Starting sign out process...');
+        // Clear cart before signing out
+        const { clearCart } = useCart();
+        await clearCart();
+        console.log('Cart cleared before sign out');
+        
         await authService.signOut();
         console.log('Sign out successful, showing notification...');
 
