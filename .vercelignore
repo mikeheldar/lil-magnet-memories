@@ -1,3 +1,1 @@
-# Exclude .well-known from static build - served via API route
-.well-known/
-
+# Don't ignore .well-known - serve it as static file

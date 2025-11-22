@@ -69,12 +69,8 @@ module.exports = configure(function (/* ctx */) {
       // distDir
 
       extendViteConf (viteConf) {
-        // Copy public directory but exclude .well-known (served via API route)
+        // Copy public directory including .well-known
         viteConf.publicDir = 'public';
-        // Exclude .well-known from static build - it will be served via API route
-        viteConf.build = viteConf.build || {};
-        viteConf.build.rollupOptions = viteConf.build.rollupOptions || {};
-        viteConf.build.rollupOptions.external = viteConf.build.rollupOptions.external || [];
       },
       // viteVuePluginOptions: {},
 
