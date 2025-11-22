@@ -15,24 +15,38 @@
         <q-list dense>
           <q-item>
             <q-item-section>
+              <q-item-label>Environment</q-item-label>
+              <q-item-label caption>{{ firebaseConfig.environment }}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item>
+            <q-item-section>
               <q-item-label>Project ID</q-item-label>
-              <q-item-label caption>lil-magnet-memories</q-item-label>
+              <q-item-label caption>{{ firebaseConfig.projectId || 'Not configured' }}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section>
               <q-item-label>Auth Domain</q-item-label>
-              <q-item-label caption
-                >lil-magnet-memories.firebaseapp.com</q-item-label
-              >
+              <q-item-label caption>{{ firebaseConfig.authDomain || 'Not configured' }}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section>
               <q-item-label>Storage Bucket</q-item-label>
-              <q-item-label caption
-                >lil-magnet-memories.firebasestorage.app</q-item-label
-              >
+              <q-item-label caption>{{ firebaseConfig.storageBucket || 'Not configured' }}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item>
+            <q-item-section>
+              <q-item-label>API Key</q-item-label>
+              <q-item-label caption>{{ firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 10)}...` : 'Not configured' }}</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item>
+            <q-item-section>
+              <q-item-label>App ID</q-item-label>
+              <q-item-label caption>{{ firebaseConfig.appId || 'Not configured' }}</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>
@@ -205,9 +219,10 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { firebaseTest } from '../services/firebaseTest';
 import { useQuasar } from 'quasar';
+import { config } from '../config/environment.js';
 
 export default {
   name: 'FirebaseDiagnostic',
@@ -220,6 +235,16 @@ export default {
     const diagnosticLoading = ref(false);
     const testResults = ref([]);
     const diagnosticInfo = ref(null);
+
+    // Get actual Firebase configuration being used
+    const firebaseConfig = computed(() => ({
+      environment: config.environment,
+      projectId: config.firebase.projectId,
+      authDomain: config.firebase.authDomain,
+      storageBucket: config.firebase.storageBucket,
+      apiKey: config.firebase.apiKey,
+      appId: config.firebase.appId,
+    }));
 
     const addTestResult = (test, success, message, details = null) => {
       testResults.value.push({
@@ -345,12 +370,8 @@ export default {
       return '';
     };
 
-    // Auto-run diagnostic on mount
-    onMounted(() => {
-      runDiagnosticInfo();
-    });
-
     return {
+      firebaseConfig,
       connectionTestLoading,
       basicWriteTestLoading,
       minimalOrderTestLoading,
