@@ -35,7 +35,7 @@
   "rewrites": [
     {
       "source": "/.well-known/apple-developer-merchantid-domain-association",
-      "destination": "/api/apple-pay-domain-association"
+      "destination": "/.well-known/apple-developer-merchantid-domain-association"
     },
     {
       "source": "/apple-pay-domain-association",
