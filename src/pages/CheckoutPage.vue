@@ -879,17 +879,34 @@ export default {
         }
       });
 
+      // If no options from database, add default options
+      // Always include pickup option in defaults if shouldShowPickup is true
       if (!normalized.length) {
+        console.log('🔄 No options from database, using DEFAULT_SHIPPING_OPTIONS, shouldShowPickup:', shouldShowPickup);
         DEFAULT_SHIPPING_OPTIONS.forEach((option) => {
           const type = option.type || 'shipping';
           if (type === 'pickup') {
             if (shouldShowPickup) {
               pushOption(option);
+              console.log('✅ Added pickup option from defaults');
+            } else {
+              console.log('⚠️ Pickup option available but shouldShowPickup is false');
             }
           } else {
             pushOption(option);
           }
         });
+      } else {
+        // Even if we have options from database, ensure pickup is included if shouldShowPickup
+        const hasPickupOption = normalized.some(opt => opt.type === 'pickup');
+        if (!hasPickupOption && shouldShowPickup) {
+          console.log('🔄 No pickup option in database options, adding from defaults');
+          const pickupDefault = DEFAULT_SHIPPING_OPTIONS.find(opt => opt.type === 'pickup');
+          if (pickupDefault) {
+            pushOption(pickupDefault);
+            console.log('✅ Added pickup option from defaults to existing options');
+          }
+        }
       }
 
       return normalized;
@@ -1083,7 +1100,12 @@ export default {
         shippingOptionsData.value = Array.isArray(options)
           ? options
           : DEFAULT_SHIPPING_OPTIONS;
-        console.log('🔄 Shipping options loaded:', (Array.isArray(options) ? options : DEFAULT_SHIPPING_OPTIONS).map(o => ({ value: o.value, type: o.type, label: o.label })));
+        console.log(
+          '🔄 Shipping options loaded:',
+          (Array.isArray(options) ? options : DEFAULT_SHIPPING_OPTIONS).map(
+            (o) => ({ value: o.value, type: o.type, label: o.label })
+          )
+        );
       } catch (error) {
         console.error('Error loading shipping options:', error);
         shippingOptionsData.value = DEFAULT_SHIPPING_OPTIONS;
@@ -1096,7 +1118,9 @@ export default {
         loadingShippingOptions.value = false;
         // Wait a tick to ensure shippingOptions computed has updated
         await nextTick();
-        console.log('🔄 Calling applyDefaultShippingSelection after loading options');
+        console.log(
+          '🔄 Calling applyDefaultShippingSelection after loading options'
+        );
         applyDefaultShippingSelection();
       }
     };
