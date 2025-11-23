@@ -247,18 +247,25 @@
                     />
                   </div>
                   <div v-if="selectedShippingDetails" class="q-mt-md">
-                    <q-banner 
-                      dense 
+                    <q-banner
+                      dense
                       class="bg-blue-1 text-primary"
-                      style="border: 2px solid #1976d2; border-radius: 8px;"
+                      style="border: 2px solid #1976d2; border-radius: 8px"
                     >
                       <template v-slot:avatar>
-                        <q-icon name="local_shipping" color="primary" size="24px" />
+                        <q-icon
+                          name="local_shipping"
+                          color="primary"
+                          size="24px"
+                        />
                       </template>
                       <div class="text-weight-bold text-body1">
                         {{ selectedShippingDetails.rawLabel }}
                       </div>
-                      <div v-if="shippingTimeline" class="text-caption text-grey-7 q-mt-xs">
+                      <div
+                        v-if="shippingTimeline"
+                        class="text-caption text-grey-7 q-mt-xs"
+                      >
                         {{ shippingTimeline }}
                       </div>
                     </q-banner>
@@ -1258,15 +1265,17 @@ export default {
       updateSquarePaymentRequest();
     });
 
-    watch(selectedPaymentOption, async (option) => {
-      if (option === 'apple_pay' && applePayReady.value) {
+    // Watch for Apple Pay becoming ready and render button (regardless of selected payment option)
+    watch(applePayReady, async (isReady) => {
+      if (isReady && squareApplePay.value) {
+        console.log('🍎 Apple Pay became ready, rendering button...');
         applePayAttached.value = false;
+        await nextTick();
         await renderApplePayButton();
       }
-      if (option === 'google_pay' && googlePayReady.value) {
-        googlePayAttached.value = false;
-        await renderGooglePayButton();
-      }
+    });
+
+    watch(selectedPaymentOption, async (option) => {
       if (option === 'square_card') {
         // Wait for Square to be initialized before mounting
         if (squareInitialized.value && squareCard.value) {
@@ -2268,12 +2277,29 @@ export default {
               console.log(
                 'ℹ️ Square Apple Pay does not have canMakePayment method, checking native API'
               );
-              if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
+              const hasApplePaySession = !!window.ApplePaySession;
+              const nativeCanMakePayments = hasApplePaySession 
+                ? ApplePaySession.canMakePayments() 
+                : false;
+              
+              console.log('🔍 Native Apple Pay API check:', {
+                hasApplePaySession,
+                nativeCanMakePayments,
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+              });
+              
+              if (nativeCanMakePayments) {
                 canMakePayment = true;
                 console.log('✅ Native Apple Pay API confirms availability');
               } else {
                 canMakePayment = false;
-                console.log('❌ Native Apple Pay API says not available');
+                console.log('❌ Native Apple Pay API says not available', {
+                  hasApplePaySession,
+                  reason: hasApplePaySession 
+                    ? 'canMakePayments() returned false' 
+                    : 'ApplePaySession not available',
+                });
               }
             }
 
@@ -2287,6 +2313,9 @@ export default {
               squareApplePay.value = applePay;
               applePayReady.value = true;
               console.log('✅ Apple Pay is available and ready');
+              // Render the Apple Pay button immediately since it's always shown now
+              await nextTick();
+              await renderApplePayButton();
             } else {
               console.warn(
                 '⚠️ Apple Pay is not available on this device/browser',
@@ -2397,16 +2426,12 @@ export default {
             // Don't throw - let error be displayed in UI
           }
 
-          if (
-            selectedPaymentOption.value === 'apple_pay' &&
-            applePayReady.value
-          ) {
+          // Always render Apple Pay button if available (no longer depends on selectedPaymentOption)
+          if (applePayReady.value) {
             await renderApplePayButton();
           }
-          if (
-            selectedPaymentOption.value === 'google_pay' &&
-            googlePayReady.value
-          ) {
+          // Always render Google Pay button if available
+          if (googlePayReady.value) {
             await renderGooglePayButton();
           }
 
