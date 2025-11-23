@@ -503,7 +503,6 @@ export default {
     const products = ref([]);
     const selectedProduct = ref(null);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
-    const { isMarketCustomer } = useCustomerType();
     const { addCustomUploadToCart } = useCart();
     let marketEventUnsubscribe = null;
     let eventCheckInterval = null;
@@ -749,7 +748,7 @@ export default {
       }
     };
 
-    const onSubmit = () => {
+    const onSubmit = async () => {
       // Save form data to localStorage for non-authenticated users
       saveFormDataToLocalStorage();
       
