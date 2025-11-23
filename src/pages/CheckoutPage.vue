@@ -685,6 +685,7 @@ export default {
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
       console.log('🛒 Checkout page - checkedInEvent:', checkedInEvent.value);
+      console.log('🛒 Checkout page - isMarketCustomer:', isMarketCustomer.value);
 
       // Check if cart items are from market event (have marketEventContext flag)
       const hasMarketEventCartItems = cartItems.value.some(
@@ -851,7 +852,8 @@ export default {
 
       // Also check if user is a market customer (from customer type)
       const userIsMarketCustomer = isMarketCustomer.value;
-      const shouldShowPickup = currentCheckedInEvent || checkedInEvent.value || userIsMarketCustomer;
+      const shouldShowPickup =
+        currentCheckedInEvent || checkedInEvent.value || userIsMarketCustomer;
 
       baseOptions.forEach((option) => {
         if (!option) {
