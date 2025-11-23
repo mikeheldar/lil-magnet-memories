@@ -345,7 +345,6 @@
                   </div>
                 </q-card-section>
               </q-card>
-
             </div>
 
             <!-- Right: Order Total & Payment -->
@@ -884,7 +883,6 @@ export default {
       return false;
     });
 
-
     const requiresShippingAddress = computed(() => {
       // If skipShipping is true, don't require shipping address
       if (skipShipping.value) {
@@ -1058,7 +1056,19 @@ export default {
 
     // Calculate order total
     const orderTotal = computed(() => {
-      // If customTotal is provided in query, use it (for market event orders)
+      // Always calculate from cart if cart has items (more accurate)
+      // Only use customTotal if cart is empty (for direct market event orders without cart)
+      if (cartItems.value.length > 0) {
+        let total = cartSubtotal.value;
+        // Only add shipping cost if shipping type is selected (not pickup)
+        if (selectedShippingDetails.value?.type === 'shipping') {
+          total += shippingCost.value;
+        }
+        // TODO: Add tax calculation if needed
+        return total;
+      }
+
+      // If cart is empty, use customTotal from query (for market event orders without cart)
       if (route.query.customTotal) {
         const customTotal = parseFloat(route.query.customTotal);
         if (!isNaN(customTotal)) {
@@ -1066,14 +1076,8 @@ export default {
         }
       }
 
-      // Otherwise calculate from cart
-      let total = cartSubtotal.value;
-      // Only add shipping cost if shipping type is selected (not pickup)
-      if (selectedShippingDetails.value?.type === 'shipping') {
-        total += shippingCost.value;
-      }
-      // TODO: Add tax calculation if needed
-      return total;
+      // Fallback to 0 if no cart and no customTotal
+      return 0;
     });
 
     // Auto-select payment option when shipping option list updates
