@@ -867,29 +867,38 @@ export default {
       
       // Watch productOptions to sync selectedProduct when options change
       watch(productOptions, (newOptions) => {
-        if (newOptions.length > 0 && !selectedProduct.value) {
-          // If no product selected but options are available, try to set default
-          const defaultProduct = newOptions.find(p => p.isDefault === true);
-          if (defaultProduct) {
-            selectedProduct.value = defaultProduct;
-            console.log('✅ Watched: Set default product:', defaultProduct.description);
-          } else if (route.query.productId) {
-            const routeProduct = newOptions.find(p => p.id === route.query.productId);
-            if (routeProduct) {
-              selectedProduct.value = routeProduct;
-              console.log('✅ Watched: Set route product:', routeProduct.description);
+        if (newOptions.length > 0) {
+          // Always try to sync the selected product with the exact object from options
+          if (selectedProduct.value) {
+            // Find the exact object reference from the options array
+            const exactMatch = newOptions.find(p => p.id === selectedProduct.value.id);
+            if (exactMatch && exactMatch !== selectedProduct.value) {
+              // Replace with exact reference from options array
+              selectedProduct.value = exactMatch;
+              console.log('✅ Watched: Synced selected product with exact reference:', exactMatch.description);
+            } else if (!exactMatch) {
+              // Selected product no longer in options, reset
+              selectedProduct.value = null;
+              console.log('⚠️ Watched: Selected product no longer available, resetting');
             }
-          } else if (newOptions.length > 0) {
-            selectedProduct.value = newOptions[0];
-            console.log('✅ Watched: Set first product:', newOptions[0].description);
           }
-        } else if (selectedProduct.value && newOptions.length > 0) {
-          // If product is selected but options changed, ensure it still exists
-          const stillExists = newOptions.find(p => p.id === selectedProduct.value.id);
-          if (!stillExists) {
-            // Selected product no longer in options, reset
-            selectedProduct.value = null;
-            console.log('⚠️ Watched: Selected product no longer available, resetting');
+          
+          // If no product selected, try to set default
+          if (!selectedProduct.value) {
+            const defaultProduct = newOptions.find(p => p.isDefault === true);
+            if (defaultProduct) {
+              selectedProduct.value = defaultProduct;
+              console.log('✅ Watched: Set default product:', defaultProduct.description);
+            } else if (route.query.productId) {
+              const routeProduct = newOptions.find(p => p.id === route.query.productId);
+              if (routeProduct) {
+                selectedProduct.value = routeProduct;
+                console.log('✅ Watched: Set route product:', routeProduct.description);
+              }
+            } else if (newOptions.length > 0) {
+              selectedProduct.value = newOptions[0];
+              console.log('✅ Watched: Set first product:', newOptions[0].description);
+            }
           }
         }
       }, { immediate: true });
