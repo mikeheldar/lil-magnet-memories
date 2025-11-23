@@ -1950,6 +1950,9 @@ export default {
                   requestShippingContact:
                     selectedShippingDetails.value?.type === 'shipping',
                 });
+                console.log('✅ Payment request updated successfully');
+              } else {
+                console.warn('⚠️ Payment request not available for update');
               }
 
               // Verify Apple Pay is still available
@@ -1959,6 +1962,9 @@ export default {
                 );
               }
 
+              // Small delay to ensure payment request is fully updated
+              await new Promise(resolve => setTimeout(resolve, 100));
+
               console.log(
                 '🍎 Calling Square Apple Pay tokenize() - this should show the Apple Pay sheet...'
               );
@@ -1966,17 +1972,58 @@ export default {
                 total: orderTotal.value.toFixed(2),
                 hasPaymentRequest: !!squarePaymentRequest.value,
                 paymentRequest: squarePaymentRequest.value,
+                applePayObject: squareApplePay.value,
               });
+
+              // Verify payment request is valid before tokenizing
+              if (!squarePaymentRequest.value) {
+                throw new Error('Payment request is not initialized. Please refresh the page.');
+              }
 
               // Tokenize with Square - this should trigger the Apple Pay sheet
               // If this doesn't show the sheet, there's a configuration issue
-              const tokenResult = await squareApplePay.value.tokenize();
-
-              // Check if tokenize returned immediately (which would indicate no user interaction)
-              // This is a safety check - tokenize should wait for user to complete Apple Pay
-              if (!tokenResult || !tokenResult.token) {
+              let tokenResult;
+              try {
+                tokenResult = await squareApplePay.value.tokenize();
+                console.log('🍎 Tokenize call completed, result:', {
+                  hasResult: !!tokenResult,
+                  hasToken: !!tokenResult?.token,
+                  status: tokenResult?.status,
+                  error: tokenResult?.error,
+                  fullResult: tokenResult,
+                });
+              } catch (tokenizeError) {
+                console.error('❌ Tokenize error:', tokenizeError);
                 throw new Error(
-                  'Apple Pay tokenization failed - no token returned. The Apple Pay sheet may not have appeared.'
+                  `Apple Pay tokenization failed: ${tokenizeError?.message || 'Unknown error'}. Please try again.`
+                );
+              }
+
+              // Check if tokenize returned a valid result
+              if (!tokenResult) {
+                console.error('❌ Tokenize returned null/undefined');
+                throw new Error(
+                  'Apple Pay tokenization failed - no result returned. The Apple Pay sheet may not have appeared.'
+                );
+              }
+
+              // Check for errors in the result
+              if (tokenResult.error) {
+                console.error('❌ Tokenize returned error:', tokenResult.error);
+                throw new Error(
+                  `Apple Pay payment failed: ${tokenResult.error.message || 'Unknown error'}`
+                );
+              }
+
+              // Check if token is present
+              if (!tokenResult.token) {
+                console.error('❌ Token result missing token:', {
+                  result: tokenResult,
+                  hasStatus: !!tokenResult.status,
+                  status: tokenResult.status,
+                });
+                throw new Error(
+                  'Apple Pay tokenization failed - no token returned. The Apple Pay sheet may not have appeared or the payment was cancelled.'
                 );
               }
 
