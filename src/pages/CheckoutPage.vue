@@ -688,8 +688,14 @@ export default {
       const hasMarketEventCartItems = cartItems.value.some(
         (item) => item.marketEventContext === true
       );
-      console.log('🛒 Checkout page - hasMarketEventCartItems:', hasMarketEventCartItems);
-      console.log('🛒 Checkout page - isFromMarketEventUpload:', isFromMarketEventUpload.value);
+      console.log(
+        '🛒 Checkout page - hasMarketEventCartItems:',
+        hasMarketEventCartItems
+      );
+      console.log(
+        '🛒 Checkout page - isFromMarketEventUpload:',
+        isFromMarketEventUpload.value
+      );
 
       // If cart has market event items, treat as coming from market event upload
       if (hasMarketEventCartItems && !isFromMarketEventUpload.value) {
@@ -835,13 +841,19 @@ export default {
         normalized.push(normalizedOption);
       };
 
+      // Check current market event status (not just the ref, in case it changed)
+      const currentCheckedInEvent = marketEventService.getCheckedInEvent();
+      if (currentCheckedInEvent && !checkedInEvent.value) {
+        checkedInEvent.value = currentCheckedInEvent;
+      }
+
       baseOptions.forEach((option) => {
         if (!option) {
           return;
         }
         const type = option.type || 'shipping';
         if (type === 'pickup') {
-          if (checkedInEvent.value) {
+          if (currentCheckedInEvent || checkedInEvent.value) {
             pushOption(option);
           }
         } else {
@@ -853,7 +865,7 @@ export default {
         DEFAULT_SHIPPING_OPTIONS.forEach((option) => {
           const type = option.type || 'shipping';
           if (type === 'pickup') {
-            if (checkedInEvent.value) {
+            if (currentCheckedInEvent || checkedInEvent.value) {
               pushOption(option);
             }
           } else {
