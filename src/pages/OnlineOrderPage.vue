@@ -126,22 +126,46 @@
               Product Selection
             </div>
 
-            <div class="q-mb-md">
-              <div class="text-subtitle2 q-mb-sm text-weight-medium">
-                Select Product <span class="text-negative">*</span>
-              </div>
-              <q-option-group
-                v-model="selectedProductId"
-                :options="productRadioOptions"
-                type="radio"
-                color="primary"
-                :rules="[(val) => !!val || 'Please select a product']"
-                class="q-mb-sm"
-              />
-              <div v-if="!selectedProductId && productOptions.length > 0" class="text-negative text-caption q-mt-xs">
-                Please select a product
-              </div>
-            </div>
+            <q-select
+              v-model="selectedProductId"
+              :options="productOptions"
+              option-label="description"
+              option-value="id"
+              emit-value
+              map-options
+              label="Select Product *"
+              filled
+              :rules="[(val) => !!val || 'Please select a product']"
+              class="q-mb-md"
+              :loading="loadingProducts"
+              @update:model-value="onProductChange"
+            >
+              <template v-slot:selected>
+                <span v-if="selectedProduct">{{ selectedProduct.description }}</span>
+                <span v-else class="text-grey-6">Select a product</span>
+              </template>
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.description }}</q-item-label>
+                    <q-item-label caption>
+                      <div
+                        v-for="(price, qty) in scope.opt.pricing"
+                        :key="qty"
+                        class="text-caption"
+                      >
+                        {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                      </div>
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side v-if="scope.opt.isDefault">
+                    <q-chip color="green" text-color="white" size="sm" icon="star">
+                      Default
+                    </q-chip>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section>
@@ -410,23 +434,6 @@ export default {
     // Product options for dropdown
     const productOptions = computed(() => {
       return products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
-    });
-    
-    // Product options formatted for radio buttons
-    const productRadioOptions = computed(() => {
-      return productOptions.value.map(product => {
-        const pricingText = Object.entries(product.pricing || {})
-          .map(([qty, price]) => `${qty}x for $${Number(price).toFixed(2)}`)
-          .join(', ');
-        const label = product.isDefault 
-          ? `${product.description} (Default) - ${pricingText}`
-          : `${product.description} - ${pricingText}`;
-        return {
-          label,
-          value: product.id,
-          product: product // Store full product object for reference
-        };
-      });
     });
     
     // Get selected product object from ID

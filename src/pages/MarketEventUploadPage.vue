@@ -126,22 +126,46 @@
               Product Selection
             </div>
 
-            <div class="q-mb-md">
-              <div class="text-subtitle2 q-mb-sm text-weight-medium">
-                Select Product <span class="text-negative">*</span>
-              </div>
-              <q-option-group
-                v-model="selectedProductId"
-                :options="productRadioOptions"
-                type="radio"
-                color="primary"
-                :rules="[(val) => !!val || 'Please select a product']"
-                class="q-mb-sm"
-              />
-              <div v-if="!selectedProductId && productOptions.length > 0" class="text-negative text-caption q-mt-xs">
-                Please select a product
-              </div>
-            </div>
+            <q-select
+              v-model="selectedProductId"
+              :options="productOptions"
+              option-label="description"
+              option-value="id"
+              emit-value
+              map-options
+              label="Select Product *"
+              filled
+              :rules="[(val) => !!val || 'Please select a product']"
+              class="q-mb-md"
+              :loading="loadingProducts"
+              @update:model-value="onProductChange"
+            >
+              <template v-slot:selected>
+                <span v-if="selectedProduct">{{ selectedProduct.description }}</span>
+                <span v-else class="text-grey-6">Select a product</span>
+              </template>
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.description }}</q-item-label>
+                    <q-item-label caption>
+                      <div
+                        v-for="(price, qty) in scope.opt.pricing"
+                        :key="qty"
+                        class="text-caption"
+                      >
+                        {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                      </div>
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side v-if="scope.opt.isDefault">
+                    <q-chip color="green" text-color="white" size="sm" icon="star">
+                      Default
+                    </q-chip>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
 
             <!-- Photo Upload Section -->
             <q-separator class="q-my-md" />
@@ -548,23 +572,6 @@ export default {
     // Product options for dropdown
     const productOptions = computed(() => {
       return products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
-    });
-    
-    // Product options formatted for radio buttons
-    const productRadioOptions = computed(() => {
-      return productOptions.value.map(product => {
-        const pricingText = Object.entries(product.pricing || {})
-          .map(([qty, price]) => `${qty}x for $${Number(price).toFixed(2)}`)
-          .join(', ');
-        const label = product.isDefault 
-          ? `${product.description} (Default) - ${pricingText}`
-          : `${product.description} - ${pricingText}`;
-        return {
-          label,
-          value: product.id,
-          product: product // Store full product object for reference
-        };
-      });
     });
     
     // Get selected product object from ID
@@ -1112,8 +1119,12 @@ export default {
         
         if (productToSelect) {
           // Set the product ID (q-select will handle the rest)
+          // Use nextTick to ensure the select component is ready
+          await nextTick();
           selectedProductId.value = productToSelect.id;
           console.log('✅ Selected product ID:', productToSelect.id, productToSelect.description, productToSelect.isDefault ? '(default)' : '');
+          // Force a small delay to ensure reactive updates
+          await new Promise(resolve => setTimeout(resolve, 50));
         } else {
           console.warn('⚠️ No product to select - no default product found and no route query productId');
         }
@@ -1199,6 +1210,37 @@ export default {
       // Load products
       loadProducts();
       
+      // Handler for when product selection changes
+      const onProductChange = (newProductId) => {
+        console.log('🔄 Product changed to:', newProductId);
+        // The selectedProduct computed will automatically update
+        // Force a recalculation of totalCost by triggering reactivity
+        if (selectedProduct.value) {
+          console.log('✅ Selected product updated:', selectedProduct.value.description);
+        }
+      };
+      
+      // Handler for when product selection changes
+      const onProductChange = (newProductId) => {
+        console.log('🔄 Product changed to:', newProductId);
+        // The selectedProduct computed will automatically update
+        // Force a recalculation of totalCost by triggering reactivity
+        if (selectedProduct.value) {
+          console.log('✅ Selected product updated:', selectedProduct.value.description);
+        }
+      };
+      
+      // Watch selectedProductId to ensure totalCost updates when product changes
+      watch(selectedProductId, (newId, oldId) => {
+        if (newId !== oldId && newId) {
+          console.log('🔄 Product ID changed from', oldId, 'to', newId);
+          // Force reactivity update - totalCost computed should automatically recalculate
+          if (selectedProduct.value) {
+            console.log('✅ Product changed, totalCost will recalculate for:', selectedProduct.value.description);
+          }
+        }
+      });
+      
       // Watch productOptions to sync selectedProductId when options change
       watch(productOptions, (newOptions) => {
         if (newOptions.length > 0) {
@@ -1231,6 +1273,18 @@ export default {
           }
         }
       }, { immediate: true });
+      
+      // Watch selectedProductId to ensure totalCost updates when product changes
+      watch(selectedProductId, (newId, oldId) => {
+        if (newId !== oldId && newId) {
+          console.log('🔄 Product ID changed from', oldId, 'to', newId);
+          // Force reactivity update - totalCost computed should automatically recalculate
+          // But we can trigger it explicitly if needed
+          if (selectedProduct.value) {
+            console.log('✅ Product changed, totalCost will recalculate for:', selectedProduct.value.description);
+          }
+        }
+      });
 
       // Set up real-time listener to detect when event ends
       marketEventUnsubscribe = marketEventService.addListener(() => {
