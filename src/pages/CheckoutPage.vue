@@ -688,7 +688,10 @@ export default {
     // Check for active market event and check-in status
     onMounted(() => {
       console.log('🛒 Checkout page route query:', route.query);
-      console.log('🛒 Checkout page isFromMarketEventUpload:', isFromMarketEventUpload.value);
+      console.log(
+        '🛒 Checkout page isFromMarketEventUpload:',
+        isFromMarketEventUpload.value
+      );
       checkedInEvent.value = marketEventService.getCheckedInEvent();
       console.log('🛒 Checkout page - checkedInEvent:', checkedInEvent.value);
       console.log(
@@ -1076,10 +1079,11 @@ export default {
       try {
         // Non-admins should not see testing shipping options
         const isAdmin = authService.isAdmin();
-        const options = await firebaseService.getShippingOptions(isAdmin);
+        const options = await firebaseService.getShippingOptions(!isAdmin);
         shippingOptionsData.value = Array.isArray(options)
           ? options
           : DEFAULT_SHIPPING_OPTIONS;
+        console.log('🔄 Shipping options loaded:', (Array.isArray(options) ? options : DEFAULT_SHIPPING_OPTIONS).map(o => ({ value: o.value, type: o.type, label: o.label })));
       } catch (error) {
         console.error('Error loading shipping options:', error);
         shippingOptionsData.value = DEFAULT_SHIPPING_OPTIONS;
@@ -1090,6 +1094,9 @@ export default {
         });
       } finally {
         loadingShippingOptions.value = false;
+        // Wait a tick to ensure shippingOptions computed has updated
+        await nextTick();
+        console.log('🔄 Calling applyDefaultShippingSelection after loading options');
         applyDefaultShippingSelection();
       }
     };
