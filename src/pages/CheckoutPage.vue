@@ -682,11 +682,14 @@ export default {
     // Check for active market event and check-in status
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
+      console.log('🛒 Checkout page - checkedInEvent:', checkedInEvent.value);
 
       // Check if cart items are from market event (have marketEventContext flag)
       const hasMarketEventCartItems = cartItems.value.some(
         (item) => item.marketEventContext === true
       );
+      console.log('🛒 Checkout page - hasMarketEventCartItems:', hasMarketEventCartItems);
+      console.log('🛒 Checkout page - isFromMarketEventUpload:', isFromMarketEventUpload.value);
 
       // If cart has market event items, treat as coming from market event upload
       if (hasMarketEventCartItems && !isFromMarketEventUpload.value) {
@@ -1143,6 +1146,19 @@ export default {
       shippingOptions,
       () => {
         applyDefaultShippingSelection();
+      },
+      { immediate: true }
+    );
+
+    // Watch for changes in checked-in event status
+    watch(
+      () => marketEventService.getCheckedInEvent(),
+      (newEvent) => {
+        if (newEvent && !checkedInEvent.value) {
+          checkedInEvent.value = newEvent;
+          // Re-apply shipping selection when event status changes
+          applyDefaultShippingSelection();
+        }
       },
       { immediate: true }
     );
