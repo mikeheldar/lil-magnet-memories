@@ -247,11 +247,18 @@
                     />
                   </div>
                   <div v-if="selectedShippingDetails" class="q-mt-md">
-                    <q-banner dense class="bg-grey-2 text-grey-8">
-                      <div class="text-weight-medium">
+                    <q-banner 
+                      dense 
+                      class="bg-blue-1 text-primary"
+                      style="border: 2px solid #1976d2; border-radius: 8px;"
+                    >
+                      <template v-slot:avatar>
+                        <q-icon name="local_shipping" color="primary" size="24px" />
+                      </template>
+                      <div class="text-weight-bold text-body1">
                         {{ selectedShippingDetails.rawLabel }}
                       </div>
-                      <div v-if="shippingTimeline" class="text-caption">
+                      <div v-if="shippingTimeline" class="text-caption text-grey-7 q-mt-xs">
                         {{ shippingTimeline }}
                       </div>
                     </q-banner>
@@ -522,228 +529,11 @@
                 <q-card-section v-if="selectedShippingOption">
                   <div class="text-h6 q-mb-md">Payment Method</div>
 
-                  <!-- Apple Pay Button -->
-                  <q-card
-                    v-if="availablePaymentMethods.applePay"
-                    flat
-                    bordered
-                    class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{
-                      'payment-selected': selectedPaymentOption === 'apple_pay',
-                    }"
-                    @click="selectedPaymentOption = 'apple_pay'"
-                  >
-                    <q-card-section horizontal>
-                      <q-card-section>
-                        <div class="row items-center">
-                          <q-icon name="apple" size="32px" class="q-mr-md" />
-                          <div>
-                            <div class="text-weight-bold">Apple Pay</div>
-                            <div class="text-caption text-grey-7">
-                              Fast and secure payment
-                            </div>
-                          </div>
-                        </div>
-                      </q-card-section>
-                      <q-card-actions vertical class="justify-around q-px-md">
-                        <q-icon
-                          v-if="selectedPaymentOption === 'apple_pay'"
-                          name="check_circle"
-                          color="primary"
-                          size="24px"
-                        />
-                        <q-icon
-                          v-else
-                          name="radio_button_unchecked"
-                          size="24px"
-                        />
-                      </q-card-actions>
-                    </q-card-section>
-                  </q-card>
-
-                  <!-- Google Pay Button -->
-                  <q-card
-                    v-if="availablePaymentMethods.googlePay"
-                    flat
-                    bordered
-                    class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{
-                      'payment-selected':
-                        selectedPaymentOption === 'google_pay',
-                    }"
-                    @click="selectedPaymentOption = 'google_pay'"
-                  >
-                    <q-card-section horizontal>
-                      <q-card-section>
-                        <div class="row items-center">
-                          <q-icon
-                            name="account_balance_wallet"
-                            size="32px"
-                            class="q-mr-md"
-                          />
-                          <div>
-                            <div class="text-weight-bold">Google Pay</div>
-                            <div class="text-caption text-grey-7">
-                              Quick checkout
-                            </div>
-                          </div>
-                        </div>
-                      </q-card-section>
-                      <q-card-actions vertical class="justify-around q-px-md">
-                        <q-icon
-                          v-if="selectedPaymentOption === 'google_pay'"
-                          name="check_circle"
-                          color="primary"
-                          size="24px"
-                        />
-                        <q-icon
-                          v-else
-                          name="radio_button_unchecked"
-                          size="24px"
-                        />
-                      </q-card-actions>
-                    </q-card-section>
-                  </q-card>
-
-                  <!-- Square Credit Card Button -->
-                  <q-card
-                    flat
-                    bordered
-                    class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{
-                      'payment-selected':
-                        selectedPaymentOption === 'square_card',
-                    }"
-                    @click="selectedPaymentOption = 'square_card'"
-                  >
-                    <q-card-section horizontal>
-                      <q-card-section>
-                        <div class="row items-center">
-                          <q-icon
-                            name="credit_card"
-                            size="32px"
-                            class="q-mr-md"
-                          />
-                          <div>
-                            <div class="text-weight-bold">
-                              Credit/Debit Card
-                            </div>
-                            <div class="text-caption text-grey-7">
-                              Pay with Visa, Mastercard, etc.
-                            </div>
-                          </div>
-                        </div>
-                      </q-card-section>
-                      <q-card-actions vertical class="justify-around q-px-md">
-                        <q-icon
-                          v-if="selectedPaymentOption === 'square_card'"
-                          name="check_circle"
-                          color="primary"
-                          size="24px"
-                        />
-                        <q-icon
-                          v-else
-                          name="radio_button_unchecked"
-                          size="24px"
-                        />
-                      </q-card-actions>
-                    </q-card-section>
-                  </q-card>
-
-                  <!-- PayPal Button -->
-                  <q-card
-                    v-if="availablePaymentMethods.paypal"
-                    flat
-                    bordered
-                    class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{
-                      'payment-selected': selectedPaymentOption === 'paypal',
-                    }"
-                    @click="selectedPaymentOption = 'paypal'"
-                  >
-                    <q-card-section horizontal>
-                      <q-card-section>
-                        <div class="row items-center">
-                          <q-icon
-                            name="account_balance_wallet"
-                            size="32px"
-                            class="q-mr-md"
-                          />
-                          <div>
-                            <div class="text-weight-bold">PayPal</div>
-                            <div class="text-caption text-grey-7">
-                              Pay with your PayPal account
-                            </div>
-                          </div>
-                        </div>
-                      </q-card-section>
-                      <q-card-actions vertical class="justify-around q-px-md">
-                        <q-icon
-                          v-if="selectedPaymentOption === 'paypal'"
-                          name="check_circle"
-                          color="primary"
-                          size="24px"
-                        />
-                        <q-icon
-                          v-else
-                          name="radio_button_unchecked"
-                          size="24px"
-                        />
-                      </q-card-actions>
-                    </q-card-section>
-                  </q-card>
-
-                  <!-- Pay at Event Button (if applicable) -->
-                  <q-card
-                    v-if="availablePaymentMethods.payAtEvent"
-                    flat
-                    bordered
-                    class="payment-option-card q-mb-sm cursor-pointer"
-                    :class="{
-                      'payment-selected':
-                        selectedPaymentOption === 'pay_at_event',
-                    }"
-                    @click="selectedPaymentOption = 'pay_at_event'"
-                  >
-                    <q-card-section horizontal>
-                      <q-card-section>
-                        <div class="row items-center">
-                          <q-icon name="atm" size="32px" class="q-mr-md" />
-                          <div>
-                            <div class="text-weight-bold">
-                              Pay at Market Event Kiosk
-                            </div>
-                            <div class="text-caption text-grey-7">
-                              Pay when you collect your order at the market
-                              event
-                            </div>
-                          </div>
-                        </div>
-                      </q-card-section>
-                      <q-card-actions vertical class="justify-around q-px-md">
-                        <q-icon
-                          v-if="selectedPaymentOption === 'pay_at_event'"
-                          name="check_circle"
-                          color="primary"
-                          size="24px"
-                        />
-                        <q-icon
-                          v-else
-                          name="radio_button_unchecked"
-                          size="24px"
-                        />
-                      </q-card-actions>
-                    </q-card-section>
-                  </q-card>
-
-                  <!-- Square Credit Card Form (shown when Square is selected) -->
-                  <q-card-section
-                    v-if="selectedPaymentOption === 'apple_pay'"
-                    class="q-pt-md border-top"
-                  >
+                  <!-- Apple Pay Button (standalone, always visible if available) -->
+                  <div v-if="availablePaymentMethods.applePay" class="q-mb-lg">
                     <div
                       v-if="!applePayReady && !applePayError"
-                      class="text-body2 text-grey-6"
+                      class="text-body2 text-grey-6 q-mb-sm"
                     >
                       <q-spinner size="20px" class="q-mr-sm" />
                       Checking Apple Pay availability...
@@ -764,40 +554,16 @@
                       <span v-else>{{
                         applePayError?.message || 'Apple Pay is not available'
                       }}</span>
-                      <div class="text-caption q-mt-xs">
-                        Apple Pay requires Safari or Chrome on a device with
-                        Apple Pay set up.
-                      </div>
                     </div>
-                  </q-card-section>
+                    <q-separator class="q-my-lg" />
+                  </div>
 
-                  <q-card-section
-                    v-if="selectedPaymentOption === 'google_pay'"
-                    class="q-pt-md border-top"
-                  >
-                    <div v-if="!googlePayReady" class="text-body2 text-grey-6">
-                      <q-spinner size="20px" class="q-mr-sm" />
-                      Checking Google Pay...
+                  <!-- Credit Card Form (always shown by default) -->
+                  <div class="q-mb-md">
+                    <div class="text-subtitle2 text-grey-7 q-mb-sm">
+                      Or pay with credit/debit card
                     </div>
-                    <div
-                      v-show="googlePayReady"
-                      id="square-google-pay-button"
-                      class="wallet-button"
-                    ></div>
-                    <div
-                      v-if="googlePayError"
-                      class="text-negative text-caption q-mt-sm"
-                    >
-                      {{ googlePayError }}
-                    </div>
-                  </q-card-section>
-
-                  <!-- Square Credit Card Form (shown when Square is selected) -->
-                  <q-card-section
-                    v-if="selectedPaymentOption === 'square_card'"
-                    class="q-pt-md border-top"
-                  >
-                    <div class="text-caption text-grey-7 q-mb-sm">
+                    <div class="text-caption text-grey-6 q-mb-sm">
                       Payment will be processed securely via Square
                     </div>
                     <!-- Square payment form container -->
@@ -832,39 +598,10 @@
                       <!-- Form will be rendered here by Square SDK when mounted -->
                       <!-- The loading spinner above will be hidden once squareCardMounted is true -->
                     </div>
-                  </q-card-section>
-
-                  <!-- PayPal Button Container (shown when PayPal is selected) -->
-                  <q-card-section
-                    v-if="selectedPaymentOption === 'paypal'"
-                    class="q-pt-md border-top"
-                  >
-                    <div
-                      v-if="!availablePaymentMethods.paypal"
-                      class="text-negative q-pa-md bg-red-1 rounded-borders"
-                    >
-                      <q-icon name="error" class="q-mr-xs" />
-                      <strong>PayPal is not configured</strong>
-                      <div class="q-mt-xs text-caption">
-                        PayPal payment method is not available. Please use
-                        another payment method or contact support.
-                      </div>
-                    </div>
-                    <div v-else id="paypal-button-container"></div>
-                  </q-card-section>
+                  </div>
                 </q-card-section>
 
                 <q-card-actions vertical class="q-pa-md">
-                  <!-- Show message when Apple Pay is selected but user should use Apple Pay button -->
-                  <div
-                    v-if="selectedPaymentOption === 'apple_pay' && !applePayToken"
-                    class="text-center q-mb-md q-pa-sm bg-blue-1 rounded-borders"
-                  >
-                    <q-icon name="info" class="q-mr-sm" />
-                    <span class="text-body2">
-                      Please use the Apple Pay button above to complete your payment.
-                    </span>
-                  </div>
                   <q-btn
                     color="primary"
                     label="Place Order"
@@ -872,7 +609,7 @@
                     size="lg"
                     class="full-width"
                     :loading="submitting"
-                    :disable="!canPlaceOrder || (selectedPaymentOption === 'apple_pay' && !applePayToken)"
+                    :disable="!canPlaceOrder"
                     @click="placeOrder"
                   />
                   <q-btn
@@ -922,7 +659,7 @@ export default {
     const submitting = ref(false);
     const checkedInEvent = ref(null);
     const selectedShippingOption = ref(null);
-    const selectedPaymentOption = ref(null);
+    const selectedPaymentOption = ref('square_card'); // Default to credit card
     const squareInitialized = ref(false);
     const squarePayments = ref(null);
     const squarePaymentRequest = ref(null);
@@ -2102,7 +1839,7 @@ export default {
             hasClickListener: true,
             containerId: 'square-apple-pay-button',
           });
-          
+
           // Test that button is clickable
           console.log('🔍 Button setup verification:', {
             buttonInDOM: container.contains(button),
