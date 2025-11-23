@@ -386,6 +386,7 @@ export default {
   setup() {
     const router = useRouter();
     const $q = useQuasar();
+    const quasar = $q; // Capture in local variable for safe access
     const signingIn = ref(false);
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
@@ -436,7 +437,7 @@ export default {
         if (signingIn.value) {
           console.log('Sign-in timeout, resetting state');
           signingIn.value = false;
-          $q.notify({
+          safeNotify({
             type: 'negative',
             message: 'Sign-in timed out',
             caption:
@@ -458,7 +459,7 @@ export default {
         console.log('Starting Google sign-in from landing page...');
         await authService.signInWithGoogle();
 
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Successfully signed in!',
           caption: 'You can now access your orders and dashboard.',
@@ -648,11 +649,24 @@ export default {
       return event ? event.name : '';
     });
 
+    // Safe notify wrapper
+    const safeNotify = (options) => {
+      try {
+        if (quasar && typeof quasar.notify === 'function') {
+          quasar.notify(options);
+        } else {
+          console.log('Notification not available:', options);
+        }
+      } catch (error) {
+        console.error('Error showing notification:', error);
+      }
+    };
+
     // Toggle customer at event
     const toggleCustomerAtEvent = (value) => {
       if (value) {
         setCustomerType('market_customer');
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Market event mode enabled!',
           caption: "You'll see pickup and local payment options",
@@ -661,7 +675,7 @@ export default {
         });
       } else {
         setCustomerType('online_customer');
-        $q.notify({
+        safeNotify({
           type: 'info',
           message: 'Switched to online mode',
           caption: "You'll see shipping options for orders",
@@ -674,7 +688,7 @@ export default {
     // Navigation function for pre-designed products
     const goToPreDesigned = () => {
       // TODO: Navigate to pre-designed products page when implemented
-      $q.notify({
+      safeNotify({
         type: 'info',
         message: 'Coming soon!',
         caption: 'Pre-designed magnets section coming soon',
