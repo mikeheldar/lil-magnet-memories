@@ -563,10 +563,12 @@
                     @click="$router.push('/cart')"
                     class="full-width q-mt-sm"
                   />
-                  
+
                   <!-- Kiosk Payment Option (only shown when from market event upload) -->
                   <q-btn
-                    v-if="isFromMarketEventUpload && skipShipping && checkedInEvent"
+                    v-if="
+                      isFromMarketEventUpload && skipShipping && checkedInEvent
+                    "
                     flat
                     color="primary"
                     icon="point_of_sale"

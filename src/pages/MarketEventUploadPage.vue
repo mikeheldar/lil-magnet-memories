@@ -126,41 +126,22 @@
               Product Selection
             </div>
 
-            <q-select
-              v-model="selectedProductId"
-              :options="productOptions"
-              option-label="description"
-              option-value="id"
-              emit-value
-              map-options
-              label="Select Product *"
-              filled
-              :rules="[(val) => !!val || 'Please select a product']"
-              class="q-mb-md"
-              :loading="loadingProducts"
-            >
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section>
-                    <q-item-label>{{ scope.opt.description }}</q-item-label>
-                    <q-item-label caption>
-                      <div
-                        v-for="(price, qty) in scope.opt.pricing"
-                        :key="qty"
-                        class="text-caption"
-                      >
-                        {{ qty }}x for ${{ price.toFixed(2) }}
-                      </div>
-                    </q-item-label>
-                  </q-item-section>
-                  <q-item-section side v-if="scope.opt.isDefault">
-                    <q-chip color="green" text-color="white" size="sm" icon="star">
-                      Default
-                    </q-chip>
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
+            <div class="q-mb-md">
+              <div class="text-subtitle2 q-mb-sm text-weight-medium">
+                Select Product <span class="text-negative">*</span>
+              </div>
+              <q-option-group
+                v-model="selectedProductId"
+                :options="productRadioOptions"
+                type="radio"
+                color="primary"
+                :rules="[(val) => !!val || 'Please select a product']"
+                class="q-mb-sm"
+              />
+              <div v-if="!selectedProductId && productOptions.length > 0" class="text-negative text-caption q-mt-xs">
+                Please select a product
+              </div>
+            </div>
 
             <!-- Photo Upload Section -->
             <q-separator class="q-my-md" />
@@ -521,7 +502,7 @@ import { authService } from '../services/authService.js';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 import { marketEventService } from '../services/marketEventService.js';
-import { useCustomerType } from '../composables/useCustomerType.js';
+import { useCustomerType, CUSTOMER_TYPES } from '../composables/useCustomerType.js';
 import { useCart } from '../composables/useCart.js';
 
 export default {
@@ -567,6 +548,23 @@ export default {
     // Product options for dropdown
     const productOptions = computed(() => {
       return products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
+    });
+    
+    // Product options formatted for radio buttons
+    const productRadioOptions = computed(() => {
+      return productOptions.value.map(product => {
+        const pricingText = Object.entries(product.pricing || {})
+          .map(([qty, price]) => `${qty}x for $${Number(price).toFixed(2)}`)
+          .join(', ');
+        const label = product.isDefault 
+          ? `${product.description} (Default) - ${pricingText}`
+          : `${product.description} - ${pricingText}`;
+        return {
+          label,
+          value: product.id,
+          product: product // Store full product object for reference
+        };
+      });
     });
     
     // Get selected product object from ID
@@ -1132,12 +1130,22 @@ export default {
     };
 
     onMounted(async () => {
-      // The route guard handles blocking access when there's no checked-in event
-      // This onMounted just logs the status and ensures the page is ready
-      // We don't redirect here - the route guard already handled that for new navigations
+      // The route guard handles blocking access when there's no active event
+      // This onMounted sets up the page and auto-checks in anonymous users
       try {
         // Wait a moment for market event service to fully load events
         await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Check for active event (sync version first for speed)
+        const activeEvent = marketEventService.getActiveEventSync();
+        
+        // If anonymous user and there's an active event, automatically set them as "at the event"
+        if (activeEvent && !isAuthenticated.value) {
+          // Set customer type to market_customer so they're treated as being at the event
+          const { setCustomerType } = useCustomerType();
+          setCustomerType(CUSTOMER_TYPES.MARKET);
+          console.log('✅ Anonymous user auto-checked in to active market event:', activeEvent.name);
+        }
         
         // Check for active checked-in event (async version)
         const checkedInEvent = await marketEventService.getCheckedInEventAsync();
