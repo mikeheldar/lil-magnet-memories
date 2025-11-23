@@ -135,7 +135,7 @@
                 <q-card-section>
                   <div class="row items-center">
                     <div class="col">
-                      <div class="text-h6">{{ selectedProduct.description }}</div>
+                      <div class="text-h6 text-weight-bold">{{ selectedProduct.description }}</div>
                       <div class="text-caption text-grey-7 q-mt-xs">
                         <div
                           v-for="(price, qty) in selectedProduct.pricing"
@@ -172,12 +172,17 @@
                 :rules="[(val) => !!val || 'Please select a product']"
                 :loading="loadingProducts"
                 @update:model-value="onProductChange"
+                :disable="loadingProducts || productOptions.length === 0"
               >
+                <template v-slot:selected>
+                  <span v-if="selectedProduct">{{ selectedProduct.description }}</span>
+                  <span v-else class="text-grey-6">Select a product</span>
+                </template>
                 <template v-slot:option="scope">
-                  <q-item v-bind="scope.itemProps">
+                  <q-item v-bind="scope.itemProps" v-if="scope.opt && scope.opt.id">
                     <q-item-section>
-                      <q-item-label>{{ scope.opt.description }}</q-item-label>
-                      <q-item-label caption>
+                      <q-item-label>{{ scope.opt.description || 'Unknown Product' }}</q-item-label>
+                      <q-item-label caption v-if="scope.opt.pricing">
                         <div
                           v-for="(price, qty) in scope.opt.pricing"
                           :key="qty"
@@ -439,9 +444,21 @@ export default {
     const hasAddedToCart = ref(false);
     const showReAddWarning = ref(false);
     
-    // Product options for dropdown
+    // Product options for dropdown - ensure it's always an array
     const productOptions = computed(() => {
-      return products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
+      if (!products.value || !Array.isArray(products.value)) {
+        return [];
+      }
+      return products.value
+        .filter(p => p && (p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom'))))
+        .map(p => ({
+          id: p.id,
+          description: p.description || 'Unknown Product',
+          pricing: p.pricing || {},
+          isDefault: p.isDefault || false,
+          category: p.category,
+          productType: p.productType
+        }));
     });
     
     // Get selected product object from ID
