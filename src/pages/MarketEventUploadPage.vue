@@ -130,13 +130,15 @@
               v-model="selectedProduct"
               :options="productOptions"
               option-label="description"
-              option-value="id"
               label="Select Product *"
               filled
               :rules="[(val) => !!val || 'Please select a product']"
               class="q-mb-md"
               :loading="loadingProducts"
             >
+              <template v-slot:selected>
+                <span v-if="selectedProduct">{{ selectedProduct.description }}</span>
+              </template>
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section>
@@ -1100,7 +1102,13 @@ export default {
         }
         
         if (productToSelect) {
-          selectedProduct.value = productToSelect;
+          // Find the same object in productOptions to ensure reference match for q-select
+          const matchingProduct = productOptions.value.find(p => p.id === productToSelect.id);
+          if (matchingProduct) {
+            selectedProduct.value = matchingProduct;
+          } else {
+            selectedProduct.value = productToSelect;
+          }
         }
       } catch (error) {
         console.error('Error loading products:', error);
