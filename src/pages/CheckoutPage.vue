@@ -408,7 +408,6 @@
                   />
                 </q-card-section>
               </q-card>
-
             </div>
 
             <!-- Right: Order Total & Payment -->
@@ -485,7 +484,6 @@
                     <div
                       v-once
                       id="square-payment-form"
-                      class="q-mt-md"
                       style="min-height: 200px"
                     >
                       <!-- Show loading only if not initialized AND no error -->
@@ -515,8 +513,8 @@
                   </div>
 
                   <!-- Billing Address Section (moved from left side) -->
-                  <div class="q-mt-md">
-                    <div class="text-h6 q-mb-md">Billing Address</div>
+                  <div>
+                    <div class="text-h6 q-mb-md q-mt-md">Billing Address</div>
                     <q-toggle
                       v-if="
                         !skipShipping &&
@@ -568,7 +566,9 @@
                             filled
                             :error="billingStateError"
                             :error-message="
-                              billingStateError ? 'Billing state is required' : ''
+                              billingStateError
+                                ? 'Billing state is required'
+                                : ''
                             "
                             :input-attrs="{
                               autocomplete: 'billing address-level1',
@@ -586,7 +586,9 @@
                             :error-message="
                               billingZipError ? 'Billing ZIP is required' : ''
                             "
-                            :input-attrs="{ autocomplete: 'billing postal-code' }"
+                            :input-attrs="{
+                              autocomplete: 'billing postal-code',
+                            }"
                           />
                         </div>
                       </div>
