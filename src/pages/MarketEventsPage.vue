@@ -39,7 +39,7 @@
 
         <!-- No Events -->
         <div
-          v-else-if="filteredEvents.length === 0"
+          v-else-if="events.length === 0"
           class="no-events q-pa-lg text-center"
         >
           <q-icon name="event_busy" size="64px" color="grey-5" />
@@ -52,7 +52,7 @@
         <!-- Events Grid -->
         <div v-else class="events-grid">
           <q-card
-            v-for="event in filteredEvents"
+            v-for="event in events"
             :key="event.id"
             class="event-card q-mb-md"
             flat
