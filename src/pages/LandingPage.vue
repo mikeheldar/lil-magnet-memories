@@ -497,7 +497,7 @@ export default {
           caption = 'The sign-in process took too long. Please try again.';
         }
 
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: errorMessage,
           caption: caption,
@@ -568,7 +568,7 @@ export default {
 
     const addProductToCart = (product) => {
       addToCart(product, 1);
-      $q.notify({
+      safeNotify({
         type: 'positive',
         message: 'Added to cart!',
         caption: product.description,
