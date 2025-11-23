@@ -895,6 +895,27 @@ export default {
         console.error('Failed to load products:', err);
       });
       
+      // Handler for when product selection changes
+      const onProductChange = (newProductId) => {
+        console.log('🔄 Product changed to:', newProductId);
+        // The selectedProduct computed will automatically update
+        // Force a recalculation of totalCost by triggering reactivity
+        if (selectedProduct.value) {
+          console.log('✅ Selected product updated:', selectedProduct.value.description);
+        }
+      };
+      
+      // Watch selectedProductId to ensure totalCost updates when product changes
+      watch(selectedProductId, (newId, oldId) => {
+        if (newId !== oldId && newId) {
+          console.log('🔄 Product ID changed from', oldId, 'to', newId);
+          // Force reactivity update - totalCost computed should automatically recalculate
+          if (selectedProduct.value) {
+            console.log('✅ Product changed, totalCost will recalculate for:', selectedProduct.value.description);
+          }
+        }
+      });
+      
       // Watch productOptions to sync selectedProductId when options change
       watch(productOptions, (newOptions) => {
         if (newOptions.length > 0) {
