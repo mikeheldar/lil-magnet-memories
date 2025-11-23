@@ -131,21 +131,28 @@
               <div class="text-subtitle2 q-mb-sm text-weight-medium">
                 Selected Product
               </div>
-              <div v-if="selectedProduct" class="q-mb-sm">
+              <!-- Debug info (remove after testing) -->
+              <div class="text-caption text-grey-5 q-mb-xs" v-if="selectedProductId">
+                Debug: ID={{ selectedProductId }}, Found={{ selectedProduct ? 'Yes' : 'No' }}
+              </div>
+              <div v-if="selectedProductId && selectedProduct" class="q-mb-sm">
                 <div class="text-h6 text-weight-bold text-primary">
                   Selected Product: {{ selectedProduct.description }}
                   <q-chip v-if="selectedProduct.isDefault" color="green" text-color="white" size="sm" icon="star" class="q-ml-sm">
                     Default
                   </q-chip>
                 </div>
-                <div class="text-caption text-grey-7 q-mt-xs">
+                <div class="text-caption text-grey-7 q-mt-xs" v-if="selectedProduct.pricing && Object.keys(selectedProduct.pricing).length > 0">
                   <div
                     v-for="(price, qty) in selectedProduct.pricing"
-                    :key="qty"
+                    :key="String(qty)"
                   >
                     {{ qty }}x for ${{ Number(price).toFixed(2) }}
                   </div>
                 </div>
+              </div>
+              <div v-else-if="selectedProductId" class="text-body2 text-grey-6">
+                Loading product details... (ID: {{ selectedProductId }})
               </div>
               <div v-else class="text-body2 text-grey-6">
                 No product selected
@@ -1411,6 +1418,8 @@ export default {
       selectedFiles,
       fileQuantities,
       productOptions,
+      selectedProductId,
+      selectedProduct,
       loadingProducts,
       submitting,
       canSubmit,
@@ -1437,6 +1446,7 @@ export default {
       paymentChoice,
       showEventEndedDialog,
       goToMainPage,
+      onProductChange,
     };
   },
 };
