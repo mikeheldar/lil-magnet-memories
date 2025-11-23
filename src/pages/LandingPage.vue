@@ -561,8 +561,6 @@ export default {
       }
     };
 
-    const pendingProduct = ref(null);
-    
     const confirmAtMarketEvent = () => {
       // Set the toggle state (this persists via localStorage in customerType composable)
       setCustomerType('market_customer');
