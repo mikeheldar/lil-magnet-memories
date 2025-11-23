@@ -484,7 +484,21 @@ export default {
   name: 'MarketEventUploadPage',
   setup() {
     const $q = useQuasar();
+    const quasar = $q; // Capture in local variable for safe access
     const router = useRouter();
+    
+    // Safe notify wrapper
+    const safeNotify = (options) => {
+      try {
+        if (quasar && typeof quasar.notify === 'function') {
+          quasar.notify(options);
+        } else {
+          console.log('Notification not available:', options);
+        }
+      } catch (error) {
+        console.error('Error showing notification:', error);
+      }
+    };
 
     const formData = ref({
       firstName: '',
@@ -603,7 +617,7 @@ export default {
     };
 
     const onRejected = () => {
-      $q.notify({
+      safeNotify({
         type: 'negative',
         message:
           'Some files were rejected. Please make sure they are image files.',
@@ -707,15 +721,13 @@ export default {
 
         // Show success notification
         try {
-          if (typeof $q !== 'undefined' && $q.notify) {
-            $q.notify({
-              type: 'positive',
-              message: 'Order submitted successfully!',
-              caption:
-                'Your order has been saved and we will contact you soon.',
-              position: 'top',
-            });
-          }
+          safeNotify({
+            type: 'positive',
+            message: 'Order submitted successfully!',
+            caption:
+              'Your order has been saved and we will contact you soon.',
+            position: 'top',
+          });
         } catch (notifyError) {
           console.log('Notification error (non-critical):', notifyError);
         }
@@ -735,14 +747,12 @@ export default {
       } catch (error) {
         console.error('Order submission error:', error);
         // Only show notification if $q is available
-        if (typeof $q !== 'undefined' && $q.notify) {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to submit order',
-            caption: 'Please try again or contact us directly.',
-            position: 'top',
-          });
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to submit order',
+          caption: 'Please try again or contact us directly.',
+          position: 'top',
+        });
       } finally {
         submitting.value = false;
       }
@@ -800,41 +810,38 @@ export default {
           
           submitting.value = false;
           
-          // Show success and navigate to cart
-          $q.notify({
+          // Show success notification
+          safeNotify({
             type: 'positive',
             message: 'Photos added to cart!',
             position: 'top',
           });
           
-          // Navigate to cart
-          router.push('/cart');
+          // Route directly to checkout with skipShipping and customTotal
+          router.push({
+            path: '/checkout',
+            query: {
+              customTotal: total.toFixed(2),
+              skipShipping: '1',
+              orderNumber: orderNumber.value,
+              context: 'market_event',
+              firstName: formData.value.firstName,
+              lastName: formData.value.lastName,
+              email: formData.value.email,
+              phone: formData.value.phone || '',
+            },
+          });
+          return;
         } catch (error) {
           console.error('❌ Error uploading photos for cart:', error);
           submitting.value = false;
-          $q.notify({
+          safeNotify({
             type: 'negative',
             message: 'Failed to upload photos',
             caption: error.message || 'Please try again',
             position: 'top',
           });
         }
-        
-        // Route to checkout with skipShipping and customTotal
-        router.push({
-          path: '/checkout',
-          query: {
-            customTotal: total.toFixed(2),
-            skipShipping: '1',
-            orderNumber: orderNumber.value,
-            context: 'market_event',
-            firstName: formData.value.firstName,
-            lastName: formData.value.lastName,
-            email: formData.value.email,
-            phone: formData.value.phone || '',
-          }
-        });
-        return;
       }
       
       // Otherwise, show order summary dialog (default behavior)
@@ -851,7 +858,7 @@ export default {
       // Check if popups are likely blocked
       const popupBlocked = checkPopupBlocked();
       if (popupBlocked) {
-        $q.notify({
+        safeNotify({
           type: 'warning',
           message: 'Popup blocked detected',
           caption: 'Please allow popups for this site and try again.',
@@ -868,7 +875,7 @@ export default {
         if (signingIn.value) {
           console.log('Sign-in timeout, resetting state');
           signingIn.value = false;
-          $q.notify({
+          safeNotify({
             type: 'negative',
             message: 'Sign-in timed out',
             caption:
@@ -893,7 +900,7 @@ export default {
         await authService.signInWithGoogle();
         console.log('Google sign-in successful');
 
-        $q.notify({
+        safeNotify({
           type: 'positive',
           message: 'Successfully signed in!',
           caption: 'Your information has been filled automatically.',
@@ -928,7 +935,7 @@ export default {
           caption = 'The sign-in process took too long. Please try again.';
         }
 
-        $q.notify({
+        safeNotify({
           type: 'negative',
           message: errorMessage,
           caption: caption,
