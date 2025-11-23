@@ -594,6 +594,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useCart } from '../composables/useCart.js';
 import { marketEventService } from '../services/marketEventService.js';
+import { useCustomerType } from '../composables/useCustomerType.js';
 import {
   firebaseService,
   DEFAULT_SHIPPING_OPTIONS,
@@ -614,6 +615,7 @@ export default {
       }
     };
     const { cartItems, cartSubtotal, clearCart } = useCart();
+    const { isMarketCustomer } = useCustomerType();
 
     const submitting = ref(false);
     const submittingKiosk = ref(false);
@@ -847,13 +849,17 @@ export default {
         checkedInEvent.value = currentCheckedInEvent;
       }
 
+      // Also check if user is a market customer (from customer type)
+      const userIsMarketCustomer = isMarketCustomer.value;
+      const shouldShowPickup = currentCheckedInEvent || checkedInEvent.value || userIsMarketCustomer;
+
       baseOptions.forEach((option) => {
         if (!option) {
           return;
         }
         const type = option.type || 'shipping';
         if (type === 'pickup') {
-          if (currentCheckedInEvent || checkedInEvent.value) {
+          if (shouldShowPickup) {
             pushOption(option);
           }
         } else {
@@ -865,7 +871,7 @@ export default {
         DEFAULT_SHIPPING_OPTIONS.forEach((option) => {
           const type = option.type || 'shipping';
           if (type === 'pickup') {
-            if (currentCheckedInEvent || checkedInEvent.value) {
+            if (shouldShowPickup) {
               pushOption(option);
             }
           } else {
