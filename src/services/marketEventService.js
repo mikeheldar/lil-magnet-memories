@@ -3,6 +3,8 @@ import { firebaseService } from './firebaseService.js';
 import { authService } from './authService.js';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config.js';
 
 // Track if we've waited for auth state restoration on this page load
 let authStateWaitCompleted = false;
@@ -13,19 +15,125 @@ class MarketEventService {
     this.eventsCache = [];
     this.cacheTimestamp = null;
     this.cacheTimeout = 30000; // Cache for 30 seconds (shorter for faster updates)
-    // Ensure anonymous auth before initializing cache
+    this.listenerUnsubscribe = null;
+    this.listeners = new Set(); // Set of callback functions to notify on changes
+    
+    // Ensure anonymous auth before initializing real-time listener
     this.ensureAuth().then(() => {
-      // Initialize cache on service creation
+      // Set up real-time listener immediately
+      this.setupRealtimeListener();
+    }).catch(err => {
+      console.error('Error ensuring auth for market events:', err);
+      // Try to set up listener anyway
+      this.setupRealtimeListener();
+    });
+  }
+
+  // Set up real-time Firestore listener for immediate updates
+  setupRealtimeListener() {
+    // Unsubscribe from existing listener if any
+    if (this.listenerUnsubscribe) {
+      this.listenerUnsubscribe();
+      this.listenerUnsubscribe = null;
+    }
+
+    try {
+      const eventsRef = collection(db, 'marketEvents');
+      const q = query(eventsRef, orderBy('startDateTime', 'desc'));
+      
+      // Set up real-time listener
+      this.listenerUnsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+          console.log('🔄 Market events updated in real-time');
+          const events = [];
+          querySnapshot.forEach((doc) => {
+            const eventData = doc.data();
+            events.push({
+              id: doc.id,
+              ...eventData,
+            });
+          });
+
+          // Convert Firebase timestamps to ISO strings for compatibility
+          let processedEvents = events.map((event) => {
+            const processed = { ...event };
+            if (processed.createdAt?.toDate) {
+              processed.createdAt = processed.createdAt.toDate().toISOString();
+            }
+            if (processed.updatedAt?.toDate) {
+              processed.updatedAt = processed.updatedAt.toDate().toISOString();
+            }
+            if (processed.checkedInAt?.toDate) {
+              processed.checkedInAt = processed.checkedInAt.toDate().toISOString();
+            }
+            if (processed.checkedOutAt?.toDate) {
+              processed.checkedOutAt = processed.checkedOutAt.toDate().toISOString();
+            }
+            return processed;
+          });
+
+          // Filter out testing events for non-admin users
+          const isAdmin = authService.isAdmin();
+          if (!isAdmin) {
+            processedEvents = processedEvents.filter(event => !event.isTesting);
+          }
+
+          // Update cache immediately
+          this.eventsCache = processedEvents;
+          this.cacheTimestamp = Date.now();
+
+          // Notify all listeners
+          this.notifyListeners();
+        },
+        (error) => {
+          console.error('Error in market events real-time listener:', error);
+          // Fallback to periodic refresh if listener fails
+          this.refreshCache().catch(err => {
+            console.error('Error refreshing cache after listener error:', err);
+          });
+        }
+      );
+    } catch (error) {
+      console.error('Error setting up market events real-time listener:', error);
+      // Fallback to initial cache refresh
       this.refreshCache().catch(err => {
         console.error('Error initializing market event cache:', err);
       });
-    }).catch(err => {
-      console.error('Error ensuring auth for market events:', err);
-      // Try to refresh cache anyway
-      this.refreshCache().catch(cacheErr => {
-        console.error('Error initializing market event cache:', cacheErr);
-      });
+    }
+  }
+
+  // Add a listener callback that will be called when events change
+  addListener(callback) {
+    this.listeners.add(callback);
+    // Immediately call with current state
+    if (this.eventsCache.length > 0) {
+      callback();
+    }
+    // Return unsubscribe function
+    return () => {
+      this.listeners.delete(callback);
+    };
+  }
+
+  // Notify all listeners that events have changed
+  notifyListeners() {
+    this.listeners.forEach(callback => {
+      try {
+        callback();
+      } catch (error) {
+        console.error('Error in market event listener callback:', error);
+      }
     });
+  }
+
+  // Cleanup method to unsubscribe from listener
+  cleanup() {
+    if (this.listenerUnsubscribe) {
+      this.listenerUnsubscribe();
+      this.listenerUnsubscribe = null;
+    }
+    this.listeners.clear();
   }
 
   // Ensure we have an auth context (anonymous if needed) for Firestore reads
@@ -221,16 +329,8 @@ class MarketEventService {
   // 2. An admin has checked into it (checkedIn === true), AND
   // 3. The admin has NOT checked out yet (checkedOut !== true)
   getCheckedInEvent() {
-    // If cache is empty, try to trigger async refresh (but return null for now)
-    // The cache will be populated on next check
-    if (this.eventsCache.length === 0) {
-      // Trigger async refresh in background (fire and forget)
-      this.refreshCache().catch(err => {
-        console.error('Error refreshing cache in getCheckedInEvent:', err);
-      });
-      return null;
-    }
-
+    // With real-time listener, cache should be populated quickly
+    // But if it's still empty, return null (listener will update it soon)
     const activeEvent = this.getActiveEventSync();
     if (!activeEvent) return null;
     

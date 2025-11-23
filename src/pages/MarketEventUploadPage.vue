@@ -956,35 +956,26 @@ export default {
     };
 
     onMounted(async () => {
-      // Check if there's an active checked-in market event
-      // If not, redirect to landing page
+      // The route guard handles blocking access when there's no checked-in event
+      // This onMounted just logs the status and ensures the page is ready
+      // We don't redirect here - the route guard already handled that for new navigations
       try {
-        // Wait a moment for market event service to load events
+        // Wait a moment for market event service to fully load events
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Check for active checked-in event (async version)
         const checkedInEvent = await marketEventService.getCheckedInEventAsync();
         
-        if (!checkedInEvent) {
-          console.log('⚠️ No active checked-in market event found, redirecting to landing page');
-          $q.notify({
-            type: 'warning',
-            message: 'No active market event',
-            caption: 'There is no active market event at this time. Redirecting to home page.',
-            position: 'top',
-            timeout: 3000,
-          });
-          // Redirect to landing page
-          router.push('/');
-          return;
+        if (checkedInEvent) {
+          console.log('✅ Active checked-in market event found:', checkedInEvent.name);
+        } else {
+          console.log('⚠️ No active checked-in market event found');
+          // Don't redirect here - route guard already handled it for new navigations
+          // If we're here on refresh, it means the route guard allowed it, so stay on page
         }
-        
-        console.log('✅ Active checked-in market event found:', checkedInEvent.name);
       } catch (error) {
         console.error('Error checking for market event:', error);
-        // On error, still redirect to be safe
-        router.push('/');
-        return;
+        // Don't redirect on error - let user stay on page
       }
 
       // Check if user is already authenticated immediately

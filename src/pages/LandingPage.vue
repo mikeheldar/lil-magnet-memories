@@ -605,8 +605,9 @@ export default {
       return products.value.filter((p) => p.productType === 'predesigned');
     });
 
-    // Reactive ref to trigger updates when market events are loaded
+    // Reactive ref to trigger updates when market events change
     const marketEventCheckTrigger = ref(0);
+    let marketEventUnsubscribe = null;
 
     // Check if there's an active market event
     const hasActiveEvent = computed(() => {
@@ -659,29 +660,23 @@ export default {
 
     // Check if user is already authenticated
     onMounted(async () => {
-      // Check for market events immediately on page load
-      try {
-        await marketEventService.refreshCache();
-        console.log('Market events checked on page load');
-        // Trigger reactivity update after cache is refreshed
+      // Set up real-time listener for immediate updates
+      marketEventUnsubscribe = marketEventService.addListener(() => {
+        // Trigger reactivity when events change
         marketEventCheckTrigger.value++;
-      } catch (error) {
-        console.error('Error checking market events on page load:', error);
-      }
+        console.log('🔄 Market events updated on landing page');
+      });
 
-      // Set up periodic refresh to keep banner updated
-      const marketEventInterval = setInterval(async () => {
-        try {
-          await marketEventService.refreshCache();
-          marketEventCheckTrigger.value++;
-        } catch (error) {
-          console.error('Error refreshing market events:', error);
-        }
-      }, 10000); // Refresh every 10 seconds
+      // Initial check - cache should be populated quickly by real-time listener
+      // But trigger an update to ensure UI reflects current state
+      marketEventCheckTrigger.value++;
 
-      // Cleanup interval on unmount
+      // Cleanup listener on unmount
       onUnmounted(() => {
-        clearInterval(marketEventInterval);
+        if (marketEventUnsubscribe) {
+          marketEventUnsubscribe();
+          marketEventUnsubscribe = null;
+        }
       });
 
       loadProducts();

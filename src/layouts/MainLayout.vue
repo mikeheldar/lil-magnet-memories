@@ -448,17 +448,19 @@ export default {
 
     // Initialize market event cache immediately
     const marketEventCacheInitialized = ref(false);
-    (async () => {
-      try {
-        await marketEventService.refreshCache();
-        marketEventCacheInitialized.value = true;
-        // Immediately trigger reactivity update so pill shows right away
-        marketEventCheckTrigger.value++;
-      } catch (error) {
-        console.error('Error initializing market event cache:', error);
-        marketEventCacheInitialized.value = true; // Set to true even on error to prevent infinite loading
-      }
-    })();
+    let marketEventUnsubscribe = null;
+    
+    // Set up real-time listener for immediate updates
+    marketEventUnsubscribe = marketEventService.addListener(() => {
+      // Trigger reactivity when events change
+      marketEventCheckTrigger.value++;
+      marketEventCacheInitialized.value = true;
+      console.log('🔄 Market events updated in MainLayout');
+    });
+    
+    // Initial trigger to ensure UI reflects current state
+    marketEventCheckTrigger.value++;
+    marketEventCacheInitialized.value = true;
 
     const activeMarketEvent = computed(() => {
       // Trigger reactivity with marketEventCheckTrigger
@@ -466,7 +468,6 @@ export default {
       return marketEventService.getCheckedInEvent();
     });
     const hasActiveEvent = computed(() => !!activeMarketEvent.value);
-    let marketEventCheckInterval = null;
 
     const uploadLinkLabel = computed(() => {
       return 'Start Creating Magnets';
@@ -693,25 +694,14 @@ export default {
         }
       });
 
-      // Set up periodic check for market event status
-      // This will automatically hide the indicator when events end
-      // Refresh more frequently to ensure all users see updates quickly
-      marketEventCheckInterval = setInterval(async () => {
-        marketEventCheckTrigger.value++;
-        // Refresh market event cache periodically
-        try {
-          await marketEventService.refreshCache();
-        } catch (error) {
-          console.error('Error refreshing market event cache:', error);
-        }
-      }, 10000); // Check every 10 seconds for faster updates
+      // Real-time listener is already set up above, no need for periodic refresh
     });
 
     onUnmounted(() => {
-      // Clean up interval when component unmounts
-      if (marketEventCheckInterval) {
-        clearInterval(marketEventCheckInterval);
-        marketEventCheckInterval = null;
+      // Clean up real-time listener when component unmounts
+      if (marketEventUnsubscribe) {
+        marketEventUnsubscribe();
+        marketEventUnsubscribe = null;
       }
     });
 

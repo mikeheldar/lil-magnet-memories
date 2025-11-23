@@ -8,6 +8,7 @@ import {
 
 import routes from './routes';
 import { authService } from '../services/authService';
+import { marketEventService } from '../services/marketEventService';
 
 /*
  * If not building with SSR mode, you can
@@ -54,6 +55,38 @@ export default route(function (/* { store, ssrContext } */) {
         isAdmin = await authService.isAdminAsync();
       } catch (error) {
         console.error('Error in async admin check, using sync result:', error);
+      }
+    }
+
+    // Check for market event upload page - require checked-in event
+    if (to.path === '/market-event-upload') {
+      // If navigating from the same route (refresh), allow it immediately
+      // The page will handle checking for events and won't redirect aggressively
+      if (from.path === to.path) {
+        console.log('Route guard: refresh detected, allowing navigation');
+        next();
+        return;
+      }
+      
+      // For new navigation (not refresh), check if there's a checked-in event
+      try {
+        // Wait a moment for market event service to load events
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        const checkedInEvent = await marketEventService.getCheckedInEventAsync();
+        
+        if (!checkedInEvent) {
+          console.log('Route guard: No checked-in market event, redirecting to landing page');
+          next('/');
+          return;
+        }
+        
+        console.log('Route guard: Checked-in market event found, allowing navigation to market event upload');
+      } catch (error) {
+        console.error('Route guard: Error checking market event:', error);
+        // On error, redirect to be safe (only for new navigation, not refresh)
+        next('/');
+        return;
       }
     }
 
