@@ -1618,7 +1618,7 @@ export default {
           // For fallback, we'll add text content
           // Note: In Safari, the CSS properties will override this and show the official button
           button.textContent = 'Buy with Apple Pay';
-          
+
           // Add a data attribute to help with styling
           button.setAttribute('data-apple-pay-button', 'true');
 
@@ -1649,13 +1649,14 @@ export default {
             padding: 0;
             margin: 0;
           `;
-          
+
           // Check if Apple Pay button CSS is supported
           // If not, we need to add the Apple logo manually
-          const applePayButtonSupported = window.CSS && 
-            CSS.supports && 
+          const applePayButtonSupported =
+            window.CSS &&
+            CSS.supports &&
             CSS.supports('-apple-pay-button-type', 'plain');
-          
+
           if (!applePayButtonSupported) {
             // Fallback: Add Apple logo SVG manually for browsers that don't support the CSS
             const appleLogo = document.createElement('span');
@@ -2808,6 +2809,9 @@ export default {
 .wallet-button {
   min-height: 48px;
   width: 100%;
+  background: transparent;
+  padding: 0;
+  margin: 0;
 }
 
 /* Apple Pay button styling - ensures proper display of Apple's button */
