@@ -166,28 +166,6 @@
                 </q-item>
               </template>
             </q-select>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section>
-                    <q-item-label>{{ scope.opt.description }}</q-item-label>
-                    <q-item-label caption>
-                      <div
-                        v-for="(price, qty) in scope.opt.pricing"
-                        :key="qty"
-                        class="text-caption"
-                      >
-                        {{ qty }}x for ${{ price.toFixed(2) }}
-                      </div>
-                    </q-item-label>
-                  </q-item-section>
-                  <q-item-section side v-if="scope.opt.isDefault">
-                    <q-chip color="green" text-color="white" size="sm" icon="star">
-                      Default
-                    </q-chip>
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
 
             <!-- Photo Upload Section -->
             <q-separator class="q-my-md" />
