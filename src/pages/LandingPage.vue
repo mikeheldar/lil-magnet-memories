@@ -577,14 +577,38 @@ export default {
       });
     };
 
-    const loadProducts = async () => {
+    const loadProducts = async (retryCount = 0) => {
+      const maxRetries = 3;
       try {
         // Non-admins should not see testing products
         const isAdmin = authService.isAdmin();
         const productsData = await firebaseService.getProducts(isAdmin);
-        products.value = productsData || [];
+        
+        if (productsData && productsData.length > 0) {
+          products.value = productsData;
+          console.log(`✅ Loaded ${productsData.length} products`);
+        } else {
+          // If no products returned, retry if we haven't exceeded max retries
+          if (retryCount < maxRetries) {
+            console.log(`⚠️ No products returned, retrying (${retryCount + 1}/${maxRetries})...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+            return loadProducts(retryCount + 1);
+          } else {
+            console.warn('⚠️ No products found after retries');
+            products.value = [];
+          }
+        }
       } catch (error) {
         console.error('Error loading products:', error);
+        // Retry on error if we haven't exceeded max retries
+        if (retryCount < maxRetries) {
+          console.log(`⚠️ Error loading products, retrying (${retryCount + 1}/${maxRetries})...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+          return loadProducts(retryCount + 1);
+        } else {
+          console.error('❌ Failed to load products after retries');
+          products.value = [];
+        }
       }
     };
 
@@ -679,7 +703,10 @@ export default {
         }
       });
 
-      loadProducts();
+      // Load products with retry logic
+      loadProducts().catch(err => {
+        console.error('Failed to load products:', err);
+      });
 
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();

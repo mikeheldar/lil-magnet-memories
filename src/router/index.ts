@@ -60,31 +60,54 @@ export default route(function (/* { store, ssrContext } */) {
 
     // Check for market event upload page - require checked-in event
     if (to.path === '/market-event-upload') {
-      // If navigating from the same route (refresh), allow it immediately
-      // The page will handle checking for events and won't redirect aggressively
-      if (from.path === to.path) {
-        console.log('Route guard: refresh detected, allowing navigation');
+      // Detect refresh: from.path is empty (hard refresh) or same as to.path (soft refresh)
+      const isRefresh = !from.path || from.path === '' || from.path === to.path;
+      
+      // First, check cache synchronously (fast check)
+      const cachedCheckedInEvent = marketEventService.getCheckedInEvent();
+      
+      // If cache has a checked-in event, allow navigation immediately
+      // This handles refresh cases where cache is already populated
+      if (cachedCheckedInEvent) {
+        console.log('Route guard: Checked-in event found in cache, allowing navigation');
+        next();
+        return;
+      }
+      
+      // If this is a refresh, always allow it - the real-time listener will populate cache
+      // The page won't redirect aggressively, so user can stay on page
+      if (isRefresh) {
+        console.log('Route guard: Refresh detected, allowing navigation (real-time listener will update cache)');
         next();
         return;
       }
       
       // For new navigation (not refresh), check if there's a checked-in event
       try {
-        // Wait a moment for market event service to load events
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Wait for real-time listener to connect and populate cache (if not already)
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
+        // Check cache again (should be populated by now if listener is working)
+        const quickCheck = marketEventService.getCheckedInEvent();
+        if (quickCheck) {
+          console.log('Route guard: Checked-in event found after wait, allowing navigation');
+          next();
+          return;
+        }
+        
+        // If still not in cache, do async check (fallback)
         const checkedInEvent = await marketEventService.getCheckedInEventAsync();
         
         if (!checkedInEvent) {
-          console.log('Route guard: No checked-in market event, redirecting to landing page');
+          console.log('Route guard: No checked-in market event found, redirecting to landing page');
           next('/');
           return;
         }
         
-        console.log('Route guard: Checked-in market event found, allowing navigation to market event upload');
+        console.log('Route guard: Checked-in market event found via async check, allowing navigation');
       } catch (error) {
         console.error('Route guard: Error checking market event:', error);
-        // On error, redirect to be safe (only for new navigation, not refresh)
+        // On error for new navigation, redirect to be safe
         next('/');
         return;
       }
