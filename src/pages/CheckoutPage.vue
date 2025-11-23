@@ -329,32 +329,6 @@
                       </div>
                     </div>
                   </div>
-                  <div
-                    v-if="
-                      selectedShippingDetails &&
-                      selectedShippingDetails.type === 'pickup' &&
-                      checkedInEvent
-                    "
-                    class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
-                  >
-                    <div class="row items-center q-mb-sm">
-                      <q-icon
-                        name="event"
-                        class="q-mr-sm"
-                        color="primary"
-                        size="24px"
-                      />
-                      <div class="text-weight-medium">
-                        Market Event Pickup Available
-                      </div>
-                    </div>
-                    <div class="text-body2">
-                      Since you're in the area, you can pick up your order at
-                      <strong>{{ checkedInEvent.name }}</strong> for free! Just
-                      let us know you're at the event and we'll have your
-                      magnets ready.
-                    </div>
-                  </div>
                 </q-card-section>
               </q-card>
 
@@ -372,42 +346,6 @@
                 </q-card-section>
               </q-card>
 
-              <!-- Market Event Toggle (shown when live market event exists but user hasn't selected pickup) -->
-              <q-card
-                v-if="
-                  checkedInEvent &&
-                  !skipShipping &&
-                  !isFromMarketEventUpload &&
-                  selectedPaymentOption !== 'pay_at_event'
-                "
-                class="q-mb-md bg-blue-1"
-              >
-                <q-card-section>
-                  <div class="row items-center q-mb-sm">
-                    <q-icon
-                      name="event"
-                      class="q-mr-sm"
-                      color="primary"
-                      size="24px"
-                    />
-                    <div class="text-weight-medium">
-                      Are you at the market event?
-                    </div>
-                  </div>
-                  <div class="text-body2 q-mb-md">
-                    If you're at
-                    <strong>{{ checkedInEvent.name }}</strong
-                    >, you can pick up your order at the tent and save on
-                    shipping!
-                  </div>
-                  <q-toggle
-                    v-model="switchToMarketEventPickup"
-                    label="I'm at the market event - pick up at tent"
-                    color="primary"
-                    @update:model-value="handleMarketEventToggle"
-                  />
-                </q-card-section>
-              </q-card>
             </div>
 
             <!-- Right: Order Total & Payment -->
@@ -946,32 +884,6 @@ export default {
       return false;
     });
 
-    // Handle market event toggle - switch to pickup mode
-    const handleMarketEventToggle = (value) => {
-      if (value) {
-        // User wants to switch to market event pickup
-        switchToMarketEventPickup.value = true;
-        // Automatically select "pay at event" payment option if available
-        if (availablePaymentMethods.value.payAtEvent) {
-          selectedPaymentOption.value = 'pay_at_event';
-        }
-        // Clear shipping selection
-        selectedShippingOption.value = null;
-      } else {
-        // User wants to go back to shipping
-        switchToMarketEventPickup.value = false;
-        // Clear pay at event selection if it was selected
-        if (selectedPaymentOption.value === 'pay_at_event') {
-          // Select first available payment option
-          const options = paymentOptions.value;
-          if (options.length > 0) {
-            selectedPaymentOption.value = options[0].value;
-          }
-        }
-        // Re-apply default shipping selection
-        applyDefaultShippingSelection();
-      }
-    };
 
     const requiresShippingAddress = computed(() => {
       // If skipShipping is true, don't require shipping address
@@ -1019,8 +931,8 @@ export default {
         return;
       }
 
-      // If user is at market event, prefer pickup option
-      if (checkedInEvent.value) {
+      // If coming from market event upload or user is at market event, prefer pickup option
+      if (isFromMarketEventUpload.value || checkedInEvent.value) {
         const pickupOption = options.find((option) => option.type === 'pickup');
         if (pickupOption) {
           selectedShippingOption.value = pickupOption.value;
