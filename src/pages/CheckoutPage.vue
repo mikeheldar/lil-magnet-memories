@@ -484,7 +484,7 @@
                     <div
                       v-once
                       id="square-payment-form"
-                      style="min-height: 200px"
+                      style="min-height: 20px"
                     >
                       <!-- Show loading only if not initialized AND no error -->
                       <div
