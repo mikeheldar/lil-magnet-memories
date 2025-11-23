@@ -131,10 +131,6 @@
               <div class="text-subtitle2 q-mb-sm text-weight-medium">
                 Selected Product
               </div>
-              <!-- Debug info (remove after testing) -->
-              <div class="text-caption text-grey-5 q-mb-xs" v-if="selectedProductId">
-                Debug: ID={{ selectedProductId }}, Found={{ selectedProduct ? 'Yes' : 'No' }}
-              </div>
               <div v-if="selectedProductId && selectedProduct" class="q-mb-sm">
                 <div class="text-h6 text-weight-bold text-primary">
                   Selected Product: {{ selectedProduct.description }}
