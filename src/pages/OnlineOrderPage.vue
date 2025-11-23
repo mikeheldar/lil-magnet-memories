@@ -126,33 +126,25 @@
               Product Selection
             </div>
 
-            <!-- Current Product Display -->
+            <!-- Current Product Display as Label -->
             <div v-if="selectedProduct" class="q-mb-md">
               <div class="text-subtitle2 q-mb-sm text-weight-medium">
                 Selected Product
               </div>
-              <q-card flat bordered class="bg-grey-1">
-                <q-card-section>
-                  <div class="row items-center">
-                    <div class="col">
-                      <div class="text-h6 text-weight-bold">{{ selectedProduct.description }}</div>
-                      <div class="text-caption text-grey-7 q-mt-xs">
-                        <div
-                          v-for="(price, qty) in selectedProduct.pricing"
-                          :key="qty"
-                        >
-                          {{ qty }}x for ${{ Number(price).toFixed(2) }}
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-auto" v-if="selectedProduct.isDefault">
-                      <q-chip color="green" text-color="white" size="sm" icon="star">
-                        Default
-                      </q-chip>
-                    </div>
-                  </div>
-                </q-card-section>
-              </q-card>
+              <div class="text-h6 text-weight-bold text-primary q-mb-sm">
+                {{ selectedProduct.description }}
+                <q-chip v-if="selectedProduct.isDefault" color="green" text-color="white" size="sm" icon="star" class="q-ml-sm">
+                  Default
+                </q-chip>
+              </div>
+              <div class="text-caption text-grey-7">
+                <div
+                  v-for="(price, qty) in selectedProduct.pricing"
+                  :key="qty"
+                >
+                  {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                </div>
+              </div>
             </div>
             
             <!-- Product Selector Dropdown -->
@@ -174,10 +166,6 @@
                 @update:model-value="onProductChange"
                 :disable="loadingProducts || productOptions.length === 0"
               >
-                <template v-slot:selected>
-                  <span v-if="selectedProduct">{{ selectedProduct.description }}</span>
-                  <span v-else class="text-grey-6">Select a product</span>
-                </template>
                 <template v-slot:option="scope">
                   <q-item v-bind="scope.itemProps" v-if="scope.opt && scope.opt.id">
                     <q-item-section>
