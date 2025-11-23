@@ -1326,7 +1326,7 @@ export default {
         if (newOptions.length > 0) {
           // If product ID is set, verify it still exists in options
           if (selectedProductId.value) {
-            const stillExists = newOptions.find(p => p.id === selectedProductId.value);
+            const stillExists = newOptions.find(p => String(p.id) === String(selectedProductId.value));
             if (!stillExists) {
               // Selected product no longer in options, reset
               selectedProductId.value = null;
