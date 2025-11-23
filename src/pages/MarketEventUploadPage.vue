@@ -148,7 +148,7 @@
                 </div>
               </div>
               <div v-else-if="selectedProductId" class="text-body2 text-grey-6">
-                Loading product details... (ID: {{ selectedProductId }})
+                Loading product details...
               </div>
               <div v-else class="text-body2 text-grey-6">
                 No product selected
