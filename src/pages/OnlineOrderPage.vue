@@ -169,16 +169,19 @@
                 :rules="[(val) => !!val || 'Please select a product']"
                 :loading="loadingProducts"
                 @update:model-value="onProductChange"
-                :disable="loadingProducts || productOptions.length === 0"
+                :disable="loadingProducts || !productOptions || productOptions.length === 0"
               >
                 <template v-slot:option="scope">
-                  <q-item v-bind="scope.itemProps" v-if="scope.opt && scope.opt.id">
+                  <q-item 
+                    v-bind="scope.itemProps" 
+                    v-if="scope && scope.opt && scope.opt.id && scope.opt.description"
+                  >
                     <q-item-section>
-                      <q-item-label>{{ scope.opt.description || 'Unknown Product' }}</q-item-label>
-                      <q-item-label caption v-if="scope.opt.pricing">
+                      <q-item-label>{{ scope.opt.description }}</q-item-label>
+                      <q-item-label caption v-if="scope.opt.pricing && typeof scope.opt.pricing === 'object'">
                         <div
                           v-for="(price, qty) in scope.opt.pricing"
-                          :key="qty"
+                          :key="String(qty)"
                           class="text-caption"
                         >
                           {{ qty }}x for ${{ Number(price).toFixed(2) }}
