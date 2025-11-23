@@ -48,9 +48,10 @@
                             class="col-auto"
                           >
                             <q-img
-                              :src="photo.preview"
+                              :src="photo.url || photo.preview"
                               style="height: 60px; width: 60px"
                               class="rounded-borders"
+                              @error="handleImageError($event, photo)"
                             />
                           </div>
                         </div>
@@ -244,6 +245,18 @@ export default {
       router.push('/checkout');
     };
 
+    const handleImageError = (event, photo) => {
+      // If url failed and preview exists, try preview
+      if (photo.url && photo.preview && event.target.src !== photo.preview) {
+        console.log('⚠️ Photo URL failed, trying preview:', photo.name);
+        event.target.src = photo.preview;
+      } else {
+        console.error('❌ Failed to load photo:', photo.name);
+        // Could show a placeholder image here
+        event.target.style.display = 'none';
+      }
+    };
+
     return {
       cartItems,
       cartSubtotal,
@@ -251,6 +264,7 @@ export default {
       removeFromCart,
       goToCheckout,
       loading,
+      handleImageError,
     };
   },
 };

@@ -761,32 +761,65 @@ export default {
         // Calculate total cost
         const total = totalCost.value.total;
         
-        // Prepare photos with preview URLs for cart
-        const photosWithPreviews = selectedFiles.value.map((file, index) => ({
-          file: file,
-          name: file.name,
-          preview: getFilePreview(file),
-          quantity: fileQuantities.value[index] || 1,
-        }));
-        
-        // Add order to cart
-        addCustomUploadToCart({
-          productName: selectedProduct.value?.description || 'Custom Photo Magnets',
-          photos: photosWithPreviews,
-          quantities: fileQuantities.value,
-          specialInstructions: formData.value.specialInstructions,
-          totalMagnets: totalMagnets.value,
-          totalCost: totalCost.value,
-          costBreakdown: totalCost.value.breakdown,
-          pricing: selectedProduct.value?.pricing || {},
-          formData: {
-            firstName: formData.value.firstName,
-            lastName: formData.value.lastName,
-            email: formData.value.email,
-            phone: formData.value.phone,
+        // Upload photos to Firebase Storage first to get persistent URLs
+        submitting.value = true;
+        try {
+          console.log('📤 Uploading photos to Firebase Storage for cart...');
+          const uploadedPhotos = await firebaseService.uploadPhotos(selectedFiles.value);
+          console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
+          
+          // Prepare photos with download URLs and quantities for cart
+          const photosForCart = uploadedPhotos.map((uploadedPhoto, index) => ({
+            name: uploadedPhoto.name,
+            url: uploadedPhoto.url, // Persistent Firebase Storage URL
+            fileName: uploadedPhoto.fileName,
+            size: uploadedPhoto.size,
+            type: uploadedPhoto.type,
+            quantity: fileQuantities.value[index] || 1,
+            // Keep preview for immediate display (will be replaced by url on refresh)
+            preview: getFilePreview(selectedFiles.value[index]),
+          }));
+          
+          // Add order to cart with persistent photo URLs
+          addCustomUploadToCart({
+            productName: selectedProduct.value?.description || 'Custom Photo Magnets',
+            photos: photosForCart,
+            quantities: fileQuantities.value,
             specialInstructions: formData.value.specialInstructions,
-          },
-        });
+            totalMagnets: totalMagnets.value,
+            totalCost: totalCost.value,
+            costBreakdown: totalCost.value.breakdown,
+            pricing: selectedProduct.value?.pricing || {},
+            formData: {
+              firstName: formData.value.firstName,
+              lastName: formData.value.lastName,
+              email: formData.value.email,
+              phone: formData.value.phone,
+              specialInstructions: formData.value.specialInstructions,
+            },
+          });
+          
+          submitting.value = false;
+          
+          // Show success and navigate to cart
+          $q.notify({
+            type: 'positive',
+            message: 'Photos added to cart!',
+            position: 'top',
+          });
+          
+          // Navigate to cart
+          router.push('/cart');
+        } catch (error) {
+          console.error('❌ Error uploading photos for cart:', error);
+          submitting.value = false;
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to upload photos',
+            caption: error.message || 'Please try again',
+            position: 'top',
+          });
+        }
         
         // Route to checkout with skipShipping and customTotal
         router.push({

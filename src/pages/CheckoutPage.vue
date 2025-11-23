@@ -52,7 +52,7 @@
                                 class="col-auto"
                               >
                                 <q-img
-                                  :src="photo.preview"
+                                  :src="photo.url || photo.preview"
                                   style="height: 60px; width: 60px"
                                   class="rounded-borders"
                                 />
