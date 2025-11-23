@@ -789,7 +789,7 @@ export default {
             preview: getFilePreview(selectedFiles.value[index]),
           }));
           
-          // Add order to cart with persistent photo URLs
+          // Add order to cart with persistent photo URLs and market event context
           addCustomUploadToCart({
             productName: selectedProduct.value?.description || 'Custom Photo Magnets',
             photos: photosForCart,
@@ -799,6 +799,7 @@ export default {
             totalCost: totalCost.value,
             costBreakdown: totalCost.value.breakdown,
             pricing: selectedProduct.value?.pricing || {},
+            marketEventContext: true, // Flag to remember this is from market event
             formData: {
               firstName: formData.value.firstName,
               lastName: formData.value.lastName,

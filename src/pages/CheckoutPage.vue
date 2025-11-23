@@ -455,7 +455,8 @@
                     <q-toggle
                       v-if="
                         !skipShipping &&
-                        selectedShippingDetails?.type !== 'pickup'
+                        selectedShippingDetails?.type !== 'pickup' &&
+                        requiresShippingAddress
                       "
                       v-model="billingSameAsShipping"
                       :disable="!requiresShippingAddress"
@@ -665,6 +666,18 @@ export default {
     // Check for active market event and check-in status
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
+      
+      // Check if cart items are from market event (have marketEventContext flag)
+      const hasMarketEventCartItems = cartItems.value.some(
+        (item) => item.marketEventContext === true
+      );
+      
+      // If cart has market event items, treat as coming from market event upload
+      if (hasMarketEventCartItems && !isFromMarketEventUpload.value) {
+        // Set skipShipping to true to match market event context
+        // This will be handled by the skipShipping computed property
+        console.log('🛒 Cart contains market event items, applying market event context');
+      }
 
       // Pre-fill customer info from route query if available (from market event upload)
       if (route.query.firstName) {
@@ -872,6 +885,13 @@ export default {
       ) {
         return true;
       }
+      // Skip shipping if cart items are from market event (have marketEventContext flag)
+      const hasMarketEventCartItems = cartItems.value.some(
+        (item) => item.marketEventContext === true
+      );
+      if (hasMarketEventCartItems) {
+        return true;
+      }
       // Skip shipping if user selected "pay at tent" (market event pickup)
       if (selectedPaymentOption.value === 'pay_at_event') {
         return true;
@@ -929,8 +949,13 @@ export default {
         return;
       }
 
-      // If coming from market event upload or user is at market event, prefer pickup option
-      if (isFromMarketEventUpload.value || checkedInEvent.value) {
+      // Check if cart items are from market event
+      const hasMarketEventCartItems = cartItems.value.some(
+        (item) => item.marketEventContext === true
+      );
+      
+      // If coming from market event upload, user is at market event, or cart has market event items, prefer pickup option
+      if (isFromMarketEventUpload.value || checkedInEvent.value || hasMarketEventCartItems) {
         const pickupOption = options.find((option) => option.type === 'pickup');
         if (pickupOption) {
           selectedShippingOption.value = pickupOption.value;
@@ -945,12 +970,8 @@ export default {
     };
 
     const loadShippingOptions = async () => {
-      // Skip loading shipping options if skipShipping is true
-      if (skipShipping.value) {
-        loadingShippingOptions.value = false;
-        return;
-      }
-
+      // Always load shipping options, even if skipShipping is true
+      // We still need to show the pickup option for market event context
       loadingShippingOptions.value = true;
       try {
         // Non-admins should not see testing shipping options

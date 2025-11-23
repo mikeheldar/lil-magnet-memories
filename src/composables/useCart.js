@@ -327,6 +327,7 @@ export function useCart() {
       totalCost: uploadData.totalCost,
       costBreakdown: uploadData.costBreakdown,
       pricing: uploadData.pricing,
+      marketEventContext: uploadData.marketEventContext || false, // Remember if from market event
     });
     // Explicitly trigger save to ensure immediate sync
     saveCart(cartItems.value);
