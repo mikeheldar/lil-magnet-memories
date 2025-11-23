@@ -1613,30 +1613,78 @@ export default {
           button.setAttribute('lang', 'en-US');
           button.setAttribute('aria-label', 'Buy with Apple Pay');
 
+          // Set button content with Apple logo and text
+          // The -apple-pay-button-* CSS will render the logo automatically in Safari
+          // For fallback, we'll add text content
+          // Note: In Safari, the CSS properties will override this and show the official button
+          button.textContent = 'Buy with Apple Pay';
+          
+          // Add a data attribute to help with styling
+          button.setAttribute('data-apple-pay-button', 'true');
+
           // Apply official Apple Pay button styles
-          // Using Apple's official CSS properties for the button
+          // Using Apple's official CSS properties for the button (works in Safari)
+          // These properties will automatically render the Apple logo and proper styling
+          // Plus fallback styles for browsers that don't support -apple-pay-button-*
           button.style.cssText = `
             -apple-pay-button-type: plain;
             -apple-pay-button-style: black;
+            background-color: #000000;
+            color: #ffffff;
             width: 100%;
             height: 50px;
+            min-height: 50px;
             border-radius: 8px;
             border: none;
             cursor: pointer;
-            display: block;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             font-size: 17px;
             font-weight: 400;
             letter-spacing: -0.41px;
-            transition: opacity 0.2s ease;
+            transition: opacity 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 0;
+            margin: 0;
           `;
           
+          // Check if Apple Pay button CSS is supported
+          // If not, we need to add the Apple logo manually
+          const applePayButtonSupported = window.CSS && 
+            CSS.supports && 
+            CSS.supports('-apple-pay-button-type', 'plain');
+          
+          if (!applePayButtonSupported) {
+            // Fallback: Add Apple logo SVG manually for browsers that don't support the CSS
+            const appleLogo = document.createElement('span');
+            appleLogo.innerHTML = `
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                <path d="M12.5 2.5c-.2.3-.3.6-.3 1 0 .6.2 1.1.6 1.5.5.5 1.1.7 1.7.7.1 0 .2 0 .4-.1-.2-.5-.4-1-.4-1.5 0-.6.2-1.1.6-1.5.4-.4.9-.6 1.5-.6.1 0 .2 0 .4.1.1-.4.1-.7.1-1.1 0-1.3-.5-2.4-1.3-3.1-.8-.7-1.9-1.1-3.1-1.1-1.3 0-2.4.5-3.2 1.3-.7.8-1.1 1.9-1.1 3.2 0 .4 0 .7.1 1.1.1 0 .2.1.4.1.6 0 1.2-.2 1.7-.7.4-.4.6-.9.6-1.5 0-.5-.1-1-.4-1.5.1-.1.2-.1.4-.1.6 0 1.2.2 1.7.6z" fill="currentColor"/>
+              </svg>
+            `;
+            button.innerHTML = '';
+            button.appendChild(appleLogo);
+            const textSpan = document.createElement('span');
+            textSpan.textContent = 'Buy with Apple Pay';
+            button.appendChild(textSpan);
+          }
+
           // Add hover effect
           button.addEventListener('mouseenter', () => {
-            button.style.opacity = '0.8';
+            button.style.opacity = '0.9';
+            button.style.backgroundColor = '#1a1a1a';
           });
           button.addEventListener('mouseleave', () => {
             button.style.opacity = '1';
+            button.style.backgroundColor = '#000000';
+          });
+          button.addEventListener('mousedown', () => {
+            button.style.backgroundColor = '#333333';
+          });
+          button.addEventListener('mouseup', () => {
+            button.style.backgroundColor = '#1a1a1a';
           });
 
           // Handle button click - tokenize with Square and place order
@@ -2766,14 +2814,26 @@ export default {
 .apple-pay-button {
   -apple-pay-button-type: plain;
   -apple-pay-button-style: black;
-  width: 100%;
-  height: 50px;
+  width: 100% !important;
+  height: 50px !important;
+  min-height: 50px !important;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  display: block;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
-  transition: opacity 0.2s ease;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+    'SF Pro Text', sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.41px;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  margin: 0;
 }
 
 .apple-pay-button:hover {
