@@ -685,7 +685,10 @@ export default {
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
       console.log('🛒 Checkout page - checkedInEvent:', checkedInEvent.value);
-      console.log('🛒 Checkout page - isMarketCustomer:', isMarketCustomer.value);
+      console.log(
+        '🛒 Checkout page - isMarketCustomer:',
+        isMarketCustomer.value
+      );
 
       // Check if cart items are from market event (have marketEventContext flag)
       const hasMarketEventCartItems = cartItems.value.some(
@@ -1174,7 +1177,7 @@ export default {
     watch(
       () => marketEventService.getCheckedInEvent(),
       (newEvent) => {
-        if (newEvent && !checkedInEvent.value) {
+        if (newEvent !== checkedInEvent.value) {
           checkedInEvent.value = newEvent;
           // Re-apply shipping selection when event status changes
           applyDefaultShippingSelection();
