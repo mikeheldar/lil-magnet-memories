@@ -415,15 +415,6 @@
               >
                 <q-card-section>
                   <div class="text-h6 q-mb-md">Billing Address</div>
-                  <q-toggle
-                    v-if="
-                      !skipShipping &&
-                      selectedShippingDetails?.type !== 'pickup'
-                    "
-                    v-model="billingSameAsShipping"
-                    :disable="!requiresShippingAddress"
-                    label="Billing address matches shipping address"
-                  />
                   <div
                     v-if="
                       requiresBillingAddress &&
@@ -566,7 +557,7 @@
                   </div>
 
                   <!-- Credit Card Form (always shown by default) -->
-                  <div class="q-mb-md">
+                  <div>
                     <div class="text-subtitle2 text-grey-7 q-mb-sm">
                       Or pay with credit/debit card
                     </div>
@@ -606,12 +597,25 @@
                       <!-- The loading spinner above will be hidden once squareCardMounted is true -->
                     </div>
                   </div>
+
+                  <!-- Billing Address Toggle (moved here from left side) -->
+                  <div class="q-mt-md">
+                    <q-toggle
+                      v-if="
+                        !skipShipping &&
+                        selectedShippingDetails?.type !== 'pickup'
+                      "
+                      v-model="billingSameAsShipping"
+                      :disable="!requiresShippingAddress"
+                      label="Billing address matches shipping address"
+                    />
+                  </div>
                 </q-card-section>
 
-                <q-card-actions vertical class="q-pa-md">
+                <q-card-actions vertical class="q-pa-md q-pt-none">
                   <q-btn
                     color="primary"
-                    label="Place Order"
+                    label="Buy with Credit Card"
                     icon="check"
                     size="lg"
                     class="full-width"
