@@ -678,6 +678,19 @@ export default {
     let eventCheckInterval = null;
     const hadEventOnLoad = ref(false);
 
+    // Handler for when product selection changes
+    const onProductChange = (newProductId) => {
+      console.log('🔄 Product changed to:', newProductId);
+      // Force reactivity update by accessing the computed property
+      // This ensures totalCost recalculates with the new product pricing
+      if (selectedProduct.value) {
+        console.log('✅ Selected product updated:', selectedProduct.value.description);
+        console.log('✅ New product pricing:', selectedProduct.value.pricing);
+        // Force totalCost to recalculate by accessing it
+        const _ = totalCost.value;
+      }
+    };
+
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(email);
@@ -1301,9 +1314,6 @@ export default {
         }
       });
 
-      // Load products
-      loadProducts();
-      
       // Handler for when product selection changes
       const onProductChange = (newProductId) => {
         console.log('🔄 Product changed to:', newProductId);
@@ -1316,6 +1326,9 @@ export default {
           const _ = totalCost.value;
         }
       };
+      
+      // Load products
+      loadProducts();
       
       // Watch selectedProductId to ensure totalCost updates when product changes
       watch(selectedProductId, (newId, oldId) => {
