@@ -718,8 +718,9 @@ export default {
         isAuthenticated.value = true;
         isAdmin.value = authService.isAdmin();
 
-        // Set customer type based on admin status
-        if (isAdmin.value) {
+        // Only set customer type to admin if it's not already set to market_customer
+        // This preserves the user's "at the event" toggle state
+        if (isAdmin.value && !isMarketCustomer.value) {
           setCustomerType('admin');
         }
       }
@@ -732,8 +733,9 @@ export default {
           console.log('User is already signed in:', user.email);
           console.log('Is admin:', isAdmin.value);
 
-          // Set customer type based on admin status
-          if (isAdmin.value) {
+          // Only set customer type to admin if it's not already set to market_customer
+          // This preserves the user's "at the event" toggle state
+          if (isAdmin.value && !isMarketCustomer.value) {
             setCustomerType('admin');
           }
         }
