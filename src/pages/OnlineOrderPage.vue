@@ -364,7 +364,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
@@ -766,11 +766,13 @@ export default {
           // First, check if productId is in route query (from landing page)
           if (route.query.productId) {
             productToSelect = products.value.find(p => p.id === route.query.productId);
+            console.log('🔍 Found product from route query:', productToSelect?.description);
           }
           
           // If not found in route, check for default product
           if (!productToSelect) {
             productToSelect = products.value.find(p => p.isDefault === true);
+            console.log('🔍 Found default product:', productToSelect?.description);
           }
           
           // If still not found, use first custom product
@@ -781,13 +783,21 @@ export default {
           }
           
           if (productToSelect) {
-            // Find the same object in productOptions to ensure reference match for q-select
-            const matchingProduct = productOptions.value.find(p => p.id === productToSelect.id);
+            // Wait for computed property to update, then find matching product
+            await nextTick();
+            // Filter custom products (same logic as productOptions computed)
+            const customProducts = products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
+            // Find the same object in filtered array to ensure reference match for q-select
+            const matchingProduct = customProducts.find(p => p.id === productToSelect.id);
             if (matchingProduct) {
               selectedProduct.value = matchingProduct;
+              console.log('✅ Selected product:', matchingProduct.description, matchingProduct.isDefault ? '(default)' : '');
             } else {
               selectedProduct.value = productToSelect;
+              console.log('✅ Selected product (fallback):', productToSelect.description);
             }
+          } else {
+            console.warn('⚠️ No product to select - no default product found and no route query productId');
           }
         } else {
           // If no products returned, retry if we haven't exceeded max retries

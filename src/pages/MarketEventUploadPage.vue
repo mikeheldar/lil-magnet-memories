@@ -513,7 +513,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
@@ -1102,13 +1102,21 @@ export default {
         }
         
         if (productToSelect) {
-          // Find the same object in productOptions to ensure reference match for q-select
-          const matchingProduct = productOptions.value.find(p => p.id === productToSelect.id);
+          // Wait for computed property to update, then find matching product
+          await nextTick();
+          // Filter custom products (same logic as productOptions computed)
+          const customProducts = products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
+          // Find the same object in filtered array to ensure reference match for q-select
+          const matchingProduct = customProducts.find(p => p.id === productToSelect.id);
           if (matchingProduct) {
             selectedProduct.value = matchingProduct;
+            console.log('✅ Selected product:', matchingProduct.description, matchingProduct.isDefault ? '(default)' : '');
           } else {
             selectedProduct.value = productToSelect;
+            console.log('✅ Selected product (fallback):', productToSelect.description);
           }
+        } else {
+          console.warn('⚠️ No product to select - no default product found and no route query productId');
         }
       } catch (error) {
         console.error('Error loading products:', error);
