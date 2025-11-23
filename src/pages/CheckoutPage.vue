@@ -2318,6 +2318,30 @@ export default {
               }
             );
 
+            // Add event listeners to handle Apple Pay events
+            // This ensures the payment flow is properly handled
+            if (applePay && typeof applePay.addEventListener === 'function') {
+              applePay.addEventListener('paymentmethodselected', (event) => {
+                console.log('🍎 Apple Pay payment method selected:', event);
+              });
+              
+              applePay.addEventListener('shippingcontactselected', (event) => {
+                console.log('🍎 Apple Pay shipping contact selected:', event);
+              });
+              
+              applePay.addEventListener('shippingmethodselected', (event) => {
+                console.log('🍎 Apple Pay shipping method selected:', event);
+              });
+              
+              applePay.addEventListener('complete', (event) => {
+                console.log('🍎 Apple Pay payment completed:', event);
+              });
+              
+              applePay.addEventListener('error', (event) => {
+                console.error('❌ Apple Pay error event:', event);
+              });
+            }
+
             // Square's Apple Pay might not have canMakePayment - check if method exists
             let canMakePayment = false;
             if (typeof applePay.canMakePayment === 'function') {
