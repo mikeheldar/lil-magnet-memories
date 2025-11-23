@@ -980,9 +980,15 @@ export default {
 
     const applyDefaultShippingSelection = () => {
       const options = shippingOptions.value;
-      console.log('🔄 applyDefaultShippingSelection called, options:', options.map(o => ({ value: o.value, type: o.type, label: o.label })));
-      console.log('🔄 Current selectedShippingOption:', selectedShippingOption.value);
-      
+      console.log(
+        '🔄 applyDefaultShippingSelection called, options:',
+        options.map((o) => ({ value: o.value, type: o.type, label: o.label }))
+      );
+      console.log(
+        '🔄 Current selectedShippingOption:',
+        selectedShippingOption.value
+      );
+
       if (!options.length) {
         console.log('⚠️ No shipping options available');
         selectedShippingOption.value = null;
@@ -992,7 +998,10 @@ export default {
         (option) => option.value === selectedShippingOption.value
       );
       if (existing) {
-        console.log('✅ Selected option already exists in options, keeping it:', selectedShippingOption.value);
+        console.log(
+          '✅ Selected option already exists in options, keeping it:',
+          selectedShippingOption.value
+        );
         return;
       }
 
@@ -1012,7 +1021,7 @@ export default {
         currentCheckedInEvent: !!currentCheckedInEvent,
         checkedInEvent: !!checkedInEvent.value,
         userIsMarketCustomer,
-        hasMarketEventCartItems
+        hasMarketEventCartItems,
       });
 
       // If coming from market event upload, user is at market event, user is market customer, or cart has market event items, prefer pickup option
@@ -1027,16 +1036,23 @@ export default {
         console.log('🔄 Looking for pickup option, found:', pickupOption);
         if (pickupOption) {
           selectedShippingOption.value = pickupOption.value;
-          console.log('✅ Defaulted to pickup option for market event:', pickupOption.value, {
-            isFromMarketEventUpload: isFromMarketEventUpload.value,
-            currentCheckedInEvent: !!currentCheckedInEvent,
-            checkedInEvent: !!checkedInEvent.value,
-            userIsMarketCustomer,
-            hasMarketEventCartItems
-          });
+          console.log(
+            '✅ Defaulted to pickup option for market event:',
+            pickupOption.value,
+            {
+              isFromMarketEventUpload: isFromMarketEventUpload.value,
+              currentCheckedInEvent: !!currentCheckedInEvent,
+              checkedInEvent: !!checkedInEvent.value,
+              userIsMarketCustomer,
+              hasMarketEventCartItems,
+            }
+          );
           return;
         } else {
-          console.log('⚠️ No pickup option found in options! Available options:', options.map(o => ({ value: o.value, type: o.type })));
+          console.log(
+            '⚠️ No pickup option found in options! Available options:',
+            options.map((o) => ({ value: o.value, type: o.type }))
+          );
         }
       }
 
