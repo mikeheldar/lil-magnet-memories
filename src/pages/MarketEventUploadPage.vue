@@ -169,16 +169,19 @@
                 :rules="[(val) => !!val || 'Please select a product']"
                 :loading="loadingProducts"
                 @update:model-value="onProductChange"
-                :disable="loadingProducts || productOptions.length === 0"
+                :disable="loadingProducts || !productOptions || productOptions.length === 0"
               >
                 <template v-slot:option="scope">
-                  <q-item v-bind="scope.itemProps" v-if="scope.opt && scope.opt.id">
+                  <q-item 
+                    v-bind="scope.itemProps" 
+                    v-if="scope && scope.opt && scope.opt.id && scope.opt.description"
+                  >
                     <q-item-section>
-                      <q-item-label>{{ scope.opt.description || 'Unknown Product' }}</q-item-label>
-                      <q-item-label caption v-if="scope.opt.pricing">
+                      <q-item-label>{{ scope.opt.description }}</q-item-label>
+                      <q-item-label caption v-if="scope.opt.pricing && typeof scope.opt.pricing === 'object'">
                         <div
                           v-for="(price, qty) in scope.opt.pricing"
-                          :key="qty"
+                          :key="String(qty)"
                           class="text-caption"
                         >
                           {{ qty }}x for ${{ Number(price).toFixed(2) }}
@@ -597,21 +600,31 @@ export default {
     const loadingProducts = ref(false);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
     
-    // Product options for dropdown - ensure it's always an array
+    // Product options for dropdown - ensure it's always an array with valid structure
     const productOptions = computed(() => {
       if (!products.value || !Array.isArray(products.value)) {
         return [];
       }
       return products.value
-        .filter(p => p && (p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom'))))
-        .map(p => ({
-          id: p.id,
-          description: p.description || 'Unknown Product',
-          pricing: p.pricing || {},
-          isDefault: p.isDefault || false,
-          category: p.category,
-          productType: p.productType
-        }));
+        .filter(p => {
+          // Only include products that have all required fields
+          return p && 
+                 p.id && 
+                 p.description && 
+                 (p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
+        })
+        .map(p => {
+          // Ensure all properties exist and are valid
+          return {
+            id: String(p.id || ''),
+            description: String(p.description || 'Unknown Product'),
+            pricing: p.pricing && typeof p.pricing === 'object' ? p.pricing : {},
+            isDefault: Boolean(p.isDefault),
+            category: p.category || null,
+            productType: p.productType || null
+          };
+        })
+        .filter(p => p.id && p.description); // Final safety check
     });
     
     // Get selected product object from ID
