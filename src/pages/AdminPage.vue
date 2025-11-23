@@ -193,37 +193,6 @@
         </q-list>
       </q-card-section>
     </q-card>
-
-    <!-- Quick Actions -->
-    <q-card>
-      <q-card-section>
-        <div class="text-h6 q-mb-md">
-          <q-icon name="flash_on" class="q-mr-sm" />
-          Quick Actions
-        </div>
-
-        <div class="row q-col-gutter-md">
-          <div class="col-12 col-md-6">
-            <q-btn
-              color="secondary"
-              icon="bug_report"
-              label="Firebase Diagnostic"
-              @click="$router.push('/firebase-test')"
-              class="full-width"
-            />
-          </div>
-          <div class="col-12 col-md-6">
-            <q-btn
-              color="accent"
-              icon="inventory"
-              label="View Orders"
-              @click="$router.push('/orders')"
-              class="full-width"
-            />
-          </div>
-        </div>
-      </q-card-section>
-    </q-card>
   </q-page>
 </template>
 
