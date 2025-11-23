@@ -118,6 +118,48 @@
               </div>
             </div>
 
+            <!-- Product Selection -->
+            <q-separator class="q-my-md" />
+
+            <div class="text-h6 text-weight-medium q-mb-sm text-primary">
+              <q-icon name="inventory_2" class="q-mr-sm" />
+              Product Selection
+            </div>
+
+            <q-select
+              v-model="selectedProduct"
+              :options="productOptions"
+              option-label="description"
+              option-value="id"
+              label="Select Product *"
+              filled
+              :rules="[(val) => !!val || 'Please select a product']"
+              class="q-mb-md"
+              :loading="loadingProducts"
+            >
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.description }}</q-item-label>
+                    <q-item-label caption>
+                      <div
+                        v-for="(price, qty) in scope.opt.pricing"
+                        :key="qty"
+                        class="text-caption"
+                      >
+                        {{ qty }}x for ${{ price.toFixed(2) }}
+                      </div>
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side v-if="scope.opt.isDefault">
+                    <q-chip color="green" text-color="white" size="sm" icon="star">
+                      Default
+                    </q-chip>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
             <!-- Photo Upload Section -->
             <q-separator class="q-my-md" />
 
@@ -471,7 +513,7 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 import { auth } from '../firebase/config.js';
@@ -486,6 +528,7 @@ export default {
     const $q = useQuasar();
     const quasar = $q; // Capture in local variable for safe access
     const router = useRouter();
+    const route = useRoute();
     
     // Safe notify wrapper
     const safeNotify = (options) => {
@@ -516,7 +559,13 @@ export default {
     const orderNumber = ref('');
     const products = ref([]);
     const selectedProduct = ref(null);
+    const loadingProducts = ref(false);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
+    
+    // Product options for dropdown
+    const productOptions = computed(() => {
+      return products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
+    });
     const { addCustomUploadToCart } = useCart();
     let marketEventUnsubscribe = null;
     let eventCheckInterval = null;
@@ -1023,22 +1072,40 @@ export default {
     };
 
     const loadProducts = async () => {
+      loadingProducts.value = true;
       try {
         // Non-admins should not see testing products
         const isAdmin = authService.isAdmin();
         const productsData = await firebaseService.getProducts(isAdmin);
         products.value = productsData || [];
-        // Select the first custom product by default
-        if (products.value.length > 0) {
-          const customProduct = products.value.find(
+        
+        // Determine which product to select
+        let productToSelect = null;
+        
+        // First, check if productId is in route query (from landing page)
+        if (route.query.productId) {
+          productToSelect = products.value.find(p => p.id === route.query.productId);
+        }
+        
+        // If not found in route, check for default product
+        if (!productToSelect) {
+          productToSelect = products.value.find(p => p.isDefault === true);
+        }
+        
+        // If still not found, use first custom product
+        if (!productToSelect) {
+          productToSelect = products.value.find(
             (p) => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom'))
           );
-          if (customProduct) {
-            selectedProduct.value = customProduct;
-          }
+        }
+        
+        if (productToSelect) {
+          selectedProduct.value = productToSelect;
         }
       } catch (error) {
         console.error('Error loading products:', error);
+      } finally {
+        loadingProducts.value = false;
       }
     };
 
@@ -1151,6 +1218,8 @@ export default {
       formData,
       selectedFiles,
       fileQuantities,
+      productOptions,
+      loadingProducts,
       submitting,
       canSubmit,
       totalMagnets,

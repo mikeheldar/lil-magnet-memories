@@ -53,6 +53,16 @@
                   >
                     Testing Only
                   </q-chip>
+                  <q-chip
+                    v-if="product.isDefault"
+                    color="green"
+                    text-color="white"
+                    size="sm"
+                    class="q-ml-sm"
+                    icon="star"
+                  >
+                    Default
+                  </q-chip>
                 </q-item-label>
                 <q-item-label caption>
                   <div class="q-mb-xs">
@@ -241,6 +251,13 @@
               label="Testing Only (Admin Only)"
               class="q-mb-md"
               hint="This product will only be visible to admins for testing"
+            />
+
+            <q-toggle
+              v-model="editingProduct.isDefault"
+              label="Set as Default Product"
+              class="q-mb-md"
+              hint="This product will be selected by default in photo upload forms"
             />
 
             <div class="text-body2 q-mb-sm">Product Image</div>
@@ -768,6 +785,7 @@ export default {
         imageUrl: '',
         category: 'custom',
         isTesting: false,
+        isDefault: false,
         pricing: {
           1: 0.0,
         },
@@ -783,6 +801,7 @@ export default {
         imageUrl: products.value[index].imageUrl || '',
         category: products.value[index].category || 'custom',
         isTesting: products.value[index].isTesting || false,
+        isDefault: products.value[index].isDefault || false,
         pricing: { ...products.value[index].pricing },
       };
       imageFile.value = null;
@@ -853,10 +872,21 @@ export default {
         imageUrl: editingProduct.value.imageUrl || '',
         category: editingProduct.value.category,
         isTesting: editingProduct.value.isTesting || false,
+        isDefault: editingProduct.value.isDefault || false,
         pricing,
       };
 
       try {
+        // If setting this product as default, unset all other products' default flag
+        if (product.isDefault) {
+          for (const p of products.value) {
+            if (p.id && p.isDefault && (editingProduct.value.index < 0 || p.id !== products.value[editingProduct.value.index]?.id)) {
+              await firebaseService.updateProduct(p.id, { ...p, isDefault: false });
+              p.isDefault = false;
+            }
+          }
+        }
+
         if (editingProduct.value.index >= 0) {
           // Update existing
           const existingProduct = products.value[editingProduct.value.index];

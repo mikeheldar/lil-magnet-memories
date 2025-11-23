@@ -118,6 +118,48 @@
               </div>
             </div>
 
+            <!-- Product Selection -->
+            <q-separator class="q-my-md" />
+
+            <div class="text-h6 text-weight-medium q-mb-sm text-primary">
+              <q-icon name="inventory_2" class="q-mr-sm" />
+              Product Selection
+            </div>
+
+            <q-select
+              v-model="selectedProduct"
+              :options="productOptions"
+              option-label="description"
+              option-value="id"
+              label="Select Product *"
+              filled
+              :rules="[(val) => !!val || 'Please select a product']"
+              class="q-mb-md"
+              :loading="loadingProducts"
+            >
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.description }}</q-item-label>
+                    <q-item-label caption>
+                      <div
+                        v-for="(price, qty) in scope.opt.pricing"
+                        :key="qty"
+                        class="text-caption"
+                      >
+                        {{ qty }}x for ${{ price.toFixed(2) }}
+                      </div>
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side v-if="scope.opt.isDefault">
+                    <q-chip color="green" text-color="white" size="sm" icon="star">
+                      Default
+                    </q-chip>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
             <!-- Photo Upload Section -->
             <q-separator class="q-my-md" />
 
@@ -322,7 +364,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 import { useCart } from '../composables/useCart.js';
@@ -332,6 +374,7 @@ export default {
   setup() {
     const $q = useQuasar();
     const router = useRouter();
+    const route = useRoute();
     const { addCustomUploadToCart } = useCart();
 
     // Safe notify helper to prevent errors when $q.notify is not available
@@ -705,6 +748,7 @@ export default {
 
     const loadProducts = async (retryCount = 0) => {
       const maxRetries = 3;
+      loadingProducts.value = true;
       try {
         // Non-admins should not see testing products
         const isAdmin = authService.isAdmin();
@@ -713,12 +757,29 @@ export default {
         if (productsData && productsData.length > 0) {
           products.value = productsData;
           console.log(`✅ Loaded ${productsData.length} products on online order page`);
-          // Select the first custom product by default
-          const customProduct = products.value.find(
-            (p) => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom'))
-          );
-          if (customProduct) {
-            selectedProduct.value = customProduct;
+          
+          // Determine which product to select
+          let productToSelect = null;
+          
+          // First, check if productId is in route query (from landing page)
+          if (route.query.productId) {
+            productToSelect = products.value.find(p => p.id === route.query.productId);
+          }
+          
+          // If not found in route, check for default product
+          if (!productToSelect) {
+            productToSelect = products.value.find(p => p.isDefault === true);
+          }
+          
+          // If still not found, use first custom product
+          if (!productToSelect) {
+            productToSelect = products.value.find(
+              (p) => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom'))
+            );
+          }
+          
+          if (productToSelect) {
+            selectedProduct.value = productToSelect;
           }
         } else {
           // If no products returned, retry if we haven't exceeded max retries
@@ -742,6 +803,8 @@ export default {
           console.error('❌ Failed to load products after retries');
           products.value = [];
         }
+      } finally {
+        loadingProducts.value = false;
       }
     };
 

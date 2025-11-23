@@ -239,7 +239,7 @@
                       color="primary"
                       label="Start Creating Magnets"
                       icon="camera_alt"
-                      @click="goToUpload"
+                      @click="() => goToUpload(product)"
                     />
                   </div>
                 </q-card-section>
@@ -529,41 +529,63 @@ export default {
 
     const showMarketEventDialog = ref(false);
     const activeMarketEvent = ref(null);
+    const pendingProduct = ref(null);
 
-    const goToUpload = () => {
+    const goToUpload = (product = null) => {
       // Check if there's an active market event
       const activeEvent = marketEventService.getCheckedInEvent();
+      
+      const queryParams = product?.id ? { productId: product.id } : {};
       
       if (activeEvent) {
         // If user has toggled "I'm at the event", go directly to market upload
         if (isCustomerAtEvent.value) {
           setCustomerType('market_customer');
-          router.push('/market-event-upload');
+          router.push({
+            path: '/market-event-upload',
+            query: queryParams
+          });
         } else {
           // Show popup to ask if they're at the event
           activeMarketEvent.value = activeEvent;
+          pendingProduct.value = product;
           showMarketEventDialog.value = true;
         }
       } else {
         // No active event - go to online order
         setCustomerType('online_customer');
-        router.push('/online-order');
+        router.push({
+          path: '/online-order',
+          query: queryParams
+        });
       }
     };
 
+    const pendingProduct = ref(null);
+    
     const confirmAtMarketEvent = () => {
       // Set the toggle state (this persists via localStorage in customerType composable)
       setCustomerType('market_customer');
       // Close dialog and navigate to market event upload
       showMarketEventDialog.value = false;
-      router.push('/market-event-upload');
+      const queryParams = pendingProduct.value?.id ? { productId: pendingProduct.value.id } : {};
+      router.push({
+        path: '/market-event-upload',
+        query: queryParams
+      });
+      pendingProduct.value = null;
     };
 
     const goToOnlineOrder = () => {
       // User said they're not at the event - go to online ordering
       showMarketEventDialog.value = false;
       setCustomerType('online_customer');
-      router.push('/online-order');
+      const queryParams = pendingProduct.value?.id ? { productId: pendingProduct.value.id } : {};
+      router.push({
+        path: '/online-order',
+        query: queryParams
+      });
+      pendingProduct.value = null;
     };
 
     const addProductToCart = (product) => {

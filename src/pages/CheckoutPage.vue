@@ -666,17 +666,19 @@ export default {
     // Check for active market event and check-in status
     onMounted(() => {
       checkedInEvent.value = marketEventService.getCheckedInEvent();
-      
+
       // Check if cart items are from market event (have marketEventContext flag)
       const hasMarketEventCartItems = cartItems.value.some(
         (item) => item.marketEventContext === true
       );
-      
+
       // If cart has market event items, treat as coming from market event upload
       if (hasMarketEventCartItems && !isFromMarketEventUpload.value) {
         // Set skipShipping to true to match market event context
         // This will be handled by the skipShipping computed property
-        console.log('🛒 Cart contains market event items, applying market event context');
+        console.log(
+          '🛒 Cart contains market event items, applying market event context'
+        );
       }
 
       // Pre-fill customer info from route query if available (from market event upload)
@@ -953,9 +955,13 @@ export default {
       const hasMarketEventCartItems = cartItems.value.some(
         (item) => item.marketEventContext === true
       );
-      
+
       // If coming from market event upload, user is at market event, or cart has market event items, prefer pickup option
-      if (isFromMarketEventUpload.value || checkedInEvent.value || hasMarketEventCartItems) {
+      if (
+        isFromMarketEventUpload.value ||
+        checkedInEvent.value ||
+        hasMarketEventCartItems
+      ) {
         const pickupOption = options.find((option) => option.type === 'pickup');
         if (pickupOption) {
           selectedShippingOption.value = pickupOption.value;
