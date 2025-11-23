@@ -1895,14 +1895,51 @@ export default {
               console.log('🍎 Apple Pay button clicked, preparing payment...');
               submitting.value = true;
 
-              // Update payment request with current order total before tokenizing
+              // Update payment request with current order details before tokenizing
               if (squarePaymentRequest.value) {
-                console.log('🔄 Updating payment request with current total:', orderTotal.value);
+                console.log(
+                  '🔄 Updating payment request with current order details...'
+                );
+                
+                // Build line items for the payment request
+                const lineItems = [];
+                cartItems.value.forEach((item) => {
+                  if (item.isCustomUpload) {
+                    // Custom upload item
+                    lineItems.push({
+                      label: item.productName || 'Custom Photo Magnets',
+                      amount: item.totalCost?.toFixed(2) || '0.00',
+                    });
+                  } else {
+                    // Regular product item
+                    const itemTotal = (item.pricePerUnit || 0) * (item.quantity || 0);
+                    lineItems.push({
+                      label: item.productName || 'Product',
+                      amount: itemTotal.toFixed(2),
+                    });
+                  }
+                });
+                
+                // Add shipping if applicable
+                if (shippingCost.value > 0 && selectedShippingDetails.value) {
+                  lineItems.push({
+                    label: selectedShippingDetails.value.rawLabel || 'Shipping',
+                    amount: shippingCost.value.toFixed(2),
+                  });
+                }
+                
+                console.log('🔄 Payment request update:', {
+                  total: orderTotal.value.toFixed(2),
+                  lineItemsCount: lineItems.length,
+                  lineItems: lineItems
+                });
+                
                 await squarePaymentRequest.value.update({
                   total: {
                     amount: orderTotal.value.toFixed(2),
                     label: 'Lil Magnet Memories',
                   },
+                  lineItems: lineItems.length > 0 ? lineItems : undefined,
                   requestShippingContact:
                     selectedShippingDetails.value?.type === 'shipping',
                 });
@@ -1910,33 +1947,43 @@ export default {
 
               // Verify Apple Pay is still available
               if (!squareApplePay.value) {
-                throw new Error('Apple Pay is not available. Please refresh the page.');
+                throw new Error(
+                  'Apple Pay is not available. Please refresh the page.'
+                );
               }
 
-              console.log('🍎 Calling Square Apple Pay tokenize() - this should show the Apple Pay sheet...');
+              console.log(
+                '🍎 Calling Square Apple Pay tokenize() - this should show the Apple Pay sheet...'
+              );
               console.log('🍎 Payment request details:', {
                 total: orderTotal.value.toFixed(2),
                 hasPaymentRequest: !!squarePaymentRequest.value,
-                paymentRequest: squarePaymentRequest.value
+                paymentRequest: squarePaymentRequest.value,
               });
-              
+
               // Tokenize with Square - this should trigger the Apple Pay sheet
               // If this doesn't show the sheet, there's a configuration issue
               const tokenResult = await squareApplePay.value.tokenize();
-              
+
               // Check if tokenize returned immediately (which would indicate no user interaction)
               // This is a safety check - tokenize should wait for user to complete Apple Pay
               if (!tokenResult || !tokenResult.token) {
-                throw new Error('Apple Pay tokenization failed - no token returned. The Apple Pay sheet may not have appeared.');
+                throw new Error(
+                  'Apple Pay tokenization failed - no token returned. The Apple Pay sheet may not have appeared.'
+                );
               }
-              
-              console.log('🍎 Apple Pay tokenize completed - user should have seen the Apple Pay sheet');
-              
+
+              console.log(
+                '🍎 Apple Pay tokenize completed - user should have seen the Apple Pay sheet'
+              );
+
               console.log('✅ Apple Pay tokenized successfully:', {
                 hasToken: !!tokenResult?.token,
                 status: tokenResult?.status,
-                token: tokenResult?.token ? tokenResult.token.substring(0, 20) + '...' : 'none',
-                fullResult: tokenResult
+                token: tokenResult?.token
+                  ? tokenResult.token.substring(0, 20) + '...'
+                  : 'none',
+                fullResult: tokenResult,
               });
 
               if (!tokenResult) {
@@ -1945,14 +1992,18 @@ export default {
 
               if (!tokenResult.token) {
                 console.error('❌ Token result missing token:', tokenResult);
-                throw new Error('Failed to get payment token from Apple Pay. Please try again.');
+                throw new Error(
+                  'Failed to get payment token from Apple Pay. Please try again.'
+                );
               }
 
               // Set payment option and store token for placeOrder to use
               selectedPaymentOption.value = 'apple_pay';
               applePayToken.value = tokenResult.token;
 
-              console.log('✅ Apple Pay token stored, proceeding to place order...');
+              console.log(
+                '✅ Apple Pay token stored, proceeding to place order...'
+              );
 
               // Now call placeOrder which will process the payment
               await placeOrder();
@@ -2274,6 +2325,33 @@ export default {
           const payments = window.Square.payments(applicationId, locationId);
           squarePayments.value = payments;
 
+          // Build line items for the payment request
+          const lineItems = [];
+          cartItems.value.forEach((item) => {
+            if (item.isCustomUpload) {
+              // Custom upload item
+              lineItems.push({
+                label: item.productName || 'Custom Photo Magnets',
+                amount: item.totalCost?.toFixed(2) || '0.00',
+              });
+            } else {
+              // Regular product item
+              const itemTotal = (item.pricePerUnit || 0) * (item.quantity || 0);
+              lineItems.push({
+                label: item.productName || 'Product',
+                amount: itemTotal.toFixed(2),
+              });
+            }
+          });
+          
+          // Add shipping if applicable
+          if (shippingCost.value > 0 && selectedShippingDetails.value) {
+            lineItems.push({
+              label: selectedShippingDetails.value.rawLabel || 'Shipping',
+              amount: shippingCost.value.toFixed(2),
+            });
+          }
+
           const paymentRequest = payments.paymentRequest({
             countryCode: 'US',
             currencyCode: 'USD',
@@ -2281,6 +2359,7 @@ export default {
               amount: orderTotal.value.toFixed(2),
               label: 'Lil Magnet Memories',
             },
+            lineItems: lineItems.length > 0 ? lineItems : undefined,
             requestBillingContact: true,
             requestShippingContact:
               selectedShippingDetails.value?.type === 'shipping',
@@ -2324,19 +2403,19 @@ export default {
               applePay.addEventListener('paymentmethodselected', (event) => {
                 console.log('🍎 Apple Pay payment method selected:', event);
               });
-              
+
               applePay.addEventListener('shippingcontactselected', (event) => {
                 console.log('🍎 Apple Pay shipping contact selected:', event);
               });
-              
+
               applePay.addEventListener('shippingmethodselected', (event) => {
                 console.log('🍎 Apple Pay shipping method selected:', event);
               });
-              
+
               applePay.addEventListener('complete', (event) => {
                 console.log('🍎 Apple Pay payment completed:', event);
               });
-              
+
               applePay.addEventListener('error', (event) => {
                 console.error('❌ Apple Pay error event:', event);
               });
@@ -2611,28 +2690,40 @@ export default {
             orderNumber,
             applePayToken.value
           );
-          
+
           // Validate payment was processed
           if (!squarePaymentDetails) {
-            throw new Error('Apple Pay payment processing failed. No payment details returned.');
+            throw new Error(
+              'Apple Pay payment processing failed. No payment details returned.'
+            );
           }
-          
+
           if (squarePaymentDetails.status !== 'COMPLETED') {
-            console.error('❌ Apple Pay payment not completed:', squarePaymentDetails);
-            throw new Error(`Apple Pay payment failed with status: ${squarePaymentDetails.status}`);
+            console.error(
+              '❌ Apple Pay payment not completed:',
+              squarePaymentDetails
+            );
+            throw new Error(
+              `Apple Pay payment failed with status: ${squarePaymentDetails.status}`
+            );
           }
-          
+
           console.log('✅ Apple Pay payment processed successfully:', {
             paymentId: squarePaymentDetails.id,
             status: squarePaymentDetails.status,
-            amount: orderTotal.value
+            amount: orderTotal.value,
           });
-          
+
           // Clear token after use
           applePayToken.value = null;
-        } else if (selectedPaymentOption.value === 'apple_pay' && !applePayToken.value) {
+        } else if (
+          selectedPaymentOption.value === 'apple_pay' &&
+          !applePayToken.value
+        ) {
           // This should never happen if the flow is correct, but add safety check
-          throw new Error('Apple Pay token is missing. Please try the payment again.');
+          throw new Error(
+            'Apple Pay token is missing. Please try the payment again.'
+          );
         }
 
         const paymentOptionPayload = {
