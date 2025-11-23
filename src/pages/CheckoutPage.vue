@@ -678,6 +678,10 @@ export default {
       if (route.query.customTotal) {
         return true;
       }
+      // If context is market_event, it's from market event upload
+      if (route.query.context === 'market_event') {
+        return true;
+      }
       return false;
     });
 
