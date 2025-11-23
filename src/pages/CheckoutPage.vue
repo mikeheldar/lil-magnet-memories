@@ -989,9 +989,22 @@ export default {
       }
       return !!selectedShippingDetails.value?.allowAddress;
     });
-    const requiresBillingAddress = computed(
-      () => selectedPaymentOption.value === 'square_card'
-    );
+    const requiresBillingAddress = computed(() => {
+      // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
+      if (selectedPaymentOption.value === 'apple_pay') {
+        return false;
+      }
+      // Always require billing address for credit card payments
+      if (selectedPaymentOption.value === 'square_card') {
+        return true;
+      }
+      // For other payment methods, only require if shipping address is required
+      // and billing is different from shipping
+      if (requiresShippingAddress.value && !billingSameAsShipping.value) {
+        return true;
+      }
+      return false;
+    });
 
     const addressIsComplete = (address) => {
       if (!address) return false;
@@ -1437,7 +1450,8 @@ export default {
       ) {
         return false;
       }
-      if (requiresBillingAddress.value) {
+      // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
+      if (requiresBillingAddress.value && selectedPaymentOption.value !== 'apple_pay') {
         if (skipShipping.value) {
           // When skipShipping, always require billing address
           if (!addressIsComplete(billingAddress.value)) {
