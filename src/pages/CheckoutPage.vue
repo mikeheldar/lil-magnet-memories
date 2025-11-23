@@ -1885,25 +1885,80 @@ export default {
               return;
             }
 
+            // Prevent multiple clicks
+            if (submitting.value) {
+              console.log('⏳ Payment already in progress, ignoring click');
+              return;
+            }
+
             try {
-              console.log('🍎 Apple Pay button clicked, tokenizing...');
+              console.log('🍎 Apple Pay button clicked, preparing payment...');
+              submitting.value = true;
 
-              // Tokenize with Square
+              // Update payment request with current order total before tokenizing
+              if (squarePaymentRequest.value) {
+                console.log('🔄 Updating payment request with current total:', orderTotal.value);
+                await squarePaymentRequest.value.update({
+                  total: {
+                    amount: orderTotal.value.toFixed(2),
+                    label: 'Lil Magnet Memories',
+                  },
+                  requestShippingContact:
+                    selectedShippingDetails.value?.type === 'shipping',
+                });
+              }
+
+              // Verify Apple Pay is still available
+              if (!squareApplePay.value) {
+                throw new Error('Apple Pay is not available. Please refresh the page.');
+              }
+
+              console.log('🍎 Calling Square Apple Pay tokenize() - this should show the Apple Pay sheet...');
+              console.log('🍎 Payment request details:', {
+                total: orderTotal.value.toFixed(2),
+                hasPaymentRequest: !!squarePaymentRequest.value,
+                paymentRequest: squarePaymentRequest.value
+              });
+              
+              // Tokenize with Square - this should trigger the Apple Pay sheet
+              // If this doesn't show the sheet, there's a configuration issue
               const tokenResult = await squareApplePay.value.tokenize();
-              console.log('✅ Apple Pay tokenized successfully:', tokenResult);
-
+              
+              // Check if tokenize returned immediately (which would indicate no user interaction)
+              // This is a safety check - tokenize should wait for user to complete Apple Pay
               if (!tokenResult || !tokenResult.token) {
-                throw new Error('Failed to get payment token from Apple Pay');
+                throw new Error('Apple Pay tokenization failed - no token returned. The Apple Pay sheet may not have appeared.');
+              }
+              
+              console.log('🍎 Apple Pay tokenize completed - user should have seen the Apple Pay sheet');
+              
+              console.log('✅ Apple Pay tokenized successfully:', {
+                hasToken: !!tokenResult?.token,
+                status: tokenResult?.status,
+                token: tokenResult?.token ? tokenResult.token.substring(0, 20) + '...' : 'none',
+                fullResult: tokenResult
+              });
+
+              if (!tokenResult) {
+                throw new Error('Apple Pay tokenization returned no result');
+              }
+
+              if (!tokenResult.token) {
+                console.error('❌ Token result missing token:', tokenResult);
+                throw new Error('Failed to get payment token from Apple Pay. Please try again.');
               }
 
               // Set payment option and store token for placeOrder to use
               selectedPaymentOption.value = 'apple_pay';
               applePayToken.value = tokenResult.token;
 
+              console.log('✅ Apple Pay token stored, proceeding to place order...');
+
               // Now call placeOrder which will process the payment
               await placeOrder();
             } catch (error) {
               console.error('❌ Apple Pay payment error:', error);
+              submitting.value = false;
               applePayError.value =
                 error?.message || 'Apple Pay payment failed';
               safeNotify({
@@ -2527,12 +2582,33 @@ export default {
           selectedPaymentOption.value === 'apple_pay' &&
           applePayToken.value
         ) {
+          console.log('💳 Processing Apple Pay payment with token...');
           squarePaymentDetails = await processApplePayPayment(
             orderNumber,
             applePayToken.value
           );
+          
+          // Validate payment was processed
+          if (!squarePaymentDetails) {
+            throw new Error('Apple Pay payment processing failed. No payment details returned.');
+          }
+          
+          if (squarePaymentDetails.status !== 'COMPLETED') {
+            console.error('❌ Apple Pay payment not completed:', squarePaymentDetails);
+            throw new Error(`Apple Pay payment failed with status: ${squarePaymentDetails.status}`);
+          }
+          
+          console.log('✅ Apple Pay payment processed successfully:', {
+            paymentId: squarePaymentDetails.id,
+            status: squarePaymentDetails.status,
+            amount: orderTotal.value
+          });
+          
           // Clear token after use
           applePayToken.value = null;
+        } else if (selectedPaymentOption.value === 'apple_pay' && !applePayToken.value) {
+          // This should never happen if the flow is correct, but add safety check
+          throw new Error('Apple Pay token is missing. Please try the payment again.');
         }
 
         const paymentOptionPayload = {
