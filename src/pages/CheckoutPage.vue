@@ -1796,23 +1796,73 @@ export default {
 
     const renderApplePayButton = async () => {
       if (!squareApplePay.value) {
+        console.log('⚠️ Cannot render Apple Pay button: squareApplePay is null');
         return;
       }
       await nextTick();
       const container = document.getElementById('square-apple-pay-button');
       if (!container) {
+        console.log('⚠️ Cannot render Apple Pay button: container not found');
         return;
       }
       if (applePayAttached.value) {
+        console.log('ℹ️ Apple Pay button already attached');
         return;
       }
       container.innerHTML = '';
+      
+      // Check what methods are available on the Apple Pay object
+      console.log('🔍 Square Apple Pay object methods:', {
+        hasAttach: typeof squareApplePay.value.attach === 'function',
+        hasMount: typeof squareApplePay.value.mount === 'function',
+        hasCreateButton: typeof squareApplePay.value.createButton === 'function',
+        availableMethods: Object.keys(squareApplePay.value).filter(key => typeof squareApplePay.value[key] === 'function')
+      });
+      
       try {
-        await squareApplePay.value.attach('#square-apple-pay-button');
-        applePayAttached.value = true;
+        // Try attach first (if it exists)
+        if (typeof squareApplePay.value.attach === 'function') {
+          console.log('✅ Using attach method');
+          await squareApplePay.value.attach('#square-apple-pay-button');
+          applePayAttached.value = true;
+        } 
+        // Try mount as alternative
+        else if (typeof squareApplePay.value.mount === 'function') {
+          console.log('✅ Using mount method');
+          await squareApplePay.value.mount('#square-apple-pay-button');
+          applePayAttached.value = true;
+        }
+        // Try createButton if available
+        else if (typeof squareApplePay.value.createButton === 'function') {
+          console.log('✅ Using createButton method');
+          const button = await squareApplePay.value.createButton();
+          container.appendChild(button);
+          applePayAttached.value = true;
+        }
+        else {
+          // If no standard method, try to create button manually
+          console.log('⚠️ No standard attach/mount method found, creating button manually');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'apple-pay-button';
+          button.setAttribute('lang', 'en-US');
+          button.style.cssText = '-apple-pay-button-type: plain; -apple-pay-button-style: black; width: 100%; height: 44px;';
+          button.addEventListener('click', async () => {
+            try {
+              const tokenResult = await squareApplePay.value.tokenize();
+              console.log('✅ Apple Pay tokenized:', tokenResult);
+              // Handle token result
+            } catch (error) {
+              console.error('❌ Apple Pay tokenization error:', error);
+              applePayError.value = error;
+            }
+          });
+          container.appendChild(button);
+          applePayAttached.value = true;
+        }
       } catch (error) {
         applePayError.value = error;
-        console.error('Error attaching Apple Pay button:', error);
+        console.error('❌ Error attaching Apple Pay button:', error);
       }
     };
 
@@ -2103,23 +2153,34 @@ export default {
             const applePay = await payments.applePay(paymentRequest);
             console.log(
               '🍎 Apple Pay object created, checking availability...',
-              { applePay, paymentRequest, hasCanMakePayment: typeof applePay.canMakePayment === 'function' }
+              {
+                applePay,
+                paymentRequest,
+                hasCanMakePayment:
+                  typeof applePay.canMakePayment === 'function',
+              }
             );
-            
+
             // Square's Apple Pay might not have canMakePayment - check if method exists
             let canMakePayment = false;
             if (typeof applePay.canMakePayment === 'function') {
               canMakePayment = await applePay.canMakePayment();
-              console.log('🍎 Apple Pay canMakePayment result:', canMakePayment, {
-                type: typeof canMakePayment,
-                value: canMakePayment,
-                isBoolean: typeof canMakePayment === 'boolean',
-                isObject: typeof canMakePayment === 'object',
-                stringified: JSON.stringify(canMakePayment),
-              });
+              console.log(
+                '🍎 Apple Pay canMakePayment result:',
+                canMakePayment,
+                {
+                  type: typeof canMakePayment,
+                  value: canMakePayment,
+                  isBoolean: typeof canMakePayment === 'boolean',
+                  isObject: typeof canMakePayment === 'object',
+                  stringified: JSON.stringify(canMakePayment),
+                }
+              );
             } else {
               // If canMakePayment doesn't exist, check native Apple Pay API
-              console.log('ℹ️ Square Apple Pay does not have canMakePayment method, checking native API');
+              console.log(
+                'ℹ️ Square Apple Pay does not have canMakePayment method, checking native API'
+              );
               if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
                 canMakePayment = true;
                 console.log('✅ Native Apple Pay API confirms availability');
@@ -2128,11 +2189,11 @@ export default {
                 console.log('❌ Native Apple Pay API says not available');
               }
             }
-            
+
             // Square's canMakePayment can return boolean or object with result property
-            const canMakePaymentResult = 
-              typeof canMakePayment === 'boolean' 
-                ? canMakePayment 
+            const canMakePaymentResult =
+              typeof canMakePayment === 'boolean'
+                ? canMakePayment
                 : canMakePayment?.result ?? canMakePayment;
 
             if (canMakePaymentResult) {
