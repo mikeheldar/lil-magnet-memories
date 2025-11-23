@@ -127,23 +127,28 @@
             </div>
 
             <!-- Current Product Display as Label -->
-            <div v-if="selectedProduct" class="q-mb-md">
+            <div class="q-mb-md">
               <div class="text-subtitle2 q-mb-sm text-weight-medium">
                 Selected Product
               </div>
-              <div class="text-h6 text-weight-bold text-primary q-mb-sm">
-                {{ selectedProduct.description }}
-                <q-chip v-if="selectedProduct.isDefault" color="green" text-color="white" size="sm" icon="star" class="q-ml-sm">
-                  Default
-                </q-chip>
-              </div>
-              <div class="text-caption text-grey-7">
-                <div
-                  v-for="(price, qty) in selectedProduct.pricing"
-                  :key="qty"
-                >
-                  {{ qty }}x for ${{ Number(price).toFixed(2) }}
+              <div v-if="selectedProduct" class="q-mb-sm">
+                <div class="text-h6 text-weight-bold text-primary">
+                  Selected Product: {{ selectedProduct.description }}
+                  <q-chip v-if="selectedProduct.isDefault" color="green" text-color="white" size="sm" icon="star" class="q-ml-sm">
+                    Default
+                  </q-chip>
                 </div>
+                <div class="text-caption text-grey-7 q-mt-xs">
+                  <div
+                    v-for="(price, qty) in selectedProduct.pricing"
+                    :key="qty"
+                  >
+                    {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-body2 text-grey-6">
+                No product selected
               </div>
             </div>
             
