@@ -918,6 +918,7 @@ export default {
     const squarePaymentRequest = ref(null);
     const squareCard = ref(null);
     const squareApplePay = ref(null);
+    const applePayToken = ref(null);
     const squareGooglePay = ref(null);
     const applePayReady = ref(false);
     const googlePayReady = ref(false);
@@ -1796,7 +1797,9 @@ export default {
 
     const renderApplePayButton = async () => {
       if (!squareApplePay.value) {
-        console.log('⚠️ Cannot render Apple Pay button: squareApplePay is null');
+        console.log(
+          '⚠️ Cannot render Apple Pay button: squareApplePay is null'
+        );
         return;
       }
       await nextTick();
@@ -1810,22 +1813,25 @@ export default {
         return;
       }
       container.innerHTML = '';
-      
+
       // Check what methods are available on the Apple Pay object
       console.log('🔍 Square Apple Pay object methods:', {
         hasAttach: typeof squareApplePay.value.attach === 'function',
         hasMount: typeof squareApplePay.value.mount === 'function',
-        hasCreateButton: typeof squareApplePay.value.createButton === 'function',
-        availableMethods: Object.keys(squareApplePay.value).filter(key => typeof squareApplePay.value[key] === 'function')
+        hasCreateButton:
+          typeof squareApplePay.value.createButton === 'function',
+        availableMethods: Object.keys(squareApplePay.value).filter(
+          (key) => typeof squareApplePay.value[key] === 'function'
+        ),
       });
-      
+
       try {
         // Try attach first (if it exists)
         if (typeof squareApplePay.value.attach === 'function') {
           console.log('✅ Using attach method');
           await squareApplePay.value.attach('#square-apple-pay-button');
           applePayAttached.value = true;
-        } 
+        }
         // Try mount as alternative
         else if (typeof squareApplePay.value.mount === 'function') {
           console.log('✅ Using mount method');
@@ -1838,27 +1844,80 @@ export default {
           const button = await squareApplePay.value.createButton();
           container.appendChild(button);
           applePayAttached.value = true;
-        }
-        else {
-          // If no standard method, try to create button manually
-          console.log('⚠️ No standard attach/mount method found, creating button manually');
+        } else {
+          // Square's SDK doesn't provide button rendering - create native Apple Pay button
+          console.log(
+            'ℹ️ Square SDK doesn\'t provide button rendering, creating native Apple Pay button'
+          );
+          
+          // Create native Apple Pay button using Apple's button styling
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'apple-pay-button';
           button.setAttribute('lang', 'en-US');
-          button.style.cssText = '-apple-pay-button-type: plain; -apple-pay-button-style: black; width: 100%; height: 44px;';
-          button.addEventListener('click', async () => {
+          button.setAttribute('aria-label', 'Pay with Apple Pay');
+          
+          // Apply Apple Pay button styles
+          button.style.cssText = `
+            -apple-pay-button-type: plain;
+            -apple-pay-button-style: black;
+            width: 100%;
+            height: 44px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            display: block;
+          `;
+          
+          // Handle button click - tokenize with Square and place order
+          button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Validate form first
+            if (!canPlaceOrder.value) {
+              showValidationErrors.value = true;
+              safeNotify({
+                type: 'negative',
+                message: 'Please fill in all required fields',
+                position: 'top',
+              });
+              return;
+            }
+            
             try {
+              console.log('🍎 Apple Pay button clicked, tokenizing...');
+              
+              // Tokenize with Square
               const tokenResult = await squareApplePay.value.tokenize();
-              console.log('✅ Apple Pay tokenized:', tokenResult);
-              // Handle token result
+              console.log('✅ Apple Pay tokenized successfully:', tokenResult);
+              
+              if (!tokenResult || !tokenResult.token) {
+                throw new Error('Failed to get payment token from Apple Pay');
+              }
+              
+              // Set payment option and store token for placeOrder to use
+              selectedPaymentOption.value = 'apple_pay';
+              applePayToken.value = tokenResult.token;
+              
+              // Now call placeOrder which will process the payment
+              await placeOrder();
+              
             } catch (error) {
-              console.error('❌ Apple Pay tokenization error:', error);
-              applePayError.value = error;
+              console.error('❌ Apple Pay payment error:', error);
+              applePayError.value = error?.message || 'Apple Pay payment failed';
+              safeNotify({
+                type: 'negative',
+                message: 'Apple Pay payment failed',
+                caption: error?.message || 'Please try again or use another payment method',
+                position: 'top',
+              });
             }
           });
+          
           container.appendChild(button);
           applePayAttached.value = true;
+          console.log('✅ Native Apple Pay button created and attached');
         }
       } catch (error) {
         applePayError.value = error;
@@ -1955,6 +2014,47 @@ export default {
         return result?.payment || null;
       } catch (error) {
         console.error('Square card payment failed:', error);
+        throw error;
+      } finally {
+        squareProcessing.value = false;
+      }
+    };
+
+    const processApplePayPayment = async (orderNumber, token) => {
+      if (!token) {
+        throw new Error('Apple Pay token is missing');
+      }
+
+      squareProcessing.value = true;
+
+      try {
+        const billingAddressToUse =
+          billingSameAsShipping.value && requiresShippingAddress.value
+            ? shippingAddress.value
+            : billingAddress.value;
+
+        const paymentPayload = {
+          sourceId: token,
+          amount: orderTotal.value,
+          currency: 'USD',
+          orderNumber,
+          buyerEmail: customerInfo.value.email,
+          customerName:
+            `${customerInfo.value.firstName} ${customerInfo.value.lastName}`.trim(),
+          billingAddress: normalizeAddressForSquare(billingAddressToUse),
+          shippingAddress: normalizeAddressForSquare(
+            requiresShippingAddress.value ? shippingAddress.value : null
+          ),
+          locationId: import.meta.env.VITE_SQUARE_LOCATION_ID,
+        };
+
+        const result = await firebaseService.processSquarePayment(
+          paymentPayload
+        );
+
+        return result?.payment || null;
+      } catch (error) {
+        console.error('Apple Pay payment failed:', error);
         throw error;
       } finally {
         squareProcessing.value = false;
@@ -2421,6 +2521,10 @@ export default {
         let squarePaymentDetails = null;
         if (selectedPaymentOption.value === 'square_card') {
           squarePaymentDetails = await processSquareCardPayment(orderNumber);
+        } else if (selectedPaymentOption.value === 'apple_pay' && applePayToken.value) {
+          squarePaymentDetails = await processApplePayPayment(orderNumber, applePayToken.value);
+          // Clear token after use
+          applePayToken.value = null;
         }
 
         const paymentOptionPayload = {
