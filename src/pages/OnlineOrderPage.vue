@@ -127,18 +127,18 @@
             </div>
 
             <q-select
-              v-model="selectedProduct"
+              v-model="selectedProductId"
               :options="productOptions"
               option-label="description"
+              option-value="id"
+              emit-value
+              map-options
               label="Select Product *"
               filled
               :rules="[(val) => !!val || 'Please select a product']"
               class="q-mb-md"
               :loading="loadingProducts"
             >
-              <template v-slot:selected>
-                <span v-if="selectedProduct">{{ selectedProduct.description }}</span>
-              </template>
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section>
@@ -400,9 +400,20 @@ export default {
     const fileQuantities = ref([]);
     const submitting = ref(false);
     const products = ref([]);
-    const selectedProduct = ref(null);
+    const selectedProductId = ref(null);
     const hasAddedToCart = ref(false);
     const showReAddWarning = ref(false);
+    
+    // Product options for dropdown
+    const productOptions = computed(() => {
+      return products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
+    });
+    
+    // Get selected product object from ID
+    const selectedProduct = computed(() => {
+      if (!selectedProductId.value) return null;
+      return productOptions.value.find(p => p.id === selectedProductId.value) || null;
+    });
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -788,17 +799,9 @@ export default {
           await new Promise(resolve => setTimeout(resolve, 100));
           
           if (productToSelect) {
-            // Filter custom products (same logic as productOptions computed)
-            const customProducts = products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
-            // Find the same object in filtered array to ensure reference match for q-select
-            const matchingProduct = customProducts.find(p => p.id === productToSelect.id);
-            if (matchingProduct) {
-              selectedProduct.value = matchingProduct;
-              console.log('✅ Selected product:', matchingProduct.description, matchingProduct.isDefault ? '(default)' : '', matchingProduct);
-            } else {
-              selectedProduct.value = productToSelect;
-              console.log('✅ Selected product (fallback):', productToSelect.description);
-            }
+            // Set the product ID (q-select will handle the rest)
+            selectedProductId.value = productToSelect.id;
+            console.log('✅ Selected product ID:', productToSelect.id, productToSelect.description, productToSelect.isDefault ? '(default)' : '');
           } else {
             console.warn('⚠️ No product to select - no default product found and no route query productId');
           }
@@ -865,38 +868,33 @@ export default {
         console.error('Failed to load products:', err);
       });
       
-      // Watch productOptions to sync selectedProduct when options change
+      // Watch productOptions to sync selectedProductId when options change
       watch(productOptions, (newOptions) => {
         if (newOptions.length > 0) {
-          // Always try to sync the selected product with the exact object from options
-          if (selectedProduct.value) {
-            // Find the exact object reference from the options array
-            const exactMatch = newOptions.find(p => p.id === selectedProduct.value.id);
-            if (exactMatch && exactMatch !== selectedProduct.value) {
-              // Replace with exact reference from options array
-              selectedProduct.value = exactMatch;
-              console.log('✅ Watched: Synced selected product with exact reference:', exactMatch.description);
-            } else if (!exactMatch) {
+          // If product ID is set, verify it still exists in options
+          if (selectedProductId.value) {
+            const stillExists = newOptions.find(p => p.id === selectedProductId.value);
+            if (!stillExists) {
               // Selected product no longer in options, reset
-              selectedProduct.value = null;
+              selectedProductId.value = null;
               console.log('⚠️ Watched: Selected product no longer available, resetting');
             }
           }
           
           // If no product selected, try to set default
-          if (!selectedProduct.value) {
+          if (!selectedProductId.value) {
             const defaultProduct = newOptions.find(p => p.isDefault === true);
             if (defaultProduct) {
-              selectedProduct.value = defaultProduct;
+              selectedProductId.value = defaultProduct.id;
               console.log('✅ Watched: Set default product:', defaultProduct.description);
             } else if (route.query.productId) {
               const routeProduct = newOptions.find(p => p.id === route.query.productId);
               if (routeProduct) {
-                selectedProduct.value = routeProduct;
+                selectedProductId.value = routeProduct.id;
                 console.log('✅ Watched: Set route product:', routeProduct.description);
               }
             } else if (newOptions.length > 0) {
-              selectedProduct.value = newOptions[0];
+              selectedProductId.value = newOptions[0].id;
               console.log('✅ Watched: Set first product:', newOptions[0].description);
             }
           }

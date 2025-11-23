@@ -563,6 +563,19 @@
                     @click="$router.push('/cart')"
                     class="full-width q-mt-sm"
                   />
+                  
+                  <!-- Kiosk Payment Option (only shown when from market event upload) -->
+                  <q-btn
+                    v-if="isFromMarketEventUpload && skipShipping && checkedInEvent"
+                    flat
+                    color="primary"
+                    icon="point_of_sale"
+                    label="Changed my mind, I'll just pay at the kiosk"
+                    @click="submitKioskOrder"
+                    class="full-width q-mt-md"
+                    :loading="submittingKiosk"
+                    :disable="!canPlaceKioskOrder"
+                  />
                 </q-card-actions>
               </q-card>
             </div>
@@ -601,6 +614,7 @@ export default {
     const { cartItems, cartSubtotal, clearCart } = useCart();
 
     const submitting = ref(false);
+    const submittingKiosk = ref(false);
     const checkedInEvent = ref(null);
     const selectedShippingOption = ref(null);
     const selectedPaymentOption = ref('square_card'); // Default to credit card
