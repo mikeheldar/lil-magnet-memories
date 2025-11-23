@@ -848,10 +848,8 @@ export default {
       };
 
       // Check current market event status (not just the ref, in case it changed)
+      // Note: We can't modify checkedInEvent.value here (side effect), so we just check the current status
       const currentCheckedInEvent = marketEventService.getCheckedInEvent();
-      if (currentCheckedInEvent && !checkedInEvent.value) {
-        checkedInEvent.value = currentCheckedInEvent;
-      }
 
       // Also check if user is a market customer (from customer type)
       const userIsMarketCustomer = isMarketCustomer.value;
