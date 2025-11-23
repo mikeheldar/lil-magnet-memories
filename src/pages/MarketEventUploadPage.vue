@@ -392,6 +392,34 @@
         </q-card>
       </q-dialog>
 
+      <!-- Market Event Ended Dialog -->
+      <q-dialog v-model="showEventEndedDialog" persistent>
+        <q-card style="min-width: 400px">
+          <q-card-section class="row items-center">
+            <q-avatar icon="event_busy" color="orange" text-color="white" />
+            <span class="q-ml-sm text-h6">Market Event Has Ended</span>
+          </q-card-section>
+
+          <q-card-section>
+            <div class="text-body1 q-mb-md">
+              The market event has ended, but we'd love for you to try our easy online purchase experience!
+            </div>
+            <div class="text-body2 text-grey-7">
+              You can order custom magnets online from our homepage and have them shipped directly to you.
+            </div>
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn
+              label="Return to Main Page"
+              color="primary"
+              @click="goToMainPage"
+              class="q-px-lg"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
       <!-- Information Card -->
       <q-card class="q-mt-md q-pa-md bg-grey-1">
         <q-card-section>
@@ -441,7 +469,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
@@ -470,12 +498,16 @@ export default {
     const fileQuantities = ref([]);
     const submitting = ref(false);
     const showOrderSummary = ref(false);
+    const showEventEndedDialog = ref(false);
     const orderNumber = ref('');
     const products = ref([]);
     const selectedProduct = ref(null);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
     const { isMarketCustomer } = useCustomerType();
     const { addCustomUploadToCart } = useCart();
+    let marketEventUnsubscribe = null;
+    let eventCheckInterval = null;
+    const hadEventOnLoad = ref(false);
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -490,6 +522,26 @@ export default {
     const isAtMarketEvent = computed(() => {
       return marketEventService.getCheckedInEvent() !== null;
     });
+
+    // Function to check if event has ended and show dialog
+    const checkEventStatus = () => {
+      const checkedInEvent = marketEventService.getCheckedInEvent();
+      
+      // If there's no checked-in event AND we had an event when page loaded, show dialog
+      // This prevents showing dialog on initial load when there's no event (route guard handles that)
+      if (!checkedInEvent && hadEventOnLoad.value) {
+        // Only show dialog if it's not already showing (to prevent multiple triggers)
+        if (!showEventEndedDialog.value) {
+          console.log('⚠️ Market event has ended, showing dialog');
+          showEventEndedDialog.value = true;
+        }
+      }
+    };
+
+    // Function to redirect to main page
+    const goToMainPage = () => {
+      router.push('/');
+    };
 
     const totalCost = computed(() => {
       if (
@@ -968,10 +1020,13 @@ export default {
         
         if (checkedInEvent) {
           console.log('✅ Active checked-in market event found:', checkedInEvent.name);
+          // Mark that we had an event when page loaded
+          hadEventOnLoad.value = true;
         } else {
           console.log('⚠️ No active checked-in market event found');
           // Don't redirect here - route guard already handled it for new navigations
           // If we're here on refresh, it means the route guard allowed it, so stay on page
+          // But don't mark hadEventOnLoad as true, so dialog won't show on initial load
         }
       } catch (error) {
         console.error('Error checking for market event:', error);
@@ -1012,6 +1067,18 @@ export default {
       // Load products
       loadProducts();
 
+      // Set up real-time listener to detect when event ends
+      marketEventUnsubscribe = marketEventService.addListener(() => {
+        // Check event status whenever events update
+        checkEventStatus();
+      });
+
+      // Set up periodic check to catch events that end
+      // This checks if an event that existed on load has now ended
+      eventCheckInterval = setInterval(() => {
+        checkEventStatus();
+      }, 2000); // Check every 2 seconds
+
       // Ensure we have an auth context for Storage rules even without full sign-in.
       // This avoids 403 (storage/unauthorized) when rules require request.auth != null.
       // Do this silently - don't expose to user that they're using anonymous auth
@@ -1025,6 +1092,18 @@ export default {
         }
       } catch (anonErr) {
         // Silent failure - non-blocking
+      }
+    });
+
+    onUnmounted(() => {
+      // Clean up listener and interval
+      if (marketEventUnsubscribe) {
+        marketEventUnsubscribe();
+        marketEventUnsubscribe = null;
+      }
+      if (eventCheckInterval) {
+        clearInterval(eventCheckInterval);
+        eventCheckInterval = null;
       }
     });
 
@@ -1055,6 +1134,8 @@ export default {
       handleGoogleSignIn,
       isAtMarketEvent,
       paymentChoice,
+      showEventEndedDialog,
+      goToMainPage,
     };
   },
 };
