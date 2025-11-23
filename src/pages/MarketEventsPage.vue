@@ -39,7 +39,7 @@
 
         <!-- No Events -->
         <div
-          v-else-if="events.length === 0"
+          v-else-if="filteredEvents.length === 0"
           class="no-events q-pa-lg text-center"
         >
           <q-icon name="event_busy" size="64px" color="grey-5" />
@@ -52,7 +52,7 @@
         <!-- Events Grid -->
         <div v-else class="events-grid">
           <q-card
-            v-for="event in events"
+            v-for="event in filteredEvents"
             :key="event.id"
             class="event-card q-mb-md"
             flat
@@ -67,7 +67,16 @@
                         {{ event.name }}
                       </div>
                     </div>
-                    <div class="col-auto">
+                    <div class="col-auto q-gutter-xs">
+                      <q-chip
+                        v-if="event.isTesting"
+                        color="orange"
+                        text-color="white"
+                        size="sm"
+                        icon="science"
+                      >
+                        Testing
+                      </q-chip>
                       <q-chip
                         :color="getEventStatusColor(getEventStatus(event))"
                         text-color="white"
@@ -278,6 +287,12 @@
                 />
               </div>
             </div>
+
+            <q-toggle
+              v-model="newEvent.isTesting"
+              label="Testing Only (visible to admins only)"
+              color="orange"
+            />
           </q-form>
         </q-card-section>
 
@@ -325,10 +340,11 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService';
 import { marketEventService } from '../services/marketEventService.js';
+import { authService } from '../services/authService';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 
@@ -345,6 +361,17 @@ export default {
     const deletingEvent = ref(false);
     const allOrders = ref([]);
     let unsubscribeEvents = null;
+
+    // Filter events based on admin status
+    const isAdmin = computed(() => authService.isAdmin());
+    const filteredEvents = computed(() => {
+      if (isAdmin.value) {
+        // Admins see all events
+        return events.value;
+      }
+      // Non-admins don't see testing events
+      return events.value.filter(event => !event.isTesting);
+    });
 
     // Dialog states
     const showCreateEventDialog = ref(false);
@@ -379,6 +406,7 @@ export default {
         location: '',
         startDateTime: formatDateTimeLocal(startTime),
         endDateTime: formatDateTimeLocal(endTime),
+        isTesting: false,
       };
     };
 
@@ -656,6 +684,7 @@ export default {
           location: newEvent.value.location,
           startDateTime: newEvent.value.startDateTime,
           endDateTime: newEvent.value.endDateTime,
+          isTesting: newEvent.value.isTesting || false,
         };
 
         // Create event in Firebase - real-time listener will update the list automatically
@@ -881,8 +910,8 @@ export default {
     });
 
     return {
-      // Data
-      events,
+      // Data - use filteredEvents so non-admins don't see testing events
+      events: filteredEvents,
       loading,
       creatingEvent,
       checkingIn,

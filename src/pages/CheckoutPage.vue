@@ -1900,43 +1900,49 @@ export default {
                 console.log(
                   '🔄 Updating payment request with current order details...'
                 );
-                
+
                 // Build line items for the payment request
                 const lineItems = [];
                 cartItems.value.forEach((item) => {
                   if (item.isCustomUpload) {
                     // Custom upload item
+                    const totalCost = Number(item.totalCost) || 0;
                     lineItems.push({
                       label: item.productName || 'Custom Photo Magnets',
-                      amount: item.totalCost?.toFixed(2) || '0.00',
+                      amount: totalCost.toFixed(2),
                     });
                   } else {
                     // Regular product item
-                    const itemTotal = (item.pricePerUnit || 0) * (item.quantity || 0);
+                    const itemTotal =
+                      (Number(item.pricePerUnit) || 0) * (Number(item.quantity) || 0);
                     lineItems.push({
                       label: item.productName || 'Product',
                       amount: itemTotal.toFixed(2),
                     });
                   }
                 });
-                
+
                 // Add shipping if applicable
-                if (shippingCost.value > 0 && selectedShippingDetails.value) {
+                const shippingAmount = Number(shippingCost.value) || 0;
+                if (shippingAmount > 0 && selectedShippingDetails.value) {
                   lineItems.push({
                     label: selectedShippingDetails.value.rawLabel || 'Shipping',
-                    amount: shippingCost.value.toFixed(2),
+                    amount: shippingAmount.toFixed(2),
                   });
                 }
-                
+
+                // Ensure orderTotal is a number
+                const totalAmount = Number(orderTotal.value) || 0;
+
                 console.log('🔄 Payment request update:', {
-                  total: orderTotal.value.toFixed(2),
+                  total: totalAmount.toFixed(2),
                   lineItemsCount: lineItems.length,
-                  lineItems: lineItems
+                  lineItems: lineItems,
                 });
-                
+
                 await squarePaymentRequest.value.update({
                   total: {
-                    amount: orderTotal.value.toFixed(2),
+                    amount: totalAmount.toFixed(2),
                     label: 'Lil Magnet Memories',
                   },
                   lineItems: lineItems.length > 0 ? lineItems : undefined,
@@ -2102,7 +2108,7 @@ export default {
 
         const paymentPayload = {
           sourceId: tokenResult.token,
-          amount: orderTotal.value,
+          amount: Number(orderTotal.value) || 0,
           currency: 'USD',
           orderNumber,
           buyerEmail: customerInfo.value.email,
@@ -2143,7 +2149,7 @@ export default {
 
         const paymentPayload = {
           sourceId: token,
-          amount: orderTotal.value,
+          amount: Number(orderTotal.value) || 0,
           currency: 'USD',
           orderNumber,
           buyerEmail: customerInfo.value.email,
@@ -2330,33 +2336,38 @@ export default {
           cartItems.value.forEach((item) => {
             if (item.isCustomUpload) {
               // Custom upload item
+              const totalCost = Number(item.totalCost) || 0;
               lineItems.push({
                 label: item.productName || 'Custom Photo Magnets',
-                amount: item.totalCost?.toFixed(2) || '0.00',
+                amount: totalCost.toFixed(2),
               });
             } else {
               // Regular product item
-              const itemTotal = (item.pricePerUnit || 0) * (item.quantity || 0);
+              const itemTotal = (Number(item.pricePerUnit) || 0) * (Number(item.quantity) || 0);
               lineItems.push({
                 label: item.productName || 'Product',
                 amount: itemTotal.toFixed(2),
               });
             }
           });
-          
+
           // Add shipping if applicable
-          if (shippingCost.value > 0 && selectedShippingDetails.value) {
+          const shippingAmount = Number(shippingCost.value) || 0;
+          if (shippingAmount > 0 && selectedShippingDetails.value) {
             lineItems.push({
               label: selectedShippingDetails.value.rawLabel || 'Shipping',
-              amount: shippingCost.value.toFixed(2),
+              amount: shippingAmount.toFixed(2),
             });
           }
+
+          // Ensure orderTotal is a number
+          const totalAmount = Number(orderTotal.value) || 0;
 
           const paymentRequest = payments.paymentRequest({
             countryCode: 'US',
             currencyCode: 'USD',
             total: {
-              amount: orderTotal.value.toFixed(2),
+              amount: totalAmount.toFixed(2),
               label: 'Lil Magnet Memories',
             },
             lineItems: lineItems.length > 0 ? lineItems : undefined,
@@ -2711,7 +2722,7 @@ export default {
           console.log('✅ Apple Pay payment processed successfully:', {
             paymentId: squarePaymentDetails.id,
             status: squarePaymentDetails.status,
-            amount: orderTotal.value,
+            amount: Number(orderTotal.value) || 0,
           });
 
           // Clear token after use

@@ -1,5 +1,6 @@
 // Service to detect and manage active market events and check-in status
 import { firebaseService } from './firebaseService.js';
+import { authService } from './authService.js';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 
@@ -70,7 +71,7 @@ class MarketEventService {
       const events = await firebaseService.getMarketEvents();
       
       // Convert Firebase timestamps to ISO strings for compatibility
-      const processedEvents = events.map((event) => {
+      let processedEvents = events.map((event) => {
         const processed = { ...event };
         if (processed.createdAt?.toDate) {
           processed.createdAt = processed.createdAt.toDate().toISOString();
@@ -86,6 +87,12 @@ class MarketEventService {
         }
         return processed;
       });
+
+      // Filter out testing events for non-admin users
+      const isAdmin = authService.isAdmin();
+      if (!isAdmin) {
+        processedEvents = processedEvents.filter(event => !event.isTesting);
+      }
 
       // Update cache
       this.eventsCache = processedEvents;
