@@ -882,7 +882,10 @@ export default {
       // If no options from database, add default options
       // Always include pickup option in defaults if shouldShowPickup is true
       if (!normalized.length) {
-        console.log('🔄 No options from database, using DEFAULT_SHIPPING_OPTIONS, shouldShowPickup:', shouldShowPickup);
+        console.log(
+          '🔄 No options from database, using DEFAULT_SHIPPING_OPTIONS, shouldShowPickup:',
+          shouldShowPickup
+        );
         DEFAULT_SHIPPING_OPTIONS.forEach((option) => {
           const type = option.type || 'shipping';
           if (type === 'pickup') {
@@ -890,7 +893,9 @@ export default {
               pushOption(option);
               console.log('✅ Added pickup option from defaults');
             } else {
-              console.log('⚠️ Pickup option available but shouldShowPickup is false');
+              console.log(
+                '⚠️ Pickup option available but shouldShowPickup is false'
+              );
             }
           } else {
             pushOption(option);
@@ -898,13 +903,19 @@ export default {
         });
       } else {
         // Even if we have options from database, ensure pickup is included if shouldShowPickup
-        const hasPickupOption = normalized.some(opt => opt.type === 'pickup');
+        const hasPickupOption = normalized.some((opt) => opt.type === 'pickup');
         if (!hasPickupOption && shouldShowPickup) {
-          console.log('🔄 No pickup option in database options, adding from defaults');
-          const pickupDefault = DEFAULT_SHIPPING_OPTIONS.find(opt => opt.type === 'pickup');
+          console.log(
+            '🔄 No pickup option in database options, adding from defaults'
+          );
+          const pickupDefault = DEFAULT_SHIPPING_OPTIONS.find(
+            (opt) => opt.type === 'pickup'
+          );
           if (pickupDefault) {
             pushOption(pickupDefault);
-            console.log('✅ Added pickup option from defaults to existing options');
+            console.log(
+              '✅ Added pickup option from defaults to existing options'
+            );
           }
         }
       }
