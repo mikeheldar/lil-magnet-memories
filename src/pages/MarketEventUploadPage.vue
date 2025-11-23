@@ -629,8 +629,42 @@ export default {
     
     // Get selected product object from ID
     const selectedProduct = computed(() => {
-      if (!selectedProductId.value) return null;
-      return productOptions.value.find(p => p.id === selectedProductId.value) || null;
+      if (!selectedProductId.value) {
+        console.log('🔍 selectedProduct: No selectedProductId');
+        return null;
+      }
+      
+      // Try to find in productOptions first
+      const foundInOptions = productOptions.value.find(p => {
+        const match = String(p.id) === String(selectedProductId.value);
+        if (!match && p.id) {
+          console.log('🔍 Comparing:', String(p.id), 'vs', String(selectedProductId.value));
+        }
+        return match;
+      });
+      
+      if (foundInOptions) {
+        console.log('✅ selectedProduct: Found in productOptions:', foundInOptions.description);
+        return foundInOptions;
+      }
+      
+      // Fallback: try to find in original products array
+      const foundInProducts = products.value.find(p => String(p.id) === String(selectedProductId.value));
+      if (foundInProducts) {
+        console.log('✅ selectedProduct: Found in products array:', foundInProducts.description);
+        // Normalize it to match productOptions structure
+        return {
+          id: String(foundInProducts.id || ''),
+          description: String(foundInProducts.description || 'Unknown Product'),
+          pricing: foundInProducts.pricing && typeof foundInProducts.pricing === 'object' ? foundInProducts.pricing : {},
+          isDefault: Boolean(foundInProducts.isDefault),
+          category: foundInProducts.category || null,
+          productType: foundInProducts.productType || null
+        };
+      }
+      
+      console.log('⚠️ selectedProduct: Not found! ID:', selectedProductId.value, 'Options count:', productOptions.value.length);
+      return null;
     });
     const { addCustomUploadToCart } = useCart();
     let marketEventUnsubscribe = null;
