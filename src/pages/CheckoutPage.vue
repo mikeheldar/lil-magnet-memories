@@ -1914,7 +1914,8 @@ export default {
                   } else {
                     // Regular product item
                     const itemTotal =
-                      (Number(item.pricePerUnit) || 0) * (Number(item.quantity) || 0);
+                      (Number(item.pricePerUnit) || 0) *
+                      (Number(item.quantity) || 0);
                     lineItems.push({
                       label: item.productName || 'Product',
                       amount: itemTotal.toFixed(2),
@@ -2343,7 +2344,8 @@ export default {
               });
             } else {
               // Regular product item
-              const itemTotal = (Number(item.pricePerUnit) || 0) * (Number(item.quantity) || 0);
+              const itemTotal =
+                (Number(item.pricePerUnit) || 0) * (Number(item.quantity) || 0);
               lineItems.push({
                 label: item.productName || 'Product',
                 amount: itemTotal.toFixed(2),

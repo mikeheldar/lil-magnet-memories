@@ -955,7 +955,38 @@ export default {
       return user && user.providerId === 'firebase' && !user.email;
     };
 
-    onMounted(() => {
+    onMounted(async () => {
+      // Check if there's an active checked-in market event
+      // If not, redirect to landing page
+      try {
+        // Wait a moment for market event service to load events
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Check for active checked-in event (async version)
+        const checkedInEvent = await marketEventService.getCheckedInEventAsync();
+        
+        if (!checkedInEvent) {
+          console.log('⚠️ No active checked-in market event found, redirecting to landing page');
+          $q.notify({
+            type: 'warning',
+            message: 'No active market event',
+            caption: 'There is no active market event at this time. Redirecting to home page.',
+            position: 'top',
+            timeout: 3000,
+          });
+          // Redirect to landing page
+          router.push('/');
+          return;
+        }
+        
+        console.log('✅ Active checked-in market event found:', checkedInEvent.name);
+      } catch (error) {
+        console.error('Error checking for market event:', error);
+        // On error, still redirect to be safe
+        router.push('/');
+        return;
+      }
+
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
       if (currentAuthUser && !isAnonymousUser(currentAuthUser)) {
