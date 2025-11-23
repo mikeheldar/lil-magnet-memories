@@ -2082,10 +2082,12 @@ export default {
 
           try {
             // Check if we're in Safari
-            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(
+              navigator.userAgent
+            );
             const isMac = /Mac/.test(navigator.platform);
             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-            
+
             console.log('🍎 Initializing Apple Pay...', {
               isSafari,
               isMac,
@@ -2093,16 +2095,25 @@ export default {
               userAgent: navigator.userAgent,
               platform: navigator.platform,
               hasApplePaySession: !!window.ApplePaySession,
-              canMakePayments: window.ApplePaySession ? ApplePaySession.canMakePayments() : 'N/A'
+              canMakePayments: window.ApplePaySession
+                ? ApplePaySession.canMakePayments()
+                : 'N/A',
             });
-            
+
             const applePay = await payments.applePay(paymentRequest);
             console.log(
-              '🍎 Apple Pay object created, checking availability...'
+              '🍎 Apple Pay object created, checking availability...',
+              { applePay, paymentRequest }
             );
             const canMakePayment = await applePay.canMakePayment();
-            console.log('🍎 Apple Pay canMakePayment result:', canMakePayment);
-            
+            console.log('🍎 Apple Pay canMakePayment result:', canMakePayment, {
+              type: typeof canMakePayment,
+              value: canMakePayment,
+              isBoolean: typeof canMakePayment === 'boolean',
+              isObject: typeof canMakePayment === 'object',
+              stringified: JSON.stringify(canMakePayment)
+            });
+
             if (canMakePayment) {
               squareApplePay.value = applePay;
               applePayReady.value = true;
@@ -2115,11 +2126,13 @@ export default {
                   isMac,
                   isIOS,
                   hasApplePaySession: !!window.ApplePaySession,
-                  nativeCanMakePayments: window.ApplePaySession ? ApplePaySession.canMakePayments() : false
+                  nativeCanMakePayments: window.ApplePaySession
+                    ? ApplePaySession.canMakePayments()
+                    : false,
                 }
               );
               applePayReady.value = false;
-              
+
               // Provide more specific error message
               if (isSafari && (isMac || isIOS)) {
                 applePayError.value =
