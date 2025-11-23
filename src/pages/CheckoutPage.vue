@@ -1847,16 +1847,16 @@ export default {
         } else {
           // Square's SDK doesn't provide button rendering - create native Apple Pay button
           console.log(
-            'ℹ️ Square SDK doesn\'t provide button rendering, creating native Apple Pay button'
+            "ℹ️ Square SDK doesn't provide button rendering, creating native Apple Pay button"
           );
-          
+
           // Create native Apple Pay button using Apple's button styling
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'apple-pay-button';
           button.setAttribute('lang', 'en-US');
           button.setAttribute('aria-label', 'Pay with Apple Pay');
-          
+
           // Apply Apple Pay button styles
           button.style.cssText = `
             -apple-pay-button-type: plain;
@@ -1868,12 +1868,12 @@ export default {
             cursor: pointer;
             display: block;
           `;
-          
+
           // Handle button click - tokenize with Square and place order
           button.addEventListener('click', async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             // Validate form first
             if (!canPlaceOrder.value) {
               showValidationErrors.value = true;
@@ -1884,37 +1884,39 @@ export default {
               });
               return;
             }
-            
+
             try {
               console.log('🍎 Apple Pay button clicked, tokenizing...');
-              
+
               // Tokenize with Square
               const tokenResult = await squareApplePay.value.tokenize();
               console.log('✅ Apple Pay tokenized successfully:', tokenResult);
-              
+
               if (!tokenResult || !tokenResult.token) {
                 throw new Error('Failed to get payment token from Apple Pay');
               }
-              
+
               // Set payment option and store token for placeOrder to use
               selectedPaymentOption.value = 'apple_pay';
               applePayToken.value = tokenResult.token;
-              
+
               // Now call placeOrder which will process the payment
               await placeOrder();
-              
             } catch (error) {
               console.error('❌ Apple Pay payment error:', error);
-              applePayError.value = error?.message || 'Apple Pay payment failed';
+              applePayError.value =
+                error?.message || 'Apple Pay payment failed';
               safeNotify({
                 type: 'negative',
                 message: 'Apple Pay payment failed',
-                caption: error?.message || 'Please try again or use another payment method',
+                caption:
+                  error?.message ||
+                  'Please try again or use another payment method',
                 position: 'top',
               });
             }
           });
-          
+
           container.appendChild(button);
           applePayAttached.value = true;
           console.log('✅ Native Apple Pay button created and attached');
@@ -2521,8 +2523,14 @@ export default {
         let squarePaymentDetails = null;
         if (selectedPaymentOption.value === 'square_card') {
           squarePaymentDetails = await processSquareCardPayment(orderNumber);
-        } else if (selectedPaymentOption.value === 'apple_pay' && applePayToken.value) {
-          squarePaymentDetails = await processApplePayPayment(orderNumber, applePayToken.value);
+        } else if (
+          selectedPaymentOption.value === 'apple_pay' &&
+          applePayToken.value
+        ) {
+          squarePaymentDetails = await processApplePayPayment(
+            orderNumber,
+            applePayToken.value
+          );
           // Clear token after use
           applePayToken.value = null;
         }
