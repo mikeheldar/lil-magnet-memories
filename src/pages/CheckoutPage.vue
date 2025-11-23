@@ -855,6 +855,16 @@
                 </q-card-section>
 
                 <q-card-actions vertical class="q-pa-md">
+                  <!-- Show message when Apple Pay is selected but user should use Apple Pay button -->
+                  <div
+                    v-if="selectedPaymentOption === 'apple_pay' && !applePayToken"
+                    class="text-center q-mb-md q-pa-sm bg-blue-1 rounded-borders"
+                  >
+                    <q-icon name="info" class="q-mr-sm" />
+                    <span class="text-body2">
+                      Please use the Apple Pay button above to complete your payment.
+                    </span>
+                  </div>
                   <q-btn
                     color="primary"
                     label="Place Order"
@@ -862,7 +872,7 @@
                     size="lg"
                     class="full-width"
                     :loading="submitting"
-                    :disable="!canPlaceOrder"
+                    :disable="!canPlaceOrder || (selectedPaymentOption === 'apple_pay' && !applePayToken)"
                     @click="placeOrder"
                   />
                   <q-btn
@@ -1871,11 +1881,13 @@ export default {
 
           // Handle button click - tokenize with Square and place order
           button.addEventListener('click', async (e) => {
+            console.log('🍎 Native Apple Pay button clicked!');
             e.preventDefault();
             e.stopPropagation();
 
             // Validate form first
             if (!canPlaceOrder.value) {
+              console.log('⚠️ Cannot place order - form validation failed');
               showValidationErrors.value = true;
               safeNotify({
                 type: 'negative',
@@ -1963,7 +1975,7 @@ export default {
               }
 
               // Small delay to ensure payment request is fully updated
-              await new Promise(resolve => setTimeout(resolve, 100));
+              await new Promise((resolve) => setTimeout(resolve, 100));
 
               console.log(
                 '🍎 Calling Square Apple Pay tokenize() - this should show the Apple Pay sheet...'
@@ -1977,7 +1989,9 @@ export default {
 
               // Verify payment request is valid before tokenizing
               if (!squarePaymentRequest.value) {
-                throw new Error('Payment request is not initialized. Please refresh the page.');
+                throw new Error(
+                  'Payment request is not initialized. Please refresh the page.'
+                );
               }
 
               // Tokenize with Square - this should trigger the Apple Pay sheet
@@ -1995,7 +2009,9 @@ export default {
               } catch (tokenizeError) {
                 console.error('❌ Tokenize error:', tokenizeError);
                 throw new Error(
-                  `Apple Pay tokenization failed: ${tokenizeError?.message || 'Unknown error'}. Please try again.`
+                  `Apple Pay tokenization failed: ${
+                    tokenizeError?.message || 'Unknown error'
+                  }. Please try again.`
                 );
               }
 
@@ -2011,7 +2027,9 @@ export default {
               if (tokenResult.error) {
                 console.error('❌ Tokenize returned error:', tokenResult.error);
                 throw new Error(
-                  `Apple Pay payment failed: ${tokenResult.error.message || 'Unknown error'}`
+                  `Apple Pay payment failed: ${
+                    tokenResult.error.message || 'Unknown error'
+                  }`
                 );
               }
 
@@ -2079,7 +2097,19 @@ export default {
 
           container.appendChild(button);
           applePayAttached.value = true;
-          console.log('✅ Native Apple Pay button created and attached');
+          console.log('✅ Native Apple Pay button created and attached', {
+            buttonElement: button,
+            hasClickListener: true,
+            containerId: 'square-apple-pay-button',
+          });
+          
+          // Test that button is clickable
+          console.log('🔍 Button setup verification:', {
+            buttonInDOM: container.contains(button),
+            buttonType: button.type,
+            buttonDisabled: button.disabled,
+            buttonStyle: window.getComputedStyle(button).display,
+          });
         }
       } catch (error) {
         applePayError.value = error;
@@ -2780,9 +2810,10 @@ export default {
           selectedPaymentOption.value === 'apple_pay' &&
           !applePayToken.value
         ) {
-          // This should never happen if the flow is correct, but add safety check
+          // User selected Apple Pay but clicked regular Place Order button
+          // They need to use the Apple Pay button instead
           throw new Error(
-            'Apple Pay token is missing. Please try the payment again.'
+            'Please use the Apple Pay button to complete your payment. The Apple Pay button is located above this form.'
           );
         }
 
