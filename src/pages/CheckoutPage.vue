@@ -980,7 +980,11 @@ export default {
 
     const applyDefaultShippingSelection = () => {
       const options = shippingOptions.value;
+      console.log('🔄 applyDefaultShippingSelection called, options:', options.map(o => ({ value: o.value, type: o.type, label: o.label })));
+      console.log('🔄 Current selectedShippingOption:', selectedShippingOption.value);
+      
       if (!options.length) {
+        console.log('⚠️ No shipping options available');
         selectedShippingOption.value = null;
         return;
       }
@@ -988,6 +992,7 @@ export default {
         (option) => option.value === selectedShippingOption.value
       );
       if (existing) {
+        console.log('✅ Selected option already exists in options, keeping it:', selectedShippingOption.value);
         return;
       }
 
@@ -996,22 +1001,49 @@ export default {
         (item) => item.marketEventContext === true
       );
 
-      // If coming from market event upload, user is at market event, or cart has market event items, prefer pickup option
+      // Check if user is currently at a market event (refresh checkedInEvent)
+      const currentCheckedInEvent = marketEventService.getCheckedInEvent();
+
+      // Check if user is a market customer (from customer type)
+      const userIsMarketCustomer = isMarketCustomer.value;
+
+      console.log('🔄 Checking conditions for pickup:', {
+        isFromMarketEventUpload: isFromMarketEventUpload.value,
+        currentCheckedInEvent: !!currentCheckedInEvent,
+        checkedInEvent: !!checkedInEvent.value,
+        userIsMarketCustomer,
+        hasMarketEventCartItems
+      });
+
+      // If coming from market event upload, user is at market event, user is market customer, or cart has market event items, prefer pickup option
       if (
         isFromMarketEventUpload.value ||
+        currentCheckedInEvent ||
         checkedInEvent.value ||
+        userIsMarketCustomer ||
         hasMarketEventCartItems
       ) {
         const pickupOption = options.find((option) => option.type === 'pickup');
+        console.log('🔄 Looking for pickup option, found:', pickupOption);
         if (pickupOption) {
           selectedShippingOption.value = pickupOption.value;
+          console.log('✅ Defaulted to pickup option for market event:', pickupOption.value, {
+            isFromMarketEventUpload: isFromMarketEventUpload.value,
+            currentCheckedInEvent: !!currentCheckedInEvent,
+            checkedInEvent: !!checkedInEvent.value,
+            userIsMarketCustomer,
+            hasMarketEventCartItems
+          });
           return;
+        } else {
+          console.log('⚠️ No pickup option found in options! Available options:', options.map(o => ({ value: o.value, type: o.type })));
         }
       }
 
       // Otherwise use default or first option
       const defaultOption =
         options.find((option) => option.default) || options[0];
+      console.log('🔄 Using default/first option:', defaultOption?.value);
       selectedShippingOption.value = defaultOption.value;
     };
 
