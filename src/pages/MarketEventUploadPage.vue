@@ -1220,16 +1220,6 @@ export default {
         }
       };
       
-      // Handler for when product selection changes
-      const onProductChange = (newProductId) => {
-        console.log('🔄 Product changed to:', newProductId);
-        // The selectedProduct computed will automatically update
-        // Force a recalculation of totalCost by triggering reactivity
-        if (selectedProduct.value) {
-          console.log('✅ Selected product updated:', selectedProduct.value.description);
-        }
-      };
-      
       // Watch selectedProductId to ensure totalCost updates when product changes
       watch(selectedProductId, (newId, oldId) => {
         if (newId !== oldId && newId) {
