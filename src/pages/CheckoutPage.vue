@@ -1606,24 +1606,38 @@ export default {
             "ℹ️ Square SDK doesn't provide button rendering, creating native Apple Pay button"
           );
 
-          // Create native Apple Pay button using Apple's button styling
+          // Create native Apple Pay button using Apple's official button styling
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'apple-pay-button';
           button.setAttribute('lang', 'en-US');
-          button.setAttribute('aria-label', 'Pay with Apple Pay');
+          button.setAttribute('aria-label', 'Buy with Apple Pay');
 
-          // Apply Apple Pay button styles
+          // Apply official Apple Pay button styles
+          // Using Apple's official CSS properties for the button
           button.style.cssText = `
             -apple-pay-button-type: plain;
             -apple-pay-button-style: black;
             width: 100%;
-            height: 44px;
-            border-radius: 4px;
+            height: 50px;
+            border-radius: 8px;
             border: none;
             cursor: pointer;
             display: block;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+            letter-spacing: -0.41px;
+            transition: opacity 0.2s ease;
           `;
+          
+          // Add hover effect
+          button.addEventListener('mouseenter', () => {
+            button.style.opacity = '0.8';
+          });
+          button.addEventListener('mouseleave', () => {
+            button.style.opacity = '1';
+          });
 
           // Handle button click - tokenize with Square and place order
           button.addEventListener('click', async (e) => {
@@ -2278,17 +2292,17 @@ export default {
                 'ℹ️ Square Apple Pay does not have canMakePayment method, checking native API'
               );
               const hasApplePaySession = !!window.ApplePaySession;
-              const nativeCanMakePayments = hasApplePaySession 
-                ? ApplePaySession.canMakePayments() 
+              const nativeCanMakePayments = hasApplePaySession
+                ? ApplePaySession.canMakePayments()
                 : false;
-              
+
               console.log('🔍 Native Apple Pay API check:', {
                 hasApplePaySession,
                 nativeCanMakePayments,
                 userAgent: navigator.userAgent,
                 platform: navigator.platform,
               });
-              
+
               if (nativeCanMakePayments) {
                 canMakePayment = true;
                 console.log('✅ Native Apple Pay API confirms availability');
@@ -2296,8 +2310,8 @@ export default {
                 canMakePayment = false;
                 console.log('❌ Native Apple Pay API says not available', {
                   hasApplePaySession,
-                  reason: hasApplePaySession 
-                    ? 'canMakePayments() returned false' 
+                  reason: hasApplePaySession
+                    ? 'canMakePayments() returned false'
                     : 'ApplePaySession not available',
                 });
               }
@@ -2745,6 +2759,34 @@ export default {
 
 .wallet-button {
   min-height: 48px;
+  width: 100%;
+}
+
+/* Apple Pay button styling - ensures proper display of Apple's button */
+.apple-pay-button {
+  -apple-pay-button-type: plain;
+  -apple-pay-button-style: black;
+  width: 100%;
+  height: 50px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  transition: opacity 0.2s ease;
+}
+
+.apple-pay-button:hover {
+  opacity: 0.9;
+}
+
+.apple-pay-button:active {
+  opacity: 0.8;
+}
+
+.apple-pay-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .square-card-container {
