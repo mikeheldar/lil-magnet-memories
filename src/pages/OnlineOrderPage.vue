@@ -364,7 +364,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
@@ -782,16 +782,19 @@ export default {
             );
           }
           
+          // Set selected product after products are loaded
+          // Use a small delay to ensure productOptions computed has updated
+          await nextTick();
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
           if (productToSelect) {
-            // Wait for computed property to update, then find matching product
-            await nextTick();
             // Filter custom products (same logic as productOptions computed)
             const customProducts = products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
             // Find the same object in filtered array to ensure reference match for q-select
             const matchingProduct = customProducts.find(p => p.id === productToSelect.id);
             if (matchingProduct) {
               selectedProduct.value = matchingProduct;
-              console.log('✅ Selected product:', matchingProduct.description, matchingProduct.isDefault ? '(default)' : '');
+              console.log('✅ Selected product:', matchingProduct.description, matchingProduct.isDefault ? '(default)' : '', matchingProduct);
             } else {
               selectedProduct.value = productToSelect;
               console.log('✅ Selected product (fallback):', productToSelect.description);
@@ -861,6 +864,35 @@ export default {
       loadProducts().catch(err => {
         console.error('Failed to load products:', err);
       });
+      
+      // Watch productOptions to sync selectedProduct when options change
+      watch(productOptions, (newOptions) => {
+        if (newOptions.length > 0 && !selectedProduct.value) {
+          // If no product selected but options are available, try to set default
+          const defaultProduct = newOptions.find(p => p.isDefault === true);
+          if (defaultProduct) {
+            selectedProduct.value = defaultProduct;
+            console.log('✅ Watched: Set default product:', defaultProduct.description);
+          } else if (route.query.productId) {
+            const routeProduct = newOptions.find(p => p.id === route.query.productId);
+            if (routeProduct) {
+              selectedProduct.value = routeProduct;
+              console.log('✅ Watched: Set route product:', routeProduct.description);
+            }
+          } else if (newOptions.length > 0) {
+            selectedProduct.value = newOptions[0];
+            console.log('✅ Watched: Set first product:', newOptions[0].description);
+          }
+        } else if (selectedProduct.value && newOptions.length > 0) {
+          // If product is selected but options changed, ensure it still exists
+          const stillExists = newOptions.find(p => p.id === selectedProduct.value.id);
+          if (!stillExists) {
+            // Selected product no longer in options, reset
+            selectedProduct.value = null;
+            console.log('⚠️ Watched: Selected product no longer available, resetting');
+          }
+        }
+      }, { immediate: true });
     });
 
     return {

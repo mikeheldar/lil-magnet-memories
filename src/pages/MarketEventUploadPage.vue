@@ -513,7 +513,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
@@ -1101,16 +1101,20 @@ export default {
           );
         }
         
+        // Set selected product after products are loaded
+        // Use a small delay to ensure productOptions computed has updated
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         if (productToSelect) {
-          // Wait for computed property to update, then find matching product
-          await nextTick();
           // Filter custom products (same logic as productOptions computed)
           const customProducts = products.value.filter(p => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
           // Find the same object in filtered array to ensure reference match for q-select
           const matchingProduct = customProducts.find(p => p.id === productToSelect.id);
           if (matchingProduct) {
             selectedProduct.value = matchingProduct;
-            console.log('✅ Selected product:', matchingProduct.description, matchingProduct.isDefault ? '(default)' : '');
+            console.log('✅ Selected product:', matchingProduct.description, matchingProduct.isDefault ? '(default)' : '', matchingProduct);
+            console.log('✅ ProductOptions:', productOptions.value.map(p => ({ id: p.id, desc: p.description })));
           } else {
             selectedProduct.value = productToSelect;
             console.log('✅ Selected product (fallback):', productToSelect.description);
