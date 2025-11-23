@@ -126,46 +126,76 @@
               Product Selection
             </div>
 
-            <q-select
-              v-model="selectedProductId"
-              :options="productOptions"
-              option-label="description"
-              option-value="id"
-              emit-value
-              map-options
-              label="Select Product *"
-              filled
-              :rules="[(val) => !!val || 'Please select a product']"
-              class="q-mb-md"
-              :loading="loadingProducts"
-              @update:model-value="onProductChange"
-            >
-              <template v-slot:selected>
-                <span v-if="selectedProduct">{{ selectedProduct.description }}</span>
-                <span v-else class="text-grey-6">Select a product</span>
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section>
-                    <q-item-label>{{ scope.opt.description }}</q-item-label>
-                    <q-item-label caption>
-                      <div
-                        v-for="(price, qty) in scope.opt.pricing"
-                        :key="qty"
-                        class="text-caption"
-                      >
-                        {{ qty }}x for ${{ Number(price).toFixed(2) }}
+            <!-- Current Product Display -->
+            <div v-if="selectedProduct" class="q-mb-md">
+              <div class="text-subtitle2 q-mb-sm text-weight-medium">
+                Selected Product
+              </div>
+              <q-card flat bordered class="bg-grey-1">
+                <q-card-section>
+                  <div class="row items-center">
+                    <div class="col">
+                      <div class="text-h6">{{ selectedProduct.description }}</div>
+                      <div class="text-caption text-grey-7 q-mt-xs">
+                        <div
+                          v-for="(price, qty) in selectedProduct.pricing"
+                          :key="qty"
+                        >
+                          {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                        </div>
                       </div>
-                    </q-item-label>
-                  </q-item-section>
-                  <q-item-section side v-if="scope.opt.isDefault">
-                    <q-chip color="green" text-color="white" size="sm" icon="star">
-                      Default
-                    </q-chip>
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
+                    </div>
+                    <div class="col-auto" v-if="selectedProduct.isDefault">
+                      <q-chip color="green" text-color="white" size="sm" icon="star">
+                        Default
+                      </q-chip>
+                    </div>
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+            
+            <!-- Product Selector Dropdown -->
+            <div class="q-mb-md">
+              <div class="text-subtitle2 q-mb-sm text-weight-medium">
+                {{ selectedProduct ? 'Change Product' : 'Select Product' }} <span class="text-negative">*</span>
+              </div>
+              <q-select
+                v-model="selectedProductId"
+                :options="productOptions"
+                option-label="description"
+                option-value="id"
+                emit-value
+                map-options
+                :label="selectedProduct ? 'Choose a different product' : 'Select a product'"
+                filled
+                :rules="[(val) => !!val || 'Please select a product']"
+                :loading="loadingProducts"
+                @update:model-value="onProductChange"
+              >
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label>{{ scope.opt.description }}</q-item-label>
+                      <q-item-label caption>
+                        <div
+                          v-for="(price, qty) in scope.opt.pricing"
+                          :key="qty"
+                          class="text-caption"
+                        >
+                          {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                        </div>
+                      </q-item-label>
+                    </q-item-section>
+                    <q-item-section side v-if="scope.opt.isDefault">
+                      <q-chip color="green" text-color="white" size="sm" icon="star">
+                        Default
+                      </q-chip>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
 
             <!-- Photo Upload Section -->
             <q-separator class="q-my-md" />
@@ -1213,10 +1243,13 @@ export default {
       // Handler for when product selection changes
       const onProductChange = (newProductId) => {
         console.log('🔄 Product changed to:', newProductId);
-        // The selectedProduct computed will automatically update
-        // Force a recalculation of totalCost by triggering reactivity
+        // Force reactivity update by accessing the computed property
+        // This ensures totalCost recalculates with the new product pricing
         if (selectedProduct.value) {
           console.log('✅ Selected product updated:', selectedProduct.value.description);
+          console.log('✅ New product pricing:', selectedProduct.value.pricing);
+          // Force totalCost to recalculate by accessing it
+          const _ = totalCost.value;
         }
       };
       
