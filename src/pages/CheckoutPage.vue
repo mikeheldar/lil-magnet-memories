@@ -2103,18 +2103,39 @@ export default {
             const applePay = await payments.applePay(paymentRequest);
             console.log(
               '🍎 Apple Pay object created, checking availability...',
-              { applePay, paymentRequest }
+              { applePay, paymentRequest, hasCanMakePayment: typeof applePay.canMakePayment === 'function' }
             );
-            const canMakePayment = await applePay.canMakePayment();
-            console.log('🍎 Apple Pay canMakePayment result:', canMakePayment, {
-              type: typeof canMakePayment,
-              value: canMakePayment,
-              isBoolean: typeof canMakePayment === 'boolean',
-              isObject: typeof canMakePayment === 'object',
-              stringified: JSON.stringify(canMakePayment)
-            });
+            
+            // Square's Apple Pay might not have canMakePayment - check if method exists
+            let canMakePayment = false;
+            if (typeof applePay.canMakePayment === 'function') {
+              canMakePayment = await applePay.canMakePayment();
+              console.log('🍎 Apple Pay canMakePayment result:', canMakePayment, {
+                type: typeof canMakePayment,
+                value: canMakePayment,
+                isBoolean: typeof canMakePayment === 'boolean',
+                isObject: typeof canMakePayment === 'object',
+                stringified: JSON.stringify(canMakePayment),
+              });
+            } else {
+              // If canMakePayment doesn't exist, check native Apple Pay API
+              console.log('ℹ️ Square Apple Pay does not have canMakePayment method, checking native API');
+              if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
+                canMakePayment = true;
+                console.log('✅ Native Apple Pay API confirms availability');
+              } else {
+                canMakePayment = false;
+                console.log('❌ Native Apple Pay API says not available');
+              }
+            }
+            
+            // Square's canMakePayment can return boolean or object with result property
+            const canMakePaymentResult = 
+              typeof canMakePayment === 'boolean' 
+                ? canMakePayment 
+                : canMakePayment?.result ?? canMakePayment;
 
-            if (canMakePayment) {
+            if (canMakePaymentResult) {
               squareApplePay.value = applePay;
               applePayReady.value = true;
               console.log('✅ Apple Pay is available and ready');
