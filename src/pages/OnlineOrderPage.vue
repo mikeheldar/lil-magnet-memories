@@ -437,6 +437,7 @@ export default {
     const submitting = ref(false);
     const products = ref([]);
     const selectedProductId = ref(null);
+    const loadingProducts = ref(false);
     const hasAddedToCart = ref(false);
     const showReAddWarning = ref(false);
     
@@ -960,19 +961,6 @@ export default {
         console.error('Failed to load products:', err);
       });
       
-      // Handler for when product selection changes
-      const onProductChange = (newProductId) => {
-        console.log('🔄 Product changed to:', newProductId);
-        // Force reactivity update by accessing the computed property
-        // This ensures totalCost recalculates with the new product pricing
-        if (selectedProduct.value) {
-          console.log('✅ Selected product updated:', selectedProduct.value.description);
-          console.log('✅ New product pricing:', selectedProduct.value.pricing);
-          // Force totalCost to recalculate by accessing it
-          const _ = totalCost.value;
-        }
-      };
-      
       // Watch selectedProductId to ensure totalCost updates when product changes
       watch(selectedProductId, (newId, oldId) => {
         if (newId !== oldId && newId) {
@@ -1051,6 +1039,7 @@ export default {
       getFilePreview,
       onRejected,
       onFileSelected,
+      onProductChange,
       increaseQuantity,
       decreaseQuantity,
       removeFile,

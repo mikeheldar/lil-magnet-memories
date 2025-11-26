@@ -1451,7 +1451,10 @@ export default {
         return false;
       }
       // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
-      if (requiresBillingAddress.value && selectedPaymentOption.value !== 'apple_pay') {
+      if (
+        requiresBillingAddress.value &&
+        selectedPaymentOption.value !== 'apple_pay'
+      ) {
         if (skipShipping.value) {
           // When skipShipping, always require billing address
           if (!addressIsComplete(billingAddress.value)) {
