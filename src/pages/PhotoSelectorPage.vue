@@ -636,6 +636,80 @@ export default {
       }
     };
 
+    // Color settings for order photos
+    const getOrderPhotoColorSettings = (photo, index) => {
+      const selected = selectedOrderPhotos.value.find(
+        sp => sp.orderId === photo.orderId && sp.index === index
+      );
+      if (selected && selected.colorSettings) {
+        return selected.colorSettings;
+      }
+      return { brightness: 100, contrast: 100, saturation: 100 };
+    };
+
+    const updateOrderPhotoColorSettings = (photo, index) => {
+      const selectedIndex = selectedOrderPhotos.value.findIndex(
+        sp => sp.orderId === photo.orderId && sp.index === index
+      );
+      if (selectedIndex >= 0) {
+        // Settings are already updated via v-model, just ensure they exist
+        if (!selectedOrderPhotos.value[selectedIndex].colorSettings) {
+          selectedOrderPhotos.value[selectedIndex].colorSettings = {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+          };
+        }
+      }
+    };
+
+    const resetOrderPhotoColorSettings = (photo, index) => {
+      const selectedIndex = selectedOrderPhotos.value.findIndex(
+        sp => sp.orderId === photo.orderId && sp.index === index
+      );
+      if (selectedIndex >= 0) {
+        selectedOrderPhotos.value[selectedIndex].colorSettings = {
+          brightness: 100,
+          contrast: 100,
+          saturation: 100,
+        };
+      }
+    };
+
+    // Color settings for uploaded photos
+    const getUploadedPhotoColorSettings = (index) => {
+      const selected = selectedUploadedPhotos.value.find(item => item.index === index);
+      if (selected && selected.colorSettings) {
+        return selected.colorSettings;
+      }
+      return { brightness: 100, contrast: 100, saturation: 100 };
+    };
+
+    const updateUploadedPhotoColorSettings = (index) => {
+      const selectedIndex = selectedUploadedPhotos.value.findIndex(item => item.index === index);
+      if (selectedIndex >= 0) {
+        // Settings are already updated via v-model, just ensure they exist
+        if (!selectedUploadedPhotos.value[selectedIndex].colorSettings) {
+          selectedUploadedPhotos.value[selectedIndex].colorSettings = {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+          };
+        }
+      }
+    };
+
+    const resetUploadedPhotoColorSettings = (index) => {
+      const selectedIndex = selectedUploadedPhotos.value.findIndex(item => item.index === index);
+      if (selectedIndex >= 0) {
+        selectedUploadedPhotos.value[selectedIndex].colorSettings = {
+          brightness: 100,
+          contrast: 100,
+          saturation: 100,
+        };
+      }
+    };
+
     // Remove uploaded photo
     const removeUploadedPhoto = (index) => {
       // Remove from selected photos if it was selected
