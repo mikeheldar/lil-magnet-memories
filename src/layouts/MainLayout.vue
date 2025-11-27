@@ -245,11 +245,50 @@
 
         <!-- Content for authenticated users -->
         <template v-else>
-          <!-- Admin-only navigation items (collapsible, default collapsed) -->
+          <!-- Customer section (collapsible) -->
+          <q-expansion-item
+            icon="person"
+            label="Customer"
+            default-opened
+            header-class="text-grey-8"
+          >
+            <q-item clickable v-ripple @click="handleUploadClick">
+              <q-item-section avatar>
+                <q-icon name="camera_alt" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ uploadLinkLabel }}</q-item-label>
+                <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/my-orders')">
+              <q-item-section avatar>
+                <q-icon name="assignment" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>My Orders</q-item-label>
+                <q-item-label caption>View your orders</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/about')">
+              <q-item-section avatar>
+                <q-icon name="info" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>About</q-item-label>
+                <q-item-label caption>Learn our story</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-expansion-item>
+
+          <!-- Operator section (collapsible, default collapsed) -->
           <template v-if="isAdmin">
+            <q-separator class="q-my-md" />
             <q-expansion-item
-              icon="admin_panel_settings"
-              label="Admin"
+              icon="work"
+              label="Operator"
               :default-opened="false"
               header-class="text-grey-8"
             >
@@ -322,7 +361,16 @@
                   <q-item-label caption>Manage products and pricing</q-item-label>
                 </q-item-section>
               </q-item>
+            </q-expansion-item>
 
+            <!-- Admin section (collapsible, default collapsed) -->
+            <q-separator class="q-my-md" />
+            <q-expansion-item
+              icon="admin_panel_settings"
+              label="Admin"
+              :default-opened="false"
+              header-class="text-grey-8"
+            >
               <q-item clickable v-ripple @click="navigateTo('/firebase-test')">
                 <q-item-section avatar>
                   <q-icon name="bug_report" color="orange" />
@@ -353,47 +401,7 @@
                 </q-item-section>
               </q-item>
             </q-expansion-item>
-
-            <q-separator class="q-my-md" />
           </template>
-
-          <!-- Customer section (collapsible) -->
-          <q-expansion-item
-            icon="person"
-            label="Customer"
-            default-opened
-            header-class="text-grey-8"
-          >
-            <q-item clickable v-ripple @click="handleUploadClick">
-              <q-item-section avatar>
-                <q-icon name="camera_alt" color="primary" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>{{ uploadLinkLabel }}</q-item-label>
-                <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple @click="navigateTo('/my-orders')">
-              <q-item-section avatar>
-                <q-icon name="assignment" color="primary" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>My Orders</q-item-label>
-                <q-item-label caption>View your orders</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple @click="navigateTo('/about')">
-              <q-item-section avatar>
-                <q-icon name="info" color="primary" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>About</q-item-label>
-                <q-item-label caption>Learn our story</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-expansion-item>
         </template>
 
         <q-separator class="q-my-md" />
