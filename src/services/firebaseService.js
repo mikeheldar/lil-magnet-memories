@@ -520,19 +520,63 @@ class FirebaseService {
   // Delete photo from Firebase Storage
   async deletePhotoFromStorage(photoUrl) {
     try {
+      if (!photoUrl || typeof photoUrl !== 'string') {
+        throw new Error('Invalid photo URL: URL is missing or not a string');
+      }
+
+      // Skip blob URLs - they're local and don't need to be deleted from Storage
+      if (photoUrl.startsWith('blob:')) {
+        console.log('Skipping blob URL deletion:', photoUrl);
+        return;
+      }
+
+      // Skip data URLs - they're base64 encoded and don't need to be deleted
+      if (photoUrl.startsWith('data:')) {
+        console.log('Skipping data URL deletion:', photoUrl);
+        return;
+      }
+
       // Extract the file path from the URL
       // Firebase Storage URLs are like: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media&token={token}
-      const urlObj = new URL(photoUrl);
-      const pathMatch = urlObj.pathname.match(/\/o\/(.+)\?/);
-      if (!pathMatch) {
-        throw new Error('Invalid photo URL format');
+      // Or: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media
+      let filePath = null;
+      
+      try {
+        const urlObj = new URL(photoUrl);
+        // Try to match the path in the URL
+        const pathMatch = urlObj.pathname.match(/\/o\/(.+?)(?:\?|$)/);
+        if (pathMatch) {
+          filePath = decodeURIComponent(pathMatch[1]);
+        } else {
+          // If it's already a storage path (starts with 'orders/'), use it directly
+          if (photoUrl.includes('orders/')) {
+            const pathMatch2 = photoUrl.match(/orders\/.+$/);
+            if (pathMatch2) {
+              filePath = pathMatch2[0];
+            }
+          }
+        }
+      } catch (urlError) {
+        // If URL parsing fails, check if it's already a storage path
+        if (photoUrl.includes('orders/')) {
+          const pathMatch = photoUrl.match(/orders\/.+$/);
+          if (pathMatch) {
+            filePath = pathMatch[0];
+          }
+        }
       }
-      const filePath = decodeURIComponent(pathMatch[1]);
+
+      if (!filePath) {
+        console.warn('Could not extract file path from URL:', photoUrl);
+        throw new Error(`Invalid photo URL format: ${photoUrl.substring(0, 100)}`);
+      }
+
       const storageRef = ref(storage, filePath);
       await deleteObject(storageRef);
-      console.log('Photo deleted from Storage:', filePath);
+      console.log('✅ Photo deleted from Storage:', filePath);
     } catch (error) {
-      console.error('Error deleting photo from Storage:', error);
+      console.error('❌ Error deleting photo from Storage:', error);
+      console.error('Photo URL was:', photoUrl);
       throw error;
     }
   }

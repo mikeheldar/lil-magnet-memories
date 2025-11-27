@@ -520,13 +520,15 @@ export default {
           }
         }
         
-        $q.notify({
-          type: 'positive',
-          message: `Deleted ${selectedPhotos.value.length} photo${selectedPhotos.value.length !== 1 ? 's' : ''}`,
-          caption: deleteAssociatedOrders.value && ordersToDelete.size > 0
-            ? `Also deleted ${ordersToDelete.size} associated order${ordersToDelete.size !== 1 ? 's' : ''}`
-            : '',
-        });
+        if ($q && $q.notify) {
+          $q.notify({
+            type: 'positive',
+            message: `Deleted ${selectedPhotos.value.length} photo${selectedPhotos.value.length !== 1 ? 's' : ''}`,
+            caption: deleteAssociatedOrders.value && ordersToDelete.size > 0
+              ? `Also deleted ${ordersToDelete.size} associated order${ordersToDelete.size !== 1 ? 's' : ''}`
+              : '',
+          });
+        }
         
         // Clear selection and reload photos
         selectedPhotos.value = [];
@@ -534,11 +536,13 @@ export default {
         await loadAllPhotos();
       } catch (error) {
         console.error('Error deleting photos:', error);
-        $q.notify({
-          type: 'negative',
-          message: 'Failed to delete photos',
-          caption: error.message,
-        });
+        if ($q && $q.notify) {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to delete photos',
+            caption: error.message,
+          });
+        }
       } finally {
         deleting.value = false;
       }
