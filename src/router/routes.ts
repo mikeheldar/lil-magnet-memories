@@ -39,6 +39,11 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
+        path: 'photo-management',
+        component: () => import('pages/PhotoManagementPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
         path: 'customers',
         component: () => import('pages/CustomersPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },

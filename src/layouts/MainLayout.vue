@@ -287,6 +287,16 @@
               </q-item-section>
             </q-item>
 
+            <q-item clickable v-ripple @click="navigateTo('/photo-management')">
+              <q-item-section avatar>
+                <q-icon name="delete_sweep" color="red" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Photo Management</q-item-label>
+                <q-item-label caption>Delete photos and orders</q-item-label>
+              </q-item-section>
+            </q-item>
+
             <q-item clickable v-ripple @click="navigateTo('/market-events')">
               <q-item-section avatar>
                 <q-icon name="event" color="green" />
@@ -555,6 +565,8 @@ export default {
             return 'Admin - Manage Products';
           case '/photo-selector':
             return 'Print Template';
+          case '/photo-management':
+            return 'Photo Management';
           case '/':
           default:
             return 'Lil Magnet Memories';

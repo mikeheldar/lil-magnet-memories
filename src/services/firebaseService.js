@@ -11,7 +11,7 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
-import { ref, uploadBytes, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 import { db, storage } from '../firebase/config.js';
@@ -513,6 +513,68 @@ class FirebaseService {
       await deleteDoc(doc(db, 'orders', orderId));
     } catch (error) {
       console.error('Error deleting order:', error);
+      throw error;
+    }
+  }
+
+  // Delete photo from Firebase Storage
+  async deletePhotoFromStorage(photoUrl) {
+    try {
+      // Extract the file path from the URL
+      // Firebase Storage URLs are like: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media&token={token}
+      const urlObj = new URL(photoUrl);
+      const pathMatch = urlObj.pathname.match(/\/o\/(.+)\?/);
+      if (!pathMatch) {
+        throw new Error('Invalid photo URL format');
+      }
+      const filePath = decodeURIComponent(pathMatch[1]);
+      const storageRef = ref(storage, filePath);
+      await deleteObject(storageRef);
+      console.log('Photo deleted from Storage:', filePath);
+    } catch (error) {
+      console.error('Error deleting photo from Storage:', error);
+      throw error;
+    }
+  }
+
+  // Find orders containing a specific photo
+  async findOrdersWithPhoto(photoUrl, photoName) {
+    try {
+      const orders = await this.getOrders();
+      const matchingOrders = [];
+
+      orders.forEach((order) => {
+        let hasPhoto = false;
+
+        // Check legacy photo-based orders
+        if (order.photos && order.photos.length > 0) {
+          hasPhoto = order.photos.some((photo) => {
+            return photo.url === photoUrl || photo.name === photoName;
+          });
+        }
+
+        // Check cart-based orders
+        if (!hasPhoto && order.cartItems && order.cartItems.length > 0) {
+          order.cartItems.forEach((item) => {
+            if (item.isCustomUpload && item.photos) {
+              const found = item.photos.some((photo) => {
+                return photo.url === photoUrl || photo.name === photoName;
+              });
+              if (found) {
+                hasPhoto = true;
+              }
+            }
+          });
+        }
+
+        if (hasPhoto) {
+          matchingOrders.push(order);
+        }
+      });
+
+      return matchingOrders;
+    } catch (error) {
+      console.error('Error finding orders with photo:', error);
       throw error;
     }
   }

@@ -54,6 +54,9 @@
           <span v-if="uploadedPhotos.length > 0">
             • {{ uploadedPhotos.length }} uploaded photo{{ uploadedPhotos.length !== 1 ? 's' : '' }}
           </span>
+          <span v-if="displayedPhotos.length < filteredPhotos.length">
+            • Showing {{ displayedPhotos.length }} of {{ filteredPhotos.length }}
+          </span>
         </div>
       </div>
 
@@ -61,7 +64,7 @@
       <div class="row q-col-gutter-md">
         <!-- Photos from Orders -->
         <div
-          v-for="(photo, index) in filteredPhotos"
+          v-for="(photo, index) in displayedPhotos"
           :key="`order-${photo.orderId}-${index}`"
           class="col-4 col-sm-3 col-md-2 col-lg-1"
         >
@@ -211,6 +214,17 @@
         </div>
       </div>
 
+      <!-- Load More Button -->
+      <div v-if="hasMorePhotos" class="text-center q-mt-md">
+        <q-btn
+          color="primary"
+          outline
+          label="Load More Photos"
+          icon="expand_more"
+          @click="loadMorePhotos"
+        />
+      </div>
+
       <div v-if="filteredPhotos.length === 0 && uploadedPhotos.length === 0" class="text-center q-pa-xl">
         <q-icon name="photo_library" size="64px" color="grey-5" />
         <div class="text-h6 text-grey-6 q-mt-md">No photos available</div>
@@ -264,6 +278,7 @@ export default {
     const loading = ref(true);
     const searchQuery = ref('');
     const allPhotos = ref([]);
+    const displayedPhotosCount = ref(9); // Start with 9 photos
     const selectedOrderPhotos = ref([]); // Array of { photo, index, orderId, orderNumber, quantity }
     const selectedUploadedPhotos = ref([]); // Array of { index, quantity }
     const uploadFiles = ref([]);
@@ -329,19 +344,36 @@ export default {
 
     // Filter photos based on search query
     const filteredPhotos = computed(() => {
-      if (!searchQuery.value) {
-        return allPhotos.value;
+      let photos = allPhotos.value;
+      
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase();
+        photos = photos.filter((photo) => {
+          return (
+            photo.name?.toLowerCase().includes(query) ||
+            photo.orderNumber?.toLowerCase().includes(query) ||
+            photo.customerName?.toLowerCase().includes(query)
+          );
+        });
       }
-
-      const query = searchQuery.value.toLowerCase();
-      return allPhotos.value.filter((photo) => {
-        return (
-          photo.name?.toLowerCase().includes(query) ||
-          photo.orderNumber?.toLowerCase().includes(query) ||
-          photo.customerName?.toLowerCase().includes(query)
-        );
-      });
+      
+      return photos;
     });
+
+    // Get displayed photos (paginated)
+    const displayedPhotos = computed(() => {
+      return filteredPhotos.value.slice(0, displayedPhotosCount.value);
+    });
+
+    // Check if there are more photos to load
+    const hasMorePhotos = computed(() => {
+      return displayedPhotosCount.value < filteredPhotos.value.length;
+    });
+
+    // Load more photos
+    const loadMorePhotos = () => {
+      displayedPhotosCount.value += 9;
+    };
 
     // Get photo URL
     const getPhotoUrl = (photo) => {
@@ -637,6 +669,9 @@ export default {
       loading,
       searchQuery,
       filteredPhotos,
+      displayedPhotos,
+      hasMorePhotos,
+      loadMorePhotos,
       selectedOrderPhotos,
       selectedUploadedPhotos,
       uploadFiles,
