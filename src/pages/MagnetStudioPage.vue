@@ -85,34 +85,34 @@
                   @error="handleImageError"
                 />
 
-
-              <!-- Grid overlay with draggable and scalable grid -->
-              <div
-                v-if="showGrid"
-                class="grid-overlay"
-                :style="gridStyle"
-                @mousedown="startDrag"
-              >
-                <!-- Grid border -->
-                <div class="grid-border"></div>
-
-                <!-- Grid lines inside -->
+                <!-- Grid overlay with draggable and scalable grid -->
                 <div
-                  v-for="row in gridRows - 1"
-                  :key="`row-${row}`"
-                  class="grid-line horizontal"
-                  :style="{
-                    top: `${(row * 100) / gridRows}%`,
-                  }"
-                ></div>
-                <div
-                  v-for="col in gridCols - 1"
-                  :key="`col-${col}`"
-                  class="grid-line vertical"
-                  :style="{
-                    left: `${(col * 100) / gridCols}%`,
-                  }"
-                ></div>
+                  v-if="showGrid"
+                  class="grid-overlay"
+                  :style="gridStyle"
+                  @mousedown="startDrag"
+                >
+                  <!-- Grid border -->
+                  <div class="grid-border"></div>
+
+                  <!-- Grid lines inside -->
+                  <div
+                    v-for="row in gridRows - 1"
+                    :key="`row-${row}`"
+                    class="grid-line horizontal"
+                    :style="{
+                      top: `${(row * 100) / gridRows}%`,
+                    }"
+                  ></div>
+                  <div
+                    v-for="col in gridCols - 1"
+                    :key="`col-${col}`"
+                    class="grid-line vertical"
+                    :style="{
+                      left: `${(col * 100) / gridCols}%`,
+                    }"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -217,7 +217,7 @@
             Cropped Squares ({{ croppedSquares.length }} total)
           </div>
 
-          <div class="cropped-squares-grid-maintained">
+          <div class="cropped-squares-grid-maintained" :style="croppedSquaresContainerStyle">
             <div
               v-for="(square, index) in croppedSquares"
               :key="index"
