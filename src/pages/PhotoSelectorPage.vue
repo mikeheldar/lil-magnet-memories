@@ -63,7 +63,7 @@
         <div
           v-for="(photo, index) in filteredPhotos"
           :key="`order-${photo.orderId}-${index}`"
-          class="col-6 col-sm-4 col-md-3 col-lg-2"
+          :class="isOrderPhotoSelected(photo, index) ? 'col-4 col-sm-3 col-md-2 col-lg-1' : 'col-6 col-sm-4 col-md-3 col-lg-2'"
         >
           <q-card
             :class="{ 'selected-photo': isOrderPhotoSelected(photo, index) }"
@@ -134,7 +134,7 @@
         <div
           v-for="(photo, index) in uploadedPhotos"
           :key="`upload-${index}`"
-          class="col-6 col-sm-4 col-md-3 col-lg-2"
+          :class="isUploadedPhotoSelected(index) ? 'col-4 col-sm-3 col-md-2 col-lg-1' : 'col-6 col-sm-4 col-md-3 col-lg-2'"
         >
           <q-card
             :class="{ 'selected-photo': isUploadedPhotoSelected(index) }"
