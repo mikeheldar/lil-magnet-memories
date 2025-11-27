@@ -157,10 +157,125 @@
       <!-- Selected Photos Summary -->
       <q-card v-if="selectedPhotosCount > 0" class="q-mt-lg sticky-bottom">
         <q-card-section>
-          <div class="row items-center">
+          <div class="text-h6 q-mb-md">Selected Photos ({{ selectedPhotosCount }})</div>
+          
+          <!-- Selected Photos List with Quantities -->
+          <q-scroll-area style="max-height: 300px;" class="q-mb-md">
+            <div class="row q-col-gutter-sm">
+              <!-- Selected Order Photos -->
+              <div
+                v-for="(selected, idx) in selectedOrderPhotos"
+                :key="`order-${selected.orderId}-${selected.index}`"
+                class="col-12 col-sm-6 col-md-4"
+              >
+                <q-card class="selected-photo-item">
+                  <q-card-section class="q-pa-sm">
+                    <div class="row items-center q-col-gutter-sm">
+                      <div class="col-auto">
+                        <q-img
+                          :src="getPhotoUrl(selected.photo)"
+                          style="width: 60px; height: 60px;"
+                          class="rounded-borders"
+                          fit="cover"
+                        />
+                      </div>
+                      <div class="col">
+                        <div class="text-caption text-truncate" :title="selected.photo.name">
+                          {{ selected.photo.name }}
+                        </div>
+                        <div class="text-caption text-grey-6">
+                          Order #{{ selected.orderNumber }}
+                        </div>
+                      </div>
+                      <div class="col-auto">
+                        <div class="row items-center no-wrap q-gutter-xs">
+                          <q-btn
+                            flat
+                            dense
+                            round
+                            icon="remove"
+                            size="sm"
+                            @click="decrementOrderPhotoQuantity(idx)"
+                            :disable="selected.quantity <= 1"
+                          />
+                          <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
+                            {{ selected.quantity }}
+                          </div>
+                          <q-btn
+                            flat
+                            dense
+                            round
+                            icon="add"
+                            size="sm"
+                            @click="incrementOrderPhotoQuantity(idx)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+
+              <!-- Selected Uploaded Photos -->
+              <div
+                v-for="(uploadIndex, idx) in selectedUploadedPhotos"
+                :key="`upload-${uploadIndex}`"
+                class="col-12 col-sm-6 col-md-4"
+              >
+                <q-card class="selected-photo-item">
+                  <q-card-section class="q-pa-sm">
+                    <div class="row items-center q-col-gutter-sm">
+                      <div class="col-auto">
+                        <q-img
+                          :src="uploadedPhotos[uploadIndex]?.preview"
+                          style="width: 60px; height: 60px;"
+                          class="rounded-borders"
+                          fit="cover"
+                        />
+                      </div>
+                      <div class="col">
+                        <div class="text-caption text-truncate" :title="uploadedPhotos[uploadIndex]?.name">
+                          {{ uploadedPhotos[uploadIndex]?.name }}
+                        </div>
+                        <div class="text-caption text-grey-6">
+                          New Upload
+                        </div>
+                      </div>
+                      <div class="col-auto">
+                        <div class="row items-center no-wrap q-gutter-xs">
+                          <q-btn
+                            flat
+                            dense
+                            round
+                            icon="remove"
+                            size="sm"
+                            @click="decrementUploadedPhotoQuantity(uploadIndex)"
+                            :disable="getUploadedPhotoQuantity(uploadIndex) <= 1"
+                          />
+                          <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
+                            {{ getUploadedPhotoQuantity(uploadIndex) }}
+                          </div>
+                          <q-btn
+                            flat
+                            dense
+                            round
+                            icon="add"
+                            size="sm"
+                            @click="incrementUploadedPhotoQuantity(uploadIndex)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+            </div>
+          </q-scroll-area>
+
+          <div class="row items-center justify-between">
             <div class="col">
               <div class="text-h6">
-                {{ selectedPhotosCount }} photo{{ selectedPhotosCount !== 1 ? 's' : '' }} selected
+                Total: {{ totalQuantity }} photo{{ totalQuantity !== 1 ? 's' : '' }}
               </div>
               <div class="text-caption text-grey-7">
                 Ready to send to print template
@@ -199,8 +314,8 @@ export default {
     const loading = ref(true);
     const searchQuery = ref('');
     const allPhotos = ref([]);
-    const selectedOrderPhotos = ref([]); // Array of { photo, index, orderId, orderNumber }
-    const selectedUploadedPhotos = ref([]); // Array of indices for uploaded photos
+    const selectedOrderPhotos = ref([]); // Array of { photo, index, orderId, orderNumber, quantity }
+    const selectedUploadedPhotos = ref([]); // Array of { index, quantity }
     const uploadFiles = ref([]);
     const uploadedPhotos = ref([]);
     const sending = ref(false);
@@ -316,22 +431,56 @@ export default {
           index,
           orderId: photo.orderId,
           orderNumber: photo.orderNumber,
+          quantity: 1, // Default quantity
         });
+      }
+    };
+
+    // Quantity management for order photos
+    const incrementOrderPhotoQuantity = (idx) => {
+      if (selectedOrderPhotos.value[idx]) {
+        selectedOrderPhotos.value[idx].quantity++;
+      }
+    };
+
+    const decrementOrderPhotoQuantity = (idx) => {
+      if (selectedOrderPhotos.value[idx] && selectedOrderPhotos.value[idx].quantity > 1) {
+        selectedOrderPhotos.value[idx].quantity--;
       }
     };
 
     // Check if uploaded photo is selected
     const isUploadedPhotoSelected = (index) => {
-      return selectedUploadedPhotos.value.includes(index);
+      return selectedUploadedPhotos.value.some(item => item.index === index);
     };
 
     // Toggle uploaded photo selection
     const toggleUploadedPhotoSelection = (index) => {
-      const existingIndex = selectedUploadedPhotos.value.indexOf(index);
+      const existingIndex = selectedUploadedPhotos.value.findIndex(item => item.index === index);
       if (existingIndex >= 0) {
         selectedUploadedPhotos.value.splice(existingIndex, 1);
       } else {
-        selectedUploadedPhotos.value.push(index);
+        selectedUploadedPhotos.value.push({ index, quantity: 1 });
+      }
+    };
+
+    // Quantity management for uploaded photos
+    const getUploadedPhotoQuantity = (uploadIndex) => {
+      const item = selectedUploadedPhotos.value.find(item => item.index === uploadIndex);
+      return item ? item.quantity : 1;
+    };
+
+    const incrementUploadedPhotoQuantity = (uploadIndex) => {
+      const item = selectedUploadedPhotos.value.find(item => item.index === uploadIndex);
+      if (item) {
+        item.quantity++;
+      }
+    };
+
+    const decrementUploadedPhotoQuantity = (uploadIndex) => {
+      const item = selectedUploadedPhotos.value.find(item => item.index === uploadIndex);
+      if (item && item.quantity > 1) {
+        item.quantity--;
       }
     };
 
@@ -354,16 +503,16 @@ export default {
     // Remove uploaded photo
     const removeUploadedPhoto = (index) => {
       // Remove from selected photos if it was selected
-      const selectedIndex = selectedUploadedPhotos.value.indexOf(index);
+      const selectedIndex = selectedUploadedPhotos.value.findIndex(item => item.index === index);
       if (selectedIndex >= 0) {
         selectedUploadedPhotos.value.splice(selectedIndex, 1);
       }
       // Adjust indices of selected photos that come after this one
-      selectedUploadedPhotos.value = selectedUploadedPhotos.value.map(selectedIndex => {
-        if (selectedIndex > index) {
-          return selectedIndex - 1;
+      selectedUploadedPhotos.value = selectedUploadedPhotos.value.map(item => {
+        if (item.index > index) {
+          return { ...item, index: item.index - 1 };
         }
-        return selectedIndex;
+        return item;
       });
       // Remove the photo
       uploadedPhotos.value.splice(index, 1);
@@ -372,6 +521,13 @@ export default {
     // Get selected photos count (orders + uploaded)
     const selectedPhotosCount = computed(() => {
       return selectedOrderPhotos.value.length + selectedUploadedPhotos.value.length;
+    });
+
+    // Get total quantity of all selected photos
+    const totalQuantity = computed(() => {
+      const orderTotal = selectedOrderPhotos.value.reduce((sum, sp) => sum + (sp.quantity || 1), 0);
+      const uploadedTotal = selectedUploadedPhotos.value.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      return orderTotal + uploadedTotal;
     });
 
     // Send to print template
@@ -391,33 +547,43 @@ export default {
         const photos = [];
         const quantities = [];
 
-        // Add selected photos from orders
+        // Add selected photos from orders (with quantities)
         selectedOrderPhotos.value.forEach((sp) => {
-          photos.push(sp.photo);
-          quantities.push(1); // Default quantity of 1
+          const qty = sp.quantity || 1;
+          // Add the photo multiple times based on quantity
+          for (let i = 0; i < qty; i++) {
+            photos.push(sp.photo);
+            quantities.push(1);
+          }
         });
 
-        // Upload selected new photos and add them
+        // Upload selected new photos and add them (with quantities)
         const photosToUpload = selectedUploadedPhotos.value
-          .map(index => uploadedPhotos.value[index])
-          .filter(photo => photo && photo.file);
+          .map(item => ({
+            photo: uploadedPhotos.value[item.index],
+            quantity: item.quantity || 1,
+          }))
+          .filter(item => item.photo && item.photo.file);
 
         if (photosToUpload.length > 0) {
           console.log('Uploading selected new photos to Firebase Storage...');
-          const uploaded = await firebaseService.uploadPhotos(
-            photosToUpload.map((up) => up.file)
-          );
-
-          uploaded.forEach((uploadedPhoto) => {
-            photos.push({
-              name: uploadedPhoto.name,
-              url: uploadedPhoto.url,
-              fileName: uploadedPhoto.fileName,
-              size: uploadedPhoto.size,
-              type: uploadedPhoto.type,
+          // Upload each photo the number of times specified by quantity
+          for (const item of photosToUpload) {
+            const uploaded = await firebaseService.uploadPhotos([item.photo.file]);
+            uploaded.forEach((uploadedPhoto) => {
+              // Add the photo multiple times based on quantity
+              for (let i = 0; i < item.quantity; i++) {
+                photos.push({
+                  name: uploadedPhoto.name,
+                  url: uploadedPhoto.url,
+                  fileName: uploadedPhoto.fileName,
+                  size: uploadedPhoto.size,
+                  type: uploadedPhoto.type,
+                });
+                quantities.push(1);
+              }
             });
-            quantities.push(1);
-          });
+          }
         }
 
         // Generate order number
@@ -474,8 +640,14 @@ export default {
       handleImageError,
       isOrderPhotoSelected,
       toggleOrderPhotoSelection,
+      incrementOrderPhotoQuantity,
+      decrementOrderPhotoQuantity,
       isUploadedPhotoSelected,
       toggleUploadedPhotoSelection,
+      getUploadedPhotoQuantity,
+      incrementUploadedPhotoQuantity,
+      decrementUploadedPhotoQuantity,
+      totalQuantity,
       onFilesSelected,
       removeUploadedPhoto,
       sendToPrintTemplate,
