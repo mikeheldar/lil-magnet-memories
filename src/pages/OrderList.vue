@@ -244,12 +244,12 @@
                 </q-chip>
               </div>
             </div>
-            <div v-if="order.shippingOption.address" class="q-mt-xs">
+            <div class="q-mt-xs">
               <div>
                 <strong>Delivery Method:</strong>
-                {{ order.shippingOption.label || order.shippingOption.description || 'Standard Shipping' }}
+                {{ order.shippingOption.label || order.shippingOption.description || order.shippingOption.value || 'Standard Shipping' }}
               </div>
-              <div>
+              <div v-if="order.shippingOption.address">
                 <strong>Address:</strong>
                 {{ formatAddress(order.shippingOption.address) }}
               </div>
@@ -257,7 +257,7 @@
                 <strong>Estimated Delivery:</strong>
                 {{ order.shippingOption.estimatedTimeline }}
               </div>
-              <div v-if="order.shippingOption.cost" class="q-mt-xs">
+              <div v-if="order.shippingOption.cost !== undefined" class="q-mt-xs">
                 <strong>Shipping Cost:</strong> ${{ order.shippingOption.cost.toFixed(2) }}
               </div>
             </div>
