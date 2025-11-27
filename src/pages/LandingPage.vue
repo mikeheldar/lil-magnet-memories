@@ -1518,18 +1518,18 @@ export default {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 250px;
+  aspect-ratio: 1 / 1;
   margin-bottom: 16px;
   overflow: hidden;
   background: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .product-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .product-image-wrapper-small {
@@ -1552,10 +1552,10 @@ export default {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 250px;
+  aspect-ratio: 1 / 1;
   margin: 0 auto 16px;
   background: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .product-image-placeholder-small {
