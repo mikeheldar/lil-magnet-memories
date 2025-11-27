@@ -106,23 +106,23 @@
               <div class="text-caption text-center q-mb-xs">Quantity:</div>
               <div class="row items-center justify-center q-gutter-xs">
                 <q-btn
-                  round
+                  flat
                   dense
+                  round
                   icon="remove"
-                  size="sm"
-                  color="primary"
+                  size="xs"
                   @click.stop="decrementOrderPhotoQuantityInGrid(photo, index)"
                   :disable="getOrderPhotoQuantityInGrid(photo, index) <= 1"
                 />
-                <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
+                <div class="text-caption text-weight-bold" style="min-width: 24px; text-align: center;">
                   {{ getOrderPhotoQuantityInGrid(photo, index) }}
                 </div>
                 <q-btn
-                  round
+                  flat
                   dense
+                  round
                   icon="add"
-                  size="sm"
-                  color="primary"
+                  size="xs"
                   @click.stop="incrementOrderPhotoQuantityInGrid(photo, index)"
                 />
               </div>
@@ -171,23 +171,23 @@
               <div class="text-caption text-center q-mb-xs">Quantity:</div>
               <div class="row items-center justify-center q-gutter-xs">
                 <q-btn
-                  round
+                  flat
                   dense
+                  round
                   icon="remove"
-                  size="sm"
-                  color="primary"
+                  size="xs"
                   @click.stop="decrementUploadedPhotoQuantityInGrid(index)"
                   :disable="getUploadedPhotoQuantityInGrid(index) <= 1"
                 />
-                <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
+                <div class="text-caption text-weight-bold" style="min-width: 24px; text-align: center;">
                   {{ getUploadedPhotoQuantityInGrid(index) }}
                 </div>
                 <q-btn
-                  round
+                  flat
                   dense
+                  round
                   icon="add"
-                  size="sm"
-                  color="primary"
+                  size="xs"
                   @click.stop="incrementUploadedPhotoQuantityInGrid(index)"
                 />
               </div>
