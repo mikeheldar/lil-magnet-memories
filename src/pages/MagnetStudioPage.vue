@@ -280,6 +280,7 @@ export default {
     const gridPosition = ref({ x: 0, y: 0 });
     const isDragging = ref(false);
     const dragStart = ref({ x: 0, y: 0 });
+    const squareSpacing = ref(20); // Pixels between squares in the grid display
 
     const checkAdminAccess = async () => {
       try {
@@ -313,15 +314,21 @@ export default {
         const photoParam = route.query.photo;
         if (photoParam) {
           const photo = JSON.parse(photoParam);
+          // Ensure we have a valid URL for the photo
+          if (!photo.url && photo.preview) {
+            photo.url = photo.preview;
+          }
           selectedPhoto.value = photo;
-          console.log('Loaded photo from route:', photo);
+          console.log('✅ Loaded photo from route:', photo);
+          console.log('✅ Photo URL:', photo.url);
         } else {
           // No photo in route, redirect to selection page
+          console.log('⚠️ No photo in route, redirecting to selection page');
           router.push('/magnet-studio-select');
           return;
         }
       } catch (error) {
-        console.error('Error parsing photo from route:', error);
+        console.error('❌ Error parsing photo from route:', error);
         $q.notify({
           type: 'negative',
           message: 'Failed to load photo',
@@ -610,6 +617,7 @@ export default {
       croppedSquaresContainerStyle,
       goToSelectPage,
       cancelSelection,
+      getPhotoUrl,
     };
   },
 };
