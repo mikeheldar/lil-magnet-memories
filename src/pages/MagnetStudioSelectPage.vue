@@ -246,13 +246,16 @@ export default {
 
         allPhotos.value = photos;
         console.log(`✅ Loaded ${photos.length} photos from ${orders.length} orders`);
+        console.log('Sample photo:', photos[0]);
       } catch (error) {
         console.error('Error loading photos:', error);
-        $q.notify({
-          type: 'negative',
-          message: 'Failed to load photos',
-          caption: error.message,
-        });
+        if ($q && $q.notify) {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to load photos',
+            caption: error.message,
+          });
+        }
       } finally {
         loading.value = false;
       }
