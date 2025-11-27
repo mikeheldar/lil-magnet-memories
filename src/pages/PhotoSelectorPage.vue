@@ -218,8 +218,8 @@
 
               <!-- Selected Uploaded Photos -->
               <div
-                v-for="(uploadIndex, idx) in selectedUploadedPhotos"
-                :key="`upload-${uploadIndex}`"
+                v-for="(item, idx) in selectedUploadedPhotos"
+                :key="`upload-${item.index}`"
                 class="col-12 col-sm-6 col-md-4"
               >
                 <q-card class="selected-photo-item">
@@ -227,15 +227,15 @@
                     <div class="row items-center q-col-gutter-sm">
                       <div class="col-auto">
                         <q-img
-                          :src="uploadedPhotos[uploadIndex]?.preview"
+                          :src="uploadedPhotos[item.index]?.preview"
                           style="width: 60px; height: 60px;"
                           class="rounded-borders"
                           fit="cover"
                         />
                       </div>
                       <div class="col">
-                        <div class="text-caption text-truncate" :title="uploadedPhotos[uploadIndex]?.name">
-                          {{ uploadedPhotos[uploadIndex]?.name }}
+                        <div class="text-caption text-truncate" :title="uploadedPhotos[item.index]?.name">
+                          {{ uploadedPhotos[item.index]?.name }}
                         </div>
                         <div class="text-caption text-grey-6">
                           New Upload
@@ -249,11 +249,11 @@
                             round
                             icon="remove"
                             size="sm"
-                            @click="decrementUploadedPhotoQuantity(uploadIndex)"
-                            :disable="getUploadedPhotoQuantity(uploadIndex) <= 1"
+                            @click="decrementUploadedPhotoQuantity(item.index)"
+                            :disable="item.quantity <= 1"
                           />
                           <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
-                            {{ getUploadedPhotoQuantity(uploadIndex) }}
+                            {{ item.quantity }}
                           </div>
                           <q-btn
                             flat
@@ -261,7 +261,7 @@
                             round
                             icon="add"
                             size="sm"
-                            @click="incrementUploadedPhotoQuantity(uploadIndex)"
+                            @click="incrementUploadedPhotoQuantity(item.index)"
                           />
                         </div>
                       </div>
