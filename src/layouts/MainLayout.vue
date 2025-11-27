@@ -374,16 +374,6 @@
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="navigateTo('/about')">
-              <q-item-section avatar>
-                <q-icon name="info" color="primary" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>About</q-item-label>
-                <q-item-label caption>Learn our story</q-item-label>
-              </q-item-section>
-            </q-item>
-
             <q-item clickable v-ripple @click="navigateTo('/my-orders')">
               <q-item-section avatar>
                 <q-icon name="assignment" color="primary" />
@@ -391,6 +381,16 @@
               <q-item-section>
                 <q-item-label>My Orders</q-item-label>
                 <q-item-label caption>View your orders</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/about')">
+              <q-item-section avatar>
+                <q-icon name="info" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>About</q-item-label>
+                <q-item-label caption>Learn our story</q-item-label>
               </q-item-section>
             </q-item>
           </q-expansion-item>
