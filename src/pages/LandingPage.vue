@@ -249,8 +249,8 @@
         </div>
       </div>
 
-      <!-- Pre-Designed Products Section -->
-      <div class="predesigned-products-section">
+      <!-- Designer Magnets Section -->
+      <div class="designer-products-section q-mb-xl">
         <div class="text-h4 text-center q-mb-lg text-primary">
           Designer Magnets
         </div>
@@ -258,22 +258,10 @@
           Shop our collection of beautifully designed ready-made magnets
         </div>
 
-        <div class="text-center q-mb-xl">
-          <q-btn
-            color="secondary"
-            size="lg"
-            label="Shop Pre-Designed Magnets"
-            icon="shopping_bag"
-            @click="goToPreDesigned"
-            class="q-px-xl"
-          />
-        </div>
-
-        <!-- Note: Pre-designed products will be shown here when implemented -->
-        <div v-if="preDesignedProducts.length > 0" class="q-mb-xl">
+        <div v-if="designerProducts.length > 0" class="q-mb-xl">
           <div class="row q-col-gutter-md">
             <div
-              v-for="product in preDesignedProducts"
+              v-for="product in designerProducts"
               :key="product.id"
               class="col-12 col-md-6 col-lg-4"
             >
@@ -329,6 +317,83 @@
               </q-card>
             </div>
           </div>
+        </div>
+        <div v-else class="text-center text-grey-6 q-mb-xl">
+          No designer magnets available at this time.
+        </div>
+      </div>
+
+      <!-- Specialty Products Section -->
+      <div class="specialty-products-section q-mb-xl">
+        <div class="text-h4 text-center q-mb-lg text-primary">
+          Specialty Products
+        </div>
+        <div class="text-body1 text-center text-grey-7 q-mb-lg">
+          Discover our unique specialty magnet products
+        </div>
+
+        <div v-if="specialtyProducts.length > 0" class="q-mb-xl">
+          <div class="row q-col-gutter-md">
+            <div
+              v-for="product in specialtyProducts"
+              :key="product.id"
+              class="col-12 col-md-6 col-lg-4"
+            >
+              <q-card class="product-card">
+                <q-card-section class="text-center">
+                  <div v-if="product.imageUrl" class="product-image-wrapper">
+                    <img
+                      :src="product.imageUrl"
+                      :alt="product.description"
+                      class="product-image"
+                    />
+                  </div>
+                  <div v-else class="product-image-placeholder">
+                    <q-icon name="image" size="64px" color="grey-4" />
+                  </div>
+                  <div class="text-h6 q-mt-md q-mb-sm">
+                    {{ product.description }}
+                  </div>
+                </q-card-section>
+
+                <q-card-section
+                  v-if="product.detailedDescription"
+                  class="product-description"
+                >
+                  <div class="text-body2 text-grey-7">
+                    {{ product.detailedDescription }}
+                  </div>
+                </q-card-section>
+
+                <q-card-section class="product-pricing">
+                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
+                  <div
+                    v-for="(price, qty) in product.pricing"
+                    :key="qty"
+                    class="text-body2 q-mb-xs"
+                  >
+                    <strong>{{ qty }}x</strong> for
+                    <strong class="text-primary"
+                      >${{ price.toFixed(2) }}</strong
+                    >
+                  </div>
+                </q-card-section>
+
+                <q-card-actions class="q-pa-md">
+                  <q-btn
+                    color="primary"
+                    label="Add to Cart"
+                    icon="add_shopping_cart"
+                    class="full-width"
+                    @click="addProductToCart(product)"
+                  />
+                </q-card-actions>
+              </q-card>
+            </div>
+          </div>
+        </div>
+        <div v-else class="text-center text-grey-6 q-mb-xl">
+          No specialty products available at this time.
         </div>
       </div>
     </div>
@@ -633,21 +698,17 @@ export default {
       }
     };
 
-    // Separate products into custom and designer
+    // Separate products by category
     const customProducts = computed(() => {
-      return products.value.filter(
-        (p) => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom'))
-      );
+      return products.value.filter((p) => p.category === 'custom');
     });
     
     const designerProducts = computed(() => {
-      return products.value.filter(
-        (p) => p.category === 'designer'
-      );
+      return products.value.filter((p) => p.category === 'designer');
     });
 
-    const preDesignedProducts = computed(() => {
-      return products.value.filter((p) => p.productType === 'predesigned');
+    const specialtyProducts = computed(() => {
+      return products.value.filter((p) => p.category === 'specialty');
     });
 
     // Reactive ref to trigger updates when market events change
@@ -705,16 +766,6 @@ export default {
       }
     };
 
-    // Navigation function for pre-designed products
-    const goToPreDesigned = () => {
-      // TODO: Navigate to pre-designed products page when implemented
-      safeNotify({
-        type: 'info',
-        message: 'Coming soon!',
-        caption: 'Pre-designed magnets section coming soon',
-        position: 'top',
-      });
-    };
 
     // Check if user is already authenticated
     onMounted(async () => {
@@ -792,7 +843,8 @@ export default {
       isAdmin,
       products,
       customProducts,
-      preDesignedProducts,
+      designerProducts,
+      specialtyProducts,
       hasActiveEvent,
       activeMarketEventName,
       isCustomerAtEvent,
@@ -806,7 +858,6 @@ export default {
       goToMyOrders,
       goToUpload,
       addProductToCart,
-      goToPreDesigned,
       confirmAtMarketEvent,
       goToOnlineOrder,
       goToImage,
@@ -1018,7 +1069,8 @@ export default {
 }
 
 .custom-products-section,
-.predesigned-products-section {
+.designer-products-section,
+.specialty-products-section {
   margin-bottom: 60px;
 }
 

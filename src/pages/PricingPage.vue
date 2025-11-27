@@ -11,13 +11,20 @@
               <q-tab name="designer" label="Designer Magnets" />
               <q-tab name="specialty" label="Specialty Products" />
             </q-tabs>
-            <q-btn
-              color="primary"
-              label="Add New Product"
-              icon="add"
-              @click="addProduct"
-              class="q-mb-md"
-            />
+            <div class="q-gutter-sm q-mb-md">
+              <q-btn
+                color="primary"
+                label="Add New Product"
+                icon="add"
+                @click="addProduct"
+              />
+              <q-btn
+                color="secondary"
+                label="Bulk Add Products"
+                icon="upload"
+                @click="bulkAddProducts"
+              />
+            </div>
           </q-card-section>
 
           <q-list separator>
@@ -216,7 +223,8 @@
 
       <!-- Right: Product Form -->
       <div class="col-12 col-md-4">
-        <q-card v-if="editingProduct">
+        <!-- Single Product Form -->
+        <q-card v-if="editingProduct && !bulkEditingProduct">
           <q-card-section>
             <div class="text-h6 q-mb-md">
               {{ editingProduct.index >= 0 ? 'Edit Product' : 'New Product' }}
@@ -260,6 +268,7 @@
             />
 
             <q-toggle
+              v-if="!bulkEditingProduct"
               v-model="editingProduct.isDefault"
               label="Set as Default Product"
               class="q-mb-md"
@@ -348,6 +357,160 @@
             <div class="q-gutter-md">
               <q-btn color="primary" label="Save" @click="saveProduct" />
               <q-btn flat label="Cancel" @click="cancelEdit" />
+            </div>
+          </q-card-section>
+        </q-card>
+
+        <!-- Bulk Product Form -->
+        <q-card v-if="bulkEditingProduct">
+          <q-card-section>
+            <div class="text-h6 q-mb-md">Bulk Add Products</div>
+            <div class="text-body2 text-grey-7 q-mb-md">
+              Upload multiple product images. All products will share the same details below.
+            </div>
+
+            <q-input
+              v-model="bulkEditingProduct.description"
+              label="Product Description *"
+              filled
+              class="q-mb-md"
+            />
+
+            <q-input
+              v-model="bulkEditingProduct.detailedDescription"
+              label="Detailed Description"
+              type="textarea"
+              filled
+              rows="4"
+              class="q-mb-md"
+              hint="This will appear on the landing page"
+            />
+
+            <q-select
+              v-model="bulkEditingProduct.category"
+              :options="[
+                { label: 'Custom Photo Products', value: 'custom' },
+                { label: 'Designer Magnets', value: 'designer' },
+                { label: 'Specialty Products', value: 'specialty' }
+              ]"
+              label="Category *"
+              filled
+              class="q-mb-md"
+              hint="Which section these products appear in"
+            />
+
+            <q-toggle
+              v-model="bulkEditingProduct.isTesting"
+              label="Testing Only (Admin Only)"
+              class="q-mb-md"
+              hint="These products will only be visible to admins for testing"
+            />
+
+            <div class="text-body2 q-mb-sm">Product Images</div>
+            <q-file
+              v-model="bulkImageFiles"
+              label="Upload Multiple Product Images"
+              accept="image/*"
+              filled
+              multiple
+              @update:model-value="handleBulkImageSelect"
+              class="q-mb-md"
+            >
+              <template v-slot:prepend>
+                <q-icon name="attach_file" />
+              </template>
+            </q-file>
+
+            <div v-if="bulkImageFiles && bulkImageFiles.length > 0" class="q-mb-md">
+              <div class="text-body2 q-mb-sm">
+                Selected Images ({{ bulkImageFiles.length }}):
+              </div>
+              <div class="row q-col-gutter-sm">
+                <div
+                  v-for="(file, index) in bulkImageFiles"
+                  :key="index"
+                  class="col-6 col-sm-4"
+                >
+                  <div class="bulk-image-preview">
+                    <img
+                      :src="getImagePreview(file)"
+                      alt="Preview"
+                      class="bulk-preview-img"
+                    />
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      icon="close"
+                      color="negative"
+                      size="sm"
+                      class="bulk-remove-btn"
+                      @click="removeBulkImage(index)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="uploadingBulkImages" class="q-mb-md">
+              <q-spinner size="24px" />
+              <span class="q-ml-sm">Uploading images...</span>
+            </div>
+
+            <div class="text-body2 q-mb-sm">Pricing</div>
+            <div
+              v-for="(entry, index) in bulkPricingEntries"
+              :key="index"
+              class="pricing-entry q-mb-md"
+            >
+              <div class="row q-col-gutter-sm items-center">
+                <q-input
+                  :model-value="entry.qty"
+                  label="Quantity"
+                  type="number"
+                  filled
+                  dense
+                  class="col-5"
+                  @update:model-value="updateBulkQuantity(index, $event)"
+                />
+                <q-input
+                  :model-value="entry.price"
+                  label="Price"
+                  type="number"
+                  prefix="$"
+                  filled
+                  dense
+                  class="col-5"
+                  @update:model-value="updateBulkPrice(index, $event)"
+                />
+                <q-btn
+                  flat
+                  round
+                  icon="delete"
+                  color="negative"
+                  size="sm"
+                  @click="removeBulkPricing(index)"
+                />
+              </div>
+            </div>
+
+            <q-btn
+              flat
+              label="Add Pricing Tier"
+              icon="add"
+              @click="addBulkPricingTier"
+              class="q-mb-md"
+            />
+
+            <div class="q-gutter-md">
+              <q-btn
+                color="primary"
+                label="Save All Products"
+                :loading="uploadingBulkImages"
+                :disable="!bulkImageFiles || bulkImageFiles.length === 0"
+                @click="saveBulkProducts"
+              />
+              <q-btn flat label="Cancel" @click="cancelBulkEdit" />
             </div>
           </q-card-section>
         </q-card>
@@ -510,6 +673,9 @@ export default {
     const deleteIndex = ref(-1);
     const imageFile = ref(null);
     const uploadingImage = ref(false);
+    const bulkEditingProduct = ref(null);
+    const bulkImageFiles = ref(null);
+    const uploadingBulkImages = ref(false);
     const shippingOptions = ref([]);
     const shippingOptionDialog = ref(false);
     const shippingOptionIndex = ref(-1);
@@ -819,6 +985,8 @@ export default {
     };
 
     const addProduct = () => {
+      bulkEditingProduct.value = null;
+      bulkImageFiles.value = null;
       editingProduct.value = {
         description: '',
         detailedDescription: '',
@@ -831,6 +999,182 @@ export default {
         },
       };
       imageFile.value = null;
+    };
+
+    const bulkAddProducts = () => {
+      editingProduct.value = null;
+      imageFile.value = null;
+      bulkEditingProduct.value = {
+        description: '',
+        detailedDescription: '',
+        category: activeCategory.value,
+        isTesting: false,
+        pricing: {
+          1: 0.0,
+        },
+      };
+      bulkImageFiles.value = null;
+    };
+
+    const cancelBulkEdit = () => {
+      bulkEditingProduct.value = null;
+      bulkImageFiles.value = null;
+      editingProduct.value = null;
+      imageFile.value = null;
+    };
+
+    const getImagePreview = (file) => {
+      if (!file) return '';
+      return URL.createObjectURL(file);
+    };
+
+    const handleBulkImageSelect = (files) => {
+      // files can be a FileList or an array
+      if (files) {
+        bulkImageFiles.value = Array.isArray(files) ? files : Array.from(files);
+      }
+    };
+
+    const removeBulkImage = (index) => {
+      if (bulkImageFiles.value && bulkImageFiles.value.length > index) {
+        bulkImageFiles.value.splice(index, 1);
+      }
+    };
+
+    const bulkPricingEntries = computed(() => {
+      if (!bulkEditingProduct.value) return [];
+
+      return Object.entries(bulkEditingProduct.value.pricing).map(
+        ([qty, price]) => ({
+          qty: Number(qty),
+          price: Number(price),
+        })
+      );
+    });
+
+    const addBulkPricingTier = () => {
+      const entries = bulkPricingEntries.value;
+      const maxQty =
+        entries.length > 0 ? Math.max(...entries.map((e) => e.qty)) : 0;
+      bulkEditingProduct.value.pricing[maxQty + 1] = 0.0;
+    };
+
+    const removeBulkPricing = (index) => {
+      if (bulkPricingEntries.value.length > 1) {
+        const entries = bulkPricingEntries.value;
+        const qtyToRemove = entries[index].qty;
+        delete bulkEditingProduct.value.pricing[qtyToRemove];
+        safeNotify({
+          type: 'info',
+          message: 'Pricing tier removed',
+          position: 'top',
+        });
+      } else {
+        safeNotify({
+          type: 'negative',
+          message: 'At least one pricing tier is required',
+          position: 'top',
+        });
+      }
+    };
+
+    const updateBulkQuantity = (index, newQty) => {
+      const entries = bulkPricingEntries.value;
+      const oldQty = entries[index].qty;
+      const price = entries[index].price;
+      delete bulkEditingProduct.value.pricing[oldQty];
+      bulkEditingProduct.value.pricing[newQty] = price;
+    };
+
+    const updateBulkPrice = (index, newPrice) => {
+      const entries = bulkPricingEntries.value;
+      const qty = entries[index].qty;
+      bulkEditingProduct.value.pricing[qty] = parseFloat(newPrice) || 0;
+    };
+
+    const saveBulkProducts = async () => {
+      if (!bulkEditingProduct.value.description) {
+        safeNotify({
+          type: 'negative',
+          message: 'Please enter a product description',
+          position: 'top',
+        });
+        return;
+      }
+
+      if (!bulkImageFiles.value || bulkImageFiles.value.length === 0) {
+        safeNotify({
+          type: 'negative',
+          message: 'Please select at least one image',
+          position: 'top',
+        });
+        return;
+      }
+
+      if (!bulkEditingProduct.value.category) {
+        safeNotify({
+          type: 'negative',
+          message: 'Please select a category for the products',
+          position: 'top',
+        });
+        return;
+      }
+
+      // Rebuild pricing object from entries
+      const pricing = {};
+      bulkPricingEntries.value.forEach((entry) => {
+        pricing[entry.qty] = entry.price;
+      });
+
+      uploadingBulkImages.value = true;
+
+      try {
+        const productBase = {
+          description: bulkEditingProduct.value.description,
+          detailedDescription: bulkEditingProduct.value.detailedDescription || '',
+          category: bulkEditingProduct.value.category,
+          isTesting: bulkEditingProduct.value.isTesting || false,
+          isDefault: false, // Bulk products cannot be default
+          pricing,
+        };
+
+        // Upload all images and create products
+        const uploadPromises = bulkImageFiles.value.map(async (file) => {
+          const imageUrl = await firebaseService.uploadProductImage(file);
+          const product = {
+            ...productBase,
+            imageUrl,
+          };
+          const id = await firebaseService.addProduct(product);
+          return {
+            ...product,
+            id,
+          };
+        });
+
+        const newProducts = await Promise.all(uploadPromises);
+        products.value.push(...newProducts);
+
+        safeNotify({
+          type: 'positive',
+          message: `Successfully added ${newProducts.length} product(s)`,
+          position: 'top',
+        });
+
+        // Clear the bulk form
+        bulkEditingProduct.value = null;
+        bulkImageFiles.value = null;
+        await nextTick();
+      } catch (error) {
+        console.error('Error saving bulk products:', error);
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to save products',
+          position: 'top',
+        });
+      } finally {
+        uploadingBulkImages.value = false;
+      }
     };
 
     const editProduct = (index) => {
@@ -850,6 +1194,8 @@ export default {
     const cancelEdit = () => {
       editingProduct.value = null;
       imageFile.value = null;
+      bulkEditingProduct.value = null;
+      bulkImageFiles.value = null;
     };
 
     const handleImageSelect = async (file) => {
@@ -1049,15 +1395,22 @@ export default {
       pricingEntries,
       imageFile,
       uploadingImage,
+      bulkEditingProduct,
+      bulkImageFiles,
+      uploadingBulkImages,
+      bulkPricingEntries,
       shippingOptions,
       shippingOptionDialog,
       editingShippingOption,
       shippingOptionIndex,
       shippingDeleteDialog,
       addProduct,
+      bulkAddProducts,
       editProduct,
       cancelEdit,
+      cancelBulkEdit,
       saveProduct,
+      saveBulkProducts,
       confirmDelete,
       deleteProduct,
       addPricingTier,
@@ -1066,6 +1419,13 @@ export default {
       updatePrice,
       handleImageSelect,
       removeImage,
+      handleBulkImageSelect,
+      getImagePreview,
+      removeBulkImage,
+      addBulkPricingTier,
+      removeBulkPricing,
+      updateBulkQuantity,
+      updateBulkPrice,
       addShippingOption,
       editShippingOption,
       closeShippingOptionDialog,
@@ -1114,5 +1474,31 @@ export default {
 
 .shipping-option-item {
   padding: 12px 16px;
+}
+
+.bulk-image-preview {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* Square aspect ratio */
+  background: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bulk-preview-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bulk-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 1;
 }
 </style>
