@@ -206,7 +206,7 @@
               <!-- Shipping Options -->
               <q-card class="q-mb-md">
                 <q-card-section>
-                  <div class="text-h6 q-mb-md">Shipping Options</div>
+                  <div class="text-h6 q-mb-md">Shipping / Delivery Options</div>
 
                   <!-- Pickup option (shown when at market event) -->
                   <div v-if="pickupOptions.length > 0">
@@ -1447,7 +1447,6 @@ export default {
       if (
         !skipShipping.value &&
         requiresShippingAddress.value &&
-        selectedPaymentOption.value !== 'apple_pay' &&
         !addressIsComplete(shippingAddress.value)
       ) {
         return false;
@@ -1492,28 +1491,24 @@ export default {
       () =>
         showValidationErrors.value &&
         requiresShippingAddress.value &&
-        selectedPaymentOption.value !== 'apple_pay' &&
         !shippingAddress.value.street
     );
     const shippingCityError = computed(
       () =>
         showValidationErrors.value &&
         requiresShippingAddress.value &&
-        selectedPaymentOption.value !== 'apple_pay' &&
         !shippingAddress.value.city
     );
     const shippingStateError = computed(
       () =>
         showValidationErrors.value &&
         requiresShippingAddress.value &&
-        selectedPaymentOption.value !== 'apple_pay' &&
         !shippingAddress.value.state
     );
     const shippingZipError = computed(
       () =>
         showValidationErrors.value &&
         requiresShippingAddress.value &&
-        selectedPaymentOption.value !== 'apple_pay' &&
         !shippingAddress.value.zip
     );
     const billingStreetError = computed(

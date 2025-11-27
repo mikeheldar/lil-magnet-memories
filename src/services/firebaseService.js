@@ -26,6 +26,7 @@ export const DEFAULT_SHIPPING_OPTIONS = [
     cost: 5,
     type: 'shipping',
     allowAddress: true,
+    requiresAddress: true, // Default to requiring address
     default: true,
   },
   {
@@ -37,6 +38,7 @@ export const DEFAULT_SHIPPING_OPTIONS = [
     cost: 15,
     type: 'shipping',
     allowAddress: true,
+    requiresAddress: true, // Default to requiring address
   },
   {
     id: 'collect_at_event',
@@ -47,6 +49,7 @@ export const DEFAULT_SHIPPING_OPTIONS = [
     cost: 0,
     type: 'pickup',
     allowAddress: false,
+    requiresAddress: false, // Pickup doesn't require address
   },
 ];
 
