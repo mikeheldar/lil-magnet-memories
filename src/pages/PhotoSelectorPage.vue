@@ -63,7 +63,7 @@
         <div
           v-for="(photo, index) in filteredPhotos"
           :key="`order-${photo.orderId}-${index}`"
-          :class="isOrderPhotoSelected(photo, index) ? 'col-4 col-sm-3 col-md-2 col-lg-1' : 'col-6 col-sm-4 col-md-3 col-lg-2'"
+          class="col-4 col-sm-3 col-md-2 col-lg-1"
         >
           <q-card
             :class="{ 'selected-photo': isOrderPhotoSelected(photo, index) }"
@@ -89,10 +89,10 @@
               </div>
             </q-img>
             <q-card-section class="q-pa-xs" v-if="!isOrderPhotoSelected(photo, index)">
-              <div class="text-caption text-truncate" :title="photo.name">
+              <div class="text-caption text-truncate text-center" :title="photo.name" style="font-size: 0.7rem;">
                 {{ photo.name }}
               </div>
-              <div class="text-caption text-grey-6">
+              <div class="text-caption text-grey-6 text-center q-mt-xs" style="font-size: 0.65rem;">
                 Order #{{ photo.orderNumber }}
               </div>
             </q-card-section>
@@ -136,7 +136,7 @@
         <div
           v-for="(photo, index) in uploadedPhotos"
           :key="`upload-${index}`"
-          :class="isUploadedPhotoSelected(index) ? 'col-4 col-sm-3 col-md-2 col-lg-1' : 'col-6 col-sm-4 col-md-3 col-lg-2'"
+          class="col-4 col-sm-3 col-md-2 col-lg-1"
         >
           <q-card
             :class="{ 'selected-photo': isUploadedPhotoSelected(index) }"
@@ -156,10 +156,10 @@
               </div>
             </q-img>
             <q-card-section class="q-pa-xs" v-if="!isUploadedPhotoSelected(index)">
-              <div class="text-caption text-truncate" :title="photo.name">
+              <div class="text-caption text-truncate text-center" :title="photo.name" style="font-size: 0.7rem;">
                 {{ photo.name }}
               </div>
-              <div class="text-caption text-grey-6">
+              <div class="text-caption text-grey-6 text-center q-mt-xs" style="font-size: 0.65rem;">
                 New Upload
               </div>
             </q-card-section>
