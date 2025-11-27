@@ -688,45 +688,53 @@ export default {
   top: 0;
 }
 
-.cropped-squares-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 16px;
-}
-
-.cropped-square-preview {
+.cropped-squares-grid-maintained {
   position: relative;
-  display: inline-block;
+  margin: 0 auto;
+  border: 2px dashed #d0d0d0;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f9f9f9;
 }
 
-.cropped-square-preview img {
+.cropped-square-maintained {
+  position: absolute;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.cropped-square-maintained:hover {
+  border-color: #9c27b0;
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.square-image-maintained {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
-  border: 2px solid #1976d2;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.2s;
 }
 
-.cropped-square-preview img:hover {
-  transform: scale(1.1);
-}
-
-.square-label {
+.square-label-maintained {
   position: absolute;
-  bottom: 4px;
+  top: 4px;
   left: 4px;
   background: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 0.7rem;
+  font-weight: bold;
 }
 
-.square-download-btn {
+.square-download-btn-maintained {
   position: absolute;
-  top: 4px;
+  bottom: 4px;
   right: 4px;
 }
 
