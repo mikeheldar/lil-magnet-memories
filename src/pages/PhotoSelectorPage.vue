@@ -97,24 +97,25 @@
               </div>
             </q-card-section>
             <q-card-section class="q-pa-xs" v-else>
-              <div class="text-caption text-truncate text-center q-mb-xs" :title="photo.name">
+              <div class="text-caption text-truncate text-center" :title="photo.name" style="font-size: 0.7rem;">
                 {{ photo.name }}
               </div>
-              <div class="text-caption text-grey-6 text-center q-mb-xs">
+              <div class="text-caption text-grey-6 text-center q-mt-xs" style="font-size: 0.65rem;">
                 Order #{{ photo.orderNumber }}
               </div>
-              <div class="text-caption text-center q-mb-xs">Quantity:</div>
-              <div class="row items-center justify-center q-gutter-xs">
+              <div class="text-caption text-center q-mt-xs" style="font-size: 0.65rem;">Qty:</div>
+              <div class="row items-center justify-center q-gutter-xs q-mt-xs">
                 <q-btn
                   flat
                   dense
                   round
                   icon="remove"
                   size="xs"
+                  style="min-width: 20px; height: 20px;"
                   @click.stop="decrementOrderPhotoQuantityInGrid(photo, index)"
                   :disable="getOrderPhotoQuantityInGrid(photo, index) <= 1"
                 />
-                <div class="text-caption text-weight-bold" style="min-width: 24px; text-align: center;">
+                <div class="text-caption text-weight-bold" style="min-width: 18px; text-align: center; font-size: 0.7rem;">
                   {{ getOrderPhotoQuantityInGrid(photo, index) }}
                 </div>
                 <q-btn
@@ -123,6 +124,7 @@
                   round
                   icon="add"
                   size="xs"
+                  style="min-width: 20px; height: 20px;"
                   @click.stop="incrementOrderPhotoQuantityInGrid(photo, index)"
                 />
               </div>
@@ -162,24 +164,25 @@
               </div>
             </q-card-section>
             <q-card-section class="q-pa-xs" v-else>
-              <div class="text-caption text-truncate text-center q-mb-xs" :title="photo.name">
-                {{ photo.name }}
+              <div class="text-caption text-truncate text-center" :title="uploadedPhotos[index]?.name" style="font-size: 0.7rem;">
+                {{ uploadedPhotos[index]?.name }}
               </div>
-              <div class="text-caption text-grey-6 text-center q-mb-xs">
+              <div class="text-caption text-grey-6 text-center q-mt-xs" style="font-size: 0.65rem;">
                 New Upload
               </div>
-              <div class="text-caption text-center q-mb-xs">Quantity:</div>
-              <div class="row items-center justify-center q-gutter-xs">
+              <div class="text-caption text-center q-mt-xs" style="font-size: 0.65rem;">Qty:</div>
+              <div class="row items-center justify-center q-gutter-xs q-mt-xs">
                 <q-btn
                   flat
                   dense
                   round
                   icon="remove"
                   size="xs"
+                  style="min-width: 20px; height: 20px;"
                   @click.stop="decrementUploadedPhotoQuantityInGrid(index)"
                   :disable="getUploadedPhotoQuantityInGrid(index) <= 1"
                 />
-                <div class="text-caption text-weight-bold" style="min-width: 24px; text-align: center;">
+                <div class="text-caption text-weight-bold" style="min-width: 18px; text-align: center; font-size: 0.7rem;">
                   {{ getUploadedPhotoQuantityInGrid(index) }}
                 </div>
                 <q-btn
@@ -188,6 +191,7 @@
                   round
                   icon="add"
                   size="xs"
+                  style="min-width: 20px; height: 20px;"
                   @click.stop="incrementUploadedPhotoQuantityInGrid(index)"
                 />
               </div>
