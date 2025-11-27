@@ -108,13 +108,13 @@
         >
           <q-card
             :class="{ 'selected-photo': isUploadedPhotoSelected(index) }"
-            class="photo-card cursor-pointer"
-            @click="toggleUploadedPhotoSelection(index)"
+            class="photo-card"
           >
             <q-img
               :src="photo.preview"
               ratio="1"
-              class="photo-thumbnail"
+              class="photo-thumbnail cursor-pointer"
+              @click="toggleUploadedPhotoSelection(index)"
             >
               <div
                 v-if="isUploadedPhotoSelected(index)"
@@ -133,14 +133,44 @@
               </div>
             </q-card-section>
             <q-card-actions class="q-pa-xs">
-              <q-btn
-                flat
-                dense
-                icon="delete"
-                color="negative"
-                size="sm"
-                @click.stop="removeUploadedPhoto(index)"
-              />
+              <div class="row items-center full-width q-gutter-xs">
+                <div class="col-auto">
+                  <q-btn
+                    flat
+                    dense
+                    round
+                    icon="remove"
+                    size="sm"
+                    @click.stop="decrementUploadedPhotoQuantityInGrid(index)"
+                    :disable="getUploadedPhotoQuantityInGrid(index) <= 1"
+                  />
+                </div>
+                <div class="col text-center">
+                  <div class="text-body2 text-weight-bold">
+                    Qty: {{ getUploadedPhotoQuantityInGrid(index) }}
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <q-btn
+                    flat
+                    dense
+                    round
+                    icon="add"
+                    size="sm"
+                    @click.stop="incrementUploadedPhotoQuantityInGrid(index)"
+                  />
+                </div>
+                <div class="col-auto">
+                  <q-btn
+                    flat
+                    dense
+                    icon="delete"
+                    color="negative"
+                    size="sm"
+                    @click.stop="removeUploadedPhoto(index)"
+                  />
+                </div>
+              </div>
             </q-card-actions>
           </q-card>
         </div>
@@ -460,7 +490,9 @@ export default {
       if (existingIndex >= 0) {
         selectedUploadedPhotos.value.splice(existingIndex, 1);
       } else {
-        selectedUploadedPhotos.value.push({ index, quantity: 1 });
+        // Use the quantity from the uploaded photo, or default to 1
+        const quantity = uploadedPhotos.value[index]?.quantity || 1;
+        selectedUploadedPhotos.value.push({ index, quantity });
       }
     };
 
@@ -496,8 +528,36 @@ export default {
           name: file.name,
           preview: URL.createObjectURL(file),
           file: file, // Keep file reference for upload
+          quantity: 1, // Default quantity for each uploaded photo
         };
       });
+    };
+
+    // Quantity management for uploaded photos in the grid
+    const getUploadedPhotoQuantityInGrid = (index) => {
+      return uploadedPhotos.value[index]?.quantity || 1;
+    };
+
+    const incrementUploadedPhotoQuantityInGrid = (index) => {
+      if (uploadedPhotos.value[index]) {
+        uploadedPhotos.value[index].quantity = (uploadedPhotos.value[index].quantity || 1) + 1;
+        // If this photo is already selected, update its quantity in selectedUploadedPhotos
+        const selectedItem = selectedUploadedPhotos.value.find(item => item.index === index);
+        if (selectedItem) {
+          selectedItem.quantity = uploadedPhotos.value[index].quantity;
+        }
+      }
+    };
+
+    const decrementUploadedPhotoQuantityInGrid = (index) => {
+      if (uploadedPhotos.value[index] && uploadedPhotos.value[index].quantity > 1) {
+        uploadedPhotos.value[index].quantity--;
+        // If this photo is already selected, update its quantity in selectedUploadedPhotos
+        const selectedItem = selectedUploadedPhotos.value.find(item => item.index === index);
+        if (selectedItem) {
+          selectedItem.quantity = uploadedPhotos.value[index].quantity;
+        }
+      }
     };
 
     // Remove uploaded photo
@@ -647,6 +707,9 @@ export default {
       getUploadedPhotoQuantity,
       incrementUploadedPhotoQuantity,
       decrementUploadedPhotoQuantity,
+      getUploadedPhotoQuantityInGrid,
+      incrementUploadedPhotoQuantityInGrid,
+      decrementUploadedPhotoQuantityInGrid,
       totalQuantity,
       onFilesSelected,
       removeUploadedPhoto,
