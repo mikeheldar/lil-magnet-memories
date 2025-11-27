@@ -47,12 +47,20 @@
                             :key="photoIndex"
                             class="col-auto"
                           >
-                            <q-img
-                              :src="photo.url || photo.preview"
-                              style="height: 60px; width: 60px"
-                              class="rounded-borders"
-                              @error="handleImageError($event, photo)"
-                            />
+                            <div style="position: relative; height: 60px; width: 60px;">
+                              <q-img
+                                :src="getImageSource(photo)"
+                                style="height: 60px; width: 60px"
+                                class="rounded-borders"
+                                @error="handleImageError($event, photo)"
+                              >
+                                <template v-slot:error>
+                                  <div class="absolute-full flex flex-center bg-grey-3 text-grey-8">
+                                    <q-icon name="broken_image" size="24px" />
+                                  </div>
+                                </template>
+                              </q-img>
+                            </div>
                           </div>
                         </div>
 
@@ -245,15 +253,49 @@ export default {
       router.push('/checkout');
     };
 
+    const getImageSource = (photo) => {
+      // Prioritize Firebase Storage URL, fallback to base64 preview
+      if (photo.url && photo.url.startsWith('http')) {
+        return photo.url;
+      }
+      if (photo.preview) {
+        return photo.preview;
+      }
+      // Return empty string to trigger error handler
+      return '';
+    };
+
     const handleImageError = (event, photo) => {
-      // If url failed and preview exists, try preview
-      if (photo.url && photo.preview && event.target.src !== photo.preview) {
-        console.log('⚠️ Photo URL failed, trying preview:', photo.name);
+      const failedSrc = event.target.src;
+      const photoName = photo.name || 'Unknown';
+      
+      // Log detailed error information
+      console.error('❌ Failed to load photo:', {
+        name: photoName,
+        failedSource: failedSrc,
+        hasUrl: !!photo.url,
+        url: photo.url,
+        hasPreview: !!photo.preview,
+        previewType: photo.preview ? (photo.preview.substring(0, 50) + '...') : 'none',
+        fullPhoto: photo
+      });
+      
+      // If url failed and preview exists (and is different), try preview
+      if (photo.url && photo.preview && failedSrc === photo.url && photo.preview !== photo.url) {
+        console.log('⚠️ Photo URL failed, trying preview:', photoName);
+        console.log('   Failed URL:', photo.url);
+        console.log('   Trying preview (base64):', photo.preview.substring(0, 50) + '...');
         event.target.src = photo.preview;
+      } else if (photo.preview && failedSrc === photo.preview && photo.url && photo.url !== photo.preview) {
+        // If preview failed, try URL
+        console.log('⚠️ Photo preview failed, trying URL:', photoName);
+        console.log('   Failed preview (base64):', photo.preview.substring(0, 50) + '...');
+        console.log('   Trying URL:', photo.url);
+        event.target.src = photo.url;
       } else {
-        console.error('❌ Failed to load photo:', photo.name);
-        // Could show a placeholder image here
-        event.target.style.display = 'none';
+        console.error('❌ All image sources failed for photo:', photoName);
+        console.error('   Final failed source:', failedSrc);
+        // q-img error template will show broken_image icon
       }
     };
 
@@ -265,6 +307,7 @@ export default {
       goToCheckout,
       loading,
       handleImageError,
+      getImageSource,
     };
   },
 };

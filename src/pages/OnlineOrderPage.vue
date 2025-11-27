@@ -656,20 +656,41 @@ export default {
       // Save form data to localStorage for non-authenticated users
       saveFormDataToLocalStorage();
       
-      // Convert files to base64 for persistence across devices
-      const photos = await Promise.all(
-        selectedFiles.value.map(async (file, index) => {
-          const base64 = await fileToBase64(file);
-          return {
-            name: file.name,
-            preview: base64, // Store base64 instead of blob URL
-            url: base64, // Also store as url for compatibility
-            quantity: fileQuantities.value[index],
-          };
-        })
-      );
+      // Upload photos to Firebase Storage first to get persistent URLs
+      // This ensures images work across devices (base64 can be too large for Firestore)
+      submitting.value = true;
+      try {
+        console.log('📤 Uploading photos to Firebase Storage for cart...');
+        const uploadedPhotos = await firebaseService.uploadPhotos(selectedFiles.value);
+        console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
+        
+        // Convert files to base64 for immediate preview, but prioritize Firebase URLs
+        const photos = await Promise.all(
+          uploadedPhotos.map(async (uploadedPhoto, index) => {
+            const file = selectedFiles.value[index];
+            let base64Preview = null;
+            if (file) {
+              try {
+                base64Preview = await fileToBase64(file);
+              } catch (error) {
+                console.warn('Failed to convert file to base64 for preview:', error);
+              }
+            }
+            return {
+              name: uploadedPhoto.name,
+              url: uploadedPhoto.url, // Persistent Firebase Storage URL (primary)
+              preview: base64Preview || uploadedPhoto.url, // Base64 for immediate display, fallback to URL
+              fileName: uploadedPhoto.fileName,
+              size: uploadedPhoto.size,
+              type: uploadedPhoto.type,
+              quantity: fileQuantities.value[index],
+            };
+          })
+        );
 
-      addCustomUploadToCart({
+        submitting.value = false;
+
+        addCustomUploadToCart({
         productName:
           selectedProduct.value?.description || 'Custom Photo Magnets',
         photos: photos,
@@ -687,29 +708,39 @@ export default {
         },
       });
 
-      // Mark as added to cart
-      hasAddedToCart.value = true;
+        // Mark as added to cart
+        hasAddedToCart.value = true;
 
-      // Show success notification and redirect to cart
-      safeNotify({
-        type: 'positive',
-        message: 'Added to cart!',
-        caption: `${totalMagnets.value} magnets added to your cart`,
-        position: 'top',
-        timeout: 3000,
-      });
-
-      // Navigate to cart
-      try {
-        await router.push('/cart');
-      } catch (error) {
-        console.error('Failed to navigate to cart:', error);
+        // Show success notification and redirect to cart
         safeNotify({
-          type: 'warning',
-          message: 'Added to cart, but navigation failed',
-          caption: 'Please open the cart manually.',
+          type: 'positive',
+          message: 'Added to cart!',
+          caption: `${totalMagnets.value} magnets added to your cart`,
           position: 'top',
-          timeout: 4000,
+          timeout: 3000,
+        });
+
+        // Navigate to cart
+        try {
+          await router.push('/cart');
+        } catch (error) {
+          console.error('Failed to navigate to cart:', error);
+          safeNotify({
+            type: 'warning',
+            message: 'Added to cart, but navigation failed',
+            caption: 'Please open the cart manually.',
+            position: 'top',
+            timeout: 4000,
+          });
+        }
+      } catch (error) {
+        console.error('❌ Error uploading photos for cart:', error);
+        submitting.value = false;
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to upload photos',
+          caption: error.message || 'Please try again',
+          position: 'top',
         });
       }
     };
