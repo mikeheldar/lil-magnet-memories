@@ -462,10 +462,10 @@ export default {
 
     return {
       loading,
-      activeTab,
       searchQuery,
       filteredPhotos,
-      selectedPhotos,
+      selectedOrderPhotos,
+      selectedUploadedPhotos,
       uploadFiles,
       uploadedPhotos,
       sending,
