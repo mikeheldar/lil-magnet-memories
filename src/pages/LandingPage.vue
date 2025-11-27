@@ -183,22 +183,93 @@
 
         <!-- Custom Products List -->
         <div v-if="customProducts.length > 0" class="q-mb-xl">
-          <div
-            v-for="(productsInCollection, collectionName) in customProductsByCollection"
-            :key="collectionName"
-            class="q-mb-xl"
-          >
-            <div v-if="Object.keys(customProductsByCollection).length > 1" class="collection-header text-center q-mb-lg">
-              <div class="text-h5 text-weight-bold text-primary">
-                {{ collectionName }}
+          <!-- Multiple collections: show in collapsible groups -->
+          <template v-if="Object.keys(customProductsByCollection).length > 1">
+            <q-expansion-item
+              v-for="(productsInCollection, collectionName) in customProductsByCollection"
+              :key="collectionName"
+              :label="collectionName"
+              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              default-opened
+              class="collection-group q-mb-md"
+            >
+              <div class="q-col-gutter-md q-pt-md">
+                <div
+                  v-for="product in productsInCollection"
+                  :key="product.id"
+                  class="q-mb-md"
+                >
+                  <q-card class="product-card-row">
+                    <q-card-section class="row items-center q-gutter-md">
+                      <!-- Product Image (Left Side) -->
+                      <div class="col-auto">
+                        <div
+                          v-if="product.imageUrl"
+                          class="product-image-wrapper-small"
+                        >
+                          <img
+                            :src="product.imageUrl"
+                            :alt="product.description"
+                            class="product-image-small"
+                          />
+                        </div>
+                        <div v-else class="product-image-placeholder-small">
+                          <q-icon name="image" size="48px" color="grey-4" />
+                        </div>
+                      </div>
+
+                      <!-- Product Info (Right Side) -->
+                      <div class="col">
+                        <div class="text-h6 q-mb-sm">
+                          {{ product.description }}
+                        </div>
+
+                        <div
+                          v-if="product.detailedDescription"
+                          class="text-body2 text-grey-7 q-mb-sm"
+                        >
+                          {{ product.detailedDescription }}
+                        </div>
+
+                        <div class="product-pricing-inline q-mb-md">
+                          <div class="text-caption text-grey-8 q-mb-xs">
+                            Pricing:
+                          </div>
+                          <div
+                            v-for="(price, qty) in product.pricing"
+                            :key="qty"
+                            class="text-body2 q-mb-xs"
+                          >
+                            <strong>{{ qty }}x</strong> for
+                            <strong class="text-primary"
+                              >${{ price.toFixed(2) }}</strong
+                            >
+                          </div>
+                        </div>
+
+                        <q-btn
+                          color="primary"
+                          label="Start Creating Magnets"
+                          icon="camera_alt"
+                          @click="() => goToUpload(product)"
+                        />
+                      </div>
+                    </q-card-section>
+                  </q-card>
+                </div>
               </div>
-            </div>
-            <div class="q-col-gutter-md">
-              <div
-                v-for="product in productsInCollection"
-                :key="product.id"
-                class="q-mb-md"
-              >
+            </q-expansion-item>
+          </template>
+          <!-- Single collection: show products directly -->
+          <div
+            v-else
+            class="q-col-gutter-md"
+          >
+            <div
+              v-for="product in customProducts"
+              :key="product.id"
+              class="q-mb-md"
+            >
               <q-card class="product-card-row">
                 <q-card-section class="row items-center q-gutter-md">
                   <!-- Product Image (Left Side) -->
@@ -257,7 +328,6 @@
                 </q-card-section>
               </q-card>
             </div>
-            </div>
           </div>
         </div>
       </div>
@@ -272,22 +342,22 @@
         </div>
 
         <div v-if="designerProducts.length > 0" class="q-mb-xl">
-          <div
-            v-for="(productsInCollection, collectionName) in designerProductsByCollection"
-            :key="collectionName"
-            class="q-mb-xl"
-          >
-            <div v-if="Object.keys(designerProductsByCollection).length > 1" class="collection-header text-center q-mb-lg">
-              <div class="text-h5 text-weight-bold text-primary">
-                {{ collectionName }}
-              </div>
-            </div>
-            <div class="row q-col-gutter-md">
-              <div
-                v-for="product in productsInCollection"
-                :key="product.id"
-                class="col-12 col-md-6 col-lg-4"
-              >
+          <!-- Multiple collections: show in collapsible groups -->
+          <template v-if="Object.keys(designerProductsByCollection).length > 1">
+            <q-expansion-item
+              v-for="(productsInCollection, collectionName) in designerProductsByCollection"
+              :key="collectionName"
+              :label="collectionName"
+              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              default-opened
+              class="collection-group q-mb-md"
+            >
+              <div class="row q-col-gutter-md q-pt-md">
+                <div
+                  v-for="product in productsInCollection"
+                  :key="product.id"
+                  class="col-12 col-md-6 col-lg-4"
+                >
               <q-card class="product-card">
                 <q-card-section class="text-center">
                   <div v-if="product.imageUrl" class="product-image-wrapper">
@@ -340,6 +410,69 @@
               </q-card>
             </div>
             </div>
+          </q-expansion-item>
+          </template>
+          <!-- Single collection: show products directly -->
+          <div
+            v-else
+            class="row q-col-gutter-md"
+          >
+            <div
+              v-for="product in designerProducts"
+              :key="product.id"
+              class="col-12 col-md-6 col-lg-4"
+            >
+              <q-card class="product-card">
+                <q-card-section class="text-center">
+                  <div v-if="product.imageUrl" class="product-image-wrapper">
+                    <img
+                      :src="product.imageUrl"
+                      :alt="product.description"
+                      class="product-image"
+                    />
+                  </div>
+                  <div v-else class="product-image-placeholder">
+                    <q-icon name="image" size="64px" color="grey-4" />
+                  </div>
+                  <div class="text-h6 q-mt-md q-mb-sm">
+                    {{ product.description }}
+                  </div>
+                </q-card-section>
+
+                <q-card-section
+                  v-if="product.detailedDescription"
+                  class="product-description"
+                >
+                  <div class="text-body2 text-grey-7">
+                    {{ product.detailedDescription }}
+                  </div>
+                </q-card-section>
+
+                <q-card-section class="product-pricing">
+                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
+                  <div
+                    v-for="(price, qty) in product.pricing"
+                    :key="qty"
+                    class="text-body2 q-mb-xs"
+                  >
+                    <strong>{{ qty }}x</strong> for
+                    <strong class="text-primary"
+                      >${{ price.toFixed(2) }}</strong
+                    >
+                  </div>
+                </q-card-section>
+
+                <q-card-actions class="q-pa-md">
+                  <q-btn
+                    color="secondary"
+                    label="Add to Cart"
+                    icon="add_shopping_cart"
+                    class="full-width"
+                    @click="addProductToCart(product)"
+                  />
+                </q-card-actions>
+              </q-card>
+            </div>
           </div>
         </div>
         <div v-else class="text-center text-grey-6 q-mb-xl">
@@ -357,22 +490,22 @@
         </div>
 
         <div v-if="specialtyProducts.length > 0" class="q-mb-xl">
-          <div
-            v-for="(productsInCollection, collectionName) in specialtyProductsByCollection"
-            :key="collectionName"
-            class="q-mb-xl"
-          >
-            <div v-if="Object.keys(specialtyProductsByCollection).length > 1" class="collection-header text-center q-mb-lg">
-              <div class="text-h5 text-weight-bold text-primary">
-                {{ collectionName }}
-              </div>
-            </div>
-            <div class="row q-col-gutter-md">
-              <div
-                v-for="product in productsInCollection"
-                :key="product.id"
-                class="col-12 col-md-6 col-lg-4"
-              >
+          <!-- Multiple collections: show in collapsible groups -->
+          <template v-if="Object.keys(specialtyProductsByCollection).length > 1">
+            <q-expansion-item
+              v-for="(productsInCollection, collectionName) in specialtyProductsByCollection"
+              :key="collectionName"
+              :label="collectionName"
+              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              default-opened
+              class="collection-group q-mb-md"
+            >
+              <div class="row q-col-gutter-md q-pt-md">
+                <div
+                  v-for="product in productsInCollection"
+                  :key="product.id"
+                  class="col-12 col-md-6 col-lg-4"
+                >
               <q-card class="product-card">
                 <q-card-section class="text-center">
                   <div v-if="product.imageUrl" class="product-image-wrapper">
@@ -424,6 +557,69 @@
                 </q-card-actions>
               </q-card>
             </div>
+            </div>
+          </q-expansion-item>
+          </template>
+          <!-- Single collection: show products directly -->
+          <div
+            v-else
+            class="row q-col-gutter-md"
+          >
+            <div
+              v-for="product in specialtyProducts"
+              :key="product.id"
+              class="col-12 col-md-6 col-lg-4"
+            >
+              <q-card class="product-card">
+                <q-card-section class="text-center">
+                  <div v-if="product.imageUrl" class="product-image-wrapper">
+                    <img
+                      :src="product.imageUrl"
+                      :alt="product.description"
+                      class="product-image"
+                    />
+                  </div>
+                  <div v-else class="product-image-placeholder">
+                    <q-icon name="image" size="64px" color="grey-4" />
+                  </div>
+                  <div class="text-h6 q-mt-md q-mb-sm">
+                    {{ product.description }}
+                  </div>
+                </q-card-section>
+
+                <q-card-section
+                  v-if="product.detailedDescription"
+                  class="product-description"
+                >
+                  <div class="text-body2 text-grey-7">
+                    {{ product.detailedDescription }}
+                  </div>
+                </q-card-section>
+
+                <q-card-section class="product-pricing">
+                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
+                  <div
+                    v-for="(price, qty) in product.pricing"
+                    :key="qty"
+                    class="text-body2 q-mb-xs"
+                  >
+                    <strong>{{ qty }}x</strong> for
+                    <strong class="text-primary"
+                      >${{ price.toFixed(2) }}</strong
+                    >
+                  </div>
+                </q-card-section>
+
+                <q-card-actions class="q-pa-md">
+                  <q-btn
+                    color="primary"
+                    label="Add to Cart"
+                    icon="add_shopping_cart"
+                    class="full-width"
+                    @click="addProductToCart(product)"
+                  />
+                </q-card-actions>
+              </q-card>
             </div>
           </div>
         </div>
@@ -1272,6 +1468,12 @@ export default {
   margin-bottom: 24px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(102, 126, 234, 0.15);
+}
+
+.collection-group {
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 8px;
 }
 
 .product-card {

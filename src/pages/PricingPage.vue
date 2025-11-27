@@ -27,92 +27,106 @@
             </div>
           </q-card-section>
 
-          <q-list separator>
-            <q-item
-              v-for="(product, index) in filteredProducts"
-              :key="product.id || index"
-              class="product-item"
+          <div v-if="Object.keys(productsByCollection).length > 0">
+            <q-expansion-item
+              v-for="(productsInCollection, collectionName) in productsByCollection"
+              :key="collectionName"
+              :label="collectionName"
+              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              default-opened
+              class="collection-group q-mb-sm"
             >
-              <q-item-section avatar>
-                <q-avatar 
-                  v-if="product.imageUrl" 
-                  size="80px"
-                  square
+              <q-list separator>
+                <q-item
+                  v-for="product in productsInCollection"
+                  :key="product.id"
+                  class="product-item"
                 >
-                  <img 
-                    :src="product.imageUrl" 
-                    :alt="product.description"
-                    style="object-fit: cover; width: 100%; height: 100%;"
-                  />
-                </q-avatar>
-                <q-avatar 
-                  v-else 
-                  size="80px"
-                  square
-                  color="grey-3"
-                  icon="image"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label class="text-h6">
-                  {{ product.description }}
-                  <q-chip
-                    v-if="product.isTesting"
-                    color="orange"
-                    text-color="white"
-                    size="sm"
-                    class="q-ml-sm"
-                  >
-                    Testing Only
-                  </q-chip>
-                  <q-chip
-                    v-if="product.isDefault"
-                    color="green"
-                    text-color="white"
-                    size="sm"
-                    class="q-ml-sm"
-                    icon="star"
-                  >
-                    Default
-                  </q-chip>
-                </q-item-label>
-                <q-item-label caption>
-                  <div class="q-mb-xs">
-                    <q-chip
-                      :color="getCategoryColor(product.category)"
-                      text-color="white"
-                      size="sm"
+                  <q-item-section avatar>
+                    <q-avatar 
+                      v-if="product.imageUrl" 
+                      size="80px"
+                      square
                     >
-                      {{ getCategoryLabel(product.category) }}
-                    </q-chip>
-                  </div>
-                  <div
-                    v-for="(price, qty) in product.pricing"
-                    :key="qty"
-                    class="price-info"
-                  >
-                    {{ qty }} for ${{ price.toFixed(2) }}
-                  </div>
-                </q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  flat
-                  round
-                  icon="edit"
-                  color="primary"
-                  @click="editProduct(index)"
-                />
-                <q-btn
-                  flat
-                  round
-                  icon="delete"
-                  color="negative"
-                  @click="confirmDelete(index)"
-                />
-              </q-item-section>
-            </q-item>
-          </q-list>
+                      <img 
+                        :src="product.imageUrl" 
+                        :alt="product.description"
+                        style="object-fit: cover; width: 100%; height: 100%;"
+                      />
+                    </q-avatar>
+                    <q-avatar 
+                      v-else 
+                      size="80px"
+                      square
+                      color="grey-3"
+                      icon="image"
+                    />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-h6">
+                      {{ product.description }}
+                      <q-chip
+                        v-if="product.isTesting"
+                        color="orange"
+                        text-color="white"
+                        size="sm"
+                        class="q-ml-sm"
+                      >
+                        Testing Only
+                      </q-chip>
+                      <q-chip
+                        v-if="product.isDefault"
+                        color="green"
+                        text-color="white"
+                        size="sm"
+                        class="q-ml-sm"
+                        icon="star"
+                      >
+                        Default
+                      </q-chip>
+                    </q-item-label>
+                    <q-item-label caption>
+                      <div class="q-mb-xs">
+                        <q-chip
+                          :color="getCategoryColor(product.category)"
+                          text-color="white"
+                          size="sm"
+                        >
+                          {{ getCategoryLabel(product.category) }}
+                        </q-chip>
+                      </div>
+                      <div
+                        v-for="(price, qty) in product.pricing"
+                        :key="qty"
+                        class="price-info"
+                      >
+                        {{ qty }} for ${{ price.toFixed(2) }}
+                      </div>
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-btn
+                      flat
+                      round
+                      icon="edit"
+                      color="primary"
+                      @click="editProduct(product.originalIndex)"
+                    />
+                    <q-btn
+                      flat
+                      round
+                      icon="delete"
+                      color="negative"
+                      @click="confirmDelete(product.originalIndex)"
+                    />
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-expansion-item>
+          </div>
+          <div v-else class="text-center q-pa-lg text-grey-6">
+            No products in this category yet.
+          </div>
         </q-card>
 
         <q-card class="q-mt-md">
@@ -729,6 +743,31 @@ export default {
     // Filter products by active category
     const filteredProducts = computed(() => {
       return products.value.filter(product => product.category === activeCategory.value);
+    });
+
+    // Group filtered products by collection
+    const productsByCollection = computed(() => {
+      const grouped = {};
+      filteredProducts.value.forEach((product) => {
+        const collection = product.collection || 'Uncategorized';
+        if (!grouped[collection]) {
+          grouped[collection] = [];
+        }
+        // Store the original index for editing/deleting
+        const originalIndex = products.value.findIndex(p => p.id === product.id);
+        grouped[collection].push({ ...product, originalIndex });
+      });
+      // Sort collections alphabetically, with "Uncategorized" last
+      const sorted = Object.keys(grouped).sort((a, b) => {
+        if (a === 'Uncategorized') return 1;
+        if (b === 'Uncategorized') return -1;
+        return a.localeCompare(b);
+      });
+      const result = {};
+      sorted.forEach(key => {
+        result[key] = grouped[key];
+      });
+      return result;
     });
 
     // Extract unique collections from all products
@@ -1499,6 +1538,7 @@ export default {
       resetShippingOptions,
       activeCategory,
       filteredProducts,
+      productsByCollection,
       getCategoryLabel,
       getCategoryColor,
       collectionOptions,
