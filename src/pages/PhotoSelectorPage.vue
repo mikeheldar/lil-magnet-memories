@@ -187,60 +187,53 @@
       <!-- Selected Photos Summary -->
       <q-card v-if="selectedPhotosCount > 0" class="q-mt-lg sticky-bottom">
         <q-card-section>
-          <div class="text-h6 q-mb-md">Selected Photos ({{ selectedPhotosCount }})</div>
+          <div class="text-h6 q-mb-md">Selected Photos ({{ selectedPhotosCount }}):</div>
           
           <!-- Selected Photos List with Quantities -->
-          <q-scroll-area style="max-height: 300px;" class="q-mb-md">
-            <div class="row q-col-gutter-sm">
+          <q-scroll-area style="max-height: 400px;" class="q-mb-md">
+            <div class="row q-col-gutter-md">
               <!-- Selected Order Photos -->
               <div
                 v-for="(selected, idx) in selectedOrderPhotos"
                 :key="`order-${selected.orderId}-${selected.index}`"
-                class="col-12 col-sm-6 col-md-4"
+                class="col-12 col-sm-6 col-md-4 col-lg-3"
               >
                 <q-card class="selected-photo-item">
+                  <q-img
+                    :src="getPhotoUrl(selected.photo)"
+                    ratio="1"
+                    class="selected-photo-image"
+                    fit="cover"
+                  />
                   <q-card-section class="q-pa-sm">
-                    <div class="row items-center q-col-gutter-sm">
-                      <div class="col-auto">
-                        <q-img
-                          :src="getPhotoUrl(selected.photo)"
-                          style="width: 60px; height: 60px;"
-                          class="rounded-borders"
-                          fit="cover"
-                        />
+                    <div class="text-caption text-truncate text-center q-mb-xs" :title="selected.photo.name">
+                      {{ selected.photo.name }}
+                    </div>
+                    <div class="text-caption text-grey-6 text-center q-mb-sm">
+                      Order #{{ selected.orderNumber }}
+                    </div>
+                    <div class="text-caption text-center q-mb-xs">Quantity:</div>
+                    <div class="row items-center justify-center q-gutter-xs">
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="remove"
+                        size="sm"
+                        @click="decrementOrderPhotoQuantity(idx)"
+                        :disable="selected.quantity <= 1"
+                      />
+                      <div class="text-h6 text-weight-bold" style="min-width: 40px; text-align: center;">
+                        {{ selected.quantity }}
                       </div>
-                      <div class="col">
-                        <div class="text-caption text-truncate" :title="selected.photo.name">
-                          {{ selected.photo.name }}
-                        </div>
-                        <div class="text-caption text-grey-6">
-                          Order #{{ selected.orderNumber }}
-                        </div>
-                      </div>
-                      <div class="col-auto">
-                        <div class="row items-center no-wrap q-gutter-xs">
-                          <q-btn
-                            flat
-                            dense
-                            round
-                            icon="remove"
-                            size="sm"
-                            @click="decrementOrderPhotoQuantity(idx)"
-                            :disable="selected.quantity <= 1"
-                          />
-                          <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
-                            {{ selected.quantity }}
-                          </div>
-                          <q-btn
-                            flat
-                            dense
-                            round
-                            icon="add"
-                            size="sm"
-                            @click="incrementOrderPhotoQuantity(idx)"
-                          />
-                        </div>
-                      </div>
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="add"
+                        size="sm"
+                        @click="incrementOrderPhotoQuantity(idx)"
+                      />
                     </div>
                   </q-card-section>
                 </q-card>
@@ -250,51 +243,44 @@
               <div
                 v-for="item in selectedUploadedPhotos"
                 :key="`upload-${item.index}`"
-                class="col-12 col-sm-6 col-md-4"
+                class="col-12 col-sm-6 col-md-4 col-lg-3"
               >
                 <q-card class="selected-photo-item">
+                  <q-img
+                    :src="uploadedPhotos[item.index]?.preview"
+                    ratio="1"
+                    class="selected-photo-image"
+                    fit="cover"
+                  />
                   <q-card-section class="q-pa-sm">
-                    <div class="row items-center q-col-gutter-sm">
-                      <div class="col-auto">
-                        <q-img
-                          :src="uploadedPhotos[item.index]?.preview"
-                          style="width: 60px; height: 60px;"
-                          class="rounded-borders"
-                          fit="cover"
-                        />
+                    <div class="text-caption text-truncate text-center q-mb-xs" :title="uploadedPhotos[item.index]?.name">
+                      {{ uploadedPhotos[item.index]?.name }}
+                    </div>
+                    <div class="text-caption text-grey-6 text-center q-mb-sm">
+                      New Upload
+                    </div>
+                    <div class="text-caption text-center q-mb-xs">Quantity:</div>
+                    <div class="row items-center justify-center q-gutter-xs">
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="remove"
+                        size="sm"
+                        @click="decrementUploadedPhotoQuantity(item.index)"
+                        :disable="item.quantity <= 1"
+                      />
+                      <div class="text-h6 text-weight-bold" style="min-width: 40px; text-align: center;">
+                        {{ item.quantity }}
                       </div>
-                      <div class="col">
-                        <div class="text-caption text-truncate" :title="uploadedPhotos[item.index]?.name">
-                          {{ uploadedPhotos[item.index]?.name }}
-                        </div>
-                        <div class="text-caption text-grey-6">
-                          New Upload
-                        </div>
-                      </div>
-                      <div class="col-auto">
-                        <div class="row items-center no-wrap q-gutter-xs">
-                          <q-btn
-                            flat
-                            dense
-                            round
-                            icon="remove"
-                            size="sm"
-                            @click="decrementUploadedPhotoQuantity(item.index)"
-                            :disable="item.quantity <= 1"
-                          />
-                          <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
-                            {{ item.quantity }}
-                          </div>
-                          <q-btn
-                            flat
-                            dense
-                            round
-                            icon="add"
-                            size="sm"
-                            @click="incrementUploadedPhotoQuantity(item.index)"
-                          />
-                        </div>
-                      </div>
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="add"
+                        size="sm"
+                        @click="incrementUploadedPhotoQuantity(item.index)"
+                      />
                     </div>
                   </q-card-section>
                 </q-card>
@@ -302,7 +288,7 @@
             </div>
           </q-scroll-area>
 
-          <div class="row items-center justify-between">
+          <div class="row items-center justify-between q-pt-md" style="border-top: 1px solid rgba(0,0,0,0.12);">
             <div class="col">
               <div class="text-h6">
                 Total: {{ totalQuantity }} photo{{ totalQuantity !== 1 ? 's' : '' }}
