@@ -492,7 +492,7 @@ export default {
           reject(error);
         };
 
-        img.src = selectedPhoto.value.url;
+        img.src = getPhotoUrl(selectedPhoto.value);
       });
     };
 
