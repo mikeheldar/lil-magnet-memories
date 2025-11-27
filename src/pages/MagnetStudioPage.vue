@@ -559,11 +559,13 @@ export default {
         return {};
       }
 
-      // Get the actual image dimensions
+      // Get the actual image dimensions (displayed size, not natural)
       const img = selectedImage.value;
-      const imgWidth = img.naturalWidth || img.width || 1;
-      const imgHeight = img.naturalHeight || img.height || 1;
-      const imgAspectRatio = imgWidth / imgHeight;
+      const imgDisplayWidth = img.offsetWidth || img.width || 1;
+      const imgDisplayHeight = img.offsetHeight || img.height || 1;
+      const imgNaturalWidth = img.naturalWidth || imgDisplayWidth;
+      const imgNaturalHeight = img.naturalHeight || imgDisplayHeight;
+      const imgAspectRatio = imgNaturalWidth / imgNaturalHeight;
 
       // Calculate the aspect ratio of the grid (cols/rows)
       const gridAspectRatio = gridCols.value / gridRows.value;
@@ -576,25 +578,40 @@ export default {
       if (imgAspectRatio > gridAspectRatio) {
         // Image is wider than grid aspect ratio
         // Height is the limiting factor - use image height
-        cellSize = imgHeight / gridRows.value;
-        gridHeight = imgHeight;
+        cellSize = imgNaturalHeight / gridRows.value;
+        gridHeight = imgNaturalHeight;
         gridWidth = cellSize * gridCols.value;
       } else {
         // Image is taller than grid aspect ratio
         // Width is the limiting factor - use image width
-        cellSize = imgWidth / gridCols.value;
-        gridWidth = imgWidth;
+        cellSize = imgNaturalWidth / gridCols.value;
+        gridWidth = imgNaturalWidth;
         gridHeight = cellSize * gridRows.value;
       }
 
-      // Convert to percentage of image size
-      const widthPercent = (gridWidth / imgWidth) * 100;
-      const heightPercent = (gridHeight / imgHeight) * 100;
+      // Convert to percentage of image size (based on displayed size)
+      const widthPercent = (gridWidth / imgNaturalWidth) * 100;
+      const heightPercent = (gridHeight / imgNaturalHeight) * 100;
+      
+      // Calculate scaled dimensions
+      const scaledWidth = (imgDisplayWidth * widthPercent / 100) * gridScale.value;
+      const scaledHeight = (imgDisplayHeight * heightPercent / 100) * gridScale.value;
+      
+      // Constrain grid position to keep it within image bounds
+      const maxX = (imgDisplayWidth - scaledWidth) / 2;
+      const maxY = (imgDisplayHeight - scaledHeight) / 2;
+      const constrainedX = Math.max(-maxX, Math.min(maxX, gridPosition.value.x));
+      const constrainedY = Math.max(-maxY, Math.min(maxY, gridPosition.value.y));
+      
+      // Update position if it was constrained
+      if (constrainedX !== gridPosition.value.x || constrainedY !== gridPosition.value.y) {
+        gridPosition.value = { x: constrainedX, y: constrainedY };
+      }
 
       return {
         width: `${widthPercent}%`,
         height: `${heightPercent}%`,
-        transform: `translate(-50%, -50%) translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${gridScale.value})`,
+        transform: `translate(-50%, -50%) translate(${constrainedX}px, ${constrainedY}px) scale(${gridScale.value})`,
         transformOrigin: 'center center',
       };
     });

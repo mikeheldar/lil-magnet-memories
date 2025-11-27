@@ -5,7 +5,12 @@
       <div class="col-12 col-md-8">
         <q-card>
           <q-card-section>
-            <div class="text-h5 q-mb-md">Product Pricing</div>
+            <div class="text-h5 q-mb-md">Product Management</div>
+            <q-tabs v-model="activeCategory" class="text-primary q-mb-md">
+              <q-tab name="custom" label="Custom Photo Products" />
+              <q-tab name="designer" label="Designer Magnets" />
+              <q-tab name="specialty" label="Specialty Products" />
+            </q-tabs>
             <q-btn
               color="primary"
               label="Add New Product"
@@ -17,7 +22,7 @@
 
           <q-list separator>
             <q-item
-              v-for="(product, index) in products"
+              v-for="(product, index) in filteredProducts"
               :key="product.id || index"
               class="product-item"
             >
@@ -67,11 +72,11 @@
                 <q-item-label caption>
                   <div class="q-mb-xs">
                     <q-chip
-                      :color="product.category === 'designer' ? 'purple' : 'primary'"
+                      :color="getCategoryColor(product.category)"
                       text-color="white"
                       size="sm"
                     >
-                      {{ product.category === 'designer' ? 'Designer Products' : 'Custom Products' }}
+                      {{ getCategoryLabel(product.category) }}
                     </q-chip>
                   </div>
                   <div
@@ -237,8 +242,9 @@
             <q-select
               v-model="editingProduct.category"
               :options="[
-                { label: 'Custom Products', value: 'custom' },
-                { label: 'Designer Products', value: 'designer' }
+                { label: 'Custom Photo Products', value: 'custom' },
+                { label: 'Designer Magnets', value: 'designer' },
+                { label: 'Specialty Products', value: 'specialty' }
               ]"
               label="Category *"
               filled
@@ -783,7 +789,7 @@ export default {
         description: '',
         detailedDescription: '',
         imageUrl: '',
-        category: 'custom',
+        category: activeCategory.value,
         isTesting: false,
         isDefault: false,
         pricing: {
@@ -1033,6 +1039,10 @@ export default {
       confirmShippingDelete,
       deleteShippingOption,
       resetShippingOptions,
+      activeCategory,
+      filteredProducts,
+      getCategoryLabel,
+      getCategoryColor,
     };
   },
 };
