@@ -361,7 +361,18 @@
                 :key="index"
                 class="col-6 col-sm-4 col-md-3 col-lg-2"
               >
-                <q-img :src="photo.url" ratio="1" class="rounded-borders" />
+                <q-img
+                  :src="getPhotoUrl(photo)"
+                  ratio="1"
+                  class="rounded-borders"
+                  @error="handlePhotoError($event, photo)"
+                >
+                  <template v-slot:error>
+                    <div class="absolute-full flex flex-center bg-grey-3 text-grey-8">
+                      <q-icon name="broken_image" size="24px" />
+                    </div>
+                  </template>
+                </q-img>
                 <div class="text-caption text-center q-mt-xs">
                   {{ photo.name }}
                 </div>
@@ -395,10 +406,17 @@
                     class="col-6 col-sm-4 col-md-3 col-lg-2"
                   >
                     <q-img
-                      :src="photo.url || photo.preview"
+                      :src="getPhotoUrl(photo)"
                       ratio="1"
                       class="rounded-borders"
-                    />
+                      @error="handlePhotoError($event, photo)"
+                    >
+                      <template v-slot:error>
+                        <div class="absolute-full flex flex-center bg-grey-3 text-grey-8">
+                          <q-icon name="broken_image" size="24px" />
+                        </div>
+                      </template>
+                    </q-img>
                     <div class="text-caption text-center q-mt-xs">
                       {{ photo.name }}
                     </div>
@@ -904,6 +922,63 @@ export default {
       });
     };
 
+    // Get photo URL, filtering out blob URLs (which don't persist)
+    const getPhotoUrl = (photo) => {
+      if (!photo) return '';
+      
+      // Filter out blob URLs - they're temporary and won't work
+      if (photo.url && photo.url.startsWith('blob:')) {
+        console.warn('⚠️ Photo has blob URL (temporary, will not work):', {
+          name: photo.name,
+          blobUrl: photo.url,
+          hasPreview: !!photo.preview
+        });
+        // Try preview if available
+        if (photo.preview && !photo.preview.startsWith('blob:')) {
+          return photo.preview;
+        }
+        // Return empty to trigger error handler
+        return '';
+      }
+      
+      // Prefer Firebase Storage URL, fallback to preview
+      if (photo.url && photo.url.startsWith('http')) {
+        return photo.url;
+      }
+      if (photo.preview && !photo.preview.startsWith('blob:')) {
+        return photo.preview;
+      }
+      
+      return photo.url || photo.preview || '';
+    };
+
+    // Handle photo loading errors
+    const handlePhotoError = (event, photo) => {
+      const failedSrc = event.target.src;
+      const photoName = photo?.name || 'Unknown';
+      
+      console.error('❌ Failed to load photo in OrderList:', {
+        name: photoName,
+        failedSource: failedSrc,
+        photo: photo,
+        isBlobUrl: failedSrc.startsWith('blob:'),
+        hasUrl: !!photo?.url,
+        url: photo?.url,
+        hasPreview: !!photo?.preview,
+        previewType: photo?.preview ? (photo.preview.substring(0, 50) + '...') : 'none'
+      });
+      
+      // Try fallback if available
+      if (photo?.url && photo.url !== failedSrc && !photo.url.startsWith('blob:')) {
+        console.log('⚠️ Trying fallback URL for:', photoName);
+        event.target.src = photo.url;
+      } else if (photo?.preview && photo.preview !== failedSrc && !photo.preview.startsWith('blob:')) {
+        console.log('⚠️ Trying fallback preview for:', photoName);
+        event.target.src = photo.preview;
+      }
+      // q-img error template will show broken_image icon
+    };
+
     onMounted(() => {
       setupRealtimeListener();
     });
@@ -940,6 +1015,8 @@ export default {
       getShippingStatusColor,
       getShippingStatusLabel,
       updateShippingStatus,
+      getPhotoUrl,
+      handlePhotoError,
     };
   },
 };
