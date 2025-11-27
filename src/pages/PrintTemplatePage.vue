@@ -111,6 +111,59 @@
               />
             </div>
           </div>
+          <!-- Color Controls -->
+          <div class="controls-group q-mt-md" style="border-top: 1px solid #d0d0d0; padding-top: 0.75rem;">
+            <div class="controls-header" style="font-size: 0.9rem;">Color Adjustments</div>
+            <div class="q-mt-sm">
+              <div class="text-caption q-mb-xs">Brightness</div>
+              <q-slider
+                v-model="getColorSettings().brightness"
+                :min="0"
+                :max="200"
+                :step="1"
+                :label-value="`${getColorSettings().brightness}%`"
+                @update:model-value="updateColorSettings"
+                :disable="!selectedPhotoKey"
+                dense
+              />
+            </div>
+            <div class="q-mt-sm">
+              <div class="text-caption q-mb-xs">Contrast</div>
+              <q-slider
+                v-model="getColorSettings().contrast"
+                :min="0"
+                :max="200"
+                :step="1"
+                :label-value="`${getColorSettings().contrast}%`"
+                @update:model-value="updateColorSettings"
+                :disable="!selectedPhotoKey"
+                dense
+              />
+            </div>
+            <div class="q-mt-sm">
+              <div class="text-caption q-mb-xs">Saturation</div>
+              <q-slider
+                v-model="getColorSettings().saturation"
+                :min="0"
+                :max="200"
+                :step="1"
+                :label-value="`${getColorSettings().saturation}%`"
+                @update:model-value="updateColorSettings"
+                :disable="!selectedPhotoKey"
+                dense
+              />
+            </div>
+            <div class="controls-row q-mt-sm">
+              <q-btn
+                dense
+                color="primary"
+                icon="restart_alt"
+                label="Reset Color"
+                @click="resetColorSettings"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
+          </div>
         </div>
         <div class="print-page">
           <div class="print-grid">
@@ -205,6 +258,9 @@ export default {
     const dragStartY = ref(0);
     const dragStartTransform = ref({ scale: 1, x: 0, y: 0 });
     const hasMoved = ref(false); // Track if touch has moved (to distinguish drag from scroll attempt)
+
+    // Color settings for photos
+    const photoColorSettings = ref({}); // key -> { brightness, contrast, saturation }
 
     // Get unique photo identifier
     const getPhotoKey = (photo) => {

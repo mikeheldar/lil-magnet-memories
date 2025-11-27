@@ -128,64 +128,6 @@
                   @click.stop="incrementOrderPhotoQuantityInGrid(photo, index)"
                 />
               </div>
-              <!-- Color Controls -->
-              <q-expansion-item
-                dense
-                header-class="text-caption"
-                class="q-mt-xs"
-                icon="palette"
-                label="Color"
-              >
-                <div class="q-pa-xs">
-                  <div class="q-mb-xs">
-                    <div class="text-caption" style="font-size: 0.6rem;">Brightness</div>
-                    <q-slider
-                      v-model="getOrderPhotoColorSettings(photo, index).brightness"
-                      :min="0"
-                      :max="200"
-                      :step="1"
-                      :label-value="`${getOrderPhotoColorSettings(photo, index).brightness}%`"
-                      @update:model-value="updateOrderPhotoColorSettings(photo, index)"
-                      dense
-                      style="height: 20px;"
-                    />
-                  </div>
-                  <div class="q-mb-xs">
-                    <div class="text-caption" style="font-size: 0.6rem;">Contrast</div>
-                    <q-slider
-                      v-model="getOrderPhotoColorSettings(photo, index).contrast"
-                      :min="0"
-                      :max="200"
-                      :step="1"
-                      :label-value="`${getOrderPhotoColorSettings(photo, index).contrast}%`"
-                      @update:model-value="updateOrderPhotoColorSettings(photo, index)"
-                      dense
-                      style="height: 20px;"
-                    />
-                  </div>
-                  <div class="q-mb-xs">
-                    <div class="text-caption" style="font-size: 0.6rem;">Saturation</div>
-                    <q-slider
-                      v-model="getOrderPhotoColorSettings(photo, index).saturation"
-                      :min="0"
-                      :max="200"
-                      :step="1"
-                      :label-value="`${getOrderPhotoColorSettings(photo, index).saturation}%`"
-                      @update:model-value="updateOrderPhotoColorSettings(photo, index)"
-                      dense
-                      style="height: 20px;"
-                    />
-                  </div>
-                  <q-btn
-                    flat
-                    dense
-                    size="xs"
-                    label="Reset"
-                    @click.stop="resetOrderPhotoColorSettings(photo, index)"
-                    class="full-width q-mt-xs"
-                  />
-                </div>
-              </q-expansion-item>
             </q-card-section>
           </q-card>
         </div>
@@ -253,64 +195,6 @@
                   @click.stop="incrementUploadedPhotoQuantityInGrid(index)"
                 />
               </div>
-              <!-- Color Controls -->
-              <q-expansion-item
-                dense
-                header-class="text-caption"
-                class="q-mt-xs"
-                icon="palette"
-                label="Color"
-              >
-                <div class="q-pa-xs">
-                  <div class="q-mb-xs">
-                    <div class="text-caption" style="font-size: 0.6rem;">Brightness</div>
-                    <q-slider
-                      v-model="getUploadedPhotoColorSettings(index).brightness"
-                      :min="0"
-                      :max="200"
-                      :step="1"
-                      :label-value="`${getUploadedPhotoColorSettings(index).brightness}%`"
-                      @update:model-value="updateUploadedPhotoColorSettings(index)"
-                      dense
-                      style="height: 20px;"
-                    />
-                  </div>
-                  <div class="q-mb-xs">
-                    <div class="text-caption" style="font-size: 0.6rem;">Contrast</div>
-                    <q-slider
-                      v-model="getUploadedPhotoColorSettings(index).contrast"
-                      :min="0"
-                      :max="200"
-                      :step="1"
-                      :label-value="`${getUploadedPhotoColorSettings(index).contrast}%`"
-                      @update:model-value="updateUploadedPhotoColorSettings(index)"
-                      dense
-                      style="height: 20px;"
-                    />
-                  </div>
-                  <div class="q-mb-xs">
-                    <div class="text-caption" style="font-size: 0.6rem;">Saturation</div>
-                    <q-slider
-                      v-model="getUploadedPhotoColorSettings(index).saturation"
-                      :min="0"
-                      :max="200"
-                      :step="1"
-                      :label-value="`${getUploadedPhotoColorSettings(index).saturation}%`"
-                      @update:model-value="updateUploadedPhotoColorSettings(index)"
-                      dense
-                      style="height: 20px;"
-                    />
-                  </div>
-                  <q-btn
-                    flat
-                    dense
-                    size="xs"
-                    label="Reset"
-                    @click.stop="resetUploadedPhotoColorSettings(index)"
-                    class="full-width q-mt-xs"
-                  />
-                </div>
-              </q-expansion-item>
             </q-card-section>
             <q-card-actions class="q-pa-xs" v-if="!isUploadedPhotoSelected(index)">
               <q-btn
@@ -498,11 +382,6 @@ export default {
           orderId: photo.orderId,
           orderNumber: photo.orderNumber,
           quantity: 1, // Default quantity
-          colorSettings: {
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-          },
         });
       }
     };
@@ -533,15 +412,7 @@ export default {
       } else {
         // Use the quantity from the uploaded photo, or default to 1
         const quantity = uploadedPhotos.value[index]?.quantity || 1;
-        selectedUploadedPhotos.value.push({
-          index,
-          quantity,
-          colorSettings: {
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-          },
-        });
+        selectedUploadedPhotos.value.push({ index, quantity });
       }
     };
 
@@ -636,80 +507,6 @@ export default {
       }
     };
 
-    // Color settings for order photos
-    const getOrderPhotoColorSettings = (photo, index) => {
-      const selected = selectedOrderPhotos.value.find(
-        sp => sp.orderId === photo.orderId && sp.index === index
-      );
-      if (selected && selected.colorSettings) {
-        return selected.colorSettings;
-      }
-      return { brightness: 100, contrast: 100, saturation: 100 };
-    };
-
-    const updateOrderPhotoColorSettings = (photo, index) => {
-      const selectedIndex = selectedOrderPhotos.value.findIndex(
-        sp => sp.orderId === photo.orderId && sp.index === index
-      );
-      if (selectedIndex >= 0) {
-        // Settings are already updated via v-model, just ensure they exist
-        if (!selectedOrderPhotos.value[selectedIndex].colorSettings) {
-          selectedOrderPhotos.value[selectedIndex].colorSettings = {
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-          };
-        }
-      }
-    };
-
-    const resetOrderPhotoColorSettings = (photo, index) => {
-      const selectedIndex = selectedOrderPhotos.value.findIndex(
-        sp => sp.orderId === photo.orderId && sp.index === index
-      );
-      if (selectedIndex >= 0) {
-        selectedOrderPhotos.value[selectedIndex].colorSettings = {
-          brightness: 100,
-          contrast: 100,
-          saturation: 100,
-        };
-      }
-    };
-
-    // Color settings for uploaded photos
-    const getUploadedPhotoColorSettings = (index) => {
-      const selected = selectedUploadedPhotos.value.find(item => item.index === index);
-      if (selected && selected.colorSettings) {
-        return selected.colorSettings;
-      }
-      return { brightness: 100, contrast: 100, saturation: 100 };
-    };
-
-    const updateUploadedPhotoColorSettings = (index) => {
-      const selectedIndex = selectedUploadedPhotos.value.findIndex(item => item.index === index);
-      if (selectedIndex >= 0) {
-        // Settings are already updated via v-model, just ensure they exist
-        if (!selectedUploadedPhotos.value[selectedIndex].colorSettings) {
-          selectedUploadedPhotos.value[selectedIndex].colorSettings = {
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-          };
-        }
-      }
-    };
-
-    const resetUploadedPhotoColorSettings = (index) => {
-      const selectedIndex = selectedUploadedPhotos.value.findIndex(item => item.index === index);
-      if (selectedIndex >= 0) {
-        selectedUploadedPhotos.value[selectedIndex].colorSettings = {
-          brightness: 100,
-          contrast: 100,
-          saturation: 100,
-        };
-      }
-    };
-
     // Remove uploaded photo
     const removeUploadedPhoto = (index) => {
       // Remove from selected photos if it was selected
@@ -757,16 +554,12 @@ export default {
         const photos = [];
         const quantities = [];
 
-        // Add selected photos from orders (with quantities and color settings)
+        // Add selected photos from orders (with quantities)
         selectedOrderPhotos.value.forEach((sp) => {
           const qty = sp.quantity || 1;
-          const colorSettings = sp.colorSettings || { brightness: 100, contrast: 100, saturation: 100 };
           // Add the photo multiple times based on quantity
           for (let i = 0; i < qty; i++) {
-            photos.push({
-              ...sp.photo,
-              colorSettings,
-            });
+            photos.push(sp.photo);
             quantities.push(1);
           }
         });
@@ -786,8 +579,6 @@ export default {
             const uploaded = await firebaseService.uploadPhotos([item.photo.file]);
             uploaded.forEach((uploadedPhoto) => {
               // Add the photo multiple times based on quantity
-              const selectedItem = selectedUploadedPhotos.value.find(si => si.index === item.photo.index);
-              const colorSettings = selectedItem?.colorSettings || { brightness: 100, contrast: 100, saturation: 100 };
               for (let i = 0; i < item.quantity; i++) {
                 photos.push({
                   name: uploadedPhoto.name,
@@ -795,7 +586,6 @@ export default {
                   fileName: uploadedPhoto.fileName,
                   size: uploadedPhoto.size,
                   type: uploadedPhoto.type,
-                  colorSettings,
                 });
                 quantities.push(1);
               }
@@ -870,12 +660,6 @@ export default {
       getOrderPhotoQuantityInGrid,
       incrementOrderPhotoQuantityInGrid,
       decrementOrderPhotoQuantityInGrid,
-      getOrderPhotoColorSettings,
-      updateOrderPhotoColorSettings,
-      resetOrderPhotoColorSettings,
-      getUploadedPhotoColorSettings,
-      updateUploadedPhotoColorSettings,
-      resetUploadedPhotoColorSettings,
       totalQuantity,
       onFilesSelected,
       removeUploadedPhoto,
