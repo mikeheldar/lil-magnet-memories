@@ -88,14 +88,27 @@ class FirebaseService {
     // Helper to update overall progress
     const updateOverallProgress = () => {
       if (onProgress) {
-        const overallPercent = totalSize > 0 ? Math.round((totalUploaded / totalSize) * 100) : 0;
-        const completedCount = Array.from(progressMap.values()).filter(p => p.completed).length;
+        // Calculate total size from actual uploads if available (more accurate)
+        let actualTotalSize = totalSize;
+        const allProgress = Array.from(progressMap.values());
+        if (allProgress.length > 0) {
+          const sumOfTotals = allProgress.reduce((sum, p) => sum + (p.total || 0), 0);
+          if (sumOfTotals > 0) {
+            actualTotalSize = sumOfTotals;
+          }
+        }
+        
+        const overallPercent = actualTotalSize > 0 
+          ? Math.min(100, Math.round((totalUploaded / actualTotalSize) * 100))
+          : 0;
+        const completedCount = allProgress.filter(p => p.completed).length;
+        
         onProgress({
           overall: overallPercent,
           completed: completedCount,
           total: photos.length,
           uploaded: totalUploaded,
-          totalSize: totalSize,
+          totalSize: actualTotalSize,
         });
       }
     };
