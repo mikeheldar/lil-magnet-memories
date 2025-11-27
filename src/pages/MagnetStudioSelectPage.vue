@@ -204,13 +204,16 @@ export default {
     // Load all photos from orders
     const loadAllPhotos = async () => {
       loading.value = true;
+      console.log('🔄 Starting to load photos...');
       try {
         const orders = await firebaseService.getOrders();
+        console.log(`📦 Loaded ${orders.length} orders from Firebase`);
         const photos = [];
 
         orders.forEach((order) => {
           // Handle legacy photo-based orders
           if (order.photos && order.photos.length > 0) {
+            console.log(`📸 Order ${order.orderNumber} has ${order.photos.length} photos in photos array`);
             order.photos.forEach((photo, index) => {
               photos.push({
                 ...photo,
@@ -228,6 +231,7 @@ export default {
           if (order.cartItems && order.cartItems.length > 0) {
             order.cartItems.forEach((item) => {
               if (item.isCustomUpload && item.photos) {
+                console.log(`📸 Order ${order.orderNumber} has ${item.photos.length} photos in cartItems`);
                 item.photos.forEach((photo, index) => {
                   photos.push({
                     ...photo,
@@ -246,9 +250,15 @@ export default {
 
         allPhotos.value = photos;
         console.log(`✅ Loaded ${photos.length} photos from ${orders.length} orders`);
-        console.log('Sample photo:', photos[0]);
+        if (photos.length > 0) {
+          console.log('Sample photo:', photos[0]);
+          console.log('Sample photo URL:', photos[0].url || photos[0].preview);
+        } else {
+          console.warn('⚠️ No photos found in any orders');
+        }
       } catch (error) {
-        console.error('Error loading photos:', error);
+        console.error('❌ Error loading photos:', error);
+        console.error('Error stack:', error.stack);
         if ($q && $q.notify) {
           $q.notify({
             type: 'negative',
@@ -258,6 +268,7 @@ export default {
         }
       } finally {
         loading.value = false;
+        console.log('✅ Photo loading complete, loading set to false');
       }
     };
 
