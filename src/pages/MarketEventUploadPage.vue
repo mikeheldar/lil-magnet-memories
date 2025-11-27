@@ -1013,16 +1013,34 @@ export default {
           console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
           
           // Prepare photos with download URLs and quantities for cart
-          const photosForCart = uploadedPhotos.map((uploadedPhoto, index) => ({
-            name: uploadedPhoto.name,
-            url: uploadedPhoto.url, // Persistent Firebase Storage URL
-            fileName: uploadedPhoto.fileName,
-            size: uploadedPhoto.size,
-            type: uploadedPhoto.type,
-            quantity: fileQuantities.value[index] || 1,
-            // Keep preview for immediate display (will be replaced by url on refresh)
-            preview: getFilePreview(selectedFiles.value[index]),
-          }));
+          // Convert files to base64 for persistence across devices
+          const photosForCart = await Promise.all(
+            uploadedPhotos.map(async (uploadedPhoto, index) => {
+              const file = selectedFiles.value[index];
+              let base64Preview = null;
+              if (file) {
+                try {
+                  base64Preview = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                  });
+                } catch (error) {
+                  console.warn('Failed to convert file to base64:', error);
+                }
+              }
+              return {
+                name: uploadedPhoto.name,
+                url: uploadedPhoto.url, // Persistent Firebase Storage URL
+                preview: base64Preview || uploadedPhoto.url, // Use base64 for cross-device compatibility
+                fileName: uploadedPhoto.fileName,
+                size: uploadedPhoto.size,
+                type: uploadedPhoto.type,
+                quantity: fileQuantities.value[index] || 1,
+              };
+            })
+          );
           
           // Add order to cart with persistent photo URLs and market event context
           addCustomUploadToCart({
