@@ -161,10 +161,30 @@
                   class="q-pa-sm"
                 >
                   <q-item-section>
-                    <q-item-label>Order #{{ order.orderNumber }}</q-item-label>
+                    <q-item-label class="text-weight-medium">
+                      Order #{{ order.orderNumber }}
+                      <q-chip
+                        v-if="order.status"
+                        :color="getStatusColor(order.status)"
+                        text-color="white"
+                        size="sm"
+                        class="q-ml-sm"
+                      >
+                        {{ order.status }}
+                      </q-chip>
+                    </q-item-label>
                     <q-item-label caption>
-                      {{ order.customer?.firstName }} {{ order.customer?.lastName }}
-                      <span v-if="order.customer?.email"> • {{ order.customer.email }}</span>
+                      <div><strong>Customer:</strong> {{ order.customer?.firstName }} {{ order.customer?.lastName }}</div>
+                      <div v-if="order.customer?.email"><strong>Email:</strong> {{ order.customer.email }}</div>
+                      <div v-if="order.submissionDate">
+                        <strong>Date:</strong> {{ formatDate(order.submissionDate) }}
+                      </div>
+                      <div v-if="order.total !== undefined">
+                        <strong>Total:</strong> ${{ order.total.toFixed(2) }}
+                      </div>
+                      <div v-if="order.totalMagnets">
+                        <strong>Magnets:</strong> {{ order.totalMagnets }}
+                      </div>
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -402,6 +422,36 @@ export default {
       showDeleteConfirm.value = true;
     };
 
+    // Format date for display
+    const formatDate = (dateValue) => {
+      if (!dateValue) return 'N/A';
+      try {
+        const date = dateValue.toDate ? dateValue.toDate() : new Date(dateValue);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      } catch (error) {
+        return String(dateValue);
+      }
+    };
+
+    // Get status color for chip
+    const getStatusColor = (status) => {
+      const statusLower = status?.toLowerCase() || '';
+      if (statusLower.includes('completed') || statusLower.includes('fulfilled')) {
+        return 'green';
+      } else if (statusLower.includes('pending') || statusLower.includes('processing')) {
+        return 'orange';
+      } else if (statusLower.includes('cancelled') || statusLower.includes('failed')) {
+        return 'red';
+      }
+      return 'grey';
+    };
+
     // Confirm and execute deletion
     const confirmDelete = async () => {
       deleting.value = true;
@@ -497,6 +547,8 @@ export default {
       showDeleteDialog,
       onDeleteOrdersToggle,
       confirmDelete,
+      formatDate,
+      getStatusColor,
     };
   },
 };

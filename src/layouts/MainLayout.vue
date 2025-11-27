@@ -245,157 +245,166 @@
 
         <!-- Content for authenticated users -->
         <template v-else>
-          <!-- Admin-only navigation items -->
+          <!-- Admin-only navigation items (collapsible, default collapsed) -->
           <template v-if="isAdmin">
-            <q-item clickable v-ripple @click="navigateTo('/orders')">
-              <q-item-section avatar>
-                <q-icon name="inventory" color="primary" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Order List</q-item-label>
-                <q-item-label caption>View all orders</q-item-label>
-              </q-item-section>
-            </q-item>
+            <q-expansion-item
+              icon="admin_panel_settings"
+              label="Admin"
+              :default-opened="false"
+              header-class="text-grey-8"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/orders')">
+                <q-item-section avatar>
+                  <q-icon name="inventory" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Order List</q-item-label>
+                  <q-item-label caption>View all orders</q-item-label>
+                </q-item-section>
+              </q-item>
 
-            <q-item clickable v-ripple @click="navigateTo('/customers')">
-              <q-item-section avatar>
-                <q-icon name="people" color="primary" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Customer List</q-item-label>
-                <q-item-label caption>View all customers</q-item-label>
-              </q-item-section>
-            </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/customers')">
+                <q-item-section avatar>
+                  <q-icon name="people" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Customer List</q-item-label>
+                  <q-item-label caption>View all customers</q-item-label>
+                </q-item-section>
+              </q-item>
 
-            <q-item clickable v-ripple to="/magnet-studio-select">
-              <q-item-section avatar>
-                <q-icon name="apps" color="purple" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Magnet Studio</q-item-label>
-                <q-item-label caption>Crop images into squares</q-item-label>
-              </q-item-section>
-            </q-item>
+              <q-item clickable v-ripple to="/magnet-studio-select">
+                <q-item-section avatar>
+                  <q-icon name="apps" color="purple" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Magnet Studio</q-item-label>
+                  <q-item-label caption>Crop images into squares</q-item-label>
+                </q-item-section>
+              </q-item>
 
-            <q-item clickable v-ripple @click="navigateTo('/photo-selector')">
-              <q-item-section avatar>
-                <q-icon name="print" color="blue" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Print Template</q-item-label>
-                <q-item-label caption>Select photos for print template</q-item-label>
-              </q-item-section>
-            </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/photo-selector')">
+                <q-item-section avatar>
+                  <q-icon name="print" color="blue" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Print Template</q-item-label>
+                  <q-item-label caption>Select photos for print template</q-item-label>
+                </q-item-section>
+              </q-item>
 
-            <q-item clickable v-ripple @click="navigateTo('/photo-management')">
-              <q-item-section avatar>
-                <q-icon name="delete_sweep" color="red" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Photo Management</q-item-label>
-                <q-item-label caption>Delete photos and orders</q-item-label>
-              </q-item-section>
-            </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/photo-management')">
+                <q-item-section avatar>
+                  <q-icon name="delete_sweep" color="red" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Photo Management</q-item-label>
+                  <q-item-label caption>Delete photos and orders</q-item-label>
+                </q-item-section>
+              </q-item>
 
-            <q-item clickable v-ripple @click="navigateTo('/market-events')">
-              <q-item-section avatar>
-                <q-icon name="event" color="green" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Market Events</q-item-label>
-                <q-item-label caption>Manage market events</q-item-label>
-              </q-item-section>
-            </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/market-events')">
+                <q-item-section avatar>
+                  <q-icon name="event" color="green" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Market Events</q-item-label>
+                  <q-item-label caption>Manage market events</q-item-label>
+                </q-item-section>
+              </q-item>
 
-            <q-item clickable v-ripple @click="navigateTo('/pricing')">
-              <q-item-section avatar>
-                <q-icon name="inventory_2" color="green" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Manage Products</q-item-label>
-                <q-item-label caption>Manage products and pricing</q-item-label>
-              </q-item-section>
-            </q-item>
-          </template>
+              <q-item clickable v-ripple @click="navigateTo('/pricing')">
+                <q-item-section avatar>
+                  <q-icon name="inventory_2" color="green" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Manage Products</q-item-label>
+                  <q-item-label caption>Manage products and pricing</q-item-label>
+                </q-item-section>
+              </q-item>
 
-          <q-separator class="q-my-md" />
+              <q-item clickable v-ripple @click="navigateTo('/firebase-test')">
+                <q-item-section avatar>
+                  <q-icon name="bug_report" color="orange" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Firebase Diagnostic</q-item-label>
+                  <q-item-label caption>Test Firebase connection</q-item-label>
+                </q-item-section>
+              </q-item>
 
-          <q-item-label header class="text-grey-8"> Customer </q-item-label>
+              <q-item clickable v-ripple @click="navigateTo('/admin')">
+                <q-item-section avatar>
+                  <q-icon name="settings" color="orange" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Admin Settings</q-item-label>
+                  <q-item-label caption>Manage system settings</q-item-label>
+                </q-item-section>
+              </q-item>
 
-          <q-item clickable v-ripple @click="handleUploadClick">
-            <q-item-section avatar>
-              <q-icon name="camera_alt" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ uploadLinkLabel }}</q-item-label>
-              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
-            </q-item-section>
-          </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/email-test')">
+                <q-item-section avatar>
+                  <q-icon name="email" color="purple" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Email Test</q-item-label>
+                  <q-item-label caption>Test email functionality</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
 
-          <q-item clickable v-ripple @click="navigateTo('/about')">
-            <q-item-section avatar>
-              <q-icon name="info" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>About</q-item-label>
-              <q-item-label caption>Learn our story</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item clickable v-ripple @click="navigateTo('/my-orders')">
-            <q-item-section avatar>
-              <q-icon name="assignment" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>My Orders</q-item-label>
-              <q-item-label caption>View your orders</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <!-- Admin-only navigation items -->
-          <template v-if="isAdmin">
             <q-separator class="q-my-md" />
-
-            <q-item-label header class="text-grey-8">
-              <q-icon name="admin_panel_settings" class="q-mr-sm" />
-              Admin
-            </q-item-label>
-
-            <q-item clickable v-ripple @click="navigateTo('/firebase-test')">
-              <q-item-section avatar>
-                <q-icon name="bug_report" color="orange" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Firebase Diagnostic</q-item-label>
-                <q-item-label caption>Test Firebase connection</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple @click="navigateTo('/admin')">
-              <q-item-section avatar>
-                <q-icon name="settings" color="orange" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Admin Settings</q-item-label>
-                <q-item-label caption>Manage system settings</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple @click="navigateTo('/email-test')">
-              <q-item-section avatar>
-                <q-icon name="email" color="purple" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Email Test</q-item-label>
-                <q-item-label caption>Test email functionality</q-item-label>
-              </q-item-section>
-            </q-item>
           </template>
+
+          <!-- Customer section (collapsible) -->
+          <q-expansion-item
+            icon="person"
+            label="Customer"
+            default-opened
+            header-class="text-grey-8"
+          >
+            <q-item clickable v-ripple @click="handleUploadClick">
+              <q-item-section avatar>
+                <q-icon name="camera_alt" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ uploadLinkLabel }}</q-item-label>
+                <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/about')">
+              <q-item-section avatar>
+                <q-icon name="info" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>About</q-item-label>
+                <q-item-label caption>Learn our story</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple @click="navigateTo('/my-orders')">
+              <q-item-section avatar>
+                <q-icon name="assignment" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>My Orders</q-item-label>
+                <q-item-label caption>View your orders</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-expansion-item>
         </template>
 
         <q-separator class="q-my-md" />
 
-        <q-item-label header class="text-grey-8"> Account </q-item-label>
+        <!-- Account section (collapsible) -->
+        <q-expansion-item
+          icon="account_circle"
+          label="Account"
+          default-opened
+          header-class="text-grey-8"
+        >
 
         <!-- Sign In for non-authenticated users -->
         <q-item
@@ -413,16 +422,17 @@
           </q-item-section>
         </q-item>
 
-        <!-- Sign Out for authenticated users -->
-        <q-item v-else clickable v-ripple @click="handleSignOut">
-          <q-item-section avatar>
-            <q-icon name="logout" color="negative" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Sign Out</q-item-label>
-            <q-item-label caption>Log out of your account</q-item-label>
-          </q-item-section>
-        </q-item>
+          <!-- Sign Out for authenticated users -->
+          <q-item v-else clickable v-ripple @click="handleSignOut">
+            <q-item-section avatar>
+              <q-icon name="logout" color="negative" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Sign Out</q-item-label>
+              <q-item-label caption>Log out of your account</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-expansion-item>
       </q-list>
     </q-drawer>
 
