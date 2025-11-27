@@ -337,11 +337,51 @@ export default {
     // Get CSS transform style for an image
     const getImageStyle = (photo) => {
       const transform = getTransform(photo);
+      const colorSettings = getColorSettingsByKey(getPhotoKey(photo));
+      const filter = `brightness(${colorSettings.brightness}%) contrast(${colorSettings.contrast}%) saturate(${colorSettings.saturation}%)`;
       return {
         transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
         transformOrigin: 'center center',
         transition: isDragging.value ? 'none' : 'transform 0.1s ease-out',
+        filter: filter,
       };
+    };
+
+    // Color settings management
+    const getColorSettingsByKey = (key) => {
+      if (!key) {
+        return { brightness: 100, contrast: 100, saturation: 100 };
+      }
+      if (!photoColorSettings.value[key]) {
+        photoColorSettings.value[key] = {
+          brightness: 100,
+          contrast: 100,
+          saturation: 100,
+        };
+      }
+      return photoColorSettings.value[key];
+    };
+
+    const getColorSettings = () => {
+      if (!selectedPhotoKey.value) {
+        return { brightness: 100, contrast: 100, saturation: 100 };
+      }
+      return getColorSettingsByKey(selectedPhotoKey.value);
+    };
+
+    const updateColorSettings = () => {
+      // Settings are already updated via v-model
+      // This function is called to trigger reactivity if needed
+    };
+
+    const resetColorSettings = () => {
+      if (selectedPhotoKey.value) {
+        photoColorSettings.value[selectedPhotoKey.value] = {
+          brightness: 100,
+          contrast: 100,
+          saturation: 100,
+        };
+      }
     };
 
     // Document-level drag handlers (mouse)
