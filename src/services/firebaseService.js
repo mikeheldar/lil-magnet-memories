@@ -102,7 +102,12 @@ class FirebaseService {
 
     // Upload all photos in parallel for much faster uploads
     const uploadPromises = photos.map(async (photo, i) => {
-      const fileName = `orders/${timestamp}_${i}_${photo.name}`;
+      // Sanitize filename to avoid issues with special characters
+      // Replace problematic characters but keep the original name for display
+      const sanitizedName = photo.name
+        .replace(/[#\[\]()]/g, '_') // Replace special chars that can cause issues
+        .replace(/\s+/g, '_'); // Replace spaces with underscores
+      const fileName = `orders/${timestamp}_${i}_${sanitizedName}`;
       const storageRef = ref(storage, fileName);
 
       try {

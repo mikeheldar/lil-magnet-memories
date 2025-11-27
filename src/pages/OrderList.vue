@@ -943,7 +943,22 @@ export default {
       
       // Prefer Firebase Storage URL, fallback to preview
       if (photo.url && photo.url.startsWith('http')) {
-        return photo.url;
+        // Ensure URL is properly encoded (Firebase Storage URLs should already be encoded)
+        // But check if it needs re-encoding for special characters
+        try {
+          // Try to decode and re-encode to ensure proper encoding
+          const urlObj = new URL(photo.url);
+          // If the pathname has special characters, they should already be encoded by Firebase
+          // But we can verify the URL is valid
+          return photo.url;
+        } catch (e) {
+          console.warn('⚠️ Invalid URL format:', photo.url, e);
+          // Try preview as fallback
+          if (photo.preview && !photo.preview.startsWith('blob:')) {
+            return photo.preview;
+          }
+          return '';
+        }
       }
       if (photo.preview && !photo.preview.startsWith('blob:')) {
         return photo.preview;
@@ -957,16 +972,38 @@ export default {
       const failedSrc = event.target.src;
       const photoName = photo?.name || 'Unknown';
       
+      // Extract full path from URL for debugging
+      let fullPath = failedSrc;
+      try {
+        const urlObj = new URL(failedSrc);
+        fullPath = urlObj.pathname + urlObj.search;
+      } catch (e) {
+        // Not a valid URL, use as-is
+      }
+      
       console.error('❌ Failed to load photo in OrderList:', {
         name: photoName,
         failedSource: failedSrc,
+        fullPath: fullPath,
         photo: photo,
         isBlobUrl: failedSrc.startsWith('blob:'),
         hasUrl: !!photo?.url,
         url: photo?.url,
+        urlLength: photo?.url?.length || 0,
         hasPreview: !!photo?.preview,
-        previewType: photo?.preview ? (photo.preview.substring(0, 50) + '...') : 'none'
+        previewType: photo?.preview ? (photo.preview.substring(0, 50) + '...') : 'none',
+        fileName: photo?.fileName || 'unknown'
       });
+      
+      // Log the exact filename that's causing issues
+      if (photoName.includes('78286856707') || photoName.includes('HEIC')) {
+        console.error('🔍 DEBUGGING SPECIFIC FILE:', {
+          originalName: photoName,
+          storedUrl: photo?.url,
+          storedFileName: photo?.fileName,
+          fullPhotoObject: JSON.stringify(photo, null, 2)
+        });
+      }
       
       // Try fallback if available
       if (photo?.url && photo.url !== failedSrc && !photo.url.startsWith('blob:')) {
