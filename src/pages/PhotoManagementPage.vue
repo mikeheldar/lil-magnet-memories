@@ -149,20 +149,23 @@
           />
 
           <!-- Show associated orders if checkbox is checked -->
-          <div v-if="deleteAssociatedOrders && associatedOrders.length > 0" class="q-mt-md">
+          <div v-if="deleteAssociatedOrders" class="q-mt-md">
             <div class="text-body2 text-weight-medium q-mb-sm">
               Associated Orders ({{ associatedOrders.length }}):
             </div>
-            <q-scroll-area style="max-height: 300px;" class="border rounded-borders">
+            <div v-if="associatedOrders.length === 0 && !loadingOrders" class="text-caption text-grey-6 q-pa-sm">
+              No associated orders found
+            </div>
+            <q-scroll-area v-if="associatedOrders.length > 0" style="max-height: 300px;" class="border rounded-borders">
               <q-list>
                 <q-item
                   v-for="order in associatedOrders"
-                  :key="order.id"
+                  :key="order.id || order.orderNumber"
                   class="q-pa-sm"
                 >
                   <q-item-section>
                     <q-item-label class="text-weight-medium">
-                      Order #{{ order.orderNumber || order.id }}
+                      Order #{{ order.orderNumber || order.id || 'Unknown' }}
                     </q-item-label>
                     <q-item-label caption>
                       <div v-if="order.submissionDate">
@@ -170,6 +173,9 @@
                       </div>
                       <div v-else-if="order.createdAt">
                         <strong>Date Ordered:</strong> {{ formatDate(order.createdAt) }}
+                      </div>
+                      <div v-else-if="order.updatedAt">
+                        <strong>Date Ordered:</strong> {{ formatDate(order.updatedAt) }}
                       </div>
                       <div v-else>
                         <strong>Date Ordered:</strong> N/A
@@ -387,13 +393,20 @@ export default {
           // Convert Map to Array and sort by date (newest first)
           const ordersArray = Array.from(allOrdersMap.values());
           ordersArray.sort((a, b) => {
-            const dateA = a.submissionDate?.toDate ? a.submissionDate.toDate() : new Date(a.submissionDate || 0);
-            const dateB = b.submissionDate?.toDate ? b.submissionDate.toDate() : new Date(b.submissionDate || 0);
+            const dateA = a.submissionDate?.toDate ? a.submissionDate.toDate() : new Date(a.submissionDate || a.createdAt || 0);
+            const dateB = b.submissionDate?.toDate ? b.submissionDate.toDate() : new Date(b.submissionDate || b.createdAt || 0);
             return dateB - dateA; // Descending order (newest first)
           });
           
           associatedOrders.value = ordersArray;
-          console.log('✅ Loaded associated orders:', ordersArray.length, ordersArray);
+          console.log('✅ Loaded associated orders:', ordersArray.length);
+          console.log('✅ Order details:', ordersArray.map(o => ({
+            id: o.id,
+            orderNumber: o.orderNumber,
+            submissionDate: o.submissionDate,
+            createdAt: o.createdAt,
+            updatedAt: o.updatedAt
+          })));
         } catch (error) {
           console.error('Error loading associated orders:', error);
           $q.notify({
