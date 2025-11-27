@@ -181,7 +181,7 @@
             <div class="q-mt-xs">
               <div>
                 <strong>Delivery Method:</strong>
-                {{ order.shippingOption.label || order.shippingOption.description || 'Pickup at Market Event' }}
+                {{ order.shippingOption.label || order.shippingOption.description || order.shippingOption.value || 'Pickup at Market Event' }}
               </div>
               <div v-if="order.shippingOption.description && order.shippingOption.label !== order.shippingOption.description" class="q-mt-xs">
                 <strong>Pickup Location:</strong>
