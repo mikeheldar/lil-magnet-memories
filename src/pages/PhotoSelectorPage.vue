@@ -498,6 +498,11 @@ export default {
           orderId: photo.orderId,
           orderNumber: photo.orderNumber,
           quantity: 1, // Default quantity
+          colorSettings: {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+          },
         });
       }
     };
@@ -678,12 +683,16 @@ export default {
         const photos = [];
         const quantities = [];
 
-        // Add selected photos from orders (with quantities)
+        // Add selected photos from orders (with quantities and color settings)
         selectedOrderPhotos.value.forEach((sp) => {
           const qty = sp.quantity || 1;
+          const colorSettings = sp.colorSettings || { brightness: 100, contrast: 100, saturation: 100 };
           // Add the photo multiple times based on quantity
           for (let i = 0; i < qty; i++) {
-            photos.push(sp.photo);
+            photos.push({
+              ...sp.photo,
+              colorSettings,
+            });
             quantities.push(1);
           }
         });
