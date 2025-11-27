@@ -385,13 +385,13 @@
 
       <!-- Order Summary Dialog -->
       <q-dialog v-model="showOrderSummary" persistent>
-        <q-card style="min-width: 400px">
+        <q-card style="min-width: 400px; max-height: 90vh; display: flex; flex-direction: column;">
           <q-card-section class="row items-center">
             <q-avatar icon="assignment" color="primary" text-color="white" />
             <span class="q-ml-sm text-h6">Order Summary</span>
           </q-card-section>
 
-          <q-card-section>
+          <q-card-section style="flex: 1; overflow-y: auto;">
             <div class="q-mb-md">
               <div class="text-h6 text-primary">Order #{{ orderNumber }}</div>
               <div class="text-caption text-grey-6">
@@ -455,17 +455,20 @@
             </div>
           </q-card-section>
 
-          <q-card-actions align="right">
+          <q-card-actions align="right" class="q-pa-md" style="flex-shrink: 0; border-top: 1px solid rgba(0,0,0,0.12);">
             <q-btn
               flat
               label="Cancel"
               color="grey"
               @click="showOrderSummary = false"
+              class="q-mr-sm"
             />
             <q-btn
               label="Confirm Order"
               color="primary"
               @click="confirmOrder"
+              :loading="submitting"
+              class="q-px-lg"
             />
           </q-card-actions>
         </q-card>
