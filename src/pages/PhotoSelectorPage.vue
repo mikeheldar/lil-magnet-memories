@@ -213,25 +213,25 @@
                       Order #{{ selected.orderNumber }}
                     </div>
                     <div class="text-caption text-center q-mb-xs">Quantity:</div>
-                    <div class="row items-center justify-center q-gutter-xs">
+                    <div class="row items-center justify-center q-gutter-sm">
                       <q-btn
-                        flat
-                        dense
                         round
+                        dense
                         icon="remove"
-                        size="sm"
+                        size="md"
+                        color="primary"
                         @click="decrementOrderPhotoQuantity(idx)"
                         :disable="selected.quantity <= 1"
                       />
-                      <div class="text-h6 text-weight-bold" style="min-width: 40px; text-align: center;">
+                      <div class="text-h5 text-weight-bold" style="min-width: 50px; text-align: center;">
                         {{ selected.quantity }}
                       </div>
                       <q-btn
-                        flat
-                        dense
                         round
+                        dense
                         icon="add"
-                        size="sm"
+                        size="md"
+                        color="primary"
                         @click="incrementOrderPhotoQuantity(idx)"
                       />
                     </div>
