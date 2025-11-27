@@ -268,19 +268,24 @@ export default {
     };
 
     // Load photo from route query
-    const loadPhotoFromRoute = () => {
+    const loadPhotoFromRoute = async () => {
       loading.value = true;
       try {
         const photoParam = route.query.photo;
+        console.log('🔍 Photo param from route:', photoParam ? 'exists' : 'missing');
         if (photoParam) {
           const photo = JSON.parse(photoParam);
+          console.log('📸 Parsed photo object:', photo);
           // Ensure we have a valid URL for the photo
           if (!photo.url && photo.preview) {
             photo.url = photo.preview;
           }
+          // Set the photo and wait for next tick to ensure reactivity
           selectedPhoto.value = photo;
-          console.log('✅ Loaded photo from route:', photo);
+          console.log('✅ Set selectedPhoto.value:', selectedPhoto.value);
           console.log('✅ Photo URL:', photo.url);
+          await nextTick();
+          console.log('✅ After nextTick, selectedPhoto.value:', selectedPhoto.value);
         } else {
           // No photo in route, redirect to selection page
           console.log('⚠️ No photo in route, redirecting to selection page');
@@ -289,14 +294,18 @@ export default {
         }
       } catch (error) {
         console.error('❌ Error parsing photo from route:', error);
-        $q.notify({
-          type: 'negative',
-          message: 'Failed to load photo',
-          caption: error.message,
-        });
+        if ($q && $q.notify) {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to load photo',
+            caption: error.message,
+          });
+        }
         router.push('/magnet-studio-select');
       } finally {
         loading.value = false;
+        console.log('✅ Loading complete, loading.value:', loading.value);
+        console.log('✅ selectedPhoto.value:', selectedPhoto.value);
       }
     };
 
