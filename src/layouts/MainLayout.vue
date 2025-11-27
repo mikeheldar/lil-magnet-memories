@@ -277,6 +277,16 @@
               </q-item-section>
             </q-item>
 
+            <q-item clickable v-ripple @click="navigateTo('/photo-selector')">
+              <q-item-section avatar>
+                <q-icon name="photo_library" color="blue" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Photo Selector</q-item-label>
+                <q-item-label caption>Select photos for print template</q-item-label>
+              </q-item-section>
+            </q-item>
+
             <q-item clickable v-ripple @click="navigateTo('/market-events')">
               <q-item-section avatar>
                 <q-icon name="event" color="green" />
