@@ -732,5 +732,15 @@ export default {
   background: white;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
 }
+
+.selected-photo-item {
+  border: 2px solid $primary;
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+.selected-photo-image {
+  border-radius: 4px 4px 0 0;
+}
 </style>
 
