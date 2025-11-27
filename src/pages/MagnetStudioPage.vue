@@ -1,21 +1,46 @@
 <template>
-  <q-page padding>
-    <div class="q-pa-md">
-      <q-card>
-        <q-card-section>
-          <div class="text-h4 q-mb-md">
-            <q-icon name="apps" size="32px" class="q-mr-sm text-purple-7" />
-            Magnet Studio
-          </div>
-          <div class="text-body2 text-grey-6">
-            Crop images from recent orders into perfect square sections for
-            magnets
-          </div>
-        </q-card-section>
-      </q-card>
+  <q-page class="q-pa-md bg-grey-2">
+    <!-- Loading or No Photo State -->
+    <div v-if="!selectedPhoto" class="text-center q-pa-xl">
+      <q-spinner v-if="loading" color="primary" size="3em" />
+      <div v-else>
+        <q-icon name="image_not_supported" size="64px" color="grey-5" class="q-mb-md" />
+        <div class="text-h6 text-grey-6 q-mt-md">No photo selected</div>
+        <div class="text-body2 text-grey-7 q-mt-sm q-mb-md">
+          Please select a photo first
+        </div>
+        <q-btn
+          color="primary"
+          label="Select Photo"
+          icon="arrow_back"
+          @click="goToSelectPage"
+        />
+      </div>
+    </div>
 
-      <!-- Cropping Interface - Moved to Top -->
-      <q-card v-if="selectedPhoto" class="q-mt-md">
+    <!-- Cropping Interface -->
+    <div v-else>
+      <div class="text-center q-mb-lg">
+        <div class="text-h4 text-weight-bold text-primary">
+          <q-icon name="apps" class="q-mr-sm" />
+          Magnet Studio - Crop Settings
+        </div>
+        <div class="text-caption text-grey-7 q-mt-sm">
+          Adjust grid settings and generate square crops
+        </div>
+      </div>
+
+      <!-- Back Button -->
+      <div class="q-mb-md">
+        <q-btn
+          flat
+          icon="arrow_back"
+          label="Select Different Photo"
+          @click="goToSelectPage"
+        />
+      </div>
+
+      <q-card class="q-mt-md">
         <q-card-section>
           <div class="text-h6 q-mb-md">Crop Settings</div>
 
