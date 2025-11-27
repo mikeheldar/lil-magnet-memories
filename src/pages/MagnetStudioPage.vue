@@ -468,12 +468,14 @@ export default {
       link.click();
       document.body.removeChild(link);
 
-      $q.notify({
-        type: 'positive',
-        message: 'Square downloaded',
-        position: 'top',
-        timeout: 1000,
-      });
+      if ($q && $q.notify) {
+        $q.notify({
+          type: 'positive',
+          message: 'Square downloaded',
+          position: 'top',
+          timeout: 1000,
+        });
+      }
     };
 
     const downloadAllSquares = () => {
