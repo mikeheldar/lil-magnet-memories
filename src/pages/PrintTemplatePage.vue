@@ -732,6 +732,9 @@ export default {
       endDrag,
       handleWheel,
       resetAllTransforms,
+      getColorSettings,
+      updateColorSettings,
+      resetColorSettings,
       handlePrint,
     };
   },
