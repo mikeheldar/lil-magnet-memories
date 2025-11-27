@@ -95,13 +95,13 @@
     </div>
 
     <div class="landing-container">
-      <!-- Custom Products Section -->
-      <div class="custom-products-section q-mb-xl">
+      <!-- How It Works Section -->
+      <div class="how-it-works-section q-mb-xl">
         <div class="text-h4 text-center q-mb-lg text-primary">
-          Custom Photo Magnets
+          How It Works
         </div>
         <div class="text-body1 text-center text-grey-7 q-mb-xl">
-          Create personalized magnets from your own photos
+          Create personalized magnets in just a few simple steps
         </div>
 
         <!-- How It Works Steps -->
@@ -170,23 +170,35 @@
             </q-card>
           </div>
         </div>
+      </div>
+
+      <!-- Custom Products Section -->
+      <div class="custom-products-section q-mb-xl">
+        <div class="text-h4 text-center q-mb-lg text-primary">
+          Custom Photo Magnets
+        </div>
+        <div class="text-body1 text-center text-grey-7 q-mb-xl">
+          Create personalized magnets from your own photos
+        </div>
 
         <!-- Custom Products List -->
         <div v-if="customProducts.length > 0" class="q-mb-xl">
-          <div class="custom-products-header text-center q-mb-lg">
-            <div class="text-h5 text-weight-bold text-primary q-mb-xs">
-              Our Custom Products
+          <div
+            v-for="(productsInCollection, collectionName) in customProductsByCollection"
+            :key="collectionName"
+            class="q-mb-xl"
+          >
+            <div v-if="Object.keys(customProductsByCollection).length > 1" class="collection-header text-center q-mb-lg">
+              <div class="text-h5 text-weight-bold text-primary">
+                {{ collectionName }}
+              </div>
             </div>
-            <div class="text-subtitle1 text-grey-6">
-              Choose your style and create personalized magnets
-            </div>
-          </div>
-          <div class="q-col-gutter-md">
-            <div
-              v-for="product in customProducts"
-              :key="product.id"
-              class="q-mb-md"
-            >
+            <div class="q-col-gutter-md">
+              <div
+                v-for="product in productsInCollection"
+                :key="product.id"
+                class="q-mb-md"
+              >
               <q-card class="product-card-row">
                 <q-card-section class="row items-center q-gutter-md">
                   <!-- Product Image (Left Side) -->
@@ -245,6 +257,7 @@
                 </q-card-section>
               </q-card>
             </div>
+            </div>
           </div>
         </div>
       </div>
@@ -259,12 +272,22 @@
         </div>
 
         <div v-if="designerProducts.length > 0" class="q-mb-xl">
-          <div class="row q-col-gutter-md">
-            <div
-              v-for="product in designerProducts"
-              :key="product.id"
-              class="col-12 col-md-6 col-lg-4"
-            >
+          <div
+            v-for="(productsInCollection, collectionName) in designerProductsByCollection"
+            :key="collectionName"
+            class="q-mb-xl"
+          >
+            <div v-if="Object.keys(designerProductsByCollection).length > 1" class="collection-header text-center q-mb-lg">
+              <div class="text-h5 text-weight-bold text-primary">
+                {{ collectionName }}
+              </div>
+            </div>
+            <div class="row q-col-gutter-md">
+              <div
+                v-for="product in productsInCollection"
+                :key="product.id"
+                class="col-12 col-md-6 col-lg-4"
+              >
               <q-card class="product-card">
                 <q-card-section class="text-center">
                   <div v-if="product.imageUrl" class="product-image-wrapper">
@@ -316,6 +339,7 @@
                 </q-card-actions>
               </q-card>
             </div>
+            </div>
           </div>
         </div>
         <div v-else class="text-center text-grey-6 q-mb-xl">
@@ -333,12 +357,22 @@
         </div>
 
         <div v-if="specialtyProducts.length > 0" class="q-mb-xl">
-          <div class="row q-col-gutter-md">
-            <div
-              v-for="product in specialtyProducts"
-              :key="product.id"
-              class="col-12 col-md-6 col-lg-4"
-            >
+          <div
+            v-for="(productsInCollection, collectionName) in specialtyProductsByCollection"
+            :key="collectionName"
+            class="q-mb-xl"
+          >
+            <div v-if="Object.keys(specialtyProductsByCollection).length > 1" class="collection-header text-center q-mb-lg">
+              <div class="text-h5 text-weight-bold text-primary">
+                {{ collectionName }}
+              </div>
+            </div>
+            <div class="row q-col-gutter-md">
+              <div
+                v-for="product in productsInCollection"
+                :key="product.id"
+                class="col-12 col-md-6 col-lg-4"
+              >
               <q-card class="product-card">
                 <q-card-section class="text-center">
                   <div v-if="product.imageUrl" class="product-image-wrapper">
@@ -389,6 +423,7 @@
                   />
                 </q-card-actions>
               </q-card>
+            </div>
             </div>
           </div>
         </div>
@@ -711,6 +746,32 @@ export default {
       return products.value.filter((p) => p.category === 'specialty');
     });
 
+    // Group products by collection for each category
+    const customProductsByCollection = computed(() => {
+      return groupProductsByCollection(customProducts.value);
+    });
+
+    const designerProductsByCollection = computed(() => {
+      return groupProductsByCollection(designerProducts.value);
+    });
+
+    const specialtyProductsByCollection = computed(() => {
+      return groupProductsByCollection(specialtyProducts.value);
+    });
+
+    // Helper function to group products by collection
+    const groupProductsByCollection = (productList) => {
+      const grouped = {};
+      productList.forEach((product) => {
+        const collection = product.collection || 'Uncategorized';
+        if (!grouped[collection]) {
+          grouped[collection] = [];
+        }
+        grouped[collection].push(product);
+      });
+      return grouped;
+    };
+
     // Reactive ref to trigger updates when market events change
     const marketEventCheckTrigger = ref(0);
     let marketEventUnsubscribe = null;
@@ -845,6 +906,9 @@ export default {
       customProducts,
       designerProducts,
       specialtyProducts,
+      customProductsByCollection,
+      designerProductsByCollection,
+      specialtyProductsByCollection,
       hasActiveEvent,
       activeMarketEventName,
       isCustomerAtEvent,
@@ -1068,6 +1132,7 @@ export default {
   background: white;
 }
 
+.how-it-works-section,
 .custom-products-section,
 .designer-products-section,
 .specialty-products-section {
@@ -1201,6 +1266,12 @@ export default {
   margin-bottom: 32px;
   padding-bottom: 16px;
   border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.collection-header {
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.15);
 }
 
 .product-card {

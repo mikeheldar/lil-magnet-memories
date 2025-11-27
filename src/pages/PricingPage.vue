@@ -260,6 +260,27 @@
               hint="Which section this product appears in"
             />
 
+            <q-select
+              v-model="editingProduct.collection"
+              :options="collectionOptions"
+              label="Collection"
+              filled
+              use-input
+              input-debounce="0"
+              new-value-mode="add"
+              @new-value="createCollection"
+              class="q-mb-md"
+              hint="Group products together (optional). Can create new or select existing."
+            >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    Type to create a new collection
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
             <q-toggle
               v-model="editingProduct.isTesting"
               label="Testing Only (Admin Only)"
@@ -398,6 +419,27 @@
               class="q-mb-md"
               hint="Which section these products appear in"
             />
+
+            <q-select
+              v-model="bulkEditingProduct.collection"
+              :options="collectionOptions"
+              label="Collection"
+              filled
+              use-input
+              input-debounce="0"
+              new-value-mode="add"
+              @new-value="createCollection"
+              class="q-mb-md"
+              hint="Group products together (optional). Can create new or select existing."
+            >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    Type to create a new collection
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
 
             <q-toggle
               v-model="bulkEditingProduct.isTesting"
@@ -688,6 +730,23 @@ export default {
     const filteredProducts = computed(() => {
       return products.value.filter(product => product.category === activeCategory.value);
     });
+
+    // Extract unique collections from all products
+    const collectionOptions = computed(() => {
+      const collections = new Set();
+      products.value.forEach(product => {
+        if (product.collection && product.collection.trim()) {
+          collections.add(product.collection.trim());
+        }
+      });
+      return Array.from(collections).sort().map(c => ({ label: c, value: c }));
+    });
+
+    const createCollection = (val, done) => {
+      if (val.length > 0) {
+        done(val, 'add');
+      }
+    };
 
     // Get category label
     const getCategoryLabel = (category) => {
@@ -992,6 +1051,7 @@ export default {
         detailedDescription: '',
         imageUrl: '',
         category: activeCategory.value,
+        collection: '',
         isTesting: false,
         isDefault: false,
         pricing: {
@@ -1008,6 +1068,7 @@ export default {
         description: '',
         detailedDescription: '',
         category: activeCategory.value,
+        collection: '',
         isTesting: false,
         pricing: {
           1: 0.0,
@@ -1133,6 +1194,7 @@ export default {
           description: bulkEditingProduct.value.description,
           detailedDescription: bulkEditingProduct.value.detailedDescription || '',
           category: bulkEditingProduct.value.category,
+          collection: bulkEditingProduct.value.collection || '',
           isTesting: bulkEditingProduct.value.isTesting || false,
           isDefault: false, // Bulk products cannot be default
           pricing,
@@ -1184,6 +1246,7 @@ export default {
         detailedDescription: products.value[index].detailedDescription || '',
         imageUrl: products.value[index].imageUrl || '',
         category: products.value[index].category || 'custom',
+        collection: products.value[index].collection || '',
         isTesting: products.value[index].isTesting || false,
         isDefault: products.value[index].isDefault || false,
         pricing: { ...products.value[index].pricing },
@@ -1257,6 +1320,7 @@ export default {
         detailedDescription: editingProduct.value.detailedDescription || '',
         imageUrl: editingProduct.value.imageUrl || '',
         category: editingProduct.value.category,
+        collection: editingProduct.value.collection || '',
         isTesting: editingProduct.value.isTesting || false,
         isDefault: editingProduct.value.isDefault || false,
         pricing,
@@ -1437,6 +1501,8 @@ export default {
       filteredProducts,
       getCategoryLabel,
       getCategoryColor,
+      collectionOptions,
+      createCollection,
     };
   },
 };
