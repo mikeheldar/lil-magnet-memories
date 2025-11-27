@@ -64,6 +64,11 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
+        path: 'magnet-studio-select',
+        component: () => import('pages/MagnetStudioSelectPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
         path: 'magnet-studio',
         component: () => import('pages/MagnetStudioPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },

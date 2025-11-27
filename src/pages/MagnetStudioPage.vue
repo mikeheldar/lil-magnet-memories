@@ -122,44 +122,15 @@
         </q-card-section>
       </q-card>
 
-      <!-- Recent Order Photos -->
-      <q-card class="q-mt-md">
-        <q-card-section>
-          <div class="text-h6 q-mb-md">Recent Order Photos</div>
-
-          <div v-if="loadingOrders" class="text-center q-pa-lg">
-            <q-spinner color="primary" size="48px" />
-            <div class="q-mt-md">Loading recent order photos...</div>
-          </div>
-
-          <div
-            v-else-if="orderPhotos.length === 0"
-            class="text-center q-pa-lg text-grey-6"
-          >
-            No recent order photos found
-          </div>
-
-          <div v-else class="photo-grid q-gutter-md">
-            <div
-              v-for="photo in orderPhotos"
-              :key="photo.id"
-              class="photo-thumbnail"
-              @click="selectPhoto(photo)"
-            >
-              <img
-                :src="photo.url"
-                :alt="photo.name"
-                class="thumbnail-image"
-                @error="handleImageError"
-              />
-              <div class="thumbnail-info">
-                <div class="text-caption">{{ photo.orderNumber }}</div>
-                <div class="text-caption text-grey-6">{{ photo.name }}</div>
-              </div>
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
+      <!-- Back Button -->
+      <div class="q-mb-md">
+        <q-btn
+          flat
+          icon="arrow_back"
+          label="Select Different Photo"
+          @click="goToSelectPage"
+        />
+      </div>
 
       <!-- Generate Crops Popup -->
       <q-dialog v-model="showPreviewDialog" maximized>
@@ -211,29 +182,31 @@
         </q-card>
       </q-dialog>
 
-      <!-- Cropped Squares Preview -->
+      <!-- Cropped Squares Preview - Grid Layout Maintaining Positions -->
       <q-card v-if="croppedSquares.length > 0" class="q-mt-md">
         <q-card-section>
           <div class="text-h6 q-mb-md">
             Cropped Squares ({{ croppedSquares.length }} total)
           </div>
 
-          <div class="cropped-squares-grid">
+          <div class="cropped-squares-grid-maintained">
             <div
               v-for="(square, index) in croppedSquares"
               :key="index"
-              class="cropped-square-preview"
+              class="cropped-square-maintained"
+              :style="getSquarePosition(square)"
             >
               <img
                 :src="square.dataUrl"
-                :alt="`Square ${index + 1}`"
+                :alt="`Square ${square.row},${square.col}`"
+                class="square-image-maintained"
                 @click="downloadSquare(square)"
               />
-              <div class="square-label">{{ square.row }},{{ square.col }}</div>
+              <div class="square-label-maintained">{{ square.row }},{{ square.col }}</div>
               <q-btn
                 icon="download"
                 size="xs"
-                class="square-download-btn"
+                class="square-download-btn-maintained"
                 @click="downloadSquare(square)"
                 color="primary"
               />
@@ -308,71 +281,35 @@ export default {
       }
     };
 
-    const loadRecentOrderPhotos = async () => {
-      loadingOrders.value = true;
+    // Load photo from route query
+    const loadPhotoFromRoute = () => {
+      loading.value = true;
       try {
-        console.log('Loading recent order photos...');
-
-        const orders = await firebaseService.getOrders();
-        console.log('Loaded orders:', orders.length);
-
-        const photoArray = [];
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        orders.forEach((order) => {
-          if (order.photos && order.photos.length > 0) {
-            const orderDate = order.submissionDate?.toDate
-              ? order.submissionDate.toDate()
-              : new Date(order.submissionDate);
-
-            if (orderDate >= thirtyDaysAgo) {
-              order.photos.forEach((photo, index) => {
-                photoArray.push({
-                  id: `${order.id}_${index}`,
-                  name:
-                    photo.name ||
-                    `Order ${order.orderNumber} - Photo ${index + 1}`,
-                  url: photo.url,
-                  orderNumber: order.orderNumber,
-                  uploadedAt: orderDate.toLocaleDateString(),
-                });
-              });
-            }
-          }
-        });
-
-        orderPhotos.value = photoArray;
-        console.log(`✅ Loaded ${photoArray.length} photos from recent orders`);
-
-        if (photoArray.length === 0) {
-          $q.notify({
-            type: 'info',
-            message: 'No photos from recent orders',
-            caption: 'Try uploading some orders first',
-          });
+        const photoParam = route.query.photo;
+        if (photoParam) {
+          const photo = JSON.parse(photoParam);
+          selectedPhoto.value = photo;
+          console.log('Loaded photo from route:', photo);
+        } else {
+          // No photo in route, redirect to selection page
+          router.push('/magnet-studio-select');
+          return;
         }
       } catch (error) {
-        console.error('Error loading recent order photos:', error);
+        console.error('Error parsing photo from route:', error);
         $q.notify({
           type: 'negative',
-          message: 'Failed to load recent order photos',
-          position: 'top',
+          message: 'Failed to load photo',
+          caption: error.message,
         });
+        router.push('/magnet-studio-select');
       } finally {
-        loadingOrders.value = false;
+        loading.value = false;
       }
     };
 
-    const selectPhoto = (photo) => {
-      selectedPhoto.value = photo;
-      croppedSquares.value = [];
-      console.log('Selected photo:', photo);
-    };
-
-    const cancelSelection = () => {
-      selectedPhoto.value = null;
-      croppedSquares.value = [];
+    const goToSelectPage = () => {
+      router.push('/magnet-studio-select');
     };
 
     const handleImageError = (event) => {
@@ -622,8 +559,7 @@ export default {
     });
 
     return {
-      loadingOrders,
-      orderPhotos,
+      loading,
       selectedPhoto,
       selectedImage,
       cropSize,
@@ -636,8 +572,7 @@ export default {
       showPreviewDialog,
       gridAspectRatio,
       gridStyle,
-      selectPhoto,
-      cancelSelection,
+      squareSpacing,
       handleImageError,
       generateCrops,
       downloadSquare,
@@ -646,6 +581,9 @@ export default {
       startDrag,
       handleGridMove,
       handleGridLeave,
+      getSquarePosition,
+      croppedSquaresContainerStyle,
+      goToSelectPage,
     };
   },
 };
@@ -684,25 +622,28 @@ export default {
   background: white;
 }
 
-.crop-container {
+.crop-container-large {
   background: #f5f5f5;
-  padding: 16px;
+  padding: 24px;
   border-radius: 8px;
   text-align: center;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
+  max-height: 80vh;
 }
 
-.image-wrapper {
+.image-wrapper-large {
   position: relative;
   display: inline-block;
+  max-width: 100%;
 }
 
-.selected-photo {
+.selected-photo-large {
   max-width: 100%;
-  max-height: 400px;
+  max-height: 70vh;
   border-radius: 8px;
   display: block;
+  margin: 0 auto;
 }
 
 
