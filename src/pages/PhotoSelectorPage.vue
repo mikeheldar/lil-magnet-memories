@@ -197,10 +197,10 @@ export default {
     const $q = useQuasar();
 
     const loading = ref(true);
-    const activeTab = ref('existing');
     const searchQuery = ref('');
     const allPhotos = ref([]);
-    const selectedPhotos = ref([]); // Array of { photo, index, orderId, orderNumber }
+    const selectedOrderPhotos = ref([]); // Array of { photo, index, orderId, orderNumber }
+    const selectedUploadedPhotos = ref([]); // Array of indices for uploaded photos
     const uploadFiles = ref([]);
     const uploadedPhotos = ref([]);
     const sending = ref(false);
