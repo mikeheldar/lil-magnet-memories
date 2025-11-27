@@ -67,20 +67,23 @@
             </div>
           </div>
 
-          <!-- Image Preview with Interactive Grid -->
-          <div
-            class="crop-container"
-            @mousemove="handleGridMove"
-            @mouseleave="handleGridLeave"
-          >
-            <div class="image-wrapper">
-              <img
-                ref="selectedImage"
-                :src="selectedPhoto.url"
-                alt="Selected photo for cropping"
-                class="selected-photo"
-                @load="initGridOverlay"
-              />
+          <!-- Large Image Preview with Interactive Grid -->
+          <div class="q-mb-md">
+            <div class="text-body2 q-mb-sm">Photo: {{ selectedPhoto.name || 'Selected Photo' }}</div>
+            <div
+              class="crop-container-large"
+              @mousemove="handleGridMove"
+              @mouseleave="handleGridLeave"
+            >
+              <div class="image-wrapper-large">
+                <img
+                  ref="selectedImage"
+                  :src="getPhotoUrl(selectedPhoto)"
+                  alt="Selected photo for cropping"
+                  class="selected-photo-large"
+                  @load="initGridOverlay"
+                  @error="handleImageError"
+                />
 
 
               <!-- Grid overlay with draggable and scalable grid -->
