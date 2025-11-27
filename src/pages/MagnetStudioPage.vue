@@ -603,6 +603,36 @@ export default {
       console.log('Grid dimensions changed:', newRows, 'x', newCols);
     });
 
+    // Get square position for grid display (maintaining relative positions)
+    const getSquarePosition = (square) => {
+      // Calculate position based on row and col, with spacing
+      const squareSize = cropSize.value;
+      const spacing = squareSpacing.value;
+      const left = (square.col - 1) * (squareSize + spacing);
+      const top = (square.row - 1) * (squareSize + spacing);
+      return {
+        position: 'absolute',
+        left: `${left}px`,
+        top: `${top}px`,
+        width: `${squareSize}px`,
+        height: `${squareSize}px`,
+      };
+    };
+
+    // Get container size for cropped squares grid
+    const croppedSquaresContainerStyle = computed(() => {
+      if (croppedSquares.value.length === 0) return {};
+      const squareSize = cropSize.value;
+      const spacing = squareSpacing.value;
+      const width = gridCols.value * (squareSize + spacing) - spacing;
+      const height = gridRows.value * (squareSize + spacing) - spacing;
+      return {
+        width: `${width}px`,
+        height: `${height}px`,
+        position: 'relative',
+      };
+    });
+
     onMounted(async () => {
       const hasAccess = await checkAdminAccess();
       if (hasAccess) {
