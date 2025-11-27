@@ -424,9 +424,6 @@ export default {
               });
             }
 
-            // Show the preview dialog
-            showPreviewDialog.value = true;
-
             generating.value = false;
             resolve();
           } catch (error) {
@@ -641,7 +638,6 @@ export default {
       croppedSquares,
       generating,
       showGrid,
-      showPreviewDialog,
       gridAspectRatio,
       gridStyle,
       squareSpacing,
