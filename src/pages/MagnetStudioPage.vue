@@ -458,36 +458,43 @@ export default {
             croppedSquares.value = squares;
             console.log(`✅ Generated ${squares.length} cropped squares`);
 
-            $q.notify({
-              type: 'positive',
-              message: `Generated ${squares.length} square crops`,
-              position: 'top',
-            });
+            // Use $q from the outer scope
+            if ($q && $q.notify) {
+              $q.notify({
+                type: 'positive',
+                message: `Generated ${squares.length} square crops`,
+                position: 'top',
+              });
+            }
 
             // Show the preview dialog
             showPreviewDialog.value = true;
 
+            generating.value = false;
             resolve();
           } catch (error) {
             console.error('Error generating crops:', error);
-            $q.notify({
-              type: 'negative',
-              message: 'Failed to generate crops',
-              position: 'top',
-            });
-            reject(error);
-          } finally {
+            if ($q && $q.notify) {
+              $q.notify({
+                type: 'negative',
+                message: 'Failed to generate crops',
+                position: 'top',
+              });
+            }
             generating.value = false;
+            reject(error);
           }
         };
 
         img.onerror = (error) => {
           console.error('Error loading image:', error);
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to load image',
-            position: 'top',
-          });
+          if ($q && $q.notify) {
+            $q.notify({
+              type: 'negative',
+              message: 'Failed to load image',
+              position: 'top',
+            });
+          }
           generating.value = false;
           reject(error);
         };
