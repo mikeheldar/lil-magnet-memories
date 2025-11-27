@@ -136,9 +136,17 @@
           <div class="q-mt-md q-gutter-md">
             <q-btn
               color="primary"
-              label="Generate Crops"
+              label="Preview Crops"
+              icon="preview"
               @click="generateCrops"
               :loading="generating"
+            />
+            <q-btn
+              v-if="croppedSquares.length > 0"
+              color="secondary"
+              label="Send to Print Template"
+              icon="print"
+              @click="sendToPrintTemplate"
             />
             <q-btn
               outline
@@ -159,56 +167,6 @@
           @click="goToSelectPage"
         />
       </div>
-
-      <!-- Generate Crops Popup -->
-      <q-dialog v-model="showPreviewDialog" maximized>
-        <q-card class="page-preview-card">
-          <q-card-section>
-            <div class="text-h6 q-mb-md">Preview - 8.5" x 11" Page</div>
-            <q-btn
-              close-icon="close"
-              flat
-              round
-              dense
-              v-close-popup
-              class="absolute-top-right q-ma-sm"
-            />
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            <div class="page-container">
-              <div class="page-content">
-                <div
-                  v-for="(square, index) in croppedSquares"
-                  :key="index"
-                  class="square-on-page"
-                >
-                  <img
-                    :src="square.dataUrl"
-                    :alt="`Square ${index + 1}`"
-                    class="square-image"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="q-mt-md q-gutter-md">
-              <q-btn
-                color="primary"
-                label="Download All Squares"
-                icon="archive"
-                @click="downloadAllSquares"
-              />
-              <q-btn
-                outline
-                color="grey-8"
-                label="Close"
-                @click="showPreviewDialog = false"
-              />
-            </div>
-          </q-card-section>
-        </q-card>
-      </q-dialog>
 
       <!-- Cropped Squares Preview - Grid Layout Maintaining Positions -->
       <q-card v-if="croppedSquares.length > 0" class="q-mt-md">
@@ -278,7 +236,6 @@ export default {
     const croppedSquares = ref([]);
     const generating = ref(false);
     const showGrid = ref(true);
-    const showPreviewDialog = ref(false);
     const gridScale = ref(1); // Size of grid (0.3 to 2)
     const gridPosition = ref({ x: 0, y: 0 });
     const isDragging = ref(false);
@@ -690,6 +647,7 @@ export default {
       generateCrops,
       downloadSquare,
       downloadAllSquares,
+      sendToPrintTemplate,
       initGridOverlay,
       startDrag,
       handleGridMove,
