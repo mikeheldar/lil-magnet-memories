@@ -162,28 +162,17 @@
                 >
                   <q-item-section>
                     <q-item-label class="text-weight-medium">
-                      Order #{{ order.orderNumber }}
-                      <q-chip
-                        v-if="order.status"
-                        :color="getStatusColor(order.status)"
-                        text-color="white"
-                        size="sm"
-                        class="q-ml-sm"
-                      >
-                        {{ order.status }}
-                      </q-chip>
+                      Order #{{ order.orderNumber || order.id }}
                     </q-item-label>
                     <q-item-label caption>
-                      <div><strong>Customer:</strong> {{ order.customer?.firstName }} {{ order.customer?.lastName }}</div>
-                      <div v-if="order.customer?.email"><strong>Email:</strong> {{ order.customer.email }}</div>
                       <div v-if="order.submissionDate">
-                        <strong>Date:</strong> {{ formatDate(order.submissionDate) }}
+                        <strong>Date Ordered:</strong> {{ formatDate(order.submissionDate) }}
                       </div>
-                      <div v-if="order.total !== undefined">
-                        <strong>Total:</strong> ${{ order.total.toFixed(2) }}
+                      <div v-else-if="order.createdAt">
+                        <strong>Date Ordered:</strong> {{ formatDate(order.createdAt) }}
                       </div>
-                      <div v-if="order.totalMagnets">
-                        <strong>Magnets:</strong> {{ order.totalMagnets }}
+                      <div v-else>
+                        <strong>Date Ordered:</strong> N/A
                       </div>
                     </q-item-label>
                   </q-item-section>
@@ -381,17 +370,30 @@ export default {
         associatedOrders.value = [];
         
         try {
-          const allOrders = new Set();
+          const allOrdersMap = new Map(); // Use Map to deduplicate by order ID
           
           // Find orders for each selected photo
           for (const selectedPhoto of selectedPhotos.value) {
             const photo = selectedPhoto.photo;
             const orders = await firebaseService.findOrdersWithPhoto(photo.url, photo.name);
-            orders.forEach(order => allOrders.add(order));
+            orders.forEach(order => {
+              // Use order ID as key to avoid duplicates
+              if (!allOrdersMap.has(order.id)) {
+                allOrdersMap.set(order.id, order);
+              }
+            });
           }
           
-          // Convert Set to Array
-          associatedOrders.value = Array.from(allOrders);
+          // Convert Map to Array and sort by date (newest first)
+          const ordersArray = Array.from(allOrdersMap.values());
+          ordersArray.sort((a, b) => {
+            const dateA = a.submissionDate?.toDate ? a.submissionDate.toDate() : new Date(a.submissionDate || 0);
+            const dateB = b.submissionDate?.toDate ? b.submissionDate.toDate() : new Date(b.submissionDate || 0);
+            return dateB - dateA; // Descending order (newest first)
+          });
+          
+          associatedOrders.value = ordersArray;
+          console.log('✅ Loaded associated orders:', ordersArray.length, ordersArray);
         } catch (error) {
           console.error('Error loading associated orders:', error);
           $q.notify({
