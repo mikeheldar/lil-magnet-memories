@@ -819,6 +819,11 @@ export default {
       const costLabel =
         costNumber > 0 ? ` - $${costNumber.toFixed(2)}` : ' - Free';
       const title = option.label || 'Shipping';
+      // Ensure requiresAddress is set (default to true if allowAddress is true, false if allowAddress is false)
+      const requiresAddress = option.requiresAddress !== undefined
+        ? option.requiresAddress
+        : (option.allowAddress !== false);
+      
       return {
         label: `${title}${costLabel}`,
         value: option.value || option.id,
@@ -829,6 +834,7 @@ export default {
         cost: costNumber,
         estimatedTimeline: option.estimatedTimeline || '',
         allowAddress: option.allowAddress !== false,
+        requiresAddress: requiresAddress,
         type: option.type || 'shipping',
         default: option.default || false,
         rawLabel: title,
@@ -987,7 +993,15 @@ export default {
       if (skipShipping.value) {
         return false;
       }
-      return !!selectedShippingDetails.value?.allowAddress;
+      // Check if selected shipping option requires address
+      if (selectedShippingDetails.value) {
+        // Use requiresAddress if set, otherwise fall back to allowAddress (default true)
+        const requiresAddress = selectedShippingDetails.value.requiresAddress !== undefined
+          ? selectedShippingDetails.value.requiresAddress
+          : (selectedShippingDetails.value.allowAddress !== false);
+        return requiresAddress;
+      }
+      return false;
     });
     const requiresBillingAddress = computed(() => {
       // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
