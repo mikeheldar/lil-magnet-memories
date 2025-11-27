@@ -229,7 +229,7 @@
 
 <script>
 import { ref, onMounted, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
@@ -238,10 +238,10 @@ export default {
   name: 'MagnetStudioPage',
   setup() {
     const router = useRouter();
+    const route = useRoute();
     const $q = useQuasar();
 
-    const loadingOrders = ref(false);
-    const orderPhotos = ref([]);
+    const loading = ref(true);
     const selectedPhoto = ref(null);
     const selectedImage = ref(null);
     const cropSize = ref(300);
@@ -548,7 +548,7 @@ export default {
     onMounted(async () => {
       const hasAccess = await checkAdminAccess();
       if (hasAccess) {
-        await loadRecentOrderPhotos();
+        loadPhotoFromRoute();
       }
 
       // Add mouse event listeners for dragging
@@ -584,6 +584,7 @@ export default {
       getSquarePosition,
       croppedSquaresContainerStyle,
       goToSelectPage,
+      cancelSelection,
     };
   },
 };
