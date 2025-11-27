@@ -111,7 +111,9 @@ class FirebaseService {
       const storageRef = ref(storage, fileName);
 
       try {
-        console.log(`Uploading photo ${i + 1}/${photos.length}: ${photo.name}`);
+        console.log(`Uploading photo ${i + 1}/${photos.length}: ${photo.name} (${(photo.size / 1024 / 1024).toFixed(2)} MB)`);
+        const uploadStartTime = Date.now();
+        
         // Provide metadata to avoid multipart quirks and ensure proper Content-Type
         const metadata = {
           contentType: photo.type || 'image/jpeg',
@@ -122,6 +124,8 @@ class FirebaseService {
         
         // Initialize progress tracking for this photo
         progressMap.set(i, { uploaded: 0, total: photo.size || 0, completed: false });
+        let lastProgressUpdate = Date.now();
+        let lastBytesTransferred = 0;
         
         await new Promise((resolve, reject) => {
           uploadTask.on(
@@ -131,22 +135,51 @@ class FirebaseService {
               const bytesTransferred = snapshot.bytesTransferred;
               const totalBytes = snapshot.totalBytes;
               const photoProgress = progressMap.get(i);
+              
               if (photoProgress) {
                 const previousUploaded = photoProgress.uploaded;
                 photoProgress.uploaded = bytesTransferred;
-                totalUploaded += (bytesTransferred - previousUploaded);
+                photoProgress.total = totalBytes; // Update total in case it wasn't known initially
+                
+                // Calculate bytes uploaded since last update
+                const bytesDelta = bytesTransferred - previousUploaded;
+                totalUploaded += bytesDelta;
+                
+                // Log upload speed every second
+                const now = Date.now();
+                const timeDelta = now - lastProgressUpdate;
+                if (timeDelta >= 1000) { // Log every second
+                  const bytesSinceLastUpdate = bytesTransferred - lastBytesTransferred;
+                  const speedMBps = (bytesSinceLastUpdate / 1024 / 1024) / (timeDelta / 1000);
+                  const elapsedSeconds = (now - uploadStartTime) / 1000;
+                  const totalMB = bytesTransferred / 1024 / 1024;
+                  
+                  console.log(`📤 Photo ${i + 1}/${photos.length} (${photo.name}): ${totalMB.toFixed(2)} MB uploaded in ${elapsedSeconds.toFixed(1)}s (${speedMBps.toFixed(2)} MB/s)`);
+                  
+                  lastProgressUpdate = now;
+                  lastBytesTransferred = bytesTransferred;
+                }
+                
+                // Update overall progress immediately
                 updateOverallProgress();
               }
             },
             (err) => reject(err),
             () => {
               // Mark as completed
+              const uploadEndTime = Date.now();
+              const uploadDuration = (uploadEndTime - uploadStartTime) / 1000;
+              const totalMB = (photo.size || 0) / 1024 / 1024;
+              const avgSpeedMBps = totalMB / uploadDuration;
+              
               const photoProgress = progressMap.get(i);
               if (photoProgress) {
                 photoProgress.completed = true;
                 photoProgress.uploaded = photoProgress.total;
                 updateOverallProgress();
               }
+              
+              console.log(`✅ Photo ${i + 1}/${photos.length} (${photo.name}) completed: ${totalMB.toFixed(2)} MB in ${uploadDuration.toFixed(1)}s (avg ${avgSpeedMBps.toFixed(2)} MB/s)`);
               resolve();
             }
           );
