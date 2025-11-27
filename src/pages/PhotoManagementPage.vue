@@ -168,17 +168,12 @@
                       Order #{{ order.orderNumber || order.id || 'Unknown' }}
                     </q-item-label>
                     <q-item-label caption>
-                      <div v-if="order.submissionDate">
-                        <strong>Date Ordered:</strong> {{ formatDate(order.submissionDate) }}
-                      </div>
-                      <div v-else-if="order.createdAt">
-                        <strong>Date Ordered:</strong> {{ formatDate(order.createdAt) }}
-                      </div>
-                      <div v-else-if="order.updatedAt">
-                        <strong>Date Ordered:</strong> {{ formatDate(order.updatedAt) }}
-                      </div>
-                      <div v-else>
-                        <strong>Date Ordered:</strong> N/A
+                      <div>
+                        <strong>Date Ordered:</strong> 
+                        <span v-if="order.submissionDate">{{ formatDate(order.submissionDate) }}</span>
+                        <span v-else-if="order.createdAt">{{ formatDate(order.createdAt) }}</span>
+                        <span v-else-if="order.updatedAt">{{ formatDate(order.updatedAt) }}</span>
+                        <span v-else>N/A</span>
                       </div>
                     </q-item-label>
                   </q-item-section>
@@ -441,7 +436,24 @@ export default {
     const formatDate = (dateValue) => {
       if (!dateValue) return 'N/A';
       try {
-        const date = dateValue.toDate ? dateValue.toDate() : new Date(dateValue);
+        let date;
+        // Handle Firestore Timestamp
+        if (dateValue && typeof dateValue.toDate === 'function') {
+          date = dateValue.toDate();
+        } else if (dateValue && dateValue.seconds) {
+          // Handle Timestamp object with seconds property
+          date = new Date(dateValue.seconds * 1000);
+        } else if (dateValue instanceof Date) {
+          date = dateValue;
+        } else {
+          date = new Date(dateValue);
+        }
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return 'N/A';
+        }
+        
         return date.toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
@@ -450,7 +462,8 @@ export default {
           minute: '2-digit',
         });
       } catch (error) {
-        return String(dateValue);
+        console.error('Error formatting date:', error, dateValue);
+        return 'N/A';
       }
     };
 
