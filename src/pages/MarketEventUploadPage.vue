@@ -471,6 +471,37 @@
         </q-card>
       </q-dialog>
 
+      <!-- Upload Progress Dialog -->
+      <q-dialog v-model="showUploadProgress" persistent>
+        <q-card style="min-width: 400px">
+          <q-card-section class="row items-center">
+            <q-avatar icon="cloud_upload" color="primary" text-color="white" />
+            <span class="q-ml-sm text-h6">Uploading Photos</span>
+          </q-card-section>
+
+          <q-card-section>
+            <div class="q-mb-md">
+              <div class="text-body1 q-mb-sm">
+                Uploading {{ uploadProgress.completed }} of {{ uploadProgress.total }} photos...
+              </div>
+              <q-linear-progress
+                :value="uploadProgress.overall / 100"
+                color="primary"
+                size="25px"
+                class="q-mt-sm"
+              >
+                <div class="absolute-full flex flex-center">
+                  <span class="text-white text-body2">{{ uploadProgress.overall }}%</span>
+                </div>
+              </q-linear-progress>
+              <div class="text-caption text-grey-6 q-mt-xs text-center">
+                {{ formatBytes(uploadProgress.uploaded) }} of {{ formatBytes(uploadProgress.totalSize) }}
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+
       <!-- Market Event Ended Dialog -->
       <q-dialog v-model="showEventEndedDialog" persistent>
         <q-card style="min-width: 400px">
@@ -598,6 +629,16 @@ export default {
     const selectedProductId = ref(null);
     const loadingProducts = ref(false);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
+    
+    // Upload progress tracking
+    const uploadProgress = ref({
+      overall: 0,
+      completed: 0,
+      total: 0,
+      uploaded: 0,
+      totalSize: 0,
+    });
+    const showUploadProgress = ref(false);
     
     // Product options for dropdown - ensure it's always an array with valid structure
     const productOptions = computed(() => {
@@ -820,9 +861,25 @@ export default {
       return new Date(date).toLocaleString();
     };
 
+    const formatBytes = (bytes) => {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    };
+
     const confirmOrder = async () => {
       showOrderSummary.value = false;
       submitting.value = true;
+      showUploadProgress.value = true;
+      uploadProgress.value = {
+        overall: 0,
+        completed: 0,
+        total: selectedFiles.value.length,
+        uploaded: 0,
+        totalSize: selectedFiles.value.reduce((sum, file) => sum + (file.size || 0), 0),
+      };
 
       // Save form data to localStorage for non-authenticated users
       saveFormDataToLocalStorage();
@@ -851,7 +908,10 @@ export default {
         // Save to Firebase
         try {
           console.log('Attempting to save order to Firebase...');
-          savedOrder = await firebaseService.saveOrder(customerData);
+          // Pass progress callback to saveOrder, which will pass it to uploadPhotos
+          savedOrder = await firebaseService.saveOrder(customerData, (progress) => {
+            uploadProgress.value = progress;
+          });
           console.log('Order saved to Firebase successfully:', savedOrder);
         } catch (error) {
           console.error('Firebase save failed:', error);
@@ -916,6 +976,7 @@ export default {
         });
       } finally {
         submitting.value = false;
+        showUploadProgress.value = false;
       }
     };
 
@@ -933,9 +994,22 @@ export default {
         
         // Upload photos to Firebase Storage first to get persistent URLs
         submitting.value = true;
+        showUploadProgress.value = true;
+        uploadProgress.value = {
+          overall: 0,
+          completed: 0,
+          total: selectedFiles.value.length,
+          uploaded: 0,
+          totalSize: selectedFiles.value.reduce((sum, file) => sum + (file.size || 0), 0),
+        };
         try {
           console.log('📤 Uploading photos to Firebase Storage for cart...');
-          const uploadedPhotos = await firebaseService.uploadPhotos(selectedFiles.value);
+          const uploadedPhotos = await firebaseService.uploadPhotos(
+            selectedFiles.value,
+            (progress) => {
+              uploadProgress.value = progress;
+            }
+          );
           console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
           
           // Prepare photos with download URLs and quantities for cart
@@ -971,6 +1045,7 @@ export default {
           });
           
           submitting.value = false;
+          showUploadProgress.value = false;
           
           // Show success notification
           safeNotify({
@@ -997,6 +1072,7 @@ export default {
         } catch (error) {
           console.error('❌ Error uploading photos for cart:', error);
           submitting.value = false;
+          showUploadProgress.value = false;
           safeNotify({
             type: 'negative',
             message: 'Failed to upload photos',
@@ -1432,6 +1508,9 @@ export default {
       totalCost,
       showOrderSummary,
       orderNumber,
+      uploadProgress,
+      showUploadProgress,
+      formatBytes,
       isAuthenticated,
       currentUser,
       signingIn,

@@ -573,7 +573,22 @@ export default {
       );
     });
 
+    // Convert File to base64 for persistence across devices
+    const fileToBase64 = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    };
+
     const getFilePreview = (file) => {
+      // If file is already a base64 string or URL, return it
+      if (typeof file === 'string') {
+        return file;
+      }
+      // If file is a File object, create blob URL for preview
       return URL.createObjectURL(file);
     };
 
@@ -641,12 +656,18 @@ export default {
       // Save form data to localStorage for non-authenticated users
       saveFormDataToLocalStorage();
       
-      // Add to cart instead of submitting order
-      const photos = selectedFiles.value.map((file, index) => ({
-        name: file.name,
-        preview: getFilePreview(file),
-        quantity: fileQuantities.value[index],
-      }));
+      // Convert files to base64 for persistence across devices
+      const photos = await Promise.all(
+        selectedFiles.value.map(async (file, index) => {
+          const base64 = await fileToBase64(file);
+          return {
+            name: file.name,
+            preview: base64, // Store base64 instead of blob URL
+            url: base64, // Also store as url for compatibility
+            quantity: fileQuantities.value[index],
+          };
+        })
+      );
 
       addCustomUploadToCart({
         productName:

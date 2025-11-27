@@ -1074,12 +1074,12 @@ export default {
         hasMarketEventCartItems,
       });
 
-      // If coming from market event upload, user is at market event, user is market customer, or cart has market event items, prefer pickup option
+      // Only default to pickup if actually at a market event or have market event items
+      // Don't default to pickup just because user is a market customer (they might be doing an online order)
       if (
         isFromMarketEventUpload.value ||
         currentCheckedInEvent ||
         checkedInEvent.value ||
-        userIsMarketCustomer ||
         hasMarketEventCartItems
       ) {
         const pickupOption = options.find((option) => option.type === 'pickup');

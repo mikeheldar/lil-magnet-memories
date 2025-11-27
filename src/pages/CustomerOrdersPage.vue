@@ -152,12 +152,12 @@
             </div>
             <div v-if="order.shippingOption.address" class="q-mt-xs">
               <div>
+                <strong>Delivery Method:</strong>
+                {{ order.shippingOption.label || order.shippingOption.description || 'Standard Shipping' }}
+              </div>
+              <div>
                 <strong>Address:</strong>
                 {{ formatAddress(order.shippingOption.address) }}
-              </div>
-              <div v-if="order.shippingOption.description" class="q-mt-xs">
-                <strong>Shipping Method:</strong>
-                {{ order.shippingOption.description }}
               </div>
               <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
                 <strong>Estimated Delivery:</strong>
@@ -179,7 +179,11 @@
               Pickup Information
             </div>
             <div class="q-mt-xs">
-              <div v-if="order.shippingOption.description">
+              <div>
+                <strong>Delivery Method:</strong>
+                {{ order.shippingOption.label || order.shippingOption.description || 'Pickup at Market Event' }}
+              </div>
+              <div v-if="order.shippingOption.description && order.shippingOption.label !== order.shippingOption.description" class="q-mt-xs">
                 <strong>Pickup Location:</strong>
                 {{ order.shippingOption.description }}
               </div>

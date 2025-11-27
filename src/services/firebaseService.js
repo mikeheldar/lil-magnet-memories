@@ -55,8 +55,8 @@ let authStateWaitCompleted = false;
 const AUTH_STATE_WAIT_TIME = 500; // ms to wait for Firebase to restore auth state
 
 class FirebaseService {
-  // Upload photos to Firebase Storage
-  async uploadPhotos(photos) {
+  // Upload photos to Firebase Storage with progress tracking
+  async uploadPhotos(photos, onProgress = null) {
     // Ensure we have an auth context for Storage rules (request.auth != null)
     // Do this silently - don't expose anonymous auth to users
     // Only sign in anonymously if there's no user OR the current user is anonymous
@@ -80,6 +80,26 @@ class FirebaseService {
     console.log(`Starting parallel upload of ${photos.length} photos...`);
     const timestamp = Date.now();
 
+    // Track progress for each photo
+    const progressMap = new Map();
+    const totalSize = photos.reduce((sum, photo) => sum + (photo.size || 0), 0);
+    let totalUploaded = 0;
+
+    // Helper to update overall progress
+    const updateOverallProgress = () => {
+      if (onProgress) {
+        const overallPercent = totalSize > 0 ? Math.round((totalUploaded / totalSize) * 100) : 0;
+        const completedCount = Array.from(progressMap.values()).filter(p => p.completed).length;
+        onProgress({
+          overall: overallPercent,
+          completed: completedCount,
+          total: photos.length,
+          uploaded: totalUploaded,
+          totalSize: totalSize,
+        });
+      }
+    };
+
     // Upload all photos in parallel for much faster uploads
     const uploadPromises = photos.map(async (photo, i) => {
       const fileName = `orders/${timestamp}_${i}_${photo.name}`;
@@ -94,14 +114,39 @@ class FirebaseService {
         };
 
         const uploadTask = uploadBytesResumable(storageRef, photo, metadata);
+        
+        // Initialize progress tracking for this photo
+        progressMap.set(i, { uploaded: 0, total: photo.size || 0, completed: false });
+        
         await new Promise((resolve, reject) => {
           uploadTask.on(
             'state_changed',
-            null,
+            (snapshot) => {
+              // Update progress for this specific photo
+              const bytesTransferred = snapshot.bytesTransferred;
+              const totalBytes = snapshot.totalBytes;
+              const photoProgress = progressMap.get(i);
+              if (photoProgress) {
+                const previousUploaded = photoProgress.uploaded;
+                photoProgress.uploaded = bytesTransferred;
+                totalUploaded += (bytesTransferred - previousUploaded);
+                updateOverallProgress();
+              }
+            },
             (err) => reject(err),
-            () => resolve()
+            () => {
+              // Mark as completed
+              const photoProgress = progressMap.get(i);
+              if (photoProgress) {
+                photoProgress.completed = true;
+                photoProgress.uploaded = photoProgress.total;
+                updateOverallProgress();
+              }
+              resolve();
+            }
           );
         });
+        
         const downloadURL = await getDownloadURL(storageRef);
         console.log(`Photo ${i + 1} uploaded successfully`);
 
@@ -114,6 +159,12 @@ class FirebaseService {
         };
       } catch (error) {
         console.error(`Error uploading photo ${i + 1}:`, error);
+        // Mark as completed even on error to update progress
+        const photoProgress = progressMap.get(i);
+        if (photoProgress) {
+          photoProgress.completed = true;
+        }
+        updateOverallProgress();
         throw error;
       }
     });
@@ -121,6 +172,17 @@ class FirebaseService {
     // Wait for all uploads to complete in parallel
     const uploadedPhotos = await Promise.all(uploadPromises);
     console.log(`All ${photos.length} photos uploaded successfully`);
+    
+    // Final progress update
+    if (onProgress) {
+      onProgress({
+        overall: 100,
+        completed: photos.length,
+        total: photos.length,
+        uploaded: totalSize,
+        totalSize: totalSize,
+      });
+    }
     
     return uploadedPhotos;
   }
