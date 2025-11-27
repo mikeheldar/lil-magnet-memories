@@ -516,6 +516,40 @@ export default {
     const editingShippingOption = ref(null);
     const shippingDeleteDialog = ref(false);
     const shippingDeleteIndex = ref(-1);
+    const activeCategory = ref('custom');
+
+    // Filter products by active category
+    const filteredProducts = computed(() => {
+      return products.value.filter(product => product.category === activeCategory.value);
+    });
+
+    // Get category label
+    const getCategoryLabel = (category) => {
+      switch (category) {
+        case 'custom':
+          return 'Custom Photo Products';
+        case 'designer':
+          return 'Designer Magnets';
+        case 'specialty':
+          return 'Specialty Products';
+        default:
+          return 'Custom Products';
+      }
+    };
+
+    // Get category color
+    const getCategoryColor = (category) => {
+      switch (category) {
+        case 'custom':
+          return 'primary';
+        case 'designer':
+          return 'purple';
+        case 'specialty':
+          return 'orange';
+        default:
+          return 'primary';
+      }
+    };
 
     // Safe notify helper to prevent errors when $q.notify is not available
     const safeNotify = (options) => {
