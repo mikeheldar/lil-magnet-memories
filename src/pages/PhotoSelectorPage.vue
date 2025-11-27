@@ -353,6 +353,19 @@ export default {
 
     // Remove uploaded photo
     const removeUploadedPhoto = (index) => {
+      // Remove from selected photos if it was selected
+      const selectedIndex = selectedUploadedPhotos.value.indexOf(index);
+      if (selectedIndex >= 0) {
+        selectedUploadedPhotos.value.splice(selectedIndex, 1);
+      }
+      // Adjust indices of selected photos that come after this one
+      selectedUploadedPhotos.value = selectedUploadedPhotos.value.map(selectedIndex => {
+        if (selectedIndex > index) {
+          return selectedIndex - 1;
+        }
+        return selectedIndex;
+      });
+      // Remove the photo
       uploadedPhotos.value.splice(index, 1);
     };
 
