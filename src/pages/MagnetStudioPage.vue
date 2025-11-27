@@ -344,8 +344,31 @@ export default {
       router.push('/magnet-studio-select');
     };
 
+    const cancelSelection = () => {
+      goToSelectPage();
+    };
+
+    // Get photo URL (handles both url and preview)
+    const getPhotoUrl = (photo) => {
+      if (!photo) return '';
+      if (photo.url && photo.url.startsWith('http')) {
+        return photo.url;
+      }
+      if (photo.preview && !photo.preview.startsWith('blob:')) {
+        return photo.preview;
+      }
+      if (photo.url) {
+        return photo.url;
+      }
+      if (photo.preview) {
+        return photo.preview;
+      }
+      return '';
+    };
+
     const handleImageError = (event) => {
       console.error('Image failed to load:', event.target.src);
+      console.error('Photo object:', selectedPhoto.value);
       event.target.style.display = 'none';
     };
 
