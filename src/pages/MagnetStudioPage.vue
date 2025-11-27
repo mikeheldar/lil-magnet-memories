@@ -214,7 +214,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
@@ -482,10 +482,45 @@ export default {
         }, index * 100);
       });
 
-      $q.notify({
-        type: 'positive',
-        message: `Downloading ${croppedSquares.value.length} squares...`,
-        position: 'top',
+      if ($q && $q.notify) {
+        $q.notify({
+          type: 'positive',
+          message: `Downloading ${croppedSquares.value.length} squares...`,
+          position: 'top',
+        });
+      }
+    };
+
+    // Send crops to print template
+    const sendToPrintTemplate = () => {
+      if (croppedSquares.value.length === 0) {
+        if ($q && $q.notify) {
+          $q.notify({
+            type: 'warning',
+            message: 'Please generate crops first',
+            position: 'top',
+          });
+        }
+        return;
+      }
+
+      // Convert cropped squares to photo format for print template
+      const photos = croppedSquares.value.map((square) => ({
+        name: `Square ${square.row}-${square.col}`,
+        url: square.dataUrl,
+        preview: square.dataUrl,
+        dataUrl: square.dataUrl,
+      }));
+
+      const quantities = croppedSquares.value.map(() => 1);
+
+      // Navigate to print template with photos
+      router.push({
+        path: '/print-template',
+        query: {
+          photos: JSON.stringify(photos),
+          quantities: JSON.stringify(quantities),
+        },
       });
     };
 
