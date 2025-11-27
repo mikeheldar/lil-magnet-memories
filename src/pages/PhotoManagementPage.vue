@@ -153,15 +153,19 @@
             <div class="text-body2 text-weight-medium q-mb-sm">
               Associated Orders ({{ associatedOrders.length }}):
             </div>
-            <div v-if="associatedOrders.length === 0 && !loadingOrders" class="text-caption text-grey-6 q-pa-sm">
+            <div v-if="loadingOrders" class="text-center q-pa-md">
+              <q-spinner color="primary" size="2em" />
+              <div class="q-mt-sm text-caption">Loading associated orders...</div>
+            </div>
+            <div v-else-if="associatedOrders.length === 0" class="text-caption text-grey-6 q-pa-sm">
               No associated orders found
             </div>
-            <q-scroll-area v-if="associatedOrders.length > 0" style="max-height: 300px;" class="border rounded-borders">
-              <q-list>
+            <div v-else class="border rounded-borders q-pa-sm" style="max-height: 300px; overflow-y: auto;">
+              <q-list dense>
                 <q-item
                   v-for="order in associatedOrders"
                   :key="order.id || order.orderNumber"
-                  class="q-pa-sm"
+                  class="q-pa-xs"
                 >
                   <q-item-section>
                     <q-item-label class="text-weight-medium">
@@ -179,13 +183,9 @@
                   </q-item-section>
                 </q-item>
               </q-list>
-            </q-scroll-area>
+            </div>
           </div>
 
-          <div v-if="deleteAssociatedOrders && loadingOrders" class="text-center q-pa-md">
-            <q-spinner color="primary" size="2em" />
-            <div class="q-mt-sm text-caption">Loading associated orders...</div>
-          </div>
         </q-card-section>
 
         <q-card-actions align="right">
