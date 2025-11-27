@@ -279,10 +279,10 @@
 
             <q-item clickable v-ripple @click="navigateTo('/photo-selector')">
               <q-item-section avatar>
-                <q-icon name="photo_library" color="blue" />
+                <q-icon name="print" color="blue" />
               </q-item-section>
               <q-item-section>
-                <q-item-label>Photo Selector</q-item-label>
+                <q-item-label>Print Template</q-item-label>
                 <q-item-label caption>Select photos for print template</q-item-label>
               </q-item-section>
             </q-item>
@@ -553,6 +553,8 @@ export default {
             return 'Admin - Magnet Studio';
           case '/pricing':
             return 'Admin - Manage Products';
+          case '/photo-selector':
+            return 'Print Template';
           case '/':
           default:
             return 'Lil Magnet Memories';

@@ -2,11 +2,11 @@
   <q-page class="q-pa-md bg-grey-2">
     <div class="text-center q-mb-lg">
       <div class="text-h4 text-weight-bold text-primary">
-        <q-icon name="photo_library" class="q-mr-sm" />
-        Photo Selector for Print Template
+        <q-icon name="print" class="q-mr-sm" />
+        Print Template
       </div>
       <div class="text-caption text-grey-7 q-mt-sm">
-        Select photos from existing orders or upload new photos directly
+        Select photos from existing orders or upload new photos to send to print template
       </div>
     </div>
 
@@ -18,138 +18,141 @@
 
     <!-- Main Content -->
     <div v-else>
-      <!-- Tabs: Existing Photos vs Upload New -->
-      <q-tabs v-model="activeTab" class="q-mb-md">
-        <q-tab name="existing" label="Select from Orders" icon="photo_library" />
-        <q-tab name="upload" label="Upload New Photos" icon="cloud_upload" />
-      </q-tabs>
-
-      <q-tab-panels v-model="activeTab" animated>
-        <!-- Existing Photos Tab -->
-        <q-tab-panel name="existing">
-          <div class="q-mb-md">
+      <!-- Search and Upload Section -->
+      <div class="q-mb-md">
+        <div class="row q-col-gutter-md q-mb-md">
+          <div class="col-12 col-md-8">
             <q-input
               v-model="searchQuery"
               filled
               placeholder="Search by order number, customer name, or photo name..."
               clearable
-              class="q-mb-md"
             >
               <template v-slot:prepend>
                 <q-icon name="search" />
               </template>
             </q-input>
-
-            <div class="text-body2 text-grey-7 q-mb-sm">
-              Found {{ filteredPhotos.length }} photos
-            </div>
           </div>
-
-          <!-- Photo Grid -->
-          <div class="row q-col-gutter-md">
-            <div
-              v-for="(photo, index) in filteredPhotos"
-              :key="`${photo.orderId}-${index}`"
-              class="col-6 col-sm-4 col-md-3 col-lg-2"
-            >
-              <q-card
-                :class="{ 'selected-photo': isPhotoSelected(photo, index) }"
-                class="photo-card cursor-pointer"
-                @click="togglePhotoSelection(photo, index)"
-              >
-                <q-img
-                  :src="getPhotoUrl(photo)"
-                  ratio="1"
-                  class="photo-thumbnail"
-                  @error="handleImageError($event, photo)"
-                >
-                  <template v-slot:error>
-                    <div class="absolute-full flex flex-center bg-grey-3 text-grey-8">
-                      <q-icon name="broken_image" size="24px" />
-                    </div>
-                  </template>
-                  <div
-                    v-if="isPhotoSelected(photo, index)"
-                    class="absolute-full flex flex-center"
-                    style="background: rgba(0,0,0,0.5)"
-                  >
-                    <q-icon name="check_circle" size="48px" color="white" />
-                  </div>
-                </q-img>
-                <q-card-section class="q-pa-xs">
-                  <div class="text-caption text-truncate" :title="photo.name">
-                    {{ photo.name }}
-                  </div>
-                  <div class="text-caption text-grey-6">
-                    Order #{{ photo.orderNumber }}
-                  </div>
-                </q-card-section>
-              </q-card>
-            </div>
-          </div>
-
-          <div v-if="filteredPhotos.length === 0" class="text-center q-pa-xl">
-            <q-icon name="photo_library" size="64px" color="grey-5" />
-            <div class="text-h6 text-grey-6 q-mt-md">No photos found</div>
-            <div class="text-body2 text-grey-7 q-mt-sm">
-              Try adjusting your search or upload new photos
-            </div>
-          </div>
-        </q-tab-panel>
-
-        <!-- Upload New Photos Tab -->
-        <q-tab-panel name="upload">
-          <div class="q-mb-md">
+          <div class="col-12 col-md-4">
             <q-file
               v-model="uploadFiles"
-              label="Select Photos to Upload"
+              label="Upload New Photos"
               multiple
               accept="image/*"
               filled
               @update:model-value="onFilesSelected"
             >
               <template v-slot:prepend>
-                <q-icon name="attach_file" />
+                <q-icon name="cloud_upload" />
               </template>
             </q-file>
           </div>
+        </div>
 
-          <!-- Uploaded Photos Preview -->
-          <div v-if="uploadedPhotos.length > 0" class="q-mb-md">
-            <div class="text-subtitle1 q-mb-sm">Selected Photos ({{ uploadedPhotos.length }})</div>
-            <div class="row q-col-gutter-md">
+        <div class="text-body2 text-grey-7 q-mb-sm">
+          Found {{ filteredPhotos.length }} photos from orders
+          <span v-if="uploadedPhotos.length > 0">
+            • {{ uploadedPhotos.length }} uploaded photo{{ uploadedPhotos.length !== 1 ? 's' : '' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Combined Photo Grid: Orders + Uploaded -->
+      <div class="row q-col-gutter-md">
+        <!-- Photos from Orders -->
+        <div
+          v-for="(photo, index) in filteredPhotos"
+          :key="`order-${photo.orderId}-${index}`"
+          class="col-6 col-sm-4 col-md-3 col-lg-2"
+        >
+          <q-card
+            :class="{ 'selected-photo': isOrderPhotoSelected(photo, index) }"
+            class="photo-card cursor-pointer"
+            @click="toggleOrderPhotoSelection(photo, index)"
+          >
+            <q-img
+              :src="getPhotoUrl(photo)"
+              ratio="1"
+              class="photo-thumbnail"
+              @error="handleImageError($event, photo)"
+            >
+              <template v-slot:error>
+                <div class="absolute-full flex flex-center bg-grey-3 text-grey-8">
+                  <q-icon name="broken_image" size="24px" />
+                </div>
+              </template>
               <div
-                v-for="(photo, index) in uploadedPhotos"
-                :key="`upload-${index}`"
-                class="col-6 col-sm-4 col-md-3 col-lg-2"
+                v-if="isOrderPhotoSelected(photo, index)"
+                class="absolute-full flex flex-center"
+                style="background: rgba(0,0,0,0.5)"
               >
-                <q-card class="photo-card">
-                  <q-img
-                    :src="photo.preview"
-                    ratio="1"
-                    class="photo-thumbnail"
-                  />
-                  <q-card-section class="q-pa-xs">
-                    <div class="text-caption text-truncate" :title="photo.name">
-                      {{ photo.name }}
-                    </div>
-                  </q-card-section>
-                  <q-card-actions>
-                    <q-btn
-                      flat
-                      dense
-                      icon="delete"
-                      color="negative"
-                      size="sm"
-                      @click="removeUploadedPhoto(index)"
-                    />
-                  </q-card-actions>
-                </q-card>
+                <q-icon name="check_circle" size="48px" color="white" />
               </div>
-            </div>
-          </div>
-        </q-tab-panel>
-      </q-tab-panels>
+            </q-img>
+            <q-card-section class="q-pa-xs">
+              <div class="text-caption text-truncate" :title="photo.name">
+                {{ photo.name }}
+              </div>
+              <div class="text-caption text-grey-6">
+                Order #{{ photo.orderNumber }}
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <!-- Uploaded Photos -->
+        <div
+          v-for="(photo, index) in uploadedPhotos"
+          :key="`upload-${index}`"
+          class="col-6 col-sm-4 col-md-3 col-lg-2"
+        >
+          <q-card
+            :class="{ 'selected-photo': isUploadedPhotoSelected(index) }"
+            class="photo-card cursor-pointer"
+            @click="toggleUploadedPhotoSelection(index)"
+          >
+            <q-img
+              :src="photo.preview"
+              ratio="1"
+              class="photo-thumbnail"
+            >
+              <div
+                v-if="isUploadedPhotoSelected(index)"
+                class="absolute-full flex flex-center"
+                style="background: rgba(0,0,0,0.5)"
+              >
+                <q-icon name="check_circle" size="48px" color="white" />
+              </div>
+            </q-img>
+            <q-card-section class="q-pa-xs">
+              <div class="text-caption text-truncate" :title="photo.name">
+                {{ photo.name }}
+              </div>
+              <div class="text-caption text-grey-6">
+                New Upload
+              </div>
+            </q-card-section>
+            <q-card-actions class="q-pa-xs">
+              <q-btn
+                flat
+                dense
+                icon="delete"
+                color="negative"
+                size="sm"
+                @click.stop="removeUploadedPhoto(index)"
+              />
+            </q-card-actions>
+          </q-card>
+        </div>
+      </div>
+
+      <div v-if="filteredPhotos.length === 0 && uploadedPhotos.length === 0" class="text-center q-pa-xl">
+        <q-icon name="photo_library" size="64px" color="grey-5" />
+        <div class="text-h6 text-grey-6 q-mt-md">No photos available</div>
+        <div class="text-body2 text-grey-7 q-mt-sm">
+          Upload photos or search for photos from existing orders
+        </div>
+      </div>
 
       <!-- Selected Photos Summary -->
       <q-card v-if="selectedPhotosCount > 0" class="q-mt-lg sticky-bottom">
@@ -292,28 +295,43 @@ export default {
       console.warn('Failed to load photo:', photo.name, photo.url);
     };
 
-    // Check if photo is selected
-    const isPhotoSelected = (photo, index) => {
-      return selectedPhotos.value.some(
+    // Check if order photo is selected
+    const isOrderPhotoSelected = (photo, index) => {
+      return selectedOrderPhotos.value.some(
         (sp) => sp.orderId === photo.orderId && sp.index === index
       );
     };
 
-    // Toggle photo selection
-    const togglePhotoSelection = (photo, index) => {
-      const existingIndex = selectedPhotos.value.findIndex(
+    // Toggle order photo selection
+    const toggleOrderPhotoSelection = (photo, index) => {
+      const existingIndex = selectedOrderPhotos.value.findIndex(
         (sp) => sp.orderId === photo.orderId && sp.index === index
       );
 
       if (existingIndex >= 0) {
-        selectedPhotos.value.splice(existingIndex, 1);
+        selectedOrderPhotos.value.splice(existingIndex, 1);
       } else {
-        selectedPhotos.value.push({
+        selectedOrderPhotos.value.push({
           photo,
           index,
           orderId: photo.orderId,
           orderNumber: photo.orderNumber,
         });
+      }
+    };
+
+    // Check if uploaded photo is selected
+    const isUploadedPhotoSelected = (index) => {
+      return selectedUploadedPhotos.value.includes(index);
+    };
+
+    // Toggle uploaded photo selection
+    const toggleUploadedPhotoSelection = (index) => {
+      const existingIndex = selectedUploadedPhotos.value.indexOf(index);
+      if (existingIndex >= 0) {
+        selectedUploadedPhotos.value.splice(existingIndex, 1);
+      } else {
+        selectedUploadedPhotos.value.push(index);
       }
     };
 
@@ -338,9 +356,9 @@ export default {
       uploadedPhotos.value.splice(index, 1);
     };
 
-    // Get selected photos count (existing + uploaded)
+    // Get selected photos count (orders + uploaded)
     const selectedPhotosCount = computed(() => {
-      return selectedPhotos.value.length + uploadedPhotos.value.length;
+      return selectedOrderPhotos.value.length + selectedUploadedPhotos.value.length;
     });
 
     // Send to print template
@@ -361,16 +379,20 @@ export default {
         const quantities = [];
 
         // Add selected photos from orders
-        selectedPhotos.value.forEach((sp) => {
+        selectedOrderPhotos.value.forEach((sp) => {
           photos.push(sp.photo);
           quantities.push(1); // Default quantity of 1
         });
 
-        // Upload new photos and add them
-        if (uploadedPhotos.value.length > 0) {
-          console.log('Uploading new photos to Firebase Storage...');
+        // Upload selected new photos and add them
+        const photosToUpload = selectedUploadedPhotos.value
+          .map(index => uploadedPhotos.value[index])
+          .filter(photo => photo && photo.file);
+
+        if (photosToUpload.length > 0) {
+          console.log('Uploading selected new photos to Firebase Storage...');
           const uploaded = await firebaseService.uploadPhotos(
-            uploadedPhotos.value.map((up) => up.file)
+            photosToUpload.map((up) => up.file)
           );
 
           uploaded.forEach((uploadedPhoto) => {
@@ -437,8 +459,10 @@ export default {
       selectedPhotosCount,
       getPhotoUrl,
       handleImageError,
-      isPhotoSelected,
-      togglePhotoSelection,
+      isOrderPhotoSelected,
+      toggleOrderPhotoSelection,
+      isUploadedPhotoSelected,
+      toggleUploadedPhotoSelection,
       onFilesSelected,
       removeUploadedPhoto,
       sendToPrintTemplate,
