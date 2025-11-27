@@ -67,13 +67,13 @@
         >
           <q-card
             :class="{ 'selected-photo': isOrderPhotoSelected(photo, index) }"
-            class="photo-card cursor-pointer"
-            @click="toggleOrderPhotoSelection(photo, index)"
+            class="photo-card"
           >
             <q-img
               :src="getPhotoUrl(photo)"
               ratio="1"
-              class="photo-thumbnail"
+              class="photo-thumbnail cursor-pointer"
+              @click="toggleOrderPhotoSelection(photo, index)"
               @error="handleImageError($event, photo)"
             >
               <template v-slot:error>
@@ -83,18 +83,48 @@
               </template>
               <div
                 v-if="isOrderPhotoSelected(photo, index)"
-                class="absolute-full flex flex-center"
-                style="background: rgba(0,0,0,0.5)"
+                class="absolute-top-right q-ma-xs"
               >
-                <q-icon name="check_circle" size="48px" color="white" />
+                <q-icon name="check_circle" size="32px" color="white" style="text-shadow: 0 0 4px rgba(0,0,0,0.8);" />
               </div>
             </q-img>
-            <q-card-section class="q-pa-xs">
+            <q-card-section class="q-pa-xs" v-if="!isOrderPhotoSelected(photo, index)">
               <div class="text-caption text-truncate" :title="photo.name">
                 {{ photo.name }}
               </div>
               <div class="text-caption text-grey-6">
                 Order #{{ photo.orderNumber }}
+              </div>
+            </q-card-section>
+            <q-card-section class="q-pa-xs" v-else>
+              <div class="text-caption text-truncate text-center q-mb-xs" :title="photo.name">
+                {{ photo.name }}
+              </div>
+              <div class="text-caption text-grey-6 text-center q-mb-xs">
+                Order #{{ photo.orderNumber }}
+              </div>
+              <div class="text-caption text-center q-mb-xs">Quantity:</div>
+              <div class="row items-center justify-center q-gutter-xs">
+                <q-btn
+                  round
+                  dense
+                  icon="remove"
+                  size="sm"
+                  color="primary"
+                  @click.stop="decrementOrderPhotoQuantityInGrid(photo, index)"
+                  :disable="getOrderPhotoQuantityInGrid(photo, index) <= 1"
+                />
+                <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
+                  {{ getOrderPhotoQuantityInGrid(photo, index) }}
+                </div>
+                <q-btn
+                  round
+                  dense
+                  icon="add"
+                  size="sm"
+                  color="primary"
+                  @click.stop="incrementOrderPhotoQuantityInGrid(photo, index)"
+                />
               </div>
             </q-card-section>
           </q-card>
@@ -118,13 +148,12 @@
             >
               <div
                 v-if="isUploadedPhotoSelected(index)"
-                class="absolute-full flex flex-center"
-                style="background: rgba(0,0,0,0.5)"
+                class="absolute-top-right q-ma-xs"
               >
-                <q-icon name="check_circle" size="48px" color="white" />
+                <q-icon name="check_circle" size="32px" color="white" style="text-shadow: 0 0 4px rgba(0,0,0,0.8);" />
               </div>
             </q-img>
-            <q-card-section class="q-pa-xs">
+            <q-card-section class="q-pa-xs" v-if="!isUploadedPhotoSelected(index)">
               <div class="text-caption text-truncate" :title="photo.name">
                 {{ photo.name }}
               </div>
@@ -132,45 +161,47 @@
                 New Upload
               </div>
             </q-card-section>
-            <q-card-actions class="q-pa-xs">
-              <div class="row items-center full-width q-gutter-xs">
-                <div class="col-auto">
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="remove"
-                    size="sm"
-                    @click.stop="decrementUploadedPhotoQuantityInGrid(index)"
-                    :disable="getUploadedPhotoQuantityInGrid(index) <= 1"
-                  />
-                </div>
-                <div class="col text-center">
-                  <div class="text-body2 text-weight-bold">
-                    Qty: {{ getUploadedPhotoQuantityInGrid(index) }}
-                  </div>
-                </div>
-                <div class="col-auto">
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="add"
-                    size="sm"
-                    @click.stop="incrementUploadedPhotoQuantityInGrid(index)"
-                  />
-                </div>
-                <div class="col-auto">
-                  <q-btn
-                    flat
-                    dense
-                    icon="delete"
-                    color="negative"
-                    size="sm"
-                    @click.stop="removeUploadedPhoto(index)"
-                  />
-                </div>
+            <q-card-section class="q-pa-xs" v-else>
+              <div class="text-caption text-truncate text-center q-mb-xs" :title="photo.name">
+                {{ photo.name }}
               </div>
+              <div class="text-caption text-grey-6 text-center q-mb-xs">
+                New Upload
+              </div>
+              <div class="text-caption text-center q-mb-xs">Quantity:</div>
+              <div class="row items-center justify-center q-gutter-xs">
+                <q-btn
+                  round
+                  dense
+                  icon="remove"
+                  size="sm"
+                  color="primary"
+                  @click.stop="decrementUploadedPhotoQuantityInGrid(index)"
+                  :disable="getUploadedPhotoQuantityInGrid(index) <= 1"
+                />
+                <div class="text-body2 text-weight-bold" style="min-width: 30px; text-align: center;">
+                  {{ getUploadedPhotoQuantityInGrid(index) }}
+                </div>
+                <q-btn
+                  round
+                  dense
+                  icon="add"
+                  size="sm"
+                  color="primary"
+                  @click.stop="incrementUploadedPhotoQuantityInGrid(index)"
+                />
+              </div>
+            </q-card-section>
+            <q-card-actions class="q-pa-xs" v-if="!isUploadedPhotoSelected(index)">
+              <q-btn
+                flat
+                dense
+                icon="delete"
+                color="negative"
+                size="sm"
+                @click.stop="removeUploadedPhoto(index)"
+                class="full-width"
+              />
             </q-card-actions>
           </q-card>
         </div>
@@ -521,28 +552,55 @@ export default {
 
     // Quantity management for uploaded photos in the grid
     const getUploadedPhotoQuantityInGrid = (index) => {
+      // If selected, get quantity from selectedUploadedPhotos, otherwise from uploadedPhotos
+      const selectedItem = selectedUploadedPhotos.value.find(item => item.index === index);
+      if (selectedItem) {
+        return selectedItem.quantity || 1;
+      }
       return uploadedPhotos.value[index]?.quantity || 1;
     };
 
     const incrementUploadedPhotoQuantityInGrid = (index) => {
-      if (uploadedPhotos.value[index]) {
+      const selectedItem = selectedUploadedPhotos.value.find(item => item.index === index);
+      if (selectedItem) {
+        selectedItem.quantity = (selectedItem.quantity || 1) + 1;
+      } else if (uploadedPhotos.value[index]) {
         uploadedPhotos.value[index].quantity = (uploadedPhotos.value[index].quantity || 1) + 1;
-        // If this photo is already selected, update its quantity in selectedUploadedPhotos
-        const selectedItem = selectedUploadedPhotos.value.find(item => item.index === index);
-        if (selectedItem) {
-          selectedItem.quantity = uploadedPhotos.value[index].quantity;
-        }
       }
     };
 
     const decrementUploadedPhotoQuantityInGrid = (index) => {
-      if (uploadedPhotos.value[index] && uploadedPhotos.value[index].quantity > 1) {
+      const selectedItem = selectedUploadedPhotos.value.find(item => item.index === index);
+      if (selectedItem && selectedItem.quantity > 1) {
+        selectedItem.quantity--;
+      } else if (uploadedPhotos.value[index] && uploadedPhotos.value[index].quantity > 1) {
         uploadedPhotos.value[index].quantity--;
-        // If this photo is already selected, update its quantity in selectedUploadedPhotos
-        const selectedItem = selectedUploadedPhotos.value.find(item => item.index === index);
-        if (selectedItem) {
-          selectedItem.quantity = uploadedPhotos.value[index].quantity;
-        }
+      }
+    };
+
+    // Quantity management for order photos in the grid
+    const getOrderPhotoQuantityInGrid = (photo, index) => {
+      const selected = selectedOrderPhotos.value.find(
+        sp => sp.orderId === photo.orderId && sp.index === index
+      );
+      return selected ? (selected.quantity || 1) : 1;
+    };
+
+    const incrementOrderPhotoQuantityInGrid = (photo, index) => {
+      const selectedIndex = selectedOrderPhotos.value.findIndex(
+        sp => sp.orderId === photo.orderId && sp.index === index
+      );
+      if (selectedIndex >= 0) {
+        selectedOrderPhotos.value[selectedIndex].quantity = (selectedOrderPhotos.value[selectedIndex].quantity || 1) + 1;
+      }
+    };
+
+    const decrementOrderPhotoQuantityInGrid = (photo, index) => {
+      const selectedIndex = selectedOrderPhotos.value.findIndex(
+        sp => sp.orderId === photo.orderId && sp.index === index
+      );
+      if (selectedIndex >= 0 && selectedOrderPhotos.value[selectedIndex].quantity > 1) {
+        selectedOrderPhotos.value[selectedIndex].quantity--;
       }
     };
 
@@ -696,6 +754,9 @@ export default {
       getUploadedPhotoQuantityInGrid,
       incrementUploadedPhotoQuantityInGrid,
       decrementUploadedPhotoQuantityInGrid,
+      getOrderPhotoQuantityInGrid,
+      incrementOrderPhotoQuantityInGrid,
+      decrementOrderPhotoQuantityInGrid,
       totalQuantity,
       onFilesSelected,
       removeUploadedPhoto,
