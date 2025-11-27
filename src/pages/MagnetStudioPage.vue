@@ -548,27 +548,45 @@ export default {
     });
 
     const gridStyle = computed(() => {
-      // Calculate the aspect ratio of the grid (cols/rows)
-      const aspectRatio = gridCols.value / gridRows.value;
-
-      // Determine the size based on the image container's aspect ratio
-      // We want each cell to be a square, so we set width and height proportionally
-      let width = '100%';
-      let height = '100%';
-
-      // If we have a 3x2 grid, the grid should be wider than tall
-      // We scale to fit within the image while maintaining the aspect ratio
-      if (aspectRatio > 1) {
-        // Grid is wider than tall
-        height = `${(1 / aspectRatio) * 100}%`;
-      } else if (aspectRatio < 1) {
-        // Grid is taller than wide
-        width = `${aspectRatio * 100}%`;
+      if (!selectedImage.value) {
+        return {};
       }
 
+      // Get the actual image dimensions
+      const img = selectedImage.value;
+      const imgWidth = img.naturalWidth || img.width || 1;
+      const imgHeight = img.naturalHeight || img.height || 1;
+      const imgAspectRatio = imgWidth / imgHeight;
+
+      // Calculate the aspect ratio of the grid (cols/rows)
+      const gridAspectRatio = gridCols.value / gridRows.value;
+
+      // Calculate the size of each square cell
+      // We want all cells to be perfect squares
+      let cellSize;
+      let gridWidth, gridHeight;
+
+      if (imgAspectRatio > gridAspectRatio) {
+        // Image is wider than grid aspect ratio
+        // Height is the limiting factor - use image height
+        cellSize = imgHeight / gridRows.value;
+        gridHeight = imgHeight;
+        gridWidth = cellSize * gridCols.value;
+      } else {
+        // Image is taller than grid aspect ratio
+        // Width is the limiting factor - use image width
+        cellSize = imgWidth / gridCols.value;
+        gridWidth = imgWidth;
+        gridHeight = cellSize * gridRows.value;
+      }
+
+      // Convert to percentage of image size
+      const widthPercent = (gridWidth / imgWidth) * 100;
+      const heightPercent = (gridHeight / imgHeight) * 100;
+
       return {
-        width,
-        height,
+        width: `${widthPercent}%`,
+        height: `${heightPercent}%`,
         transform: `translate(-50%, -50%) translate(${gridPosition.value.x}px, ${gridPosition.value.y}px) scale(${gridScale.value})`,
         transformOrigin: 'center center',
       };
@@ -713,7 +731,7 @@ export default {
 }
 
 .crop-container-large {
-  background: #f5f5f5;
+  background: #424242;
   padding: 24px;
   border-radius: 8px;
   text-align: center;
