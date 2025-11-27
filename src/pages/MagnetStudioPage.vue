@@ -602,11 +602,6 @@ export default {
       const maxY = (imgDisplayHeight - scaledHeight) / 2;
       const constrainedX = Math.max(-maxX, Math.min(maxX, gridPosition.value.x));
       const constrainedY = Math.max(-maxY, Math.min(maxY, gridPosition.value.y));
-      
-      // Update position if it was constrained
-      if (constrainedX !== gridPosition.value.x || constrainedY !== gridPosition.value.y) {
-        gridPosition.value = { x: constrainedX, y: constrainedY };
-      }
 
       return {
         width: `${widthPercent}%`,
@@ -626,10 +621,41 @@ export default {
     };
 
     const handleGridMove = (event) => {
-      if (isDragging.value) {
+      if (isDragging.value && selectedImage.value) {
+        const img = selectedImage.value;
+        const imgDisplayWidth = img.offsetWidth || img.width || 1;
+        const imgDisplayHeight = img.offsetHeight || img.height || 1;
+        const imgNaturalWidth = img.naturalWidth || imgDisplayWidth;
+        const imgNaturalHeight = img.naturalHeight || imgDisplayHeight;
+        const imgAspectRatio = imgNaturalWidth / imgNaturalHeight;
+        const gridAspectRatio = gridCols.value / gridRows.value;
+        
+        let cellSize, gridWidth, gridHeight;
+        if (imgAspectRatio > gridAspectRatio) {
+          cellSize = imgNaturalHeight / gridRows.value;
+          gridHeight = imgNaturalHeight;
+          gridWidth = cellSize * gridCols.value;
+        } else {
+          cellSize = imgNaturalWidth / gridCols.value;
+          gridWidth = imgNaturalWidth;
+          gridHeight = cellSize * gridRows.value;
+        }
+        
+        const widthPercent = (gridWidth / imgNaturalWidth) * 100;
+        const heightPercent = (gridHeight / imgNaturalHeight) * 100;
+        const scaledWidth = (imgDisplayWidth * widthPercent / 100) * gridScale.value;
+        const scaledHeight = (imgDisplayHeight * heightPercent / 100) * gridScale.value;
+        
+        const maxX = (imgDisplayWidth - scaledWidth) / 2;
+        const maxY = (imgDisplayHeight - scaledHeight) / 2;
+        
+        const newX = event.clientX - dragStart.value.x;
+        const newY = event.clientY - dragStart.value.y;
+        
+        // Constrain position to keep grid within image bounds
         gridPosition.value = {
-          x: event.clientX - dragStart.value.x,
-          y: event.clientY - dragStart.value.y,
+          x: Math.max(-maxX, Math.min(maxX, newX)),
+          y: Math.max(-maxY, Math.min(maxY, newY)),
         };
       }
     };
@@ -637,6 +663,51 @@ export default {
     const handleGridLeave = () => {
       isDragging.value = false;
     };
+
+    // Constrain grid position when scale or dimensions change to keep it within bounds
+    watch([gridScale, gridRows, gridCols, selectedImage], () => {
+      if (!selectedImage.value) return;
+      
+      nextTick(() => {
+        const img = selectedImage.value;
+        if (!img) return;
+        
+        const imgDisplayWidth = img.offsetWidth || img.width || 1;
+        const imgDisplayHeight = img.offsetHeight || img.height || 1;
+        const imgNaturalWidth = img.naturalWidth || imgDisplayWidth;
+        const imgNaturalHeight = img.naturalHeight || imgDisplayHeight;
+        const imgAspectRatio = imgNaturalWidth / imgNaturalHeight;
+        const gridAspectRatio = gridCols.value / gridRows.value;
+        
+        let cellSize, gridWidth, gridHeight;
+        if (imgAspectRatio > gridAspectRatio) {
+          cellSize = imgNaturalHeight / gridRows.value;
+          gridHeight = imgNaturalHeight;
+          gridWidth = cellSize * gridCols.value;
+        } else {
+          cellSize = imgNaturalWidth / gridCols.value;
+          gridWidth = imgNaturalWidth;
+          gridHeight = cellSize * gridRows.value;
+        }
+        
+        const widthPercent = (gridWidth / imgNaturalWidth) * 100;
+        const heightPercent = (gridHeight / imgNaturalHeight) * 100;
+        const scaledWidth = (imgDisplayWidth * widthPercent / 100) * gridScale.value;
+        const scaledHeight = (imgDisplayHeight * heightPercent / 100) * gridScale.value;
+        
+        const maxX = (imgDisplayWidth - scaledWidth) / 2;
+        const maxY = (imgDisplayHeight - scaledHeight) / 2;
+        
+        // Constrain position if needed
+        if (gridPosition.value.x > maxX || gridPosition.value.x < -maxX ||
+            gridPosition.value.y > maxY || gridPosition.value.y < -maxY) {
+          gridPosition.value = {
+            x: Math.max(-maxX, Math.min(maxX, gridPosition.value.x)),
+            y: Math.max(-maxY, Math.min(maxY, gridPosition.value.y)),
+          };
+        }
+      });
+    });
 
     // Ensure grid dimensions stay valid numbers
     watch([gridRows, gridCols], ([newRows, newCols]) => {
