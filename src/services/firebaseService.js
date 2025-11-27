@@ -103,13 +103,20 @@ class FirebaseService {
           : 0;
         const completedCount = allProgress.filter(p => p.completed).length;
         
-        onProgress({
+        const progressData = {
           overall: overallPercent,
           completed: completedCount,
           total: photos.length,
           uploaded: totalUploaded,
           totalSize: actualTotalSize,
-        });
+        };
+        
+        // Call the progress callback with error handling
+        try {
+          onProgress(progressData);
+        } catch (error) {
+          console.error('Error in progress callback:', error);
+        }
       }
     };
 
@@ -173,7 +180,7 @@ class FirebaseService {
                   lastBytesTransferred = bytesTransferred;
                 }
                 
-                // Update overall progress immediately
+                // Update overall progress immediately (this triggers the callback)
                 updateOverallProgress();
               }
             },
@@ -239,11 +246,11 @@ class FirebaseService {
   }
 
   // Save order to Firestore
-  async saveOrder(orderData) {
+  async saveOrder(orderData, onProgress = null) {
     try {
       // Upload photos first
       console.log('Starting photo uploads...');
-      const uploadedPhotos = await this.uploadPhotos(orderData.photos);
+      const uploadedPhotos = await this.uploadPhotos(orderData.photos, onProgress);
       console.log(`Photo uploads completed: ${uploadedPhotos.length} photos uploaded`);
 
       // Prepare order document
