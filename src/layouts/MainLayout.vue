@@ -289,7 +289,7 @@
             <q-expansion-item
               icon="work"
               label="Operator"
-              :default-opened="false"
+              :default-opened="true"
               header-class="text-grey-8"
             >
               <q-item clickable v-ripple @click="navigateTo('/orders')">
