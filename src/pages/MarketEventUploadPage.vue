@@ -82,6 +82,7 @@
                   v-model="formData.firstName"
                   label="First Name *"
                   filled
+                  ref="firstNameInput"
                   :rules="[(val) => !!val || 'First name is required']"
                 />
               </div>
@@ -90,6 +91,7 @@
                   v-model="formData.lastName"
                   label="Last Name *"
                   filled
+                  ref="lastNameInput"
                   :rules="[(val) => !!val || 'Last name is required']"
                 />
               </div>
@@ -102,6 +104,7 @@
                   label="Email Address *"
                   type="email"
                   filled
+                  ref="emailInput"
                   :rules="[
                     (val) => !!val || 'Email is required',
                     (val) => isValidEmail(val) || 'Please enter a valid email',
@@ -374,6 +377,7 @@
                 :loading="submitting"
                 :disable="!canSubmit"
                 class="q-px-xl"
+                @click="handleSubmitClick"
               >
                 <q-icon name="send" class="q-mr-sm" />
                 {{ isAtMarketEvent && paymentChoice === 'pay_online' ? 'Continue to Payment' : 'Submit Photos for Magnet Creation' }}
@@ -816,6 +820,53 @@ export default {
         totalMagnets.value > 0
       );
     });
+
+    // Refs for input fields
+    const firstNameInput = ref(null);
+    const lastNameInput = ref(null);
+    const emailInput = ref(null);
+
+    // Handle submit button click - show validation errors if disabled
+    const handleSubmitClick = (event) => {
+      if (!canSubmit.value) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const missingFields = [];
+        if (!formData.value.firstName) missingFields.push('First Name');
+        if (!formData.value.lastName) missingFields.push('Last Name');
+        if (!formData.value.email) {
+          missingFields.push('Email');
+        } else if (!isValidEmail(formData.value.email)) {
+          missingFields.push('Valid Email');
+        }
+        
+        if (missingFields.length > 0) {
+          const message = `Please fill in: ${missingFields.join(', ')}`;
+          safeNotify({
+            type: 'warning',
+            message: 'Required fields missing',
+            caption: message,
+            position: 'top',
+            timeout: 4000,
+          });
+          
+          // Scroll to first missing field
+          setTimeout(() => {
+            if (!formData.value.firstName && firstNameInput.value) {
+              firstNameInput.value.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              firstNameInput.value.focus();
+            } else if (!formData.value.lastName && lastNameInput.value) {
+              lastNameInput.value.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              lastNameInput.value.focus();
+            } else if ((!formData.value.email || !isValidEmail(formData.value.email)) && emailInput.value) {
+              emailInput.value.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              emailInput.value.focus();
+            }
+          }, 100);
+        }
+      }
+    };
 
     const getFilePreview = (file) => {
       return URL.createObjectURL(file);
@@ -1552,6 +1603,10 @@ export default {
       showEventEndedDialog,
       goToMainPage,
       onProductChange,
+      handleSubmitClick,
+      firstNameInput,
+      lastNameInput,
+      emailInput,
     };
   },
 };

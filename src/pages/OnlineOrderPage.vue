@@ -82,6 +82,7 @@
                   v-model="formData.firstName"
                   label="First Name *"
                   filled
+                  ref="firstNameInput"
                   :rules="[(val) => !!val || 'First name is required']"
                 />
               </div>
@@ -90,6 +91,7 @@
                   v-model="formData.lastName"
                   label="Last Name *"
                   filled
+                  ref="lastNameInput"
                   :rules="[(val) => !!val || 'Last name is required']"
                 />
               </div>
@@ -102,6 +104,7 @@
                   label="Email Address *"
                   type="email"
                   filled
+                  ref="emailInput"
                   :rules="[
                     (val) => !!val || 'Email is required',
                     (val) => isValidEmail(val) || 'Please enter a valid email',
@@ -354,6 +357,7 @@
                 size="lg"
                 class="q-px-xl"
                 @click.prevent.stop="handleAddToCart"
+                @click="handleSubmitClick"
               />
             </div>
 
@@ -572,6 +576,53 @@ export default {
         totalMagnets.value > 0
       );
     });
+
+    // Refs for input fields
+    const firstNameInput = ref(null);
+    const lastNameInput = ref(null);
+    const emailInput = ref(null);
+
+    // Handle submit button click - show validation errors if disabled
+    const handleSubmitClick = (event) => {
+      if (!canSubmit.value) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const missingFields = [];
+        if (!formData.value.firstName) missingFields.push('First Name');
+        if (!formData.value.lastName) missingFields.push('Last Name');
+        if (!formData.value.email) {
+          missingFields.push('Email');
+        } else if (!isValidEmail(formData.value.email)) {
+          missingFields.push('Valid Email');
+        }
+        
+        if (missingFields.length > 0) {
+          const message = `Please fill in: ${missingFields.join(', ')}`;
+          $q.notify({
+            type: 'warning',
+            message: 'Required fields missing',
+            caption: message,
+            position: 'top',
+            timeout: 4000,
+          });
+          
+          // Scroll to first missing field
+          setTimeout(() => {
+            if (!formData.value.firstName && firstNameInput.value) {
+              firstNameInput.value.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              firstNameInput.value.focus();
+            } else if (!formData.value.lastName && lastNameInput.value) {
+              lastNameInput.value.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              lastNameInput.value.focus();
+            } else if ((!formData.value.email || !isValidEmail(formData.value.email)) && emailInput.value) {
+              emailInput.value.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              emailInput.value.focus();
+            }
+          }, 100);
+        }
+      }
+    };
 
     // Convert File to base64 for persistence across devices
     const fileToBase64 = (file) => {
@@ -1112,6 +1163,10 @@ export default {
       handleAddToCart,
       confirmReAdd,
       handleGoogleSignIn,
+      handleSubmitClick,
+      firstNameInput,
+      lastNameInput,
+      emailInput,
     };
   },
 };

@@ -1443,9 +1443,11 @@ export default {
       if (!selectedPaymentOption.value) {
         return false;
       }
+      // Apple Pay doesn't require shipping address (handled by Apple Pay sheet)
       if (
         !skipShipping.value &&
         requiresShippingAddress.value &&
+        selectedPaymentOption.value !== 'apple_pay' &&
         !addressIsComplete(shippingAddress.value)
       ) {
         return false;
@@ -1490,24 +1492,28 @@ export default {
       () =>
         showValidationErrors.value &&
         requiresShippingAddress.value &&
+        selectedPaymentOption.value !== 'apple_pay' &&
         !shippingAddress.value.street
     );
     const shippingCityError = computed(
       () =>
         showValidationErrors.value &&
         requiresShippingAddress.value &&
+        selectedPaymentOption.value !== 'apple_pay' &&
         !shippingAddress.value.city
     );
     const shippingStateError = computed(
       () =>
         showValidationErrors.value &&
         requiresShippingAddress.value &&
+        selectedPaymentOption.value !== 'apple_pay' &&
         !shippingAddress.value.state
     );
     const shippingZipError = computed(
       () =>
         showValidationErrors.value &&
         requiresShippingAddress.value &&
+        selectedPaymentOption.value !== 'apple_pay' &&
         !shippingAddress.value.zip
     );
     const billingStreetError = computed(
