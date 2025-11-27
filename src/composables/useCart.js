@@ -27,9 +27,14 @@ const loadCartFromStorage = () => {
 // Save cart to localStorage and Firestore (if logged in)
 const saveCart = async (items) => {
   try {
-    // Always save to localStorage as backup
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-    console.log('🛒 Cart saved to localStorage:', items.length, 'items');
+    // Always save to localStorage as backup (can include base64 for immediate display)
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      console.log('🛒 Cart saved to localStorage:', items.length, 'items');
+    } catch (localError) {
+      console.error('❌ Error saving to localStorage (might be full):', localError);
+      // Continue to try Firestore even if localStorage fails
+    }
     
     // If user is logged in, also save to Firestore
     const user = auth.currentUser;
@@ -38,11 +43,13 @@ const saveCart = async (items) => {
         isSyncingToFirestore = true;
         try {
           console.log('🛒 Saving cart to Firestore for user:', user.uid, items.length, 'items');
+          // Firestore save will sanitize items (remove base64, keep only URLs)
           await firebaseService.saveUserCart(user.uid, items);
           currentUserId = user.uid;
           console.log('✅ Cart saved to Firestore successfully');
         } catch (error) {
           console.error('❌ Error saving cart to Firestore:', error);
+          console.error('   This might be due to document size limit (1MB) or network issues');
           // Don't throw - localStorage save succeeded
         } finally {
           isSyncingToFirestore = false;
@@ -131,16 +138,59 @@ const setupCartListener = (userId) => {
         const items = data.items || [];
         console.log('🔄 Real-time cart update received:', items.length, 'items');
         
+        // Firestore items don't have base64 previews (removed to save space)
+        // We need to preserve any base64 previews from localStorage for immediate display
+        const localCart = localStorage.getItem(CART_STORAGE_KEY);
+        let localItems = [];
+        if (localCart) {
+          try {
+            localItems = JSON.parse(localCart);
+          } catch (e) {
+            console.warn('Failed to parse local cart:', e);
+          }
+        }
+        
+        // Merge Firestore items with local base64 previews if available
+        const mergedItems = items.map(firestoreItem => {
+          if (firestoreItem.isCustomUpload && firestoreItem.photos) {
+            // Try to find matching item in local cart to get base64 previews
+            const localItem = localItems.find(li => 
+              li.isCustomUpload && 
+              li.productId === firestoreItem.productId &&
+              li.photos?.length === firestoreItem.photos?.length
+            );
+            
+            if (localItem && localItem.photos) {
+              // Merge: use Firestore URLs (persistent) but add local base64 previews if available
+              const mergedPhotos = firestoreItem.photos.map((fsPhoto, index) => {
+                const localPhoto = localItem.photos[index];
+                return {
+                  ...fsPhoto,
+                  // Add base64 preview from local if it matches the same photo
+                  preview: (localPhoto && localPhoto.name === fsPhoto.name && localPhoto.preview) 
+                    ? localPhoto.preview 
+                    : fsPhoto.url, // Fallback to URL if no local preview
+                };
+              });
+              return {
+                ...firestoreItem,
+                photos: mergedPhotos,
+              };
+            }
+          }
+          return firestoreItem;
+        });
+        
         // Only update if different to avoid unnecessary updates
         const currentItemsStr = JSON.stringify(cartItems.value);
-        const newItemsStr = JSON.stringify(items);
+        const newItemsStr = JSON.stringify(mergedItems);
         if (currentItemsStr !== newItemsStr) {
-          console.log('✅ Updating cart from real-time listener');
+          console.log('✅ Updating cart from real-time listener (merged with local previews)');
           // Temporarily set flag to prevent watch from triggering save
           isSyncingToFirestore = true;
-          cartItems.value = items;
-          // Update localStorage to keep in sync
-          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+          cartItems.value = mergedItems;
+          // Update localStorage to keep in sync (with base64 previews)
+          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(mergedItems));
           // Reset flag after a short delay
           setTimeout(() => {
             isSyncingToFirestore = false;

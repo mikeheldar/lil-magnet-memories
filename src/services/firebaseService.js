@@ -714,18 +714,52 @@ class FirebaseService {
         console.warn('⚠️ Cannot save cart: no user ID');
         return;
       }
+      
+      // Sanitize cart items for Firestore - remove base64 previews (too large for Firestore 1MB limit)
+      // Keep only Firebase Storage URLs which are small and persistent
+      const sanitizedItems = cartItems.map(item => {
+        if (item.isCustomUpload && item.photos) {
+          // Remove base64 previews, keep only Firebase Storage URLs
+          const sanitizedPhotos = item.photos.map(photo => ({
+            name: photo.name,
+            url: photo.url, // Firebase Storage URL (persistent, small)
+            // Don't include preview (base64 can be 1-5MB per image, exceeds Firestore limit)
+            fileName: photo.fileName,
+            size: photo.size,
+            type: photo.type,
+            quantity: photo.quantity,
+          }));
+          return {
+            ...item,
+            photos: sanitizedPhotos,
+          };
+        }
+        return item;
+      });
+      
+      // Calculate approximate size to warn if too large
+      const estimatedSize = JSON.stringify(sanitizedItems).length;
+      if (estimatedSize > 900000) { // Warn if approaching 1MB limit
+        console.warn('⚠️ Cart size is large:', estimatedSize, 'bytes. Firestore limit is 1MB.');
+      }
+      
       const cartDocRef = doc(db, 'user_carts', userId);
       await setDoc(
         cartDocRef,
         {
-          items: cartItems,
+          items: sanitizedItems,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
       );
-      console.log('✅ Cart saved to Firestore for user:', userId, cartItems.length, 'items');
+      console.log('✅ Cart saved to Firestore for user:', userId, sanitizedItems.length, 'items', `(${estimatedSize} bytes)`);
     } catch (error) {
       console.error('❌ Error saving cart to Firestore:', error);
+      console.error('   Error details:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack
+      });
       throw error;
     }
   }
