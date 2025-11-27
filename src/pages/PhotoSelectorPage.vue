@@ -218,7 +218,7 @@
 
               <!-- Selected Uploaded Photos -->
               <div
-                v-for="(item, idx) in selectedUploadedPhotos"
+                v-for="item in selectedUploadedPhotos"
                 :key="`upload-${item.index}`"
                 class="col-12 col-sm-6 col-md-4"
               >
