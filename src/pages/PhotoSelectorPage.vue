@@ -190,7 +190,7 @@
           <div class="text-h6 q-mb-md">Selected Photos ({{ selectedPhotosCount }}):</div>
           
           <!-- Selected Photos List with Quantities -->
-          <q-scroll-area style="max-height: 400px;" class="q-mb-md">
+          <div class="q-mb-md">
             <div class="row q-col-gutter-md">
               <!-- Selected Order Photos -->
               <div
@@ -260,25 +260,25 @@
                       New Upload
                     </div>
                     <div class="text-caption text-center q-mb-xs">Quantity:</div>
-                    <div class="row items-center justify-center q-gutter-xs">
+                    <div class="row items-center justify-center q-gutter-sm">
                       <q-btn
-                        flat
-                        dense
                         round
+                        dense
                         icon="remove"
-                        size="sm"
+                        size="md"
+                        color="primary"
                         @click="decrementUploadedPhotoQuantity(item.index)"
                         :disable="item.quantity <= 1"
                       />
-                      <div class="text-h6 text-weight-bold" style="min-width: 40px; text-align: center;">
+                      <div class="text-h5 text-weight-bold" style="min-width: 50px; text-align: center;">
                         {{ item.quantity }}
                       </div>
                       <q-btn
-                        flat
-                        dense
                         round
+                        dense
                         icon="add"
-                        size="sm"
+                        size="md"
+                        color="primary"
                         @click="incrementUploadedPhotoQuantity(item.index)"
                       />
                     </div>
@@ -286,7 +286,7 @@
                 </q-card>
               </div>
             </div>
-          </q-scroll-area>
+          </div>
 
           <div class="row items-center justify-between q-pt-md" style="border-top: 1px solid rgba(0,0,0,0.12);">
             <div class="col">
