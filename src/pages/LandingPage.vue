@@ -359,7 +359,7 @@
                   class="col-12 col-md-6 col-lg-4"
                 >
               <q-card class="product-card">
-                <q-card-section class="text-center">
+                <q-card-section class="product-card-content text-center">
                   <div v-if="product.imageUrl" class="product-image-wrapper">
                     <img
                       :src="product.imageUrl"
@@ -373,32 +373,32 @@
                   <div class="text-h6 q-mt-md q-mb-sm">
                     {{ product.description }}
                   </div>
-                </q-card-section>
 
-                <q-card-section
-                  v-if="product.detailedDescription"
-                  class="product-description"
-                >
-                  <div class="text-body2 text-grey-7">
-                    {{ product.detailedDescription }}
-                  </div>
-                </q-card-section>
-
-                <q-card-section class="product-pricing">
-                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
                   <div
-                    v-for="(price, qty) in product.pricing"
-                    :key="qty"
-                    class="text-body2 q-mb-xs"
+                    v-if="product.detailedDescription"
+                    class="product-description"
                   >
-                    <strong>{{ qty }}x</strong> for
-                    <strong class="text-primary"
-                      >${{ price.toFixed(2) }}</strong
+                    <div class="text-body2 text-grey-7">
+                      {{ product.detailedDescription }}
+                    </div>
+                  </div>
+
+                  <div class="product-pricing">
+                    <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
+                    <div
+                      v-for="(price, qty) in product.pricing"
+                      :key="qty"
+                      class="text-body2 q-mb-xs"
                     >
+                      <strong>{{ qty }}x</strong> for
+                      <strong class="text-primary"
+                        >${{ price.toFixed(2) }}</strong
+                      >
+                    </div>
                   </div>
                 </q-card-section>
 
-                <q-card-actions class="q-pa-md">
+                <q-card-actions class="product-card-actions q-pa-md">
                   <q-btn
                     color="secondary"
                     label="Add to Cart"
@@ -423,7 +423,7 @@
               class="col-12 col-md-6 col-lg-4"
             >
               <q-card class="product-card">
-                <q-card-section class="text-center">
+                <q-card-section class="product-card-content text-center">
                   <div v-if="product.imageUrl" class="product-image-wrapper">
                     <img
                       :src="product.imageUrl"
@@ -437,32 +437,32 @@
                   <div class="text-h6 q-mt-md q-mb-sm">
                     {{ product.description }}
                   </div>
-                </q-card-section>
 
-                <q-card-section
-                  v-if="product.detailedDescription"
-                  class="product-description"
-                >
-                  <div class="text-body2 text-grey-7">
-                    {{ product.detailedDescription }}
-                  </div>
-                </q-card-section>
-
-                <q-card-section class="product-pricing">
-                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
                   <div
-                    v-for="(price, qty) in product.pricing"
-                    :key="qty"
-                    class="text-body2 q-mb-xs"
+                    v-if="product.detailedDescription"
+                    class="product-description"
                   >
-                    <strong>{{ qty }}x</strong> for
-                    <strong class="text-primary"
-                      >${{ price.toFixed(2) }}</strong
+                    <div class="text-body2 text-grey-7">
+                      {{ product.detailedDescription }}
+                    </div>
+                  </div>
+
+                  <div class="product-pricing">
+                    <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
+                    <div
+                      v-for="(price, qty) in product.pricing"
+                      :key="qty"
+                      class="text-body2 q-mb-xs"
                     >
+                      <strong>{{ qty }}x</strong> for
+                      <strong class="text-primary"
+                        >${{ price.toFixed(2) }}</strong
+                      >
+                    </div>
                   </div>
                 </q-card-section>
 
-                <q-card-actions class="q-pa-md">
+                <q-card-actions class="product-card-actions q-pa-md">
                   <q-btn
                     color="secondary"
                     label="Add to Cart"
@@ -1478,6 +1478,9 @@ export default {
 
 .product-card {
   height: 100%;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 12px;
   overflow: hidden;
@@ -1486,6 +1489,17 @@ export default {
     transform: translateY(-4px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   }
+}
+
+.product-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card-actions {
+  margin-top: auto;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .product-card-row {
@@ -1503,15 +1517,18 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 250px;
   margin-bottom: 16px;
+  overflow: hidden;
+  background: #f5f5f5;
+  border-radius: 8px;
 }
 
 .product-image {
-  max-width: 180px;
-  max-height: 180px;
-  width: auto;
-  height: auto;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 8px;
 }
 
@@ -1534,8 +1551,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 180px;
-  height: 180px;
+  width: 100%;
+  height: 250px;
   margin: 0 auto 16px;
   background: #f5f5f5;
   border-radius: 8px;
@@ -1552,10 +1569,10 @@ export default {
 }
 
 .product-description {
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-  padding-top: 16px;
-  padding-bottom: 16px;
+  flex: 1;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  min-height: 40px;
 }
 
 .product-pricing {
