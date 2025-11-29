@@ -505,12 +505,17 @@ export default {
           console.log('📤 Uploading new photo to Firebase...');
           console.log('📁 File:', uploadedPhoto.value.file.name, uploadedPhoto.value.file.size, 'bytes');
           
-          safeNotify({
-            type: 'info',
-            message: 'Uploading photo...',
-            position: 'top',
-            timeout: 2000,
-          });
+          // Try to show notification, but don't let it block
+          try {
+            safeNotify({
+              type: 'info',
+              message: 'Uploading photo...',
+              position: 'top',
+              timeout: 2000,
+            });
+          } catch (notifyErr) {
+            console.warn('Could not show upload notification (non-critical):', notifyErr);
+          }
 
           try {
             const uploaded = await firebaseService.uploadPhotos([uploadedPhoto.value.file]);
@@ -533,6 +538,11 @@ export default {
             }
           } catch (uploadError) {
             console.error('❌ Error during upload:', uploadError);
+            console.error('❌ Upload error details:', {
+              message: uploadError.message,
+              stack: uploadError.stack,
+              name: uploadError.name,
+            });
             throw uploadError;
           }
         } else if (selectedOrderPhoto.value) {
