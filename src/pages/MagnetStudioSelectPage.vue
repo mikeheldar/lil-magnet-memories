@@ -287,12 +287,16 @@ export default {
       } catch (error) {
         console.error('❌ Error loading photos:', error);
         console.error('Error stack:', error.stack);
-        if ($q && $q.notify) {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to load photos',
-            caption: error.message,
-          });
+        try {
+          if ($q && $q.notify && typeof $q.notify === 'function') {
+            $q.notify({
+              type: 'negative',
+              message: 'Failed to load photos',
+              caption: error.message,
+            });
+          }
+        } catch (e) {
+          console.warn('Could not show notification:', e);
         }
       } finally {
         loading.value = false;
