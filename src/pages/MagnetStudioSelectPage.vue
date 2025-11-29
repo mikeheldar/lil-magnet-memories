@@ -218,6 +218,19 @@ export default {
     const router = useRouter();
     const $q = useQuasar();
 
+    // Helper function to safely show notifications
+    const safeNotify = (options) => {
+      try {
+        if ($q && $q.notify && typeof $q.notify === 'function') {
+          $q.notify(options);
+        } else {
+          console.warn('Notification not available:', options);
+        }
+      } catch (e) {
+        console.warn('Could not show notification:', e, options);
+      }
+    };
+
     const loading = ref(true);
     const searchQuery = ref('');
     const allPhotos = ref([]);
@@ -287,17 +300,11 @@ export default {
       } catch (error) {
         console.error('❌ Error loading photos:', error);
         console.error('Error stack:', error.stack);
-        try {
-          if ($q && $q.notify && typeof $q.notify === 'function') {
-            $q.notify({
-              type: 'negative',
-              message: 'Failed to load photos',
-              caption: error.message,
-            });
-          }
-        } catch (e) {
-          console.warn('Could not show notification:', e);
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to load photos',
+          caption: error.message,
+        });
       } finally {
         loading.value = false;
         console.log('✅ Photo loading complete, loading set to false');
@@ -439,16 +446,10 @@ export default {
       // Check if photo is selected
       if (!selectedPhoto.value) {
         console.error('❌ No photo selected!');
-        try {
-          if ($q && $q.notify && typeof $q.notify === 'function') {
-            $q.notify({
-              type: 'warning',
-              message: 'Please select a photo first',
-            });
-          }
-        } catch (e) {
-          console.warn('Could not show notification:', e);
-        }
+        safeNotify({
+          type: 'warning',
+          message: 'Please select a photo first',
+        });
         return;
       }
       
@@ -465,16 +466,10 @@ export default {
 
       if (!selectedPhoto.value) {
         console.warn('⚠️ No photo selected');
-        try {
-          if ($q && $q.notify && typeof $q.notify === 'function') {
-            $q.notify({
-              type: 'warning',
-              message: 'Please select a photo',
-            });
-          }
-        } catch (e) {
-          console.warn('Could not show notification:', e);
-        }
+        safeNotify({
+          type: 'warning',
+          message: 'Please select a photo',
+        });
         return;
       }
 
@@ -489,18 +484,12 @@ export default {
           console.log('📤 Uploading new photo to Firebase...');
           console.log('📁 File:', uploadedPhoto.value.file.name, uploadedPhoto.value.file.size, 'bytes');
           
-          try {
-            if ($q && $q.notify && typeof $q.notify === 'function') {
-              $q.notify({
-                type: 'info',
-                message: 'Uploading photo...',
-                position: 'top',
-                timeout: 2000,
-              });
-            }
-          } catch (e) {
-            console.warn('Could not show upload notification:', e);
-          }
+          safeNotify({
+            type: 'info',
+            message: 'Uploading photo...',
+            position: 'top',
+            timeout: 2000,
+          });
 
           try {
             const uploaded = await firebaseService.uploadPhotos([uploadedPhoto.value.file]);
@@ -533,16 +522,10 @@ export default {
 
         if (!photoData) {
           console.error('❌ No photoData available');
-          try {
-            if ($q && $q.notify && typeof $q.notify === 'function') {
-              $q.notify({
-                type: 'negative',
-                message: 'Failed to prepare photo',
-              });
-            }
-          } catch (e) {
-            console.warn('Could not show notification:', e);
-          }
+          safeNotify({
+            type: 'negative',
+            message: 'Failed to prepare photo',
+          });
           uploading.value = false;
           return;
         }
@@ -550,17 +533,11 @@ export default {
         // Validate that we have a valid URL
         if (!photoData.url || (!photoData.url.startsWith('http') && !photoData.url.startsWith('blob:'))) {
           console.error('❌ Invalid photo URL:', photoData.url);
-          try {
-            if ($q && $q.notify && typeof $q.notify === 'function') {
-              $q.notify({
-                type: 'negative',
-                message: 'Invalid photo URL',
-                caption: 'The photo URL is not valid. Please try uploading again.',
-              });
-            }
-          } catch (e) {
-            console.warn('Could not show notification:', e);
-          }
+          safeNotify({
+            type: 'negative',
+            message: 'Invalid photo URL',
+            caption: 'The photo URL is not valid. Please try uploading again.',
+          });
           uploading.value = false;
           return;
         }
@@ -580,18 +557,12 @@ export default {
       } catch (error) {
         console.error('❌ Error preparing photo:', error);
         console.error('Error stack:', error.stack);
-        try {
-          if ($q && $q.notify && typeof $q.notify === 'function') {
-            $q.notify({
-              type: 'negative',
-              message: 'Failed to prepare photo',
-              caption: error.message || 'Unknown error occurred',
-              timeout: 5000,
-            });
-          }
-        } catch (e) {
-          console.warn('Could not show error notification:', e);
-        }
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to prepare photo',
+          caption: error.message || 'Unknown error occurred',
+          timeout: 5000,
+        });
       } finally {
         uploading.value = false;
         console.log('✅ Uploading state set to false');
