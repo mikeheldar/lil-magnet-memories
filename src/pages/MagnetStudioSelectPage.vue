@@ -185,13 +185,17 @@
             </div>
             <div class="col-auto">
               <q-btn
+                ref="continueButton"
                 color="primary"
                 icon="arrow_forward"
                 label="Continue to Crop Settings"
-                @click="handleContinueClick"
+                @click.stop.prevent="handleContinueClick"
+                @mousedown="() => console.log('🖱️ Mouse down on button')"
+                @mouseup="() => console.log('🖱️ Mouse up on button')"
                 :loading="uploading"
                 :disable="uploading"
                 size="lg"
+                style="z-index: 1000; position: relative; cursor: pointer;"
               />
             </div>
           </div>
@@ -202,7 +206,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
@@ -223,6 +227,7 @@ export default {
     const uploadFiles = ref([]);
     const uploadedPhoto = ref(null);
     const uploading = ref(false);
+    const continueButton = ref(null);
 
     // Load all photos from orders
     const loadAllPhotos = async () => {
@@ -412,11 +417,21 @@ export default {
 
     // Wrapper to test if click is being registered
     const handleContinueClick = (event) => {
-      console.log('🖱️ Button clicked!', event);
+      // Immediate log - this should fire first
+      console.log('🖱️🖱️🖱️ BUTTON CLICKED! 🖱️🖱️🖱️', event);
+      console.log('Event type:', event?.type);
+      console.log('Event target:', event?.target);
       console.log('📸 selectedPhoto.value:', selectedPhoto.value);
       console.log('📤 selectedUploadedPhoto.value:', selectedUploadedPhoto.value);
       console.log('📁 uploadedPhoto.value:', uploadedPhoto.value);
       console.log('⏳ uploading.value:', uploading.value);
+      
+      // Try to alert as well to ensure something happens
+      try {
+        alert('Button clicked! Check console for details.');
+      } catch (e) {
+        console.log('Alert blocked, but click registered');
+      }
       
       // Prevent if already uploading
       if (uploading.value) {
@@ -436,6 +451,7 @@ export default {
         return;
       }
       
+      console.log('✅ All checks passed, calling goToCropSettings...');
       goToCropSettings();
     };
 
@@ -574,6 +590,21 @@ export default {
       console.log('✅ MagnetStudioSelectPage mounted');
       console.log('🔧 handleContinueClick function available:', typeof handleContinueClick === 'function');
       console.log('🔧 goToCropSettings function available:', typeof goToCropSettings === 'function');
+      console.log('🔧 continueButton ref:', continueButton.value);
+      
+      // Test if we can access the button after next tick
+      await nextTick();
+      console.log('🔧 continueButton ref after nextTick:', continueButton.value);
+      if (continueButton.value) {
+        console.log('🔧 Button element:', continueButton.value.$el);
+        // Try to add a direct event listener as a test
+        if (continueButton.value.$el) {
+          continueButton.value.$el.addEventListener('click', (e) => {
+            console.log('🎯 DIRECT EVENT LISTENER FIRED!', e);
+            handleContinueClick(e);
+          }, true);
+        }
+      }
     });
 
     return {
@@ -599,6 +630,7 @@ export default {
       removeUploadedPhoto,
       handleContinueClick,
       goToCropSettings,
+      continueButton,
     };
   },
 };
