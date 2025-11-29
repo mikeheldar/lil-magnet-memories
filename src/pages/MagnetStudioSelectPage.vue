@@ -567,14 +567,32 @@ export default {
         console.log('🔗 Photo URL:', photoData.url);
 
         // Navigate to crop settings with photo data
-        await router.push({
-          path: '/magnet-studio',
-          query: {
-            photo: JSON.stringify(photoData),
-          },
-        });
-        
-        console.log('✅ Navigation complete');
+        // Don't let notification errors block navigation
+        try {
+          await router.push({
+            path: '/magnet-studio',
+            query: {
+              photo: JSON.stringify(photoData),
+            },
+          });
+          console.log('✅ Navigation complete');
+        } catch (navError) {
+          console.error('❌ Navigation error:', navError);
+          // Try again without query string as fallback
+          try {
+            await router.push('/magnet-studio');
+            // Store photo data in sessionStorage as fallback
+            sessionStorage.setItem('magnetStudioPhoto', JSON.stringify(photoData));
+            console.log('✅ Navigation complete (fallback)');
+          } catch (fallbackError) {
+            console.error('❌ Fallback navigation also failed:', fallbackError);
+            safeNotify({
+              type: 'negative',
+              message: 'Navigation failed',
+              caption: 'Please try refreshing the page',
+            });
+          }
+        }
       } catch (error) {
         console.error('❌ Error preparing photo:', error);
         console.error('Error stack:', error.stack);
