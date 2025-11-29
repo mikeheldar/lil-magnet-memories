@@ -218,25 +218,36 @@ export default {
     const router = useRouter();
     const $q = useQuasar();
 
+    // Debug: Log $q on setup
+    console.log('🔧 useQuasar() returned:', $q);
+    console.log('🔧 $q.notify type:', typeof $q?.notify);
+    console.log('🔧 $q keys:', $q ? Object.keys($q) : 'null');
+
     // Helper function to safely show notifications
     const safeNotify = (options) => {
       try {
         // Check if $q exists and has notify method
         if (!$q) {
-          console.warn('$q is not available, cannot show notification:', options);
+          console.warn('⚠️ $q is not available, cannot show notification:', options);
           return;
         }
         
         // Check if notify exists and is a function
         if (typeof $q.notify !== 'function') {
-          console.warn('$q.notify is not a function. $q:', $q, 'options:', options);
+          console.warn('⚠️ $q.notify is not a function');
+          console.warn('⚠️ $q object:', $q);
+          console.warn('⚠️ $q.notify value:', $q.notify);
+          console.warn('⚠️ $q keys:', Object.keys($q));
+          console.warn('⚠️ Notification options:', options);
           return;
         }
         
         // Call notify
         $q.notify(options);
       } catch (e) {
-        console.warn('Error in safeNotify:', e, 'options:', options);
+        console.error('❌ Error in safeNotify:', e);
+        console.error('❌ Error stack:', e.stack);
+        console.error('❌ Notification options:', options);
         // Don't re-throw, just log the error
       }
     };
