@@ -221,13 +221,23 @@ export default {
     // Helper function to safely show notifications
     const safeNotify = (options) => {
       try {
-        if ($q && $q.notify && typeof $q.notify === 'function') {
-          $q.notify(options);
-        } else {
-          console.warn('Notification not available:', options);
+        // Check if $q exists and has notify method
+        if (!$q) {
+          console.warn('$q is not available, cannot show notification:', options);
+          return;
         }
+        
+        // Check if notify exists and is a function
+        if (typeof $q.notify !== 'function') {
+          console.warn('$q.notify is not a function. $q:', $q, 'options:', options);
+          return;
+        }
+        
+        // Call notify
+        $q.notify(options);
       } catch (e) {
-        console.warn('Could not show notification:', e, options);
+        console.warn('Error in safeNotify:', e, 'options:', options);
+        // Don't re-throw, just log the error
       }
     };
 
