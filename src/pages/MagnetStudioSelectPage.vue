@@ -596,12 +596,20 @@ export default {
       } catch (error) {
         console.error('❌ Error preparing photo:', error);
         console.error('Error stack:', error.stack);
-        safeNotify({
-          type: 'negative',
-          message: 'Failed to prepare photo',
-          caption: error.message || 'Unknown error occurred',
-          timeout: 5000,
-        });
+        
+        // Try to show notification, but don't let it crash
+        try {
+          safeNotify({
+            type: 'negative',
+            message: 'Failed to prepare photo',
+            caption: error.message || 'Unknown error occurred',
+            timeout: 5000,
+          });
+        } catch (notifyError) {
+          console.error('❌ Could not show error notification:', notifyError);
+          // Just log to console as fallback
+          console.error('❌ Photo preparation failed:', error.message || 'Unknown error');
+        }
       } finally {
         uploading.value = false;
         console.log('✅ Uploading state set to false');
