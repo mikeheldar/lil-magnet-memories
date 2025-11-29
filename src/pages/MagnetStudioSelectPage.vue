@@ -167,6 +167,12 @@
 
       <!-- Continue Button -->
       <q-card v-if="selectedPhoto" class="q-mt-lg sticky-bottom">
+        <!-- Debug info -->
+        <div v-if="false" style="display: none;">
+          selectedPhoto: {{ selectedPhoto }}
+          selectedUploadedPhoto: {{ selectedUploadedPhoto }}
+          uploadedPhoto: {{ uploadedPhoto }}
+        </div>
         <q-card-section>
           <div class="row items-center justify-between">
             <div class="col">
@@ -182,7 +188,9 @@
                 color="primary"
                 icon="arrow_forward"
                 label="Continue to Crop Settings"
-                @click="goToCropSettings"
+                @click="handleContinueClick"
+                :loading="uploading"
+                :disable="uploading"
                 size="lg"
               />
             </div>
@@ -402,68 +410,154 @@ export default {
       return null;
     });
 
+    // Wrapper to test if click is being registered
+    const handleContinueClick = (event) => {
+      console.log('🖱️ Button clicked!', event);
+      console.log('📸 selectedPhoto.value:', selectedPhoto.value);
+      console.log('📤 selectedUploadedPhoto.value:', selectedUploadedPhoto.value);
+      console.log('📁 uploadedPhoto.value:', uploadedPhoto.value);
+      console.log('⏳ uploading.value:', uploading.value);
+      
+      // Prevent if already uploading
+      if (uploading.value) {
+        console.warn('⚠️ Already uploading, ignoring click');
+        return;
+      }
+      
+      // Check if photo is selected
+      if (!selectedPhoto.value) {
+        console.error('❌ No photo selected!');
+        if ($q && $q.notify) {
+          $q.notify({
+            type: 'warning',
+            message: 'Please select a photo first',
+          });
+        }
+        return;
+      }
+      
+      goToCropSettings();
+    };
+
     // Navigate to crop settings
     const goToCropSettings = async () => {
+      console.log('🚀 goToCropSettings called');
+      console.log('📸 selectedPhoto.value:', selectedPhoto.value);
+      console.log('📤 selectedUploadedPhoto.value:', selectedUploadedPhoto.value);
+      console.log('📁 uploadedPhoto.value:', uploadedPhoto.value);
+
       if (!selectedPhoto.value) {
-        $q.notify({
-          type: 'warning',
-          message: 'Please select a photo',
-        });
+        console.warn('⚠️ No photo selected');
+        if ($q && $q.notify) {
+          $q.notify({
+            type: 'warning',
+            message: 'Please select a photo',
+          });
+        }
         return;
       }
 
       uploading.value = true;
+      console.log('⏳ Uploading state set to true');
 
       try {
         let photoData = null;
 
         // If it's an uploaded photo, upload it first
         if (selectedUploadedPhoto.value && uploadedPhoto.value?.file) {
-          $q.notify({
-            type: 'info',
-            message: 'Uploading photo...',
-            position: 'top',
-            timeout: 2000,
-          });
-          const uploaded = await firebaseService.uploadPhotos([uploadedPhoto.value.file]);
-          if (uploaded.length > 0) {
-            photoData = {
-              name: uploaded[0].name,
-              url: uploaded[0].url,
-              fileName: uploaded[0].fileName,
-              size: uploaded[0].size,
-              type: uploaded[0].type,
-            };
+          console.log('📤 Uploading new photo to Firebase...');
+          console.log('📁 File:', uploadedPhoto.value.file.name, uploadedPhoto.value.file.size, 'bytes');
+          
+          if ($q && $q.notify) {
+            $q.notify({
+              type: 'info',
+              message: 'Uploading photo...',
+              position: 'top',
+              timeout: 2000,
+            });
+          }
+
+          try {
+            const uploaded = await firebaseService.uploadPhotos([uploadedPhoto.value.file]);
+            console.log('✅ Upload complete, received:', uploaded);
+            console.log('📊 Uploaded array length:', uploaded.length);
+            
+            if (uploaded && uploaded.length > 0) {
+              console.log('📸 First uploaded photo:', uploaded[0]);
+              photoData = {
+                name: uploaded[0].name,
+                url: uploaded[0].url,
+                fileName: uploaded[0].fileName,
+                size: uploaded[0].size,
+                type: uploaded[0].type,
+              };
+              console.log('✅ Created photoData:', photoData);
+            } else {
+              console.error('❌ Upload returned empty array');
+              throw new Error('Upload failed: No photos returned');
+            }
+          } catch (uploadError) {
+            console.error('❌ Error during upload:', uploadError);
+            throw uploadError;
           }
         } else if (selectedOrderPhoto.value) {
           // Use the order photo
+          console.log('📸 Using order photo:', selectedOrderPhoto.value.photo);
           photoData = selectedOrderPhoto.value.photo;
         }
 
         if (!photoData) {
-          $q.notify({
-            type: 'negative',
-            message: 'Failed to prepare photo',
-          });
+          console.error('❌ No photoData available');
+          if ($q && $q.notify) {
+            $q.notify({
+              type: 'negative',
+              message: 'Failed to prepare photo',
+            });
+          }
+          uploading.value = false;
           return;
         }
 
+        // Validate that we have a valid URL
+        if (!photoData.url || (!photoData.url.startsWith('http') && !photoData.url.startsWith('blob:'))) {
+          console.error('❌ Invalid photo URL:', photoData.url);
+          if ($q && $q.notify) {
+            $q.notify({
+              type: 'negative',
+              message: 'Invalid photo URL',
+              caption: 'The photo URL is not valid. Please try uploading again.',
+            });
+          }
+          uploading.value = false;
+          return;
+        }
+
+        console.log('🚀 Navigating to crop settings with photoData:', photoData);
+        console.log('🔗 Photo URL:', photoData.url);
+
         // Navigate to crop settings with photo data
-        router.push({
+        await router.push({
           path: '/magnet-studio',
           query: {
             photo: JSON.stringify(photoData),
           },
         });
+        
+        console.log('✅ Navigation complete');
       } catch (error) {
-        console.error('Error preparing photo:', error);
-        $q.notify({
-          type: 'negative',
-          message: 'Failed to prepare photo',
-          caption: error.message,
-        });
+        console.error('❌ Error preparing photo:', error);
+        console.error('Error stack:', error.stack);
+        if ($q && $q.notify) {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to prepare photo',
+            caption: error.message || 'Unknown error occurred',
+            timeout: 5000,
+          });
+        }
       } finally {
         uploading.value = false;
+        console.log('✅ Uploading state set to false');
       }
     };
 
@@ -475,6 +569,11 @@ export default {
       }
 
       await loadAllPhotos();
+      
+      // Debug: Log that component is mounted and function is available
+      console.log('✅ MagnetStudioSelectPage mounted');
+      console.log('🔧 handleContinueClick function available:', typeof handleContinueClick === 'function');
+      console.log('🔧 goToCropSettings function available:', typeof goToCropSettings === 'function');
     });
 
     return {
@@ -498,6 +597,7 @@ export default {
       selectUploadedPhoto,
       onFilesSelected,
       removeUploadedPhoto,
+      handleContinueClick,
       goToCropSettings,
     };
   },
