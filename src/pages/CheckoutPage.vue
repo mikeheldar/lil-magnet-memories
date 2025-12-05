@@ -1884,7 +1884,10 @@ export default {
             e.preventDefault();
             e.stopPropagation();
 
-            // Validate form first
+            // Set payment option to Apple Pay immediately so validation knows to skip billing address
+            selectedPaymentOption.value = 'apple_pay';
+
+            // Validate form first (but now it knows we're using Apple Pay, so billing address won't be required)
             if (!canPlaceOrder.value) {
               console.log('⚠️ Cannot place order - form validation failed');
               showValidationErrors.value = true;
