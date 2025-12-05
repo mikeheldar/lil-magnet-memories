@@ -2245,10 +2245,14 @@ export default {
       squareProcessing.value = true;
 
       try {
-        const billingAddressToUse =
-          billingSameAsShipping.value && requiresShippingAddress.value
-            ? shippingAddress.value
-            : billingAddress.value;
+        // Apple Pay doesn't require billing address - it's handled by Apple Pay sheet
+        // Only use billing address if it's available and complete, otherwise pass null
+        let billingAddressToUse = null;
+        if (billingSameAsShipping.value && requiresShippingAddress.value && addressIsComplete(shippingAddress.value)) {
+          billingAddressToUse = shippingAddress.value;
+        } else if (addressIsComplete(billingAddress.value)) {
+          billingAddressToUse = billingAddress.value;
+        }
 
         const paymentPayload = {
           sourceId: token,
@@ -2258,7 +2262,7 @@ export default {
           buyerEmail: customerInfo.value.email,
           customerName:
             `${customerInfo.value.firstName} ${customerInfo.value.lastName}`.trim(),
-          billingAddress: normalizeAddressForSquare(billingAddressToUse),
+          billingAddress: billingAddressToUse ? normalizeAddressForSquare(billingAddressToUse) : null,
           shippingAddress: normalizeAddressForSquare(
             requiresShippingAddress.value ? shippingAddress.value : null
           ),
