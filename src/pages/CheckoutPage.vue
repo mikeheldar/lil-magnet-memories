@@ -1019,8 +1019,9 @@ export default {
     });
     const requiresBillingAddress = computed(() => {
       // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
-      // In test environment, Apple Pay doesn't require address at all
-      if (selectedPaymentOption.value === 'apple_pay') {
+      // Check both selectedPaymentOption and applePayToken to handle cases where
+      // Apple Pay button is clicked but selectedPaymentOption isn't set yet
+      if (selectedPaymentOption.value === 'apple_pay' || applePayToken.value) {
         return false;
       }
       // Always require billing address for credit card payments
@@ -1520,18 +1521,21 @@ export default {
       }
       // Apple Pay doesn't require shipping address (handled by Apple Pay sheet)
       // In test environment, Apple Pay doesn't require address at all
+      // Check both selectedPaymentOption and applePayToken to handle cases where
+      // Apple Pay button is clicked but selectedPaymentOption isn't set yet
+      const isApplePay = selectedPaymentOption.value === 'apple_pay' || applePayToken.value;
       if (
         !skipShipping.value &&
         requiresShippingAddress.value &&
         !addressIsComplete(shippingAddress.value) &&
-        selectedPaymentOption.value !== 'apple_pay'
+        !isApplePay
       ) {
         return false;
       }
       // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
       if (
         requiresBillingAddress.value &&
-        selectedPaymentOption.value !== 'apple_pay'
+        !isApplePay
       ) {
         if (skipShipping.value) {
           // When skipShipping, always require billing address
@@ -2759,7 +2763,11 @@ export default {
     };
 
     const placeOrder = async () => {
-      if (!canPlaceOrder.value) {
+      // For Apple Pay, skip validation if we have a token (payment already authorized)
+      // This handles the case where Apple Pay button is clicked and token is received
+      const isApplePayWithToken = applePayToken.value && (selectedPaymentOption.value === 'apple_pay' || !selectedPaymentOption.value);
+      
+      if (!isApplePayWithToken && !canPlaceOrder.value) {
         showValidationErrors.value = true;
         // Check if the issue is with photo uploads
         const photoValidation = validatePhotosUploaded();
