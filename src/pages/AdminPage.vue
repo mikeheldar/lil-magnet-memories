@@ -159,6 +159,30 @@
       </q-card-section>
     </q-card>
 
+    <!-- System Settings -->
+    <q-card class="q-mb-md">
+      <q-card-section>
+        <div class="text-h6 q-mb-md">
+          <q-icon name="settings" class="q-mr-sm" />
+          System Settings
+        </div>
+
+        <div class="q-mb-md">
+          <q-toggle
+            v-model="notificationsEnabled"
+            label="Enable Pop-up Notifications"
+            color="primary"
+            @update:model-value="updateNotificationSettings"
+            :loading="updatingNotifications"
+          />
+          <div class="text-caption text-grey-7 q-mt-xs">
+            When disabled, pop-up notifications (toasts) will not be shown to users.
+            Error messages and important alerts will still be displayed.
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+
     <!-- System Information -->
     <q-card class="q-mb-md">
       <q-card-section>
@@ -201,6 +225,7 @@ import { ref, computed, onMounted } from 'vue';
 import { authService } from '../services/authService';
 import { USERS_CONFIG, USER_ROLES } from '../config/users';
 import { useQuasar } from 'quasar';
+import { notificationService } from '../services/notificationService';
 
 export default {
   name: 'AdminPage',
@@ -213,6 +238,8 @@ export default {
     const addingUser = ref(false);
     const allUsers = ref([]);
     const editingUser = ref(null);
+    const notificationsEnabled = ref(true);
+    const updatingNotifications = ref(false);
 
     const isValidEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -566,6 +593,44 @@ export default {
       );
     });
 
+    // Initialize notification service with Quasar
+    notificationService.setQuasar($q);
+    
+    // Load notification settings
+    const loadNotificationSettings = async () => {
+      try {
+        notificationsEnabled.value = notificationService.isEnabled();
+      } catch (error) {
+        console.error('Error loading notification settings:', error);
+      }
+    };
+    
+    // Update notification settings
+    const updateNotificationSettings = async (enabled) => {
+      updatingNotifications.value = true;
+      try {
+        await notificationService.setNotificationsEnabled(enabled);
+        notificationsEnabled.value = enabled;
+        $q.notify({
+          type: 'positive',
+          message: `Notifications ${enabled ? 'enabled' : 'disabled'}`,
+          position: 'top',
+          timeout: 2000,
+        });
+      } catch (error) {
+        console.error('Error updating notification settings:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to update notification settings',
+          position: 'top',
+        });
+        // Revert toggle
+        notificationsEnabled.value = !enabled;
+      } finally {
+        updatingNotifications.value = false;
+      }
+    };
+
     onMounted(async () => {
       // Get current user info
       const user = authService.getCurrentUser();
@@ -573,6 +638,9 @@ export default {
       
       // Check admin status immediately (sync check works offline)
       isAdmin.value = authService.isAdmin();
+      
+      // Load notification settings
+      await loadNotificationSettings();
       
       // Show initial admins immediately (from hardcoded list) so UI appears fast
       const initialAdmins = [
@@ -620,6 +688,9 @@ export default {
       getRoleColor,
       getRoleBadgeColor,
       addUserRole,
+      notificationsEnabled,
+      updatingNotifications,
+      updateNotificationSettings,
       removeUserRole,
       editUserRole,
       cancelEdit,

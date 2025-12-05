@@ -705,7 +705,46 @@ class FirebaseService {
           },
           body: JSON.stringify(paymentData),
         }
-      );
+      ).catch((fetchError) => {
+        // Handle network errors (firewall, CORS, etc.)
+        console.error('Network error processing payment:', fetchError);
+        const errorMessage = fetchError.message || 'Network error';
+        const isFirewallError = errorMessage.includes('Failed to fetch') || 
+                                errorMessage.includes('NetworkError') ||
+                                errorMessage.includes('CORS') ||
+                                errorMessage.includes('blocked');
+        
+        // Log the error
+        this.logTransactionError({
+          errorType: 'payment_network_error',
+          errorMessage: isFirewallError 
+            ? 'Payment request was blocked (firewall/network issue)' 
+            : errorMessage,
+          errorDetails: {
+            originalError: errorMessage,
+            isFirewallError,
+            paymentData: {
+              orderNumber: paymentData.orderNumber,
+              amount: paymentData.amount,
+            },
+          },
+          transactionData: {
+            orderNumber: paymentData.orderNumber,
+            amount: paymentData.amount,
+            paymentMethod: paymentData.sourceId ? 'square_card' : 'apple_pay',
+            customerEmail: paymentData.buyerEmail,
+            customerName: paymentData.customerName,
+          },
+        }).catch(logError => {
+          console.error('Failed to log transaction error:', logError);
+        });
+        
+        throw new Error(
+          isFirewallError
+            ? 'Payment request was blocked. Please check your network connection or try again later.'
+            : `Payment processing failed: ${errorMessage}`
+        );
+      });
 
       let result = null;
       try {
@@ -1038,15 +1077,92 @@ class FirebaseService {
     }
   }
 
+  // Clean cart items for Firestore - remove File objects, base64 previews, and other non-serializable data
+  cleanCartItemsForFirestore(cartItems) {
+    return cartItems.map(item => {
+      const cleaned = {
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.price,
+        isCustomUpload: item.isCustomUpload || false,
+        specialInstructions: item.specialInstructions || null,
+        marketEventContext: item.marketEventContext || false,
+      };
+
+      // For custom uploads, clean photos - only keep URLs, not File objects or base64
+      if (item.isCustomUpload && item.photos) {
+        cleaned.photos = item.photos.map(photo => {
+          const cleanedPhoto = {
+            name: photo.name || '',
+            url: photo.url || null,
+            fileName: photo.fileName || null,
+            size: photo.size || null,
+            type: photo.type || null,
+          };
+          // Remove preview/base64 data - Firestore doesn't like large base64 strings
+          // Only keep the URL which is what we need
+          return cleanedPhoto;
+        });
+      }
+
+      // Clean photoQuantities if it exists
+      if (item.photoQuantities) {
+        cleaned.photoQuantities = item.photoQuantities;
+      }
+
+      // Clean cost breakdown if it exists
+      if (item.costBreakdown) {
+        cleaned.costBreakdown = item.costBreakdown.map(breakdown => ({
+          qty: breakdown.qty,
+          count: breakdown.count,
+          price: breakdown.price,
+        }));
+      }
+
+      return cleaned;
+    });
+  }
+
   // Save cart-based order to Firestore
   async saveCartOrder(orderData) {
     try {
-      const cartItems = JSON.parse(JSON.stringify(orderData.cartItems || []));
+      // Clean cart items to remove File objects, base64 previews, and other non-serializable data
+      const cartItems = this.cleanCartItemsForFirestore(orderData.cartItems || []);
+      
+      // Clean shipping and payment options
       const shippingOption = orderData.shippingOption
-        ? JSON.parse(JSON.stringify(orderData.shippingOption))
+        ? (() => {
+            const cleaned = JSON.parse(JSON.stringify(orderData.shippingOption));
+            // Remove any File objects or non-serializable data from address
+            if (cleaned.address) {
+              cleaned.address = {
+                street: cleaned.address.street || '',
+                city: cleaned.address.city || '',
+                state: cleaned.address.state || '',
+                zip: cleaned.address.zip || '',
+                country: cleaned.address.country || 'US',
+              };
+            }
+            return cleaned;
+          })()
         : null;
+      
       const paymentOption = orderData.paymentOption
-        ? JSON.parse(JSON.stringify(orderData.paymentOption))
+        ? (() => {
+            const cleaned = JSON.parse(JSON.stringify(orderData.paymentOption));
+            // Remove any File objects or non-serializable data from billing address
+            if (cleaned.billingAddress) {
+              cleaned.billingAddress = {
+                street: cleaned.billingAddress.street || '',
+                city: cleaned.billingAddress.city || '',
+                state: cleaned.billingAddress.state || '',
+                zip: cleaned.billingAddress.zip || '',
+                country: cleaned.billingAddress.country || 'US',
+              };
+            }
+            return cleaned;
+          })()
         : null;
 
       // Prepare order document
@@ -1054,7 +1170,12 @@ class FirebaseService {
         orderNumber: orderData.orderNumber,
         orderType: orderData.orderType || 'product_cart',
         cartItems,
-        customer: orderData.customer,
+        customer: {
+          firstName: orderData.customer?.firstName || '',
+          lastName: orderData.customer?.lastName || '',
+          email: orderData.customer?.email || '',
+          phone: orderData.customer?.phone || '',
+        },
         userId: orderData.userId || null,
         shippingOption,
         paymentOption,

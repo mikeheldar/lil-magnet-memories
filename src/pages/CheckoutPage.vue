@@ -608,11 +608,24 @@ export default {
     const router = useRouter();
     const route = useRoute();
     const $q = useQuasar();
+    
+    // Import and initialize notification service
+    let notificationServiceInstance = null;
+    import('../services/notificationService.js').then(({ notificationService }) => {
+      notificationService.setQuasar($q);
+      notificationServiceInstance = notificationService;
+    });
+    
     const safeNotify = (options) => {
-      if ($q && typeof $q.notify === 'function') {
-        $q.notify(options);
+      if (notificationServiceInstance) {
+        notificationServiceInstance.notify(options);
       } else {
-        console.warn('Notify plugin unavailable', options);
+        // Fallback to direct notify if service not loaded yet
+        if ($q && typeof $q.notify === 'function') {
+          $q.notify(options);
+        } else {
+          console.warn('Notify plugin unavailable', options);
+        }
       }
     };
     const { cartItems, cartSubtotal, clearCart } = useCart();
