@@ -600,6 +600,7 @@ import {
   DEFAULT_SHIPPING_OPTIONS,
 } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
+import { config as envConfig } from '../config/environment.js';
 
 export default {
   name: 'CheckoutPage',
@@ -1005,6 +1006,7 @@ export default {
     });
     const requiresBillingAddress = computed(() => {
       // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
+      // In test environment, Apple Pay doesn't require address at all
       if (selectedPaymentOption.value === 'apple_pay') {
         return false;
       }
@@ -1026,6 +1028,47 @@ export default {
       return [street, city, state, zip].every(
         (value) => value && value.toString().trim().length > 0
       );
+    };
+
+    // Validate that all photos in custom upload items are uploaded (have valid URLs)
+    const validatePhotosUploaded = () => {
+      for (const item of cartItems.value) {
+        if (item.isCustomUpload && item.photos) {
+          for (const photo of item.photos) {
+            // Photo must have a URL that's not a blob URL (blob URLs are temporary)
+            // Valid URLs should be from Firebase Storage (contain firebasestorage.googleapis.com)
+            // or be a data URL that was already uploaded
+            if (!photo.url) {
+              return {
+                valid: false,
+                message: 'Some photos have not been uploaded yet. Please wait for uploads to complete.',
+              };
+            }
+            // Check if it's a blob URL (temporary, not uploaded)
+            if (photo.url.startsWith('blob:')) {
+              return {
+                valid: false,
+                message: 'Some photos are still uploading. Please wait for all uploads to complete before placing your order.',
+              };
+            }
+            // Check if it's a data URL (base64) - these should be uploaded
+            if (photo.url.startsWith('data:')) {
+              return {
+                valid: false,
+                message: 'Some photos need to be uploaded. Please wait for uploads to complete.',
+              };
+            }
+            // Valid URL should be from Firebase Storage or another valid HTTP(S) URL
+            if (!photo.url.startsWith('http://') && !photo.url.startsWith('https://')) {
+              return {
+                valid: false,
+                message: 'Some photos have invalid URLs. Please try uploading again.',
+              };
+            }
+          }
+        }
+      }
+      return { valid: true };
     };
 
     const sanitizeAddress = (address) => {
@@ -1457,11 +1500,18 @@ export default {
       if (!selectedPaymentOption.value) {
         return false;
       }
+      // Validate that all photos are uploaded before allowing payment
+      const photoValidation = validatePhotosUploaded();
+      if (!photoValidation.valid) {
+        return false;
+      }
       // Apple Pay doesn't require shipping address (handled by Apple Pay sheet)
+      // In test environment, Apple Pay doesn't require address at all
       if (
         !skipShipping.value &&
         requiresShippingAddress.value &&
-        !addressIsComplete(shippingAddress.value)
+        !addressIsComplete(shippingAddress.value) &&
+        selectedPaymentOption.value !== 'apple_pay'
       ) {
         return false;
       }
@@ -2014,15 +2064,44 @@ export default {
             } catch (error) {
               console.error('❌ Apple Pay payment error:', error);
               submitting.value = false;
-              applePayError.value =
-                error?.message || 'Apple Pay payment failed';
+              
+              // Log error to Firestore for admin review
+              try {
+                await firebaseService.logTransactionError({
+                  errorType: 'apple_pay_failed',
+                  errorMessage: error?.message || 'Apple Pay payment failed',
+                  errorDetails: {
+                    stack: error?.stack,
+                    details: error?.details,
+                    fullError: error?.toString(),
+                  },
+                  transactionData: {
+                    orderNumber: generateOrderNumber(),
+                    amount: orderTotal.value,
+                    paymentMethod: 'apple_pay',
+                    customerEmail: customerInfo.value.email,
+                    customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
+                    cartItems: cartItems.value.map(item => ({
+                      productId: item.productId,
+                      productName: item.productName,
+                      quantity: item.quantity,
+                      isCustomUpload: item.isCustomUpload,
+                    })),
+                  },
+                });
+              } catch (logError) {
+                console.error('Failed to log Apple Pay error:', logError);
+              }
+              
+              // Show user-friendly error message
+              const userFriendlyMessage = 'There was a problem processing your Apple Pay payment.';
+              applePayError.value = userFriendlyMessage;
               safeNotify({
                 type: 'negative',
-                message: 'Apple Pay payment failed',
-                caption:
-                  error?.message ||
-                  'Please try again or use another payment method',
+                message: userFriendlyMessage,
+                caption: 'Don\'t worry - you have not been charged. Please try again or use another payment method.',
                 position: 'top',
+                timeout: 8000,
               });
             }
           });
@@ -2138,6 +2217,7 @@ export default {
         return result?.payment || null;
       } catch (error) {
         console.error('Square card payment failed:', error);
+        // Error logging is handled in processSquarePayment
         throw error;
       } finally {
         squareProcessing.value = false;
@@ -2179,6 +2259,7 @@ export default {
         return result?.payment || null;
       } catch (error) {
         console.error('Apple Pay payment failed:', error);
+        // Error logging is handled in processSquarePayment
         throw error;
       } finally {
         squareProcessing.value = false;
@@ -2663,10 +2744,34 @@ export default {
     const placeOrder = async () => {
       if (!canPlaceOrder.value) {
         showValidationErrors.value = true;
+        // Check if the issue is with photo uploads
+        const photoValidation = validatePhotosUploaded();
+        if (!photoValidation.valid) {
+          safeNotify({
+            type: 'negative',
+            message: photoValidation.message,
+            position: 'top',
+            timeout: 5000,
+          });
+        } else {
+          safeNotify({
+            type: 'negative',
+            message: 'Please fill in all required fields',
+            position: 'top',
+          });
+        }
+        return;
+      }
+
+      // Double-check photos are uploaded before processing payment
+      const photoValidation = validatePhotosUploaded();
+      if (!photoValidation.valid) {
         safeNotify({
           type: 'negative',
-          message: 'Please fill in all required fields',
+          message: photoValidation.message,
+          caption: 'Payment cannot be processed until all photos are uploaded.',
           position: 'top',
+          timeout: 5000,
         });
         return;
       }
@@ -2724,26 +2829,66 @@ export default {
           applePayToken.value
         ) {
           console.log('💳 Processing Apple Pay payment with token...');
-          squarePaymentDetails = await processApplePayPayment(
-            orderNumber,
-            applePayToken.value
-          );
+          try {
+            squarePaymentDetails = await processApplePayPayment(
+              orderNumber,
+              applePayToken.value
+            );
 
-          // Validate payment was processed
-          if (!squarePaymentDetails) {
-            throw new Error(
-              'Apple Pay payment processing failed. No payment details returned.'
-            );
-          }
+            // Validate payment was processed
+            if (!squarePaymentDetails) {
+              const error = new Error(
+                'Apple Pay payment processing failed. No payment details returned.'
+              );
+              // Log error
+              await firebaseService.logTransactionError({
+                errorType: 'apple_pay_failed',
+                errorMessage: error.message,
+                errorDetails: { status: 'no_payment_details' },
+                transactionData: {
+                  orderNumber,
+                  amount: orderTotal.value,
+                  paymentMethod: 'apple_pay',
+                  customerEmail: customerInfo.value.email,
+                  customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
+                },
+              });
+              throw error;
+            }
 
-          if (squarePaymentDetails.status !== 'COMPLETED') {
-            console.error(
-              '❌ Apple Pay payment not completed:',
-              squarePaymentDetails
+            if (squarePaymentDetails.status !== 'COMPLETED') {
+              console.error(
+                '❌ Apple Pay payment not completed:',
+                squarePaymentDetails
+              );
+              const error = new Error(
+                `Apple Pay payment failed with status: ${squarePaymentDetails.status}`
+              );
+              // Log error
+              await firebaseService.logTransactionError({
+                errorType: 'apple_pay_failed',
+                errorMessage: error.message,
+                errorDetails: {
+                  paymentStatus: squarePaymentDetails.status,
+                  paymentDetails: squarePaymentDetails,
+                },
+                transactionData: {
+                  orderNumber,
+                  amount: orderTotal.value,
+                  paymentMethod: 'apple_pay',
+                  customerEmail: customerInfo.value.email,
+                  customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
+                },
+              });
+              throw error;
+            }
+          } catch (paymentError) {
+            // Re-throw with user-friendly message
+            const userFriendlyError = new Error(
+              'There was a problem processing your Apple Pay payment. Don\'t worry - you have not been charged.'
             );
-            throw new Error(
-              `Apple Pay payment failed with status: ${squarePaymentDetails.status}`
-            );
+            userFriendlyError.originalError = paymentError;
+            throw userFriendlyError;
           }
 
           console.log('✅ Apple Pay payment processed successfully:', {
@@ -2845,11 +2990,46 @@ export default {
         });
       } catch (error) {
         console.error('Error placing order:', error);
+        
+        // Log error if it's a payment error
+        if (error.message && (error.message.includes('payment') || error.message.includes('Apple Pay'))) {
+          try {
+            await firebaseService.logTransactionError({
+              errorType: 'order_placement_failed',
+              errorMessage: error.message,
+              errorDetails: {
+                stack: error?.stack,
+                originalError: error?.originalError?.message,
+              },
+              transactionData: {
+                orderNumber: generateOrderNumber(),
+                amount: orderTotal.value,
+                paymentMethod: selectedPaymentOption.value,
+                customerEmail: customerInfo.value.email,
+                customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
+              },
+            });
+          } catch (logError) {
+            console.error('Failed to log order error:', logError);
+          }
+        }
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to place order';
+        let errorCaption = error.message || 'Please try again';
+        
+        // For Apple Pay errors, ensure user knows they weren't charged
+        if (error.message && error.message.includes('Apple Pay')) {
+          errorMessage = 'There was a problem with your Apple Pay payment';
+          errorCaption = 'Don\'t worry - you have not been charged. Please try again or use another payment method.';
+        }
+        
         safeNotify({
           type: 'negative',
-          message: 'Failed to place order',
-          caption: error.message || 'Please try again',
+          message: errorMessage,
+          caption: errorCaption,
           position: 'top',
+          timeout: 8000,
         });
       } finally {
         submitting.value = false;

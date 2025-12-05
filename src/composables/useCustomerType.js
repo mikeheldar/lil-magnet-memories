@@ -1,7 +1,10 @@
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { isMobileDevice } from '../utils/deviceDetection.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { authService } from '../services/authService.js';
+import { userPreferencesService } from '../services/userPreferencesService.js';
+import { auth } from '../firebase/config.js';
+import { onAuthStateChanged } from 'firebase/auth';
 
 // Customer type constants
 export const CUSTOMER_TYPES = {
@@ -18,10 +21,73 @@ const customerType = ref(
 );
 
 class CustomerTypeService {
-  setCustomerType(type) {
+  constructor() {
+    // Listen for auth state changes to sync preferences
+    onAuthStateChanged(auth, async (user) => {
+      if (user && !user.isAnonymous) {
+        // User logged in - load from Firestore
+        await this.loadFromFirestore(user.uid);
+        // Set up listener for real-time updates
+        userPreferencesService.addListener(() => {
+          this.loadFromFirestore(user.uid);
+        });
+      } else {
+        // User logged out or anonymous - use localStorage
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          customerType.value = stored;
+        }
+      }
+    });
+  }
+
+  async loadFromFirestore(userId) {
+    try {
+      const isAtEvent = userPreferencesService.isCustomerAtEvent();
+      // Map isCustomerAtEvent to customer type
+      if (isAtEvent) {
+        customerType.value = CUSTOMER_TYPES.MARKET;
+      } else {
+        // Check if there's a stored customer type preference
+        const storedType = userPreferencesService.getPreference('customerType');
+        if (storedType && Object.values(CUSTOMER_TYPES).includes(storedType)) {
+          customerType.value = storedType;
+        } else {
+          customerType.value = CUSTOMER_TYPES.ONLINE;
+        }
+      }
+      // Also update localStorage for consistency
+      localStorage.setItem(STORAGE_KEY, customerType.value);
+    } catch (error) {
+      console.error('Error loading customer type from Firestore:', error);
+      // Fallback to localStorage
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        customerType.value = stored;
+      }
+    }
+  }
+
+  async setCustomerType(type) {
     if (Object.values(CUSTOMER_TYPES).includes(type)) {
       customerType.value = type;
       localStorage.setItem(STORAGE_KEY, type);
+      
+      // For logged-in users, also save to Firestore
+      const user = auth.currentUser;
+      if (user && !user.isAnonymous) {
+        try {
+          // Update isCustomerAtEvent based on customer type
+          await userPreferencesService.setIsCustomerAtEvent(
+            type === CUSTOMER_TYPES.MARKET
+          );
+          // Also save customer type preference
+          await userPreferencesService.setPreference('customerType', type);
+        } catch (error) {
+          console.error('Error saving customer type to Firestore:', error);
+        }
+      }
+      
       console.log('Customer type set to:', type);
     } else {
       console.error('Invalid customer type:', type);

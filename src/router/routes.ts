@@ -83,6 +83,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/PricingPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },
       },
+      {
+        path: 'errored-transactions',
+        component: () => import('pages/ErroredTransactionsPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
     ],
   },
 

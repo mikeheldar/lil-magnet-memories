@@ -400,6 +400,16 @@
                   <q-item-label caption>Test email functionality</q-item-label>
                 </q-item-section>
               </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/errored-transactions')">
+                <q-item-section avatar>
+                  <q-icon name="error_outline" color="red" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Errored Transactions</q-item-label>
+                  <q-item-label caption>View failed payments and uploads</q-item-label>
+                </q-item-section>
+              </q-item>
             </q-expansion-item>
           </template>
         </template>
@@ -575,6 +585,8 @@ export default {
             return 'Admin Settings';
           case '/email-test':
             return 'Admin - Email Test';
+          case '/errored-transactions':
+            return 'Admin - Errored Transactions';
           case '/market-events':
             return 'Admin - Market Events';
           case '/magnet-studio':

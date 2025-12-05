@@ -712,6 +712,23 @@ class FirebaseService {
         result = await response.json();
       } catch (parseError) {
         if (!response.ok) {
+          // Log error before throwing
+          await this.logTransactionError({
+            errorType: 'payment_failed',
+            errorMessage: 'Failed to process Square payment - JSON parse error',
+            errorDetails: {
+              status: response.status,
+              statusText: response.statusText,
+              parseError: parseError.message,
+            },
+            transactionData: {
+              orderNumber: paymentData.orderNumber,
+              amount: paymentData.amount,
+              paymentMethod: paymentData.sourceId ? 'square_card' : 'unknown',
+              customerEmail: paymentData.buyerEmail,
+              customerName: paymentData.customerName,
+            },
+          });
           throw new Error('Failed to process Square payment');
         }
         return null;
@@ -722,19 +739,76 @@ class FirebaseService {
           result?.error || 'Failed to process Square payment';
         const error = new Error(errorMessage);
         error.details = result?.details || null;
+        // Log error before throwing
+        await this.logTransactionError({
+          errorType: 'payment_failed',
+          errorMessage: errorMessage,
+          errorDetails: result?.details || { status: response.status, statusText: response.statusText },
+          transactionData: {
+            orderNumber: paymentData.orderNumber,
+            amount: paymentData.amount,
+            paymentMethod: paymentData.sourceId ? 'square_card' : 'unknown',
+            customerEmail: paymentData.buyerEmail,
+            customerName: paymentData.customerName,
+          },
+        });
         throw error;
       }
 
       if (result?.error) {
         const error = new Error(result.error);
         error.details = result?.details || null;
+        // Log error before throwing
+        await this.logTransactionError({
+          errorType: 'payment_failed',
+          errorMessage: result.error,
+          errorDetails: result?.details || null,
+          transactionData: {
+            orderNumber: paymentData.orderNumber,
+            amount: paymentData.amount,
+            paymentMethod: paymentData.sourceId ? 'square_card' : 'unknown',
+            customerEmail: paymentData.buyerEmail,
+            customerName: paymentData.customerName,
+          },
+        });
         throw error;
       }
 
       return result;
     } catch (error) {
       console.error('Error processing Square payment:', error);
+      // Log error if not already logged
+      if (!error.logged) {
+        await this.logTransactionError({
+          errorType: 'payment_failed',
+          errorMessage: error.message || 'Unknown payment error',
+          errorDetails: error.details || { stack: error.stack },
+          transactionData: {
+            orderNumber: paymentData?.orderNumber,
+            amount: paymentData?.amount,
+            paymentMethod: paymentData?.sourceId ? 'square_card' : 'unknown',
+            customerEmail: paymentData?.buyerEmail,
+            customerName: paymentData?.customerName,
+          },
+        });
+      }
       throw error;
+    }
+  }
+
+  // Log transaction errors to Firestore for admin review
+  async logTransactionError(errorData) {
+    try {
+      const errorsCollection = collection(db, 'errored_transactions');
+      await addDoc(errorsCollection, {
+        ...errorData,
+        timestamp: serverTimestamp(),
+        createdAt: new Date().toISOString(),
+      });
+      console.log('✅ Transaction error logged to Firestore');
+    } catch (logError) {
+      console.error('❌ Failed to log transaction error:', logError);
+      // Don't throw - error logging failure shouldn't break the payment flow
     }
   }
 

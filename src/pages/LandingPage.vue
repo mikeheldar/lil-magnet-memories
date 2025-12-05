@@ -674,6 +674,7 @@ import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
 import { useCart } from '../composables/useCart.js';
 import { marketEventService } from '../services/marketEventService.js';
+import { userPreferencesService } from '../services/userPreferencesService.js';
 import { useQuasar } from 'quasar';
 import { useCustomerType } from '../composables/useCustomerType.js';
 
@@ -1001,7 +1002,7 @@ export default {
     };
 
     // Toggle customer at event
-    const toggleCustomerAtEvent = (value) => {
+    const toggleCustomerAtEvent = async (value) => {
       if (value) {
         setCustomerType('market_customer');
         safeNotify({
@@ -1033,15 +1034,26 @@ export default {
         console.log('🔄 Market events updated on landing page');
       });
 
+      // Set up listener for user preferences (for syncing across devices)
+      const userPrefsUnsubscribe = userPreferencesService.addListener(() => {
+        // Trigger reactivity when preferences change
+        console.log('🔄 User preferences updated on landing page');
+        // Force update of isCustomerAtEvent computed
+        marketEventCheckTrigger.value++;
+      });
+
       // Initial check - cache should be populated quickly by real-time listener
       // But trigger an update to ensure UI reflects current state
       marketEventCheckTrigger.value++;
 
-      // Cleanup listener on unmount
+      // Cleanup listeners on unmount
       onUnmounted(() => {
         if (marketEventUnsubscribe) {
           marketEventUnsubscribe();
           marketEventUnsubscribe = null;
+        }
+        if (userPrefsUnsubscribe) {
+          userPrefsUnsubscribe();
         }
       });
 
