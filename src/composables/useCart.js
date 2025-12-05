@@ -69,6 +69,12 @@ const saveCart = async (items) => {
 watch(
   cartItems,
   (newItems) => {
+    // Don't save if we're currently syncing from Firestore (prevents loops)
+    if (isSyncingToFirestore) {
+      console.log('⏭️ Skipping cart save - sync in progress');
+      return;
+    }
+    console.log('💾 Cart changed, saving...', newItems.length, 'items');
     saveCart(newItems);
   },
   { deep: true }
@@ -182,19 +188,32 @@ const setupCartListener = (userId) => {
         });
         
         // Only update if different to avoid unnecessary updates
-        const currentItemsStr = JSON.stringify(cartItems.value);
-        const newItemsStr = JSON.stringify(mergedItems);
+        const currentItemsStr = JSON.stringify(cartItems.value.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          isCustomUpload: item.isCustomUpload,
+        })));
+        const newItemsStr = JSON.stringify(mergedItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          isCustomUpload: item.isCustomUpload,
+        })));
         if (currentItemsStr !== newItemsStr) {
           console.log('✅ Updating cart from real-time listener (merged with local previews)');
+          console.log('📦 Cart items before update:', cartItems.value.length);
+          console.log('📦 Cart items after update:', mergedItems.length);
           // Temporarily set flag to prevent watch from triggering save
           isSyncingToFirestore = true;
           cartItems.value = mergedItems;
           // Update localStorage to keep in sync (with base64 previews)
           localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(mergedItems));
-          // Reset flag after a short delay
+          // Reset flag after a short delay to allow Vue reactivity to settle
           setTimeout(() => {
             isSyncingToFirestore = false;
-          }, 100);
+            console.log('✅ Cart sync complete, flag reset');
+          }, 200);
+        } else {
+          console.log('ℹ️ Cart items unchanged, skipping update');
         }
       } else {
         console.log('ℹ️ Cart document does not exist in Firestore');

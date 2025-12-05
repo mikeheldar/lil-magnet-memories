@@ -12,10 +12,14 @@ class UserPreferencesService {
     this.currentUserId = null;
 
     // Listen for auth state changes to set up/tear down listeners
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user && !user.isAnonymous) {
-        // User logged in - set up Firestore listener
+        // User logged in - load preferences immediately, then set up Firestore listener
         this.currentUserId = user.uid;
+        console.log('👤 User logged in, loading preferences for:', user.uid);
+        // Load preferences first to populate cache
+        await this.loadPreferences(user.uid);
+        // Then set up real-time listener
         this.setupRealtimeListener(user.uid);
       } else {
         // User logged out or anonymous - clean up listener
@@ -36,6 +40,7 @@ class UserPreferencesService {
 
     try {
       const userPrefsRef = doc(db, 'user_preferences', userId);
+      console.log('👂 Setting up user preferences real-time listener for:', userId);
 
       // Set up real-time listener
       this.listenerUnsubscribe = onSnapshot(
@@ -44,24 +49,39 @@ class UserPreferencesService {
           if (docSnapshot.exists()) {
             const data = docSnapshot.data();
             console.log('🔄 User preferences updated in real-time:', data);
+            const oldCache = this.preferencesCache;
             this.preferencesCache = data;
-            this.notifyListeners();
+            
+            // Only notify if something actually changed
+            if (JSON.stringify(oldCache) !== JSON.stringify(data)) {
+              console.log('📢 Preferences changed, notifying listeners');
+              this.notifyListeners();
+            }
           } else {
             // Document doesn't exist yet - initialize with defaults
-            this.preferencesCache = this.getDefaultPreferences();
-            this.notifyListeners();
+            console.log('ℹ️ User preferences document does not exist, using defaults');
+            const defaults = this.getDefaultPreferences();
+            const oldCache = this.preferencesCache;
+            this.preferencesCache = defaults;
+            
+            // Only notify if cache was null (first load)
+            if (oldCache === null) {
+              console.log('📢 Initial preferences loaded, notifying listeners');
+              this.notifyListeners();
+            }
           }
         },
         (error) => {
-          console.error('Error in user preferences real-time listener:', error);
+          console.error('❌ Error in user preferences real-time listener:', error);
           // Fallback to loading from cache
           this.loadPreferences(userId).catch(err => {
             console.error('Error loading preferences after listener error:', err);
           });
         }
       );
+      console.log('✅ User preferences listener set up successfully');
     } catch (error) {
-      console.error('Error setting up user preferences real-time listener:', error);
+      console.error('❌ Error setting up user preferences real-time listener:', error);
     }
   }
 

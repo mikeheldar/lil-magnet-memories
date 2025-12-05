@@ -22,14 +22,25 @@ const customerType = ref(
 
 class CustomerTypeService {
   constructor() {
+    this.preferencesUnsubscribe = null;
+    
     // Listen for auth state changes to sync preferences
     onAuthStateChanged(auth, async (user) => {
+      // Clean up existing listener
+      if (this.preferencesUnsubscribe) {
+        this.preferencesUnsubscribe();
+        this.preferencesUnsubscribe = null;
+      }
+      
       if (user && !user.isAnonymous) {
-        // User logged in - load from Firestore
+        // User logged in - wait a moment for preferences service to initialize
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Load from Firestore immediately
         await this.loadFromFirestore(user.uid);
         // Set up listener for real-time updates
-        userPreferencesService.addListener(() => {
-          this.loadFromFirestore(user.uid);
+        this.preferencesUnsubscribe = userPreferencesService.addListener(async () => {
+          console.log('🔄 Customer type listener triggered - reloading from Firestore');
+          await this.loadFromFirestore(user.uid);
         });
       } else {
         // User logged out or anonymous - use localStorage
@@ -43,17 +54,32 @@ class CustomerTypeService {
 
   async loadFromFirestore(userId) {
     try {
-      const isAtEvent = userPreferencesService.isCustomerAtEvent();
+      // Wait a moment for preferences to be loaded if they're not cached yet
+      let isAtEvent = userPreferencesService.isCustomerAtEvent();
+      if (userPreferencesService.preferencesCache === null) {
+        // Preferences not loaded yet, wait for them
+        console.log('⏳ Preferences not loaded yet, waiting...');
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Try loading directly
+        await userPreferencesService.loadPreferences(userId);
+        isAtEvent = userPreferencesService.isCustomerAtEvent();
+      }
+      
+      console.log('📥 Loading customer type from Firestore, isAtEvent:', isAtEvent);
+      
       // Map isCustomerAtEvent to customer type
       if (isAtEvent) {
         customerType.value = CUSTOMER_TYPES.MARKET;
+        console.log('✅ Set customer type to MARKET');
       } else {
         // Check if there's a stored customer type preference
         const storedType = userPreferencesService.getPreference('customerType');
         if (storedType && Object.values(CUSTOMER_TYPES).includes(storedType)) {
           customerType.value = storedType;
+          console.log('✅ Set customer type to stored type:', storedType);
         } else {
           customerType.value = CUSTOMER_TYPES.ONLINE;
+          console.log('✅ Set customer type to ONLINE (default)');
         }
       }
       // Also update localStorage for consistency
@@ -77,14 +103,15 @@ class CustomerTypeService {
       const user = auth.currentUser;
       if (user && !user.isAnonymous) {
         try {
+          console.log('💾 Saving customer type to Firestore:', type);
           // Update isCustomerAtEvent based on customer type
-          await userPreferencesService.setIsCustomerAtEvent(
-            type === CUSTOMER_TYPES.MARKET
-          );
+          const isAtEvent = type === CUSTOMER_TYPES.MARKET;
+          await userPreferencesService.setIsCustomerAtEvent(isAtEvent);
           // Also save customer type preference
           await userPreferencesService.setPreference('customerType', type);
+          console.log('✅ Customer type saved to Firestore successfully');
         } catch (error) {
-          console.error('Error saving customer type to Firestore:', error);
+          console.error('❌ Error saving customer type to Firestore:', error);
         }
       }
       
