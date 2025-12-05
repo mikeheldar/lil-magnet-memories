@@ -1080,6 +1080,29 @@ class FirebaseService {
     }
   }
 
+  // Remove undefined values from an object (Firestore doesn't allow undefined)
+  removeUndefinedValues(obj) {
+    if (obj === null || obj === undefined) {
+      return null;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeUndefinedValues(item)).filter(item => item !== undefined);
+    }
+    if (typeof obj === 'object') {
+      const cleaned = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          const value = obj[key];
+          if (value !== undefined) {
+            cleaned[key] = this.removeUndefinedValues(value);
+          }
+        }
+      }
+      return cleaned;
+    }
+    return obj;
+  }
+
   // Clean cart items for Firestore - remove File objects, base64 previews, and other non-serializable data
   cleanCartItemsForFirestore(cartItems) {
     return cartItems.map(item => {
@@ -1195,8 +1218,11 @@ class FirebaseService {
         updatedAt: serverTimestamp(),
       };
 
+      // Remove all undefined values before saving (Firestore doesn't allow undefined)
+      const cleanedOrderDoc = this.removeUndefinedValues(orderDoc);
+
       // Add to Firestore with timeout
-      const savePromise = addDoc(collection(db, 'orders'), orderDoc);
+      const savePromise = addDoc(collection(db, 'orders'), cleanedOrderDoc);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
           () => reject(new Error('Firebase operation timed out')),
