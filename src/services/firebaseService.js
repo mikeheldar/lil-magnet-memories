@@ -696,16 +696,19 @@ class FirebaseService {
 
   async processSquarePayment(paymentData) {
     try {
-      const response = await fetch(
-        'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/payments/create',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(paymentData),
-        }
-      ).catch((fetchError) => {
+      let response;
+      try {
+        response = await fetch(
+          'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/payments/create',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(paymentData),
+          }
+        );
+      } catch (fetchError) {
         // Handle network errors (firewall, CORS, etc.)
         console.error('Network error processing payment:', fetchError);
         const errorMessage = fetchError.message || 'Network error';
@@ -715,7 +718,7 @@ class FirebaseService {
                                 errorMessage.includes('blocked');
         
         // Log the error
-        this.logTransactionError({
+        await this.logTransactionError({
           errorType: 'payment_network_error',
           errorMessage: isFirewallError 
             ? 'Payment request was blocked (firewall/network issue)' 
@@ -744,7 +747,7 @@ class FirebaseService {
             ? 'Payment request was blocked. Please check your network connection or try again later.'
             : `Payment processing failed: ${errorMessage}`
         );
-      });
+      }
 
       let result = null;
       try {
