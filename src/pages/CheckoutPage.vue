@@ -2825,7 +2825,38 @@ export default {
         
         // Wait for Vue to update the DOM so buttons become visible
         await nextTick();
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 150));
+        
+        // Explicitly ensure both button containers are visible
+        // Apple Pay button container (shown when showCreditCardForm is false)
+        const applePayButton = document.getElementById('square-apple-pay-button');
+        if (applePayButton) {
+          applePayButton.style.display = '';
+          applePayButton.style.visibility = '';
+          const applePayParent = applePayButton.parentElement;
+          if (applePayParent) {
+            applePayParent.style.display = '';
+            applePayParent.style.visibility = '';
+            console.log('🔧 Ensured Apple Pay button container is visible');
+          }
+        }
+        
+        // "Pay with Credit Card" button - find by text content
+        const creditCardButtons = Array.from(document.querySelectorAll('button, .q-btn'));
+        const creditCardButton = creditCardButtons.find(btn => 
+          btn.textContent?.includes('Pay with Credit Card') || 
+          btn.textContent?.includes('Credit Card')
+        );
+        if (creditCardButton) {
+          creditCardButton.style.display = '';
+          creditCardButton.style.visibility = '';
+          const buttonParent = creditCardButton.closest('div');
+          if (buttonParent) {
+            buttonParent.style.display = '';
+            buttonParent.style.visibility = '';
+            console.log('🔧 Ensured Pay with Credit Card button is visible');
+          }
+        }
         // Reset mounted flag when hiding credit card form
         // This allows re-mounting when form is shown again
         squareCardMounted.value = false;
