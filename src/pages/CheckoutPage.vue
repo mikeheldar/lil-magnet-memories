@@ -2419,10 +2419,23 @@ export default {
       }
     };
     
-    // Watch for Apple Pay section expansion - collapse credit card form when expanded
-    watch(showApplePaySection, (isExpanded) => {
-      if (isExpanded && showCreditCardForm.value) {
-        showCreditCardForm.value = false;
+    // Watch for Apple Pay section expansion - render button and collapse credit card form when expanded
+    watch(showApplePaySection, async (isExpanded) => {
+      if (isExpanded) {
+        // Collapse credit card form if it's visible
+        if (showCreditCardForm.value) {
+          showCreditCardForm.value = false;
+        }
+        // Render Apple Pay button when section is expanded
+        if (applePayReady.value && squareApplePay.value) {
+          console.log('🍎 Apple Pay section expanded, rendering button...');
+          // Small delay to ensure DOM is ready
+          await nextTick();
+          await new Promise(resolve => setTimeout(resolve, 100));
+          // Reset attachment to allow re-rendering in the collapsed section
+          applePayAttached.value = false;
+          await renderApplePayButton();
+        }
       }
     });
 
