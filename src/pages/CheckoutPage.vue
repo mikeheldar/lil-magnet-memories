@@ -433,8 +433,8 @@
                     </q-expansion-item>
                   </div>
 
-                  <!-- Credit Card Collapsible Section (default collapsed) -->
-                  <div class="q-mb-lg">
+                  <!-- Credit Card Collapsible Section (only shown when Apple Pay is available) -->
+                  <div v-if="availablePaymentMethods.applePay" class="q-mb-lg">
                     <q-expansion-item
                       v-model="showCreditCardSection"
                       :default-opened="false"
@@ -571,6 +571,138 @@
                         </div>
                       </div>
                     </q-expansion-item>
+                  </div>
+
+                  <!-- Credit Card Form (shown directly when Apple Pay is NOT available) -->
+                  <div v-else class="q-mb-lg">
+                    <div class="text-h6 q-mb-md">Pay with Credit Card</div>
+                    
+                    <!-- Square payment form container - STATIC, NON-REACTIVE -->
+                    <div
+                      id="square-payment-form"
+                      v-once
+                      class="q-mb-md"
+                      style="min-height: 20px"
+                    >
+                      <!-- Form will be rendered here by Square SDK when mounted -->
+                      <!-- Square SDK manages its own DOM - Vue must not touch it -->
+                    </div>
+
+                    <!-- Loading and error messages (outside Square container to avoid conflicts) -->
+                    <div
+                      v-if="!squareCardMounted && !squareInitError"
+                      class="text-body2 text-grey-6 q-pa-md text-center"
+                    >
+                      <q-spinner size="24px" class="q-mr-sm" />
+                      Loading secure payment form...
+                    </div>
+                    <div
+                      v-if="squareInitError"
+                      class="text-negative text-caption q-pa-sm bg-red-1 rounded-borders"
+                    >
+                      <q-icon name="error" class="q-mr-xs" />
+                      <strong>Error loading payment form:</strong>
+                      <div class="q-mt-xs">{{ squareInitError.message }}</div>
+                      <div class="q-mt-xs text-caption">
+                        Please refresh the page or contact support if the
+                        issue persists.
+                      </div>
+                    </div>
+
+                    <!-- Billing Address Section -->
+                    <div>
+                      <div class="text-h6 q-mb-md q-mt-md">Billing Address</div>
+                      <q-toggle
+                        v-if="
+                          !skipShipping &&
+                          selectedShippingDetails?.type !== 'pickup' &&
+                          requiresShippingAddress
+                        "
+                        v-model="billingSameAsShipping"
+                        :disable="!requiresShippingAddress"
+                        label="Billing address matches shipping address"
+                        class="q-mb-md"
+                      />
+                      <div
+                        v-show="
+                          requiresBillingAddress &&
+                          (skipShipping ||
+                            !billingSameAsShipping ||
+                            !requiresShippingAddress)
+                        "
+                      >
+                        <q-input
+                          v-model="billingAddress.street"
+                          label="Billing Street Address *"
+                          filled
+                          class="q-mb-md"
+                          :error="billingStreetError"
+                          :error-message="
+                            billingStreetError ? 'Billing street is required' : ''
+                          "
+                          :input-attrs="{ autocomplete: 'billing address-line1' }"
+                        />
+                        <div class="row q-col-gutter-md q-mb-md">
+                          <div class="col-6">
+                            <q-input
+                              v-model="billingAddress.city"
+                              label="Billing City *"
+                              filled
+                              :error="billingCityError"
+                              :error-message="
+                                billingCityError ? 'Billing city is required' : ''
+                              "
+                              :input-attrs="{
+                                autocomplete: 'billing address-level2',
+                              }"
+                            />
+                          </div>
+                          <div class="col-6">
+                            <q-input
+                              v-model="billingAddress.state"
+                              label="Billing State *"
+                              filled
+                              :error="billingStateError"
+                              :error-message="
+                                billingStateError
+                                  ? 'Billing state is required'
+                                  : ''
+                              "
+                              :input-attrs="{
+                                autocomplete: 'billing address-level1',
+                              }"
+                            />
+                          </div>
+                        </div>
+                        <div class="row q-col-gutter-md">
+                          <div class="col-6">
+                            <q-input
+                              v-model="billingAddress.zip"
+                              label="Billing ZIP Code *"
+                              filled
+                              :error="billingZipError"
+                              :error-message="
+                                billingZipError ? 'Billing ZIP is required' : ''
+                              "
+                              :input-attrs="{
+                                autocomplete: 'billing postal-code',
+                              }"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        v-if="
+                          skipShipping &&
+                          requiresBillingAddress &&
+                          billingSameAsShipping
+                        "
+                        class="text-body2 text-grey-7 q-mt-md"
+                      >
+                        Please provide a billing address so we can verify your
+                        payment details.
+                      </div>
+                    </div>
                   </div>
                 </q-card-section>
 
@@ -1694,6 +1826,26 @@ export default {
     });
 
     // Watch for Apple Pay becoming ready and render button (regardless of selected payment option)
+    // Watch for Apple Pay availability changes - mount credit card form if Apple Pay is not available
+    watch(availablePaymentMethods, async (methods) => {
+      if (!methods.applePay && squareInitialized.value && squareCard.value && !squareCardMounted.value) {
+        console.log('🔵 Apple Pay not available, mounting credit card form...');
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await mountSquareCard();
+      }
+    }, { immediate: true });
+
+    // Watch for Apple Pay availability - mount credit card form if Apple Pay is not available
+    watch(availablePaymentMethods, async (methods) => {
+      if (!methods.applePay && squareInitialized.value && squareCard.value && !squareCardMounted.value) {
+        console.log('🔵 Apple Pay not available, mounting credit card form directly...');
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await mountSquareCard();
+      }
+    }, { immediate: true });
+
     watch(applePayReady, async (isReady) => {
       if (isReady && squareApplePay.value) {
         console.log('🍎 Apple Pay became ready, rendering button...', {
