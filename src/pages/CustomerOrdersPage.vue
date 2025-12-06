@@ -362,7 +362,9 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        const q = query(ordersRef, orderBy('submissionDate', 'desc'));
+        // Use a query that doesn't require submissionDate to exist (to catch all orders)
+        // We'll sort client-side to handle missing dates
+        const q = query(ordersRef);
 
         unsubscribeOrders = onSnapshot(
           q,
@@ -376,11 +378,35 @@ export default {
             });
 
             // Filter orders for current user
-            const userOrders = allOrders.filter((order) => {
+            let userOrders = allOrders.filter((order) => {
               const matchesUserId = order.userId === currentUser.value.uid;
               const matchesEmail =
                 order.customer?.email === currentUser.value.email;
               return matchesUserId || matchesEmail;
+            });
+
+            // Sort by submissionDate (most recent first), handling missing/invalid dates
+            userOrders.sort((a, b) => {
+              const getDateValue = (order) => {
+                const date =
+                  order.submissionDate || order.createdAt || order.updatedAt;
+                if (!date) return 0;
+                try {
+                  if (date && typeof date.toDate === 'function') {
+                    return date.toDate().getTime();
+                  }
+                  if (date && typeof date === 'object' && 'seconds' in date) {
+                    return (
+                      date.seconds * 1000 + (date.nanoseconds || 0) / 1000000
+                    );
+                  }
+                  const parsed = new Date(date);
+                  return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+                } catch {
+                  return 0;
+                }
+              };
+              return getDateValue(b) - getDateValue(a);
             });
 
             orders.value = userOrders;
@@ -445,12 +471,38 @@ export default {
             });
 
             // Filter by userId first, then by email as fallback
-            orders.value = allOrders.filter((order) => {
+            let filteredOrders = allOrders.filter((order) => {
               const matchesUserId = order.userId === currentUser.value.uid;
               const matchesEmail =
                 order.customer?.email === currentUser.value.email;
               return matchesUserId || matchesEmail;
             });
+
+            // Sort by submissionDate (most recent first), handling missing/invalid dates
+            filteredOrders.sort((a, b) => {
+              const getDateValue = (order) => {
+                const date =
+                  order.submissionDate || order.createdAt || order.updatedAt;
+                if (!date) return 0;
+                try {
+                  if (date && typeof date.toDate === 'function') {
+                    return date.toDate().getTime();
+                  }
+                  if (date && typeof date === 'object' && 'seconds' in date) {
+                    return (
+                      date.seconds * 1000 + (date.nanoseconds || 0) / 1000000
+                    );
+                  }
+                  const parsed = new Date(date);
+                  return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+                } catch {
+                  return 0;
+                }
+              };
+              return getDateValue(b) - getDateValue(a);
+            });
+
+            orders.value = filteredOrders;
             console.log('Filtered orders for user:', orders.value);
             console.log('Number of filtered orders:', orders.value.length);
           }
@@ -474,8 +526,47 @@ export default {
 
     const formatDate = (timestamp) => {
       if (!timestamp) return 'N/A';
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleString();
+
+      try {
+        let date;
+        // Handle Firestore Timestamp
+        if (timestamp && typeof timestamp.toDate === 'function') {
+          date = timestamp.toDate();
+        }
+        // Handle string or number timestamps
+        else if (
+          typeof timestamp === 'string' ||
+          typeof timestamp === 'number'
+        ) {
+          date = new Date(timestamp);
+        }
+        // Handle Date objects
+        else if (timestamp instanceof Date) {
+          date = timestamp;
+        }
+        // Try to convert if it's an object with seconds/nanoseconds (Firestore format)
+        else if (
+          timestamp &&
+          typeof timestamp === 'object' &&
+          'seconds' in timestamp
+        ) {
+          date = new Date(
+            timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
+          );
+        } else {
+          date = new Date(timestamp);
+        }
+
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return 'N/A';
+        }
+
+        return date.toLocaleString();
+      } catch (error) {
+        console.error('Error formatting date:', error, timestamp);
+        return 'N/A';
+      }
     };
 
     const getStatusColor = (status) => {
