@@ -2506,12 +2506,31 @@ export default {
         // Render Apple Pay button when section is expanded
         if (applePayReady.value && squareApplePay.value) {
           console.log('🍎 Apple Pay section expanded, rendering button...');
-          // Small delay to ensure DOM is ready
+          // Wait for DOM to update and expansion item to be fully expanded
           await nextTick();
-          await new Promise(resolve => setTimeout(resolve, 100));
-          // Reset attachment to allow re-rendering in the collapsed section
+          await new Promise(resolve => setTimeout(resolve, 200));
+          // Reset attachment to allow re-rendering
           applePayAttached.value = false;
-          await renderApplePayButton();
+          // Try rendering multiple times with delays to ensure container is available
+          let retries = 0;
+          while (retries < 5) {
+            try {
+              await renderApplePayButton();
+              // Check if button was successfully rendered
+              const container = document.getElementById('square-apple-pay-button-collapsed') || 
+                                document.getElementById('square-apple-pay-button');
+              if (container && container.querySelector('button')) {
+                console.log('✅ Apple Pay button successfully rendered');
+                break;
+              }
+            } catch (error) {
+              console.warn(`⚠️ Attempt ${retries + 1} to render Apple Pay button failed:`, error);
+            }
+            retries++;
+            if (retries < 5) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
         }
       }
     });
