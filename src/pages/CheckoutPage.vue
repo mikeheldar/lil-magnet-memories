@@ -1661,9 +1661,9 @@ export default {
       (allowAddress) => {
         if (!allowAddress) {
           billingSameAsShipping.value = false;
-        } else if (!addressIsComplete(billingAddress.value)) {
-          billingSameAsShipping.value = true;
         }
+        // Don't auto-set to true - let user decide if they want to copy shipping address
+        // This prevents interference when user is typing in billing fields
       }
     );
 
