@@ -2018,7 +2018,12 @@ export default {
         containerId = '#square-apple-pay-button';
       }
       if (!container) {
-        console.log('⚠️ Cannot render Apple Pay button: container not found');
+        console.log('⚠️ Cannot render Apple Pay button: container not found', {
+          collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
+          regularExists: !!document.getElementById('square-apple-pay-button'),
+          showCreditCardForm: showCreditCardForm.value,
+          showApplePaySection: showApplePaySection.value,
+        });
         return;
       }
       // Reset attachment flag if container changed (e.g., from collapsed to expanded)
