@@ -1635,9 +1635,14 @@ export default {
     // Watch for Apple Pay becoming ready and render button (regardless of selected payment option)
     watch(applePayReady, async (isReady) => {
       if (isReady && squareApplePay.value) {
-        console.log('🍎 Apple Pay became ready, rendering button...');
+        console.log('🍎 Apple Pay became ready, rendering button...', {
+          showCreditCardForm: showCreditCardForm.value,
+          showApplePaySection: showApplePaySection.value,
+        });
         applePayAttached.value = false;
+        // Wait a bit for DOM to be ready, especially with v-show
         await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 100));
         await renderApplePayButton();
       }
     });
