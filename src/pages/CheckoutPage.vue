@@ -1720,43 +1720,6 @@ export default {
 
 
 
-    // Billing address input handlers
-    const handleBillingStreetInput = (val) => {
-      console.log('🔵 BILLING STREET INPUT:', val, 'Current value:', billingAddress.value.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingStreetFocus = () => {
-      console.log('🔵 BILLING STREET FOCUS:', 'Current value:', billingAddress.value.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingStreetBlur = () => {
-      console.log('🔵 BILLING STREET BLUR:', 'Final value:', billingAddress.value.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingCityInput = (val) => {
-      console.log('🔵 BILLING CITY INPUT:', val, 'Current value:', billingAddress.value.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingCityFocus = () => {
-      console.log('🔵 BILLING CITY FOCUS:', 'Current value:', billingAddress.value.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingCityBlur = () => {
-      console.log('🔵 BILLING CITY BLUR:', 'Final value:', billingAddress.value.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingStateInput = (val) => {
-      console.log('🔵 BILLING STATE INPUT:', val, 'Current value:', billingAddress.value.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingStateFocus = () => {
-      console.log('🔵 BILLING STATE FOCUS:', 'Current value:', billingAddress.value.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingStateBlur = () => {
-      console.log('🔵 BILLING STATE BLUR:', 'Final value:', billingAddress.value.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingZipInput = (val) => {
-      console.log('🔵 BILLING ZIP INPUT:', val, 'Current value:', billingAddress.value.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingZipFocus = () => {
-      console.log('🔵 BILLING ZIP FOCUS:', 'Current value:', billingAddress.value.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
-    const handleBillingZipBlur = () => {
-      console.log('🔵 BILLING ZIP BLUR:', 'Final value:', billingAddress.value.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
-    };
 
     watch(orderTotal, () => {
       updateSquarePaymentRequest();
