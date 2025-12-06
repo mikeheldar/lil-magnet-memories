@@ -2581,8 +2581,30 @@ export default {
       // Ensure Square card form is mounted if not already
       if (squareInitialized.value && squareCard.value) {
         // Always try to mount, even if previously mounted (container might have changed)
-        console.log('🔵 Mounting Square card form...');
+        console.log('🔵 Mounting Square card form...', {
+          squareInitialized: squareInitialized.value,
+          hasSquareCard: !!squareCard.value,
+          containerExists: !!document.getElementById('square-payment-form'),
+        });
         await mountSquareCard();
+        
+        // Wait a bit more for Square to render the form fields
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Verify the form was actually rendered
+        const formContainer = document.getElementById('square-payment-form');
+        if (formContainer) {
+          const hasFormFields = formContainer.querySelector('.sq-card') || 
+                               formContainer.querySelector('[id*="sq-"]') ||
+                               formContainer.querySelector('input') ||
+                               formContainer.children.length > 0;
+          console.log('🔍 Square form rendering check:', {
+            hasFormFields,
+            containerHTML: formContainer.innerHTML.substring(0, 200),
+            childrenCount: formContainer.children.length,
+          });
+        }
       } else if (!squareInitialized.value) {
         // Try to initialize if not already done
         console.log('Square not initialized yet, attempting initialization...');
