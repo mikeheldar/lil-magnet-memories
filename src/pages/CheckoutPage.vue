@@ -1762,28 +1762,8 @@ export default {
       });
     });
 
-    // Watch billingAddress for any changes - but only log significant changes, not every keystroke
-    // Using individual field watchers instead of deep watch to reduce reactivity overhead
-    watch(() => billingAddress.value.street, (newVal, oldVal) => {
-      if (newVal !== oldVal && (newVal || oldVal)) {
-        console.log('🔴 BILLING STREET CHANGED:', { from: oldVal, to: newVal });
-      }
-    });
-    watch(() => billingAddress.value.city, (newVal, oldVal) => {
-      if (newVal !== oldVal && (newVal || oldVal)) {
-        console.log('🔴 BILLING CITY CHANGED:', { from: oldVal, to: newVal });
-      }
-    });
-    watch(() => billingAddress.value.state, (newVal, oldVal) => {
-      if (newVal !== oldVal && (newVal || oldVal)) {
-        console.log('🔴 BILLING STATE CHANGED:', { from: oldVal, to: newVal });
-      }
-    });
-    watch(() => billingAddress.value.zip, (newVal, oldVal) => {
-      if (newVal !== oldVal && (newVal || oldVal)) {
-        console.log('🔴 BILLING ZIP CHANGED:', { from: oldVal, to: newVal });
-      }
-    });
+    // Removed individual field watchers - they were causing excessive Vue re-renders
+    // The form works fine without them, and the input handlers provide sufficient logging
 
     // Billing address input handlers
     const handleBillingStreetInput = (val) => {
