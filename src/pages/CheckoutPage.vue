@@ -2830,8 +2830,9 @@ export default {
       }
     };
     
-    // Watch for Apple Pay section expansion - render button and collapse credit card form when expanded
-    watch(showApplePaySection, async (isExpanded) => {
+    // OLD WATCHER - REMOVED - Now using handleApplePaySectionToggle instead
+    // This watcher was causing conflicts with the new collapsible section structure
+    // watch(showApplePaySection, async (isExpanded) => {
       console.log('🔍 showApplePaySection watcher triggered', {
         isExpanded,
         showCreditCardForm: showCreditCardForm.value,
