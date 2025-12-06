@@ -461,9 +461,9 @@
                   <!-- Credit Card Form (shown when Pay with Credit Card button is clicked) -->
                   <div v-if="showCreditCardForm">
                     <!-- Square payment form container -->
-                    <!-- Use v-once to prevent Vue from reconciling after Square manipulates DOM -->
+                    <!-- Key attribute ensures container is recreated when form is shown -->
                     <div
-                      v-once
+                      :key="`square-form-${showCreditCardForm}`"
                       id="square-payment-form"
                       style="min-height: 20px"
                       class="q-mb-md"
