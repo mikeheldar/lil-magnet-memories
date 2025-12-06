@@ -478,7 +478,9 @@
 
                       <!-- Billing Address Section -->
                       <div>
-                        <div class="text-h6 q-mb-md q-mt-md">Billing Address</div>
+                        <div class="text-h6 q-mb-md q-mt-md">
+                          Billing Address
+                        </div>
                         <q-toggle
                           v-if="
                             !skipShipping &&
@@ -505,9 +507,13 @@
                             class="q-mb-md"
                             :error="billingStreetError"
                             :error-message="
-                              billingStreetError ? 'Billing street is required' : ''
+                              billingStreetError
+                                ? 'Billing street is required'
+                                : ''
                             "
-                            :input-attrs="{ autocomplete: 'billing address-line1' }"
+                            :input-attrs="{
+                              autocomplete: 'billing address-line1',
+                            }"
                           />
                           <div class="row q-col-gutter-md q-mb-md">
                             <div class="col-6">
@@ -517,7 +523,9 @@
                                 filled
                                 :error="billingCityError"
                                 :error-message="
-                                  billingCityError ? 'Billing city is required' : ''
+                                  billingCityError
+                                    ? 'Billing city is required'
+                                    : ''
                                 "
                                 :input-attrs="{
                                   autocomplete: 'billing address-level2',
@@ -549,7 +557,9 @@
                                 filled
                                 :error="billingZipError"
                                 :error-message="
-                                  billingZipError ? 'Billing ZIP is required' : ''
+                                  billingZipError
+                                    ? 'Billing ZIP is required'
+                                    : ''
                                 "
                                 :input-attrs="{
                                   autocomplete: 'billing postal-code',
@@ -576,7 +586,7 @@
                   <!-- Credit Card Form (shown directly when Apple Pay is NOT available) -->
                   <div v-else class="q-mb-lg">
                     <div class="text-h6 q-mb-md">Pay with Credit Card</div>
-                    
+
                     <!-- Square payment form container - STATIC, NON-REACTIVE -->
                     <div
                       id="square-payment-form"
@@ -604,8 +614,8 @@
                       <strong>Error loading payment form:</strong>
                       <div class="q-mt-xs">{{ squareInitError.message }}</div>
                       <div class="q-mt-xs text-caption">
-                        Please refresh the page or contact support if the
-                        issue persists.
+                        Please refresh the page or contact support if the issue
+                        persists.
                       </div>
                     </div>
 
@@ -638,9 +648,13 @@
                           class="q-mb-md"
                           :error="billingStreetError"
                           :error-message="
-                            billingStreetError ? 'Billing street is required' : ''
+                            billingStreetError
+                              ? 'Billing street is required'
+                              : ''
                           "
-                          :input-attrs="{ autocomplete: 'billing address-line1' }"
+                          :input-attrs="{
+                            autocomplete: 'billing address-line1',
+                          }"
                         />
                         <div class="row q-col-gutter-md q-mb-md">
                           <div class="col-6">
@@ -650,7 +664,9 @@
                               filled
                               :error="billingCityError"
                               :error-message="
-                                billingCityError ? 'Billing city is required' : ''
+                                billingCityError
+                                  ? 'Billing city is required'
+                                  : ''
                               "
                               :input-attrs="{
                                 autocomplete: 'billing address-level2',
@@ -709,7 +725,9 @@
                 <q-card-actions vertical class="q-pa-md q-pt-none">
                   <!-- Submit button (shown when credit card section is expanded OR when Apple Pay is not available) -->
                   <q-btn
-                    v-if="showCreditCardSection || !availablePaymentMethods.applePay"
+                    v-if="
+                      showCreditCardSection || !availablePaymentMethods.applePay
+                    "
                     color="primary"
                     label="Place Order"
                     icon="check"
@@ -760,14 +778,20 @@
 
         <q-card-section>
           <div class="text-center q-mb-md">
-            <q-icon name="check_circle" size="64px" color="positive" class="q-mb-sm" />
+            <q-icon
+              name="check_circle"
+              size="64px"
+              color="positive"
+              class="q-mb-sm"
+            />
             <div class="text-h6 q-mb-xs">Thank you for your order!</div>
             <div class="text-body2 text-grey-7">
               Order #{{ lastOrderNumber }}
             </div>
           </div>
           <div class="text-body2 text-grey-8 q-mt-md">
-            We've received your order and will get started on your custom magnets right away.
+            We've received your order and will get started on your custom
+            magnets right away.
           </div>
         </q-card-section>
 
@@ -785,12 +809,7 @@
             label="View My Orders"
             @click="goToMyOrders"
           />
-          <q-btn
-            v-else
-            color="primary"
-            label="Go to Home"
-            @click="goToHome"
-          />
+          <q-btn v-else color="primary" label="Go to Home" @click="goToHome" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -817,14 +836,16 @@ export default {
     const router = useRouter();
     const route = useRoute();
     const $q = useQuasar();
-    
+
     // Import and initialize notification service
     let notificationServiceInstance = null;
-    import('../services/notificationService.js').then(({ notificationService }) => {
-      notificationService.setQuasar($q);
-      notificationServiceInstance = notificationService;
-    });
-    
+    import('../services/notificationService.js').then(
+      ({ notificationService }) => {
+        notificationService.setQuasar($q);
+        notificationServiceInstance = notificationService;
+      }
+    );
+
     const safeNotify = (options) => {
       if (notificationServiceInstance) {
         notificationServiceInstance.notify(options);
@@ -931,7 +952,7 @@ export default {
         skipShipping: skipShipping.value,
         selectedPaymentOption: selectedPaymentOption.value,
         showCreditCardForm: showCreditCardForm.value,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       checkedInEvent.value = marketEventService.getCheckedInEvent();
       console.log('🛒 Checkout page - checkedInEvent:', checkedInEvent.value);
@@ -968,10 +989,10 @@ export default {
       // 1. From cart items' formData (most recent, from upload forms)
       // 2. From route query params (from market event upload direct navigation)
       // 3. From authenticated user (if logged in)
-      
+
       // Use nextTick to ensure cart items are loaded (they might be loading from Firestore/localStorage)
       await nextTick();
-      
+
       // Small delay to ensure cart items from Firestore are loaded
       setTimeout(() => {
         // Priority 1: Check cart items for formData (from upload forms)
@@ -979,30 +1000,55 @@ export default {
           (item) => item.isCustomUpload && item.formData
         );
         if (customUploadItem?.formData) {
-          console.log('📝 Pre-filling customer info from cart item formData:', customUploadItem.formData);
-          customerInfo.value.firstName = customUploadItem.formData.firstName || customerInfo.value.firstName || '';
-          customerInfo.value.lastName = customUploadItem.formData.lastName || customerInfo.value.lastName || '';
-          customerInfo.value.email = customUploadItem.formData.email || customerInfo.value.email || '';
-          customerInfo.value.phone = customUploadItem.formData.phone || customerInfo.value.phone || '';
+          console.log(
+            '📝 Pre-filling customer info from cart item formData:',
+            customUploadItem.formData
+          );
+          customerInfo.value.firstName =
+            customUploadItem.formData.firstName ||
+            customerInfo.value.firstName ||
+            '';
+          customerInfo.value.lastName =
+            customUploadItem.formData.lastName ||
+            customerInfo.value.lastName ||
+            '';
+          customerInfo.value.email =
+            customUploadItem.formData.email || customerInfo.value.email || '';
+          customerInfo.value.phone =
+            customUploadItem.formData.phone || customerInfo.value.phone || '';
         } else {
-          console.log('⚠️ No formData found in cart items. Cart items:', cartItems.value.map(item => ({
-            isCustomUpload: item.isCustomUpload,
-            hasFormData: !!item.formData,
-            productName: item.productName
-          })));
+          console.log(
+            '⚠️ No formData found in cart items. Cart items:',
+            cartItems.value.map((item) => ({
+              isCustomUpload: item.isCustomUpload,
+              hasFormData: !!item.formData,
+              productName: item.productName,
+            }))
+          );
         }
       }, 100);
-      
+
       // Also check immediately (in case cart items are already loaded)
       const customUploadItem = cartItems.value.find(
         (item) => item.isCustomUpload && item.formData
       );
       if (customUploadItem?.formData) {
-        console.log('📝 Pre-filling customer info from cart item formData (immediate):', customUploadItem.formData);
-        customerInfo.value.firstName = customUploadItem.formData.firstName || customerInfo.value.firstName || '';
-        customerInfo.value.lastName = customUploadItem.formData.lastName || customerInfo.value.lastName || '';
-        customerInfo.value.email = customUploadItem.formData.email || customerInfo.value.email || '';
-        customerInfo.value.phone = customUploadItem.formData.phone || customerInfo.value.phone || '';
+        console.log(
+          '📝 Pre-filling customer info from cart item formData (immediate):',
+          customUploadItem.formData
+        );
+        customerInfo.value.firstName =
+          customUploadItem.formData.firstName ||
+          customerInfo.value.firstName ||
+          '';
+        customerInfo.value.lastName =
+          customUploadItem.formData.lastName ||
+          customerInfo.value.lastName ||
+          '';
+        customerInfo.value.email =
+          customUploadItem.formData.email || customerInfo.value.email || '';
+        customerInfo.value.phone =
+          customUploadItem.formData.phone || customerInfo.value.phone || '';
       }
 
       // Priority 2: Pre-fill from route query if available (from market event upload direct navigation)
@@ -1086,10 +1132,11 @@ export default {
         costNumber > 0 ? ` - $${costNumber.toFixed(2)}` : ' - Free';
       const title = option.label || 'Shipping';
       // Ensure requiresAddress is set (default to true if allowAddress is true, false if allowAddress is false)
-      const requiresAddress = option.requiresAddress !== undefined
-        ? option.requiresAddress
-        : (option.allowAddress !== false);
-      
+      const requiresAddress =
+        option.requiresAddress !== undefined
+          ? option.requiresAddress
+          : option.allowAddress !== false;
+
       return {
         label: `${title}${costLabel}`,
         value: option.value || option.id,
@@ -1103,7 +1150,11 @@ export default {
         requiresAddress: requiresAddress,
         type: option.type || 'shipping',
         // Preserve default value - handle boolean, string, and number
-        default: option.default === true || option.default === 'true' || option.default === 1 || option.default === '1',
+        default:
+          option.default === true ||
+          option.default === 'true' ||
+          option.default === 1 ||
+          option.default === '1',
         rawLabel: title,
       };
     };
@@ -1263,9 +1314,10 @@ export default {
       // Check if selected shipping option requires address
       if (selectedShippingDetails.value) {
         // Use requiresAddress if set, otherwise fall back to allowAddress (default true)
-        const requiresAddress = selectedShippingDetails.value.requiresAddress !== undefined
-          ? selectedShippingDetails.value.requiresAddress
-          : (selectedShippingDetails.value.allowAddress !== false);
+        const requiresAddress =
+          selectedShippingDetails.value.requiresAddress !== undefined
+            ? selectedShippingDetails.value.requiresAddress
+            : selectedShippingDetails.value.allowAddress !== false;
         return requiresAddress;
       }
       return false;
@@ -1308,28 +1360,35 @@ export default {
             if (!photo.url) {
               return {
                 valid: false,
-                message: 'Some photos have not been uploaded yet. Please wait for uploads to complete.',
+                message:
+                  'Some photos have not been uploaded yet. Please wait for uploads to complete.',
               };
             }
             // Check if it's a blob URL (temporary, not uploaded)
             if (photo.url.startsWith('blob:')) {
               return {
                 valid: false,
-                message: 'Some photos are still uploading. Please wait for all uploads to complete before placing your order.',
+                message:
+                  'Some photos are still uploading. Please wait for all uploads to complete before placing your order.',
               };
             }
             // Check if it's a data URL (base64) - these should be uploaded
             if (photo.url.startsWith('data:')) {
               return {
                 valid: false,
-                message: 'Some photos need to be uploaded. Please wait for uploads to complete.',
+                message:
+                  'Some photos need to be uploaded. Please wait for uploads to complete.',
               };
             }
             // Valid URL should be from Firebase Storage or another valid HTTP(S) URL
-            if (!photo.url.startsWith('http://') && !photo.url.startsWith('https://')) {
+            if (
+              !photo.url.startsWith('http://') &&
+              !photo.url.startsWith('https://')
+            ) {
               return {
                 valid: false,
-                message: 'Some photos have invalid URLs. Please try uploading again.',
+                message:
+                  'Some photos have invalid URLs. Please try uploading again.',
               };
             }
           }
@@ -1368,15 +1427,19 @@ export default {
         selectedShippingOption.value = null;
         return;
       }
-      
+
       // Check if currently selected option exists and is the default
       const existing = options.find(
         (option) => option.value === selectedShippingOption.value
       );
-      
+
       // Check if the existing selection is actually the default option
       if (existing) {
-        const isDefault = existing.default === true || existing.default === 'true' || existing.default === 1 || existing.default === '1';
+        const isDefault =
+          existing.default === true ||
+          existing.default === 'true' ||
+          existing.default === 1 ||
+          existing.default === '1';
         if (isDefault) {
           console.log(
             '✅ Selected option is already the default, keeping it:',
@@ -1387,7 +1450,8 @@ export default {
           console.log(
             '🔄 Selected option exists but is not the default, will check for default option:',
             selectedShippingOption.value,
-            'Default status:', existing.default
+            'Default status:',
+            existing.default
           );
           // Don't return - continue to check for default option below
         }
@@ -1415,7 +1479,7 @@ export default {
       // Check if user is an online customer (explicitly chose "No, Order Online")
       // If they're an online customer, they should NOT default to pickup even if they're at an event
       const isOnlineCustomer = !userIsMarketCustomer;
-      
+
       // Only default to pickup if:
       // 1. User is actually at a market event (checked in) AND
       // 2. User is a market customer (not an online customer) AND
@@ -1455,56 +1519,71 @@ export default {
       // First try to find the option marked as default (regardless of type)
       // If default is a pickup option and user is online, prefer shipping options
       // If no default shipping option, use first shipping option
-      
+
       // Log all options with their default status for debugging
-      console.log('🔄 All shipping options with default status:', options.map(o => ({
-        value: o.value,
-        label: o.label,
-        type: o.type,
-        default: o.default,
-        defaultType: typeof o.default,
-        isDefault: o.default === true || o.default === 'true' || o.default === 1
-      })));
-      
+      console.log(
+        '🔄 All shipping options with default status:',
+        options.map((o) => ({
+          value: o.value,
+          label: o.label,
+          type: o.type,
+          default: o.default,
+          defaultType: typeof o.default,
+          isDefault:
+            o.default === true || o.default === 'true' || o.default === 1,
+        }))
+      );
+
       // Check for any default option (regardless of type)
-      const anyDefaultOption = options.find(
-        (option) => {
-          const isDefault = option.default === true || option.default === 'true' || option.default === 1 || option.default === '1';
-          return isDefault;
-        }
-      );
-      
+      const anyDefaultOption = options.find((option) => {
+        const isDefault =
+          option.default === true ||
+          option.default === 'true' ||
+          option.default === 1 ||
+          option.default === '1';
+        return isDefault;
+      });
+
       // Check for default shipping option specifically
-      const defaultShippingOption = options.find(
-        (option) => {
-          const isDefault = option.default === true || option.default === 'true' || option.default === 1 || option.default === '1';
-          const isShipping = option.type === 'shipping';
-          return isDefault && isShipping;
-        }
-      );
-      
+      const defaultShippingOption = options.find((option) => {
+        const isDefault =
+          option.default === true ||
+          option.default === 'true' ||
+          option.default === 1 ||
+          option.default === '1';
+        const isShipping = option.type === 'shipping';
+        return isDefault && isShipping;
+      });
+
       // Get first shipping option as fallback
-      const firstShippingOption = options.find(o => o.type === 'shipping');
-      
+      const firstShippingOption = options.find((o) => o.type === 'shipping');
+
       // Determine which option to use
       let defaultOption;
       if (anyDefaultOption) {
         // There is a default option set
         if (anyDefaultOption.type === 'pickup' && isOnlineCustomer) {
           // Default is pickup but user is online - prefer shipping
-          defaultOption = defaultShippingOption || firstShippingOption || options[0];
-          console.log('🔄 Default is pickup but user is online, using shipping option instead');
+          defaultOption =
+            defaultShippingOption || firstShippingOption || options[0];
+          console.log(
+            '🔄 Default is pickup but user is online, using shipping option instead'
+          );
         } else {
           // Use the default option (whether shipping or pickup)
           defaultOption = anyDefaultOption;
-          console.log('🔄 Using admin-set default option:', anyDefaultOption.label);
+          console.log(
+            '🔄 Using admin-set default option:',
+            anyDefaultOption.label
+          );
         }
       } else {
         // No default set - use first shipping option for online customers
-        defaultOption = defaultShippingOption || firstShippingOption || options[0];
+        defaultOption =
+          defaultShippingOption || firstShippingOption || options[0];
         console.log('🔄 No default option set, using first shipping option');
       }
-      
+
       console.log('🔄 Final default option selection:', {
         selectedValue: defaultOption?.value,
         selectedLabel: defaultOption?.label,
@@ -1518,7 +1597,7 @@ export default {
         optionType: defaultOption?.type,
         allOptions: options.length,
       });
-      
+
       if (defaultOption) {
         selectedShippingOption.value = defaultOption.value;
       } else {
@@ -1716,10 +1795,16 @@ export default {
         );
         if (customUploadItem?.formData) {
           // Only update if field is currently empty (don't overwrite user input)
-          if (!customerInfo.value.firstName && customUploadItem.formData.firstName) {
+          if (
+            !customerInfo.value.firstName &&
+            customUploadItem.formData.firstName
+          ) {
             customerInfo.value.firstName = customUploadItem.formData.firstName;
           }
-          if (!customerInfo.value.lastName && customUploadItem.formData.lastName) {
+          if (
+            !customerInfo.value.lastName &&
+            customUploadItem.formData.lastName
+          ) {
             customerInfo.value.lastName = customUploadItem.formData.lastName;
           }
           if (!customerInfo.value.email && customUploadItem.formData.email) {
@@ -1783,19 +1868,20 @@ export default {
         required,
         prevRequired,
         currentBillingAddress: JSON.parse(JSON.stringify(billingAddress.value)),
-        stackTrace: new Error().stack
+        stackTrace: new Error().stack,
       });
       // Only clear billing address if it's changing from required to not required
       // Don't clear if it's just initializing or if user has entered data
       if (!required && prevRequired !== undefined && prevRequired === true) {
         // Only clear if all fields are empty (don't clear user input)
-        const hasUserInput = billingAddress.value.street || 
-                            billingAddress.value.city || 
-                            billingAddress.value.state || 
-                            billingAddress.value.zip;
+        const hasUserInput =
+          billingAddress.value.street ||
+          billingAddress.value.city ||
+          billingAddress.value.state ||
+          billingAddress.value.zip;
         console.log('🟠 CHECKING IF SHOULD CLEAR BILLING ADDRESS:', {
           hasUserInput,
-          billingAddress: JSON.parse(JSON.stringify(billingAddress.value))
+          billingAddress: JSON.parse(JSON.stringify(billingAddress.value)),
         });
         if (!hasUserInput) {
           console.log('🟠 CLEARING BILLING ADDRESS');
@@ -1805,7 +1891,10 @@ export default {
             state: '',
             zip: '',
           };
-          console.log('🟠 BILLING ADDRESS AFTER CLEAR:', JSON.parse(JSON.stringify(billingAddress.value)));
+          console.log(
+            '🟠 BILLING ADDRESS AFTER CLEAR:',
+            JSON.parse(JSON.stringify(billingAddress.value))
+          );
         } else {
           console.log('🟠 NOT CLEARING - USER HAS INPUT');
         }
@@ -1818,42 +1907,63 @@ export default {
       }
     });
 
-
-
-
     watch(orderTotal, () => {
       updateSquarePaymentRequest();
     });
 
     // Watch for Apple Pay becoming ready and render button (regardless of selected payment option)
     // Watch for Apple Pay availability changes - mount credit card form if Apple Pay is not available
-    watch(availablePaymentMethods, async (methods) => {
-      if (!methods.applePay && squareInitialized.value && squareCard.value && !squareCardMounted.value) {
-        console.log('🔵 Apple Pay not available, mounting credit card form...');
-        await nextTick();
-        await new Promise(resolve => setTimeout(resolve, 300));
-        await mountSquareCard();
-      }
-    }, { immediate: true });
+    watch(
+      availablePaymentMethods,
+      async (methods) => {
+        if (
+          !methods.applePay &&
+          squareInitialized.value &&
+          squareCard.value &&
+          !squareCardMounted.value
+        ) {
+          console.log(
+            '🔵 Apple Pay not available, mounting credit card form...'
+          );
+          await nextTick();
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          await mountSquareCard();
+        }
+      },
+      { immediate: true }
+    );
 
     // Watch for Apple Pay availability - mount credit card form if Apple Pay is not available
-    watch(availablePaymentMethods, async (methods) => {
-      if (!methods.applePay && squareInitialized.value && squareCard.value && !squareCardMounted.value) {
-        console.log('🔵 Apple Pay not available, mounting credit card form directly...');
-        // Set showCreditCardForm to true so mountSquareCard will proceed
-        showCreditCardForm.value = true;
-        // Ensure Square form container is visible
-        const squareFormContainer = document.getElementById('square-payment-form');
-        if (squareFormContainer) {
-          squareFormContainer.style.display = '';
-          squareFormContainer.style.visibility = '';
-          squareFormContainer.style.minHeight = '20px';
+    watch(
+      availablePaymentMethods,
+      async (methods) => {
+        if (
+          !methods.applePay &&
+          squareInitialized.value &&
+          squareCard.value &&
+          !squareCardMounted.value
+        ) {
+          console.log(
+            '🔵 Apple Pay not available, mounting credit card form directly...'
+          );
+          // Set showCreditCardForm to true so mountSquareCard will proceed
+          showCreditCardForm.value = true;
+          // Ensure Square form container is visible
+          const squareFormContainer = document.getElementById(
+            'square-payment-form'
+          );
+          if (squareFormContainer) {
+            squareFormContainer.style.display = '';
+            squareFormContainer.style.visibility = '';
+            squareFormContainer.style.minHeight = '20px';
+          }
+          await nextTick();
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          await mountSquareCard();
         }
-        await nextTick();
-        await new Promise(resolve => setTimeout(resolve, 300));
-        await mountSquareCard();
-      }
-    }, { immediate: true });
+      },
+      { immediate: true }
+    );
 
     watch(applePayReady, async (isReady) => {
       if (isReady && squareApplePay.value) {
@@ -1864,7 +1974,7 @@ export default {
         applePayAttached.value = false;
         // Wait a bit for DOM to be ready, especially with v-show
         await nextTick();
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         await renderApplePayButton();
       }
     });
@@ -1945,7 +2055,8 @@ export default {
       // In test environment, Apple Pay doesn't require address at all
       // Check both selectedPaymentOption and applePayToken to handle cases where
       // Apple Pay button is clicked but selectedPaymentOption isn't set yet
-      const isApplePay = selectedPaymentOption.value === 'apple_pay' || applePayToken.value;
+      const isApplePay =
+        selectedPaymentOption.value === 'apple_pay' || applePayToken.value;
       if (
         !skipShipping.value &&
         requiresShippingAddress.value &&
@@ -1955,10 +2066,7 @@ export default {
         return false;
       }
       // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
-      if (
-        requiresBillingAddress.value &&
-        !isApplePay
-      ) {
+      if (requiresBillingAddress.value && !isApplePay) {
         if (skipShipping.value) {
           // When skipShipping, always require billing address
           if (!addressIsComplete(billingAddress.value)) {
@@ -2073,7 +2181,8 @@ export default {
     const mountSquareCard = async () => {
       // Only mount if credit card form is visible OR if Apple Pay is not available
       // When Apple Pay is not available, the form is shown directly (not collapsible)
-      const shouldMount = showCreditCardForm.value || !availablePaymentMethods.value.applePay;
+      const shouldMount =
+        showCreditCardForm.value || !availablePaymentMethods.value.applePay;
       if (!shouldMount) {
         console.log('ℹ️ Skipping mount - credit card form not visible');
         return;
@@ -2111,15 +2220,17 @@ export default {
         container.classList.add('square-card-container');
 
         // Check if form is already attached to this container
-        const hasSquareForm = container.querySelector('.sq-card') || container.querySelector('[id*="sq-"]');
-        
+        const hasSquareForm =
+          container.querySelector('.sq-card') ||
+          container.querySelector('[id*="sq-"]');
+
         // Also check if card instance is already attached (even if not in this container)
         // Square SDK tracks attachment globally, so we need to check before attempting attach
         if (squareCardMounted.value && hasSquareForm) {
           console.log('ℹ️ Square card form already mounted and visible');
           return;
         }
-        
+
         if (!hasSquareForm) {
           // Clear any existing content (including loading spinner)
           // Use multiple nextTick calls and delays to ensure Vue has finished rendering
@@ -2148,7 +2259,7 @@ export default {
             // Now update Vue state - this should prevent reconciliation conflicts
             squareCardMounted.value = true;
             console.log('✅ Square card form mounted successfully');
-            
+
             // Note: Square SDK may log internal Vue component errors (e.g., "emitsOptions", "NotFoundError")
             // These are non-critical and don't affect form functionality - the form is successfully mounted
 
@@ -2167,121 +2278,167 @@ export default {
             }
           } catch (attachError) {
             // Check if error is because card is already attached
-            if (attachError?.message?.includes('already been attached') || 
-                attachError?.name === 'PaymentMethodAlreadyAttachedError') {
-              console.log('ℹ️ Square card already attached, checking if form exists in container...');
+            if (
+              attachError?.message?.includes('already been attached') ||
+              attachError?.name === 'PaymentMethodAlreadyAttachedError'
+            ) {
+              console.log(
+                'ℹ️ Square card already attached, checking if form exists in container...'
+              );
               // Check if form actually exists in the container
-              const hasForm = container.querySelector('.sq-card') || container.querySelector('[id*="sq-"]');
+              const hasForm =
+                container.querySelector('.sq-card') ||
+                container.querySelector('[id*="sq-"]');
               if (hasForm) {
                 console.log('✅ Square form is present, marking as mounted');
                 squareCardMounted.value = true;
                 return; // Success - form is already attached and visible
-            } else {
-              // Form is attached but not in this container - need to create new instance
-              console.log('⚠️ Card attached but form not in container, creating new card instance...');
-              // Create a new card instance
-              try {
-                // Check if squarePayments is available (this is the ref that stores the payments object)
-                if (!squarePayments.value) {
-                  console.error('❌ Square payments object not available, cannot create new card instance', {
-                    squareInitialized: squareInitialized.value,
-                    hasSquarePayments: !!squarePayments.value,
-                  });
-                  throw new Error('Square payments object not available. Please refresh the page.');
-                }
-                
-                // Check if card method exists
-                if (typeof squarePayments.value.card !== 'function') {
-                  console.error('❌ Square payments.card is not a function', squarePayments.value);
-                  throw new Error('Square card method not available. Please refresh the page.');
-                }
-                
-                // Clean up old card instance first
-                console.log('🧹 Cleaning up old card instance...');
+              } else {
+                // Form is attached but not in this container - need to create new instance
+                console.log(
+                  '⚠️ Card attached but form not in container, creating new card instance...'
+                );
+                // Create a new card instance
                 try {
-                  // Try to detach if there's a detach method
-                  if (squareCard.value && typeof squareCard.value.destroy === 'function') {
-                    await squareCard.value.destroy();
-                    console.log('✅ Old card instance destroyed');
+                  // Check if squarePayments is available (this is the ref that stores the payments object)
+                  if (!squarePayments.value) {
+                    console.error(
+                      '❌ Square payments object not available, cannot create new card instance',
+                      {
+                        squareInitialized: squareInitialized.value,
+                        hasSquarePayments: !!squarePayments.value,
+                      }
+                    );
+                    throw new Error(
+                      'Square payments object not available. Please refresh the page.'
+                    );
                   }
-                } catch (cleanupError) {
-                  console.warn('⚠️ Error during cleanup (non-fatal):', cleanupError);
+
+                  // Check if card method exists
+                  if (typeof squarePayments.value.card !== 'function') {
+                    console.error(
+                      '❌ Square payments.card is not a function',
+                      squarePayments.value
+                    );
+                    throw new Error(
+                      'Square card method not available. Please refresh the page.'
+                    );
+                  }
+
+                  // Clean up old card instance first
+                  console.log('🧹 Cleaning up old card instance...');
+                  try {
+                    // Try to detach if there's a detach method
+                    if (
+                      squareCard.value &&
+                      typeof squareCard.value.destroy === 'function'
+                    ) {
+                      await squareCard.value.destroy();
+                      console.log('✅ Old card instance destroyed');
+                    }
+                  } catch (cleanupError) {
+                    console.warn(
+                      '⚠️ Error during cleanup (non-fatal):',
+                      cleanupError
+                    );
+                  }
+
+                  // Clear the old reference
+                  squareCard.value = null;
+                  squareCardMounted.value = false;
+
+                  // Clear container completely
+                  container.innerHTML = '';
+
+                  // Wait for DOM to be ready
+                  await nextTick();
+                  await new Promise((resolve) => setTimeout(resolve, 200));
+
+                  // Verify container is ready
+                  const containerAfterCleanup = document.getElementById(
+                    'square-payment-form'
+                  );
+                  if (!containerAfterCleanup) {
+                    throw new Error('Container not found after cleanup');
+                  }
+
+                  console.log('🔵 Creating new Square card instance...');
+                  // card() might return a Promise, so await it
+                  const newCard = await squarePayments.value.card();
+                  squareCard.value = newCard;
+                  console.log('✅ New Square card instance created', {
+                    hasAttach: typeof newCard?.attach === 'function',
+                    cardType: typeof newCard,
+                    cardKeys: newCard ? Object.keys(newCard) : 'null',
+                  });
+
+                  // Verify the card instance has an attach method
+                  if (
+                    !squareCard.value ||
+                    typeof squareCard.value.attach !== 'function'
+                  ) {
+                    throw new Error(
+                      'Card instance does not have attach method. Card type: ' +
+                        typeof squareCard.value
+                    );
+                  }
+
+                  // Wait a bit more before attaching
+                  await nextTick();
+                  await new Promise((resolve) => setTimeout(resolve, 100));
+
+                  // Retry attach with new instance
+                  console.log('🔵 Attaching new card instance to container...');
+                  await squareCard.value.attach('#square-payment-form');
+
+                  // Wait for Square to finish DOM manipulation
+                  await nextTick();
+                  await new Promise((resolve) => setTimeout(resolve, 200));
+
+                  // Verify form was attached
+                  const hasFormAfterAttach =
+                    containerAfterCleanup.querySelector('.sq-card') ||
+                    containerAfterCleanup.querySelector('[id*="sq-"]') ||
+                    containerAfterCleanup.children.length > 0;
+
+                  if (hasFormAfterAttach) {
+                    squareCardMounted.value = true;
+                    console.log(
+                      '✅ New Square card instance attached successfully and verified'
+                    );
+                  } else {
+                    console.warn(
+                      '⚠️ Card attached but form not visible in container'
+                    );
+                    squareCardMounted.value = true; // Still mark as mounted, might be a timing issue
+                  }
+                } catch (retryError) {
+                  console.error(
+                    '❌ Error attaching new card instance:',
+                    retryError,
+                    {
+                      hasSquarePayments: !!squarePayments.value,
+                      hasCardMethod: squarePayments.value
+                        ? typeof squarePayments.value.card === 'function'
+                        : false,
+                      squareInitialized: squareInitialized.value,
+                      errorMessage: retryError?.message,
+                      errorStack: retryError?.stack,
+                    }
+                  );
+                  squareInitError.value = retryError;
+                  // Reset state on error
+                  squareCard.value = null;
+                  squareCardMounted.value = false;
+                  // Don't throw - let error be displayed in UI
+                  return;
                 }
-                
-                // Clear the old reference
-                squareCard.value = null;
-                squareCardMounted.value = false;
-                
-                // Clear container completely
-                container.innerHTML = '';
-                
-                // Wait for DOM to be ready
-                await nextTick();
-                await new Promise((resolve) => setTimeout(resolve, 200));
-                
-                // Verify container is ready
-                const containerAfterCleanup = document.getElementById('square-payment-form');
-                if (!containerAfterCleanup) {
-                  throw new Error('Container not found after cleanup');
-                }
-                
-                console.log('🔵 Creating new Square card instance...');
-                // card() might return a Promise, so await it
-                const newCard = await squarePayments.value.card();
-                squareCard.value = newCard;
-                console.log('✅ New Square card instance created', {
-                  hasAttach: typeof newCard?.attach === 'function',
-                  cardType: typeof newCard,
-                  cardKeys: newCard ? Object.keys(newCard) : 'null',
-                });
-                
-                // Verify the card instance has an attach method
-                if (!squareCard.value || typeof squareCard.value.attach !== 'function') {
-                  throw new Error('Card instance does not have attach method. Card type: ' + typeof squareCard.value);
-                }
-                
-                // Wait a bit more before attaching
-                await nextTick();
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                
-                // Retry attach with new instance
-                console.log('🔵 Attaching new card instance to container...');
-                await squareCard.value.attach('#square-payment-form');
-                
-                // Wait for Square to finish DOM manipulation
-                await nextTick();
-                await new Promise((resolve) => setTimeout(resolve, 200));
-                
-                // Verify form was attached
-                const hasFormAfterAttach = containerAfterCleanup.querySelector('.sq-card') || 
-                                          containerAfterCleanup.querySelector('[id*="sq-"]') ||
-                                          containerAfterCleanup.children.length > 0;
-                
-                if (hasFormAfterAttach) {
-                  squareCardMounted.value = true;
-                  console.log('✅ New Square card instance attached successfully and verified');
-                } else {
-                  console.warn('⚠️ Card attached but form not visible in container');
-                  squareCardMounted.value = true; // Still mark as mounted, might be a timing issue
-                }
-              } catch (retryError) {
-                console.error('❌ Error attaching new card instance:', retryError, {
-                  hasSquarePayments: !!squarePayments.value,
-                  hasCardMethod: squarePayments.value ? typeof squarePayments.value.card === 'function' : false,
-                  squareInitialized: squareInitialized.value,
-                  errorMessage: retryError?.message,
-                  errorStack: retryError?.stack,
-                });
-                squareInitError.value = retryError;
-                // Reset state on error
-                squareCard.value = null;
-                squareCardMounted.value = false;
-                // Don't throw - let error be displayed in UI
-                return;
               }
-            }
             } else {
-              console.error('❌ Error attaching Square card form:', attachError);
+              console.error(
+                '❌ Error attaching Square card form:',
+                attachError
+              );
               throw attachError;
             }
           }
@@ -2312,45 +2469,56 @@ export default {
       // When credit card form is hidden, use regular container
       let container = null;
       let containerId = null;
-      
+
       if (showCreditCardForm.value) {
         // Credit card form is visible, use collapsed container
-        container = document.getElementById('square-apple-pay-button-collapsed');
+        container = document.getElementById(
+          'square-apple-pay-button-collapsed'
+        );
         containerId = '#square-apple-pay-button-collapsed';
       } else {
         // Credit card form is hidden, use regular container
         container = document.getElementById('square-apple-pay-button');
         containerId = '#square-apple-pay-button';
       }
-      
+
       if (!container) {
         console.log('⚠️ Cannot render Apple Pay button: container not found', {
-          collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
+          collapsedExists: !!document.getElementById(
+            'square-apple-pay-button-collapsed'
+          ),
           regularExists: !!document.getElementById('square-apple-pay-button'),
           showCreditCardForm: showCreditCardForm.value,
           showApplePaySection: showApplePaySection.value,
-          collapsedVisible: document.getElementById('square-apple-pay-button-collapsed')?.offsetParent !== null,
-          regularVisible: document.getElementById('square-apple-pay-button')?.offsetParent !== null,
+          collapsedVisible:
+            document.getElementById('square-apple-pay-button-collapsed')
+              ?.offsetParent !== null,
+          regularVisible:
+            document.getElementById('square-apple-pay-button')?.offsetParent !==
+            null,
         });
         return;
       }
-      
+
       // Check if container is actually visible (not hidden by v-show)
       const containerVisible = container.offsetParent !== null;
       if (!containerVisible) {
-        console.warn('⚠️ Container found but not visible, checking other container...', {
-          containerId,
-          showCreditCardForm: showCreditCardForm.value,
-          containerVisible,
-        });
+        console.warn(
+          '⚠️ Container found but not visible, checking other container...',
+          {
+            containerId,
+            showCreditCardForm: showCreditCardForm.value,
+            containerVisible,
+          }
+        );
         // Try the other container as fallback
-        const otherContainer = showCreditCardForm.value 
+        const otherContainer = showCreditCardForm.value
           ? document.getElementById('square-apple-pay-button')
           : document.getElementById('square-apple-pay-button-collapsed');
         if (otherContainer && otherContainer.offsetParent !== null) {
           console.log('✅ Found visible fallback container, using it instead');
           container = otherContainer;
-          containerId = showCreditCardForm.value 
+          containerId = showCreditCardForm.value
             ? '#square-apple-pay-button'
             : '#square-apple-pay-button-collapsed';
         }
@@ -2691,7 +2859,7 @@ export default {
             } catch (error) {
               console.error('❌ Apple Pay payment error:', error);
               submitting.value = false;
-              
+
               // Log error to Firestore for admin review
               try {
                 await firebaseService.logTransactionError({
@@ -2708,7 +2876,7 @@ export default {
                     paymentMethod: 'apple_pay',
                     customerEmail: customerInfo.value.email,
                     customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
-                    cartItems: cartItems.value.map(item => ({
+                    cartItems: cartItems.value.map((item) => ({
                       productId: item.productId,
                       productName: item.productName,
                       quantity: item.quantity,
@@ -2719,14 +2887,16 @@ export default {
               } catch (logError) {
                 console.error('Failed to log Apple Pay error:', logError);
               }
-              
+
               // Show user-friendly error message
-              const userFriendlyMessage = 'There was a problem processing your Apple Pay payment.';
+              const userFriendlyMessage =
+                'There was a problem processing your Apple Pay payment.';
               applePayError.value = userFriendlyMessage;
               safeNotify({
                 type: 'negative',
                 message: userFriendlyMessage,
-                caption: 'Don\'t worry - you have not been charged. Please try again or use another payment method.',
+                caption:
+                  "Don't worry - you have not been charged. Please try again or use another payment method.",
                 position: 'top',
                 timeout: 8000,
               });
@@ -2803,7 +2973,9 @@ export default {
         showCreditCardSection.value = false;
         showCreditCardForm.value = false;
         // Hide Square form container
-        const squareFormContainer = document.getElementById('square-payment-form');
+        const squareFormContainer = document.getElementById(
+          'square-payment-form'
+        );
         if (squareFormContainer) {
           squareFormContainer.style.display = 'none';
           squareFormContainer.style.visibility = 'hidden';
@@ -2812,7 +2984,7 @@ export default {
       // Render Apple Pay button when section expands
       if (isExpanded && applePayReady.value && squareApplePay.value) {
         await nextTick();
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         await renderApplePayButton();
       }
     };
@@ -2824,19 +2996,21 @@ export default {
         showApplePaySection.value = false;
         showCreditCardForm.value = true;
         selectedPaymentOption.value = 'square_card';
-        
+
         // Show Square form container
-        const squareFormContainer = document.getElementById('square-payment-form');
+        const squareFormContainer = document.getElementById(
+          'square-payment-form'
+        );
         if (squareFormContainer) {
           squareFormContainer.style.display = '';
           squareFormContainer.style.visibility = '';
           squareFormContainer.style.minHeight = '20px';
         }
-        
+
         // Wait for DOM to update
         await nextTick();
-        await new Promise(resolve => setTimeout(resolve, 150));
-        
+        await new Promise((resolve) => setTimeout(resolve, 150));
+
         // Mount Square card form if initialized
         if (squareInitialized.value && squareCard.value) {
           await mountSquareCard();
@@ -2845,7 +3019,7 @@ export default {
             await waitForSquareSDK();
             await initializeSquarePayments();
             await nextTick();
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise((resolve) => setTimeout(resolve, 300));
             await mountSquareCard();
           } catch (error) {
             console.error('Failed to initialize Square:', error);
@@ -2855,7 +3029,9 @@ export default {
       } else {
         // When credit card collapses, hide the form
         showCreditCardForm.value = false;
-        const squareFormContainer = document.getElementById('square-payment-form');
+        const squareFormContainer = document.getElementById(
+          'square-payment-form'
+        );
         if (squareFormContainer) {
           squareFormContainer.style.display = 'none';
           squareFormContainer.style.visibility = 'hidden';
@@ -2868,28 +3044,30 @@ export default {
       // But keep it for backwards compatibility
       showCreditCardSection.value = true;
       await handleCreditCardSectionToggle(true);
-      
+
       // Wait for DOM to update and container to be available
       await nextTick();
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       // Wait for Vue to create the credit card form container (v-if="showCreditCardForm")
       await nextTick();
-      await new Promise(resolve => setTimeout(resolve, 150));
-      
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
       // Find and show the credit card form container if it exists
       // This is the parent div with v-if="showCreditCardForm"
       let creditCardFormContainer = null;
       let retries = 0;
       while (!creditCardFormContainer && retries < 10) {
-        creditCardFormContainer = document.querySelector('[id="square-payment-form"]')?.parentElement;
+        creditCardFormContainer = document.querySelector(
+          '[id="square-payment-form"]'
+        )?.parentElement;
         if (!creditCardFormContainer) {
           await nextTick();
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise((resolve) => setTimeout(resolve, 50));
           retries++;
         }
       }
-      
+
       if (creditCardFormContainer) {
         // Reset all CSS properties to ensure it's visible
         creditCardFormContainer.style.display = '';
@@ -2905,10 +3083,12 @@ export default {
       } else {
         console.warn('⚠️ Credit card form container not found after waiting');
       }
-      
+
       // Explicitly show the Square form container if it exists
       // This must happen BEFORE mounting Square so the container is visible
-      const squareFormContainer = document.getElementById('square-payment-form');
+      const squareFormContainer = document.getElementById(
+        'square-payment-form'
+      );
       if (squareFormContainer) {
         // Remove any inline display:none that might have been set
         squareFormContainer.style.display = '';
@@ -2927,16 +3107,16 @@ export default {
       } else {
         console.warn('⚠️ Square form container not found');
       }
-      
+
       // Wait a moment for the container to be fully visible before mounting
       await nextTick();
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Explicitly show billing address section if it exists
-      const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6')).filter(
-        el => el.textContent?.includes('Billing Address')
-      );
-      billingAddressHeadings.forEach(heading => {
+      const billingAddressHeadings = Array.from(
+        document.querySelectorAll('.text-h6')
+      ).filter((el) => el.textContent?.includes('Billing Address'));
+      billingAddressHeadings.forEach((heading) => {
         const billingSection = heading.closest('div');
         if (billingSection) {
           billingSection.style.display = '';
@@ -2948,7 +3128,7 @@ export default {
           console.log('🔧 Explicitly showed billing address section');
         }
       });
-      
+
       // Ensure Square card form is mounted if not already
       if (squareInitialized.value && squareCard.value) {
         // Always try to mount, even if previously mounted (container might have changed)
@@ -2958,18 +3138,19 @@ export default {
           containerExists: !!document.getElementById('square-payment-form'),
         });
         await mountSquareCard();
-        
+
         // Wait a bit more for Square to render the form fields
         await nextTick();
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
         // Verify the form was actually rendered
         const formContainer = document.getElementById('square-payment-form');
         if (formContainer) {
-          const hasFormFields = formContainer.querySelector('.sq-card') || 
-                               formContainer.querySelector('[id*="sq-"]') ||
-                               formContainer.querySelector('input') ||
-                               formContainer.children.length > 0;
+          const hasFormFields =
+            formContainer.querySelector('.sq-card') ||
+            formContainer.querySelector('[id*="sq-"]') ||
+            formContainer.querySelector('input') ||
+            formContainer.children.length > 0;
           console.log('🔍 Square form rendering check:', {
             hasFormFields,
             containerHTML: formContainer.innerHTML.substring(0, 200),
@@ -2984,7 +3165,7 @@ export default {
           await initializeSquarePayments();
           // Wait a bit more for initialization to complete
           await nextTick();
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise((resolve) => setTimeout(resolve, 300));
           await mountSquareCard();
         } catch (error) {
           console.error('Failed to initialize Square:', error);
@@ -2992,7 +3173,7 @@ export default {
         }
       }
     };
-    
+
     // OLD WATCHER - REMOVED - Now using handleApplePaySectionToggle instead
     // This watcher was causing conflicts with the new collapsible section structure
     /*
@@ -3005,7 +3186,7 @@ export default {
         hasSquareApplePay: !!squareApplePay.value,
         availablePaymentMethods: availablePaymentMethods.value,
       });
-      
+
       if (isExpanded) {
         // Always hide credit card form when Apple Pay section is expanded
         // This ensures we show just the buttons (Apple Pay + Pay with Credit Card)
@@ -3015,15 +3196,15 @@ export default {
           showCreditCardForm: showCreditCardForm.value,
           showApplePaySection: showApplePaySection.value,
         });
-        
+
         // Always set to false when expanding Apple Pay (even if already false)
         // This will hide the credit card form and show the "Pay with Credit Card" button
         showCreditCardForm.value = false;
-        
+
         // Wait for Vue to update the DOM so buttons become visible
         await nextTick();
         await new Promise(resolve => setTimeout(resolve, 150));
-        
+
         // Explicitly ensure both button containers are visible
         // Apple Pay button container (shown when showCreditCardForm is false)
         const applePayButton = document.getElementById('square-apple-pay-button');
@@ -3037,11 +3218,11 @@ export default {
             console.log('🔧 Ensured Apple Pay button container is visible');
           }
         }
-        
+
         // "Pay with Credit Card" button - find by text content
         const creditCardButtons = Array.from(document.querySelectorAll('button, .q-btn'));
-        const creditCardButton = creditCardButtons.find(btn => 
-          btn.textContent?.includes('Pay with Credit Card') || 
+        const creditCardButton = creditCardButtons.find(btn =>
+          btn.textContent?.includes('Pay with Credit Card') ||
           btn.textContent?.includes('Credit Card')
         );
         if (creditCardButton) {
@@ -3057,14 +3238,14 @@ export default {
         // Reset mounted flag when hiding credit card form
         // This allows re-mounting when form is shown again
         squareCardMounted.value = false;
-        
+
         // Force Vue to update the DOM immediately - wait multiple ticks
         await nextTick();
         await nextTick(); // Extra tick for Vue to process
         // Longer delay to ensure Vue has fully processed the change and removed elements
         await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Note: We don't need to explicitly hide these because v-if="showCreditCardForm" 
+
+        // Note: We don't need to explicitly hide these because v-if="showCreditCardForm"
         // will remove them from the DOM when showCreditCardForm is false.
         // However, if they're still in DOM (timing issue), hide them as a safety measure.
         const squareFormContainer = document.getElementById('square-payment-form');
@@ -3073,7 +3254,7 @@ export default {
           squareFormContainer.style.visibility = 'hidden';
           console.log('🔧 Explicitly hid Square form container (safety measure)');
         }
-        
+
         // Find the parent container that has v-if="showCreditCardForm" and hide it if still in DOM
         const creditCardFormContainer = document.querySelector('[id="square-payment-form"]')?.parentElement;
         if (creditCardFormContainer && creditCardFormContainer.offsetParent !== null) {
@@ -3082,7 +3263,7 @@ export default {
           creditCardFormContainer.style.visibility = 'hidden';
           console.log('🔧 Explicitly hid credit card form container (safety measure)');
         }
-        
+
         // Also find and hide any billing address elements that might still be in DOM
         const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6, h6, [class*="text-h6"], [class*="text-h"]')).filter(
           el => el.textContent?.trim() === 'Billing Address' || el.textContent?.includes('Billing Address')
@@ -3093,7 +3274,7 @@ export default {
           // Keep going up until we find a container that's likely the section
           while (billingSection && billingSection !== document.body) {
             // Check if this is likely the billing address section container
-            if (billingSection.querySelector('input[placeholder*="Billing"]') || 
+            if (billingSection.querySelector('input[placeholder*="Billing"]') ||
                 billingSection.querySelector('input[label*="Billing"]') ||
                 billingSection.querySelector('.q-input[label*="Billing"]') ||
                 billingSection.querySelector('[label*="Billing"]')) {
@@ -3112,7 +3293,7 @@ export default {
             billingSection = billingSection.parentElement;
           }
         });
-        
+
         // Also hide any billing address inputs directly
         const billingInputs = Array.from(document.querySelectorAll('input, .q-input, .q-field')).filter(
           el => {
@@ -3130,7 +3311,7 @@ export default {
             inputContainer.style.overflow = 'hidden';
           }
         });
-        
+
         console.log('✅ Credit card form hidden, showCreditCardForm set to false', {
           showCreditCardForm: showCreditCardForm.value,
           creditCardFormInDOM: !!document.getElementById('square-payment-form'),
@@ -3138,7 +3319,7 @@ export default {
           billingAddressInDOM: !!document.querySelector('.text-h6')?.textContent?.includes('Billing Address'),
           billingAddressVisible: !!document.querySelector('.text-h6')?.textContent?.includes('Billing Address') && document.querySelector('.text-h6')?.offsetParent !== null,
         });
-        
+
         // Render Apple Pay button when section is expanded
         if (applePayReady.value && squareApplePay.value) {
           console.log('🍎 Apple Pay section expanded, rendering button...', {
@@ -3148,7 +3329,7 @@ export default {
             applePayReady: applePayReady.value,
             hasSquareApplePay: !!squareApplePay.value,
           });
-          
+
           // Check DOM state before waiting
           const beforeWait = {
             collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
@@ -3162,21 +3343,21 @@ export default {
             })),
           };
           console.log('🔍 DOM state before waiting:', beforeWait);
-          
+
           // Wait for DOM to update - need to wait for credit card form to hide and regular Apple Pay to show
           await nextTick();
           console.log('⏱️ After first nextTick');
-          
+
           // Since we're using v-show now, containers should always be in DOM
           // But we still need to wait for Vue to update visibility
           const waitTime = wasShowingCreditCard ? 300 : 200;
           console.log(`⏱️ Waiting ${waitTime}ms for Vue to update visibility...`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
-          
+
           // Force another nextTick to ensure Vue has updated
           await nextTick();
           console.log('⏱️ After second nextTick');
-          
+
           // Check DOM state after waiting
           const afterWait = {
             collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
@@ -3195,10 +3376,10 @@ export default {
             })),
           };
           console.log('🔍 DOM state after waiting:', afterWait);
-          
+
           // Reset attachment to allow re-rendering
           applePayAttached.value = false;
-          
+
           // Try rendering multiple times with delays to ensure container is available
           let retries = 0;
           let success = false;
@@ -3209,14 +3390,14 @@ export default {
               // When credit card form is shown, we should use the collapsed container
               let container = null;
               let containerId = null;
-              
+
               const currentState = {
                 showCreditCardForm: showCreditCardForm.value,
                 showApplePaySection: showApplePaySection.value,
                 collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
                 regularExists: !!document.getElementById('square-apple-pay-button'),
               };
-              
+
               if (showCreditCardForm.value) {
                 // Credit card form is visible, use collapsed container
                 container = document.getElementById('square-apple-pay-button-collapsed');
@@ -3228,7 +3409,7 @@ export default {
                 containerId = '#square-apple-pay-button';
                 console.log(`🔍 Attempt ${retries + 1}: Looking for regular container (credit card form hidden)`, currentState);
               }
-              
+
               if (container) {
                 console.log(`✅ Container found on attempt ${retries + 1}, rendering button...`, {
                   containerId,
@@ -3278,7 +3459,7 @@ export default {
               await new Promise(resolve => setTimeout(resolve, 200));
             }
           }
-          
+
           if (!success) {
             const finalState = {
               collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
@@ -3371,7 +3552,11 @@ export default {
         // Apple Pay doesn't require billing address - it's handled by Apple Pay sheet
         // Only use billing address if it's available and complete, otherwise pass null
         let billingAddressToUse = null;
-        if (billingSameAsShipping.value && requiresShippingAddress.value && addressIsComplete(shippingAddress.value)) {
+        if (
+          billingSameAsShipping.value &&
+          requiresShippingAddress.value &&
+          addressIsComplete(shippingAddress.value)
+        ) {
           billingAddressToUse = shippingAddress.value;
         } else if (addressIsComplete(billingAddress.value)) {
           billingAddressToUse = billingAddress.value;
@@ -3385,7 +3570,9 @@ export default {
           buyerEmail: customerInfo.value.email,
           customerName:
             `${customerInfo.value.firstName} ${customerInfo.value.lastName}`.trim(),
-          billingAddress: billingAddressToUse ? normalizeAddressForSquare(billingAddressToUse) : null,
+          billingAddress: billingAddressToUse
+            ? normalizeAddressForSquare(billingAddressToUse)
+            : null,
           shippingAddress: normalizeAddressForSquare(
             requiresShippingAddress.value ? shippingAddress.value : null
           ),
@@ -3884,8 +4071,11 @@ export default {
     const placeOrder = async () => {
       // For Apple Pay, skip validation if we have a token (payment already authorized)
       // This handles the case where Apple Pay button is clicked and token is received
-      const isApplePayWithToken = applePayToken.value && (selectedPaymentOption.value === 'apple_pay' || !selectedPaymentOption.value);
-      
+      const isApplePayWithToken =
+        applePayToken.value &&
+        (selectedPaymentOption.value === 'apple_pay' ||
+          !selectedPaymentOption.value);
+
       if (!isApplePayWithToken && !canPlaceOrder.value) {
         showValidationErrors.value = true;
         // Check if the issue is with photo uploads
@@ -4009,7 +4199,9 @@ export default {
           status: initialOrderStatus,
         };
 
-        console.log('💾 Saving order to Firestore BEFORE processing payment...');
+        console.log(
+          '💾 Saving order to Firestore BEFORE processing payment...'
+        );
         let savedOrderId = null;
         try {
           savedOrderId = await firebaseService.saveCartOrder(initialOrderData);
@@ -4025,7 +4217,7 @@ export default {
         // NOW process payment (order is already saved, so if payment fails we still have the order)
         let squarePaymentDetails = null;
         let paymentOptionPayload = initialPaymentOptionPayload; // Start with initial payload, will be updated after payment
-        
+
         if (selectedPaymentOption.value === 'square_card') {
           squarePaymentDetails = await processSquareCardPayment(orderNumber);
         } else if (
@@ -4088,7 +4280,10 @@ export default {
             }
           } catch (paymentError) {
             // Payment failed but order is saved - update order status
-            console.error('❌ Payment failed, but order is saved:', savedOrderId);
+            console.error(
+              '❌ Payment failed, but order is saved:',
+              savedOrderId
+            );
             // Try to update order to reflect payment failure
             try {
               await firebaseService.updateOrderPaymentStatus(savedOrderId, {
@@ -4096,7 +4291,10 @@ export default {
                 error: paymentError.message,
               });
             } catch (updateError) {
-              console.error('Failed to update order status after payment failure:', updateError);
+              console.error(
+                'Failed to update order status after payment failure:',
+                updateError
+              );
             }
             // Re-throw with user-friendly message
             const userFriendlyError = new Error(
@@ -4139,7 +4337,10 @@ export default {
 
           // Update order with payment details and status
           if (savedOrderId) {
-            const finalOrderStatus = squarePaymentDetails.status === 'COMPLETED' ? 'paid' : 'pending_payment';
+            const finalOrderStatus =
+              squarePaymentDetails.status === 'COMPLETED'
+                ? 'paid'
+                : 'pending_payment';
 
             console.log('💾 Updating order with payment details...');
             try {
@@ -4149,12 +4350,16 @@ export default {
               });
               console.log('✅ Order updated with payment details');
             } catch (updateError) {
-              console.error('⚠️ Failed to update order with payment details:', updateError);
+              console.error(
+                '⚠️ Failed to update order with payment details:',
+                updateError
+              );
               // Don't fail the whole transaction - order is saved and payment is processed
               // Log the error for admin review
               await firebaseService.logTransactionError({
                 errorType: 'order_update_failed',
-                errorMessage: 'Failed to update order with payment details after successful payment',
+                errorMessage:
+                  'Failed to update order with payment details after successful payment',
                 errorDetails: {
                   orderId: savedOrderId,
                   paymentDetails: squarePaymentDetails,
@@ -4190,14 +4395,40 @@ export default {
           })
         );
 
-        // Show order success dialog (same for both Apple Pay and credit card payments)
-        lastOrderNumber.value = orderNumber;
-        showOrderSuccessDialog.value = true;
+        // Ensure dialog is closed before navigating
+        showOrderSuccessDialog.value = false;
+
+        // Navigate to thank you page (same for both Apple Pay and credit card payments)
+        try {
+          await router.push({
+            path: '/thank-you',
+            query: {
+              orderNumber,
+              customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
+              customerEmail: customerInfo.value.email,
+              totalMagnets: totalMagnets.toString(),
+            },
+          });
+        } catch (routerError) {
+          console.error('Router navigation error:', routerError);
+          // Fallback: use window.location if router.push fails
+          const queryParams = new URLSearchParams({
+            orderNumber,
+            customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
+            customerEmail: customerInfo.value.email,
+            totalMagnets: totalMagnets.toString(),
+          });
+          window.location.href = `/thank-you?${queryParams.toString()}`;
+        }
       } catch (error) {
         console.error('Error placing order:', error);
-        
+
         // Log error if it's a payment error
-        if (error.message && (error.message.includes('payment') || error.message.includes('Apple Pay'))) {
+        if (
+          error.message &&
+          (error.message.includes('payment') ||
+            error.message.includes('Apple Pay'))
+        ) {
           try {
             await firebaseService.logTransactionError({
               errorType: 'order_placement_failed',
@@ -4218,17 +4449,18 @@ export default {
             console.error('Failed to log order error:', logError);
           }
         }
-        
+
         // Show user-friendly error message
         let errorMessage = 'Failed to place order';
         let errorCaption = error.message || 'Please try again';
-        
+
         // For Apple Pay errors, ensure user knows they weren't charged
         if (error.message && error.message.includes('Apple Pay')) {
           errorMessage = 'There was a problem with your Apple Pay payment';
-          errorCaption = 'Don\'t worry - you have not been charged. Please try again or use another payment method.';
+          errorCaption =
+            "Don't worry - you have not been charged. Please try again or use another payment method.";
         }
-        
+
         safeNotify({
           type: 'negative',
           message: errorMessage,

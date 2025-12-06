@@ -64,7 +64,7 @@
                   size="sm"
                   class="q-ml-sm"
                 >
-                  {{ order.status }}
+                  {{ getDisplayStatus(order.status) }}
                 </q-chip>
               </div>
             </div>
@@ -115,7 +115,8 @@
               <div class="text-weight-medium text-primary">Order Summary</div>
               <div class="q-mt-xs">
                 <div>
-                  <strong>Total Photos:</strong> {{ order.photos?.length || order.cartItems?.length || 0 }}
+                  <strong>Total Photos:</strong>
+                  {{ order.photos?.length || order.cartItems?.length || 0 }}
                 </div>
                 <div>
                   <strong>Total Magnets:</strong> {{ order.totalMagnets }}
@@ -130,7 +131,9 @@
 
           <!-- Shipping Information (for online orders) -->
           <div
-            v-if="order.shippingOption && order.shippingOption.type === 'shipping'"
+            v-if="
+              order.shippingOption && order.shippingOption.type === 'shipping'
+            "
             class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
           >
             <div class="row items-center q-mb-sm">
@@ -153,25 +156,40 @@
             <div class="q-mt-xs">
               <div>
                 <strong>Delivery Method:</strong>
-                {{ order.shippingOption.label || order.shippingOption.description || order.shippingOption.value || 'Standard Shipping' }}
+                {{
+                  order.shippingOption.label ||
+                  order.shippingOption.description ||
+                  order.shippingOption.value ||
+                  'Standard Shipping'
+                }}
               </div>
               <div v-if="order.shippingOption.address">
                 <strong>Address:</strong>
                 {{ formatAddress(order.shippingOption.address) }}
               </div>
-              <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
+              <div
+                v-if="order.shippingOption.estimatedTimeline"
+                class="q-mt-xs"
+              >
                 <strong>Estimated Delivery:</strong>
                 {{ order.shippingOption.estimatedTimeline }}
               </div>
-              <div v-if="order.shippingOption.cost !== undefined" class="q-mt-xs">
-                <strong>Shipping Cost:</strong> ${{ order.shippingOption.cost.toFixed(2) }}
+              <div
+                v-if="order.shippingOption.cost !== undefined"
+                class="q-mt-xs"
+              >
+                <strong>Shipping Cost:</strong> ${{
+                  order.shippingOption.cost.toFixed(2)
+                }}
               </div>
             </div>
           </div>
 
           <!-- Pickup Information (for market event orders) -->
           <div
-            v-if="order.shippingOption && order.shippingOption.type === 'pickup'"
+            v-if="
+              order.shippingOption && order.shippingOption.type === 'pickup'
+            "
             class="q-mt-md q-pa-md bg-green-1 rounded-borders"
           >
             <div class="text-weight-medium text-primary q-mb-sm">
@@ -181,13 +199,28 @@
             <div class="q-mt-xs">
               <div>
                 <strong>Delivery Method:</strong>
-                {{ order.shippingOption.label || order.shippingOption.description || order.shippingOption.value || 'Pickup at Market Event' }}
+                {{
+                  order.shippingOption.label ||
+                  order.shippingOption.description ||
+                  order.shippingOption.value ||
+                  'Pickup at Market Event'
+                }}
               </div>
-              <div v-if="order.shippingOption.description && order.shippingOption.label !== order.shippingOption.description" class="q-mt-xs">
+              <div
+                v-if="
+                  order.shippingOption.description &&
+                  order.shippingOption.label !==
+                    order.shippingOption.description
+                "
+                class="q-mt-xs"
+              >
                 <strong>Pickup Location:</strong>
                 {{ order.shippingOption.description }}
               </div>
-              <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
+              <div
+                v-if="order.shippingOption.estimatedTimeline"
+                class="q-mt-xs"
+              >
                 <strong>Estimated Pickup:</strong>
                 {{ order.shippingOption.estimatedTimeline }}
               </div>
@@ -199,13 +232,30 @@
             <div class="text-weight-medium text-primary q-mb-sm">
               Photos & Quantities
             </div>
-            <div class="row q-col-gutter-sm">
+            <!-- Legacy orders with photos array -->
+            <div
+              v-if="order.photos && order.photos.length > 0"
+              class="row q-col-gutter-sm"
+            >
               <div
                 v-for="(photo, index) in order.photos"
                 :key="index"
                 class="col-6 col-sm-4 col-md-3 col-lg-2"
               >
-                <q-img :src="photo.url" ratio="1" class="rounded-borders" />
+                <q-img
+                  :src="getPhotoUrl(photo)"
+                  ratio="1"
+                  class="rounded-borders"
+                  @error="handlePhotoError($event, photo)"
+                >
+                  <template v-slot:error>
+                    <div
+                      class="absolute-full flex flex-center bg-grey-3 text-grey-8"
+                    >
+                      <q-icon name="broken_image" size="24px" />
+                    </div>
+                  </template>
+                </q-img>
                 <div class="text-caption text-center q-mt-xs">
                   {{ photo.name }}
                 </div>
@@ -216,10 +266,65 @@
                     size="sm"
                     icon="style"
                   >
-                    {{ order.quantities[index] }}
+                    {{ order.quantities?.[index] || 1 }}
                   </q-chip>
                 </div>
               </div>
+            </div>
+            <!-- Cart-based orders -->
+            <div
+              v-else-if="order.cartItems && order.cartItems.length > 0"
+              class="row q-col-gutter-sm"
+            >
+              <div
+                v-for="(item, itemIndex) in order.cartItems"
+                :key="itemIndex"
+                class="col-12 q-mb-md"
+              >
+                <div class="text-subtitle2 q-mb-sm">{{ item.productName }}</div>
+                <div class="row q-col-gutter-sm">
+                  <div
+                    v-for="(photo, photoIndex) in item.photos || []"
+                    :key="photoIndex"
+                    class="col-6 col-sm-4 col-md-3 col-lg-2"
+                  >
+                    <q-img
+                      :src="getPhotoUrl(photo)"
+                      ratio="1"
+                      class="rounded-borders"
+                      @error="handlePhotoError($event, photo)"
+                    >
+                      <template v-slot:error>
+                        <div
+                          class="absolute-full flex flex-center bg-grey-3 text-grey-8"
+                        >
+                          <q-icon name="broken_image" size="24px" />
+                        </div>
+                      </template>
+                    </q-img>
+                    <div class="text-caption text-center q-mt-xs">
+                      {{ photo.name }}
+                    </div>
+                    <div class="text-center q-mt-xs">
+                      <q-chip
+                        color="primary"
+                        text-color="white"
+                        size="sm"
+                        icon="style"
+                      >
+                        {{
+                          item.photoQuantities?.[photoIndex] ||
+                          item.quantities?.[photoIndex] ||
+                          1
+                        }}
+                      </q-chip>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-body2 text-grey-6 text-center q-pa-md">
+              No photos available for this order
             </div>
           </div>
         </q-card-section>
@@ -453,6 +558,81 @@ export default {
       }
     };
 
+    // Get photo URL, filtering out blob URLs (which don't persist)
+    const getPhotoUrl = (photo) => {
+      if (!photo) return '';
+
+      // Filter out blob URLs - they're temporary and won't work
+      if (photo.url && photo.url.startsWith('blob:')) {
+        console.warn('⚠️ Photo has blob URL (temporary, will not work):', {
+          name: photo.name,
+          blobUrl: photo.url,
+          hasPreview: !!photo.preview,
+        });
+        // Try preview if available
+        if (photo.preview && !photo.preview.startsWith('blob:')) {
+          return photo.preview;
+        }
+        // Return empty to trigger error handler
+        return '';
+      }
+
+      // Prefer Firebase Storage URL, fallback to preview
+      if (photo.url && photo.url.startsWith('http')) {
+        // Ensure URL is properly encoded (Firebase Storage URLs should already be encoded)
+        try {
+          const urlObj = new URL(photo.url);
+          return photo.url;
+        } catch (e) {
+          console.warn('⚠️ Invalid URL format:', photo.url, e);
+          // Try preview as fallback
+          if (photo.preview && !photo.preview.startsWith('blob:')) {
+            return photo.preview;
+          }
+          return '';
+        }
+      }
+      if (photo.preview && !photo.preview.startsWith('blob:')) {
+        return photo.preview;
+      }
+
+      return photo.url || photo.preview || '';
+    };
+
+    // Handle photo loading errors
+    const handlePhotoError = (event, photo) => {
+      const failedSrc = event.target.src;
+      const photoName = photo?.name || 'Unknown';
+
+      console.error('❌ Failed to load photo in CustomerOrdersPage:', {
+        name: photoName,
+        failedSource: failedSrc,
+        photo: photo,
+        isBlobUrl: failedSrc.startsWith('blob:'),
+        hasUrl: !!photo?.url,
+        url: photo?.url,
+        hasPreview: !!photo?.preview,
+      });
+
+      // Try fallback if available
+      if (
+        photo?.url &&
+        photo.url !== failedSrc &&
+        !photo.url.startsWith('blob:')
+      ) {
+        console.log('⚠️ Trying fallback URL for:', photoName);
+        event.target.src = photo.url;
+      } else if (
+        photo?.preview &&
+        photo.preview !== failedSrc &&
+        !photo.preview.startsWith('blob:')
+      ) {
+        console.log('⚠️ Trying fallback preview for:', photoName);
+        event.target.src = photo.preview;
+      }
+      // q-img error template will show broken_image icon
+    };
+
     onMounted(() => {
       // Check if user is already authenticated
       const currentAuthUser = authService.getCurrentUser();
@@ -517,6 +697,8 @@ export default {
       formatAddress,
       getShippingStatusColor,
       getShippingStatusLabel,
+      getPhotoUrl,
+      handlePhotoError,
     };
   },
 };

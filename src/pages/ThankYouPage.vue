@@ -57,10 +57,12 @@
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
                 Receipt Summary:
               </div>
-              <div
-                class="row justify-between text-body1 text-weight-medium"
-              >
-                <div>{{ isPayAtTent ? 'Total for Collection at Tent' : 'Total Paid' }}</div>
+              <div class="row justify-between text-body1 text-weight-medium">
+                <div>
+                  {{
+                    isPayAtTent ? 'Total for Collection at Tent' : 'Total Paid'
+                  }}
+                </div>
                 <div class="text-primary">
                   {{ formatCurrency(totalAmount) }}
                 </div>
@@ -90,7 +92,6 @@
                 <strong>{{ displayPaymentMethod }}</strong>
               </div>
             </div>
-
           </q-card-section>
         </q-card>
 
@@ -107,7 +108,6 @@
           </q-btn>
 
           <q-btn
-            v-if="isAuthenticated"
             color="purple"
             size="lg"
             class="action-btn q-mb-md"
@@ -170,7 +170,13 @@ export default {
     const isAuthenticated = ref(false);
 
     const submitAnotherOrder = () => {
-      router.push('/upload');
+      // Route to market event upload if this was a market event order,
+      // otherwise route to online order page
+      if (isPayAtTent.value) {
+        router.push('/market-event-upload');
+      } else {
+        router.push('/online-order');
+      }
     };
 
     const goHome = () => {
@@ -290,6 +296,15 @@ export default {
         return 'Payment Options at Tent';
       }
       return paymentMethodLabel.value;
+    });
+
+    const deliveryOptionLabel = computed(() => {
+      // For pickup orders, show pickup label
+      if (isPickupOrder.value) {
+        return 'Pickup at Market Event';
+      }
+      // Otherwise use shipping method label
+      return shippingMethodLabel.value;
     });
 
     const formattedOrderNumber = computed(() => {
@@ -514,7 +529,7 @@ export default {
       min-width: 200px;
     }
   }
-  
+
   .order-number-display {
     font-size: 1.5rem;
   }
