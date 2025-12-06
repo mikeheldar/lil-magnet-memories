@@ -1860,6 +1860,12 @@ export default {
     };
 
     const mountSquareCard = async () => {
+      // Only mount if credit card form is visible
+      if (!showCreditCardForm.value) {
+        console.log('ℹ️ Skipping mount - credit card form not visible');
+        return;
+      }
+
       if (!squareCard.value) {
         console.warn('⚠️ Square card not initialized yet');
         return;
@@ -1893,6 +1899,13 @@ export default {
 
         // Check if form is already attached to this container
         const hasSquareForm = container.querySelector('.sq-card') || container.querySelector('[id*="sq-"]');
+        
+        // Also check if card instance is already attached (even if not in this container)
+        // Square SDK tracks attachment globally, so we need to check before attempting attach
+        if (squareCardMounted.value && hasSquareForm) {
+          console.log('ℹ️ Square card form already mounted and visible');
+          return;
+        }
         
         if (!hasSquareForm) {
           // Clear any existing content (including loading spinner)
