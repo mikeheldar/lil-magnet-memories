@@ -379,8 +379,8 @@
                 <q-card-section v-if="selectedShippingOption">
                   <div class="text-h6 q-mb-md">Payment Method</div>
 
-                  <!-- Apple Pay Button (standalone, always visible if available) -->
-                  <div v-if="availablePaymentMethods.applePay" class="q-mb-lg">
+                  <!-- Apple Pay Button (standalone, visible unless credit card form is shown) -->
+                  <div v-if="availablePaymentMethods.applePay && !showCreditCardForm" class="q-mb-lg">
                     <div
                       v-if="!applePayReady && !applePayError"
                       class="text-body2 text-grey-6 q-mb-sm"
@@ -405,23 +405,31 @@
                         applePayError?.message || 'Apple Pay is not available'
                       }}</span>
                     </div>
-                    <q-separator class="q-my-lg" />
                   </div>
 
-                  <!-- Credit Card Form (always shown by default) -->
-                  <div>
-                    <div class="text-subtitle2 text-grey-7 q-mb-sm">
-                      Or pay with credit/debit card
-                    </div>
-                    <div class="text-caption text-grey-6 q-mb-sm">
-                      Payment will be processed securely via Square
-                    </div>
+                  <!-- Pay with Credit Card Button (shown when Apple Pay is visible) -->
+                  <div v-if="!showCreditCardForm" class="q-mb-lg">
+                    <q-btn
+                      color="primary"
+                      size="lg"
+                      class="full-width"
+                      style="height: 50px; min-height: 50px; border-radius: 8px;"
+                      @click="showCreditCardForm = true; selectedPaymentOption = 'square_card'"
+                    >
+                      <q-icon name="credit_card" class="q-mr-sm" />
+                      Pay with Credit Card with Square
+                    </q-btn>
+                  </div>
+
+                  <!-- Credit Card Form (shown when Pay with Credit Card button is clicked) -->
+                  <div v-if="showCreditCardForm">
                     <!-- Square payment form container -->
                     <!-- Use v-once to prevent Vue from reconciling after Square manipulates DOM -->
                     <div
                       v-once
                       id="square-payment-form"
                       style="min-height: 20px"
+                      class="q-mb-md"
                     >
                       <!-- Show loading only if not initialized AND no error -->
                       <div
@@ -447,100 +455,100 @@
                       <!-- Form will be rendered here by Square SDK when mounted -->
                       <!-- The loading spinner above will be hidden once squareCardMounted is true -->
                     </div>
-                  </div>
 
-                  <!-- Billing Address Section (moved from left side) -->
-                  <div>
-                    <div class="text-h6 q-mb-md q-mt-md">Billing Address</div>
-                    <q-toggle
-                      v-if="
-                        !skipShipping &&
-                        selectedShippingDetails?.type !== 'pickup' &&
-                        requiresShippingAddress
-                      "
-                      v-model="billingSameAsShipping"
-                      :disable="!requiresShippingAddress"
-                      label="Billing address matches shipping address"
-                      class="q-mb-md"
-                    />
-                    <div
-                      v-if="
-                        requiresBillingAddress &&
-                        (skipShipping ||
-                          !billingSameAsShipping ||
-                          !requiresShippingAddress)
-                      "
-                    >
-                      <q-input
-                        v-model="billingAddress.street"
-                        label="Billing Street Address *"
-                        filled
-                        class="q-mb-md"
-                        :error="billingStreetError"
-                        :error-message="
-                          billingStreetError ? 'Billing street is required' : ''
+                    <!-- Billing Address Section -->
+                    <div>
+                      <div class="text-h6 q-mb-md q-mt-md">Billing Address</div>
+                      <q-toggle
+                        v-if="
+                          !skipShipping &&
+                          selectedShippingDetails?.type !== 'pickup' &&
+                          requiresShippingAddress
                         "
-                        :input-attrs="{ autocomplete: 'billing address-line1' }"
+                        v-model="billingSameAsShipping"
+                        :disable="!requiresShippingAddress"
+                        label="Billing address matches shipping address"
+                        class="q-mb-md"
                       />
-                      <div class="row q-col-gutter-md q-mb-md">
-                        <div class="col-6">
-                          <q-input
-                            v-model="billingAddress.city"
-                            label="Billing City *"
-                            filled
-                            :error="billingCityError"
-                            :error-message="
-                              billingCityError ? 'Billing city is required' : ''
-                            "
-                            :input-attrs="{
-                              autocomplete: 'billing address-level2',
-                            }"
-                          />
+                      <div
+                        v-if="
+                          requiresBillingAddress &&
+                          (skipShipping ||
+                            !billingSameAsShipping ||
+                            !requiresShippingAddress)
+                        "
+                      >
+                        <q-input
+                          v-model="billingAddress.street"
+                          label="Billing Street Address *"
+                          filled
+                          class="q-mb-md"
+                          :error="billingStreetError"
+                          :error-message="
+                            billingStreetError ? 'Billing street is required' : ''
+                          "
+                          :input-attrs="{ autocomplete: 'billing address-line1' }"
+                        />
+                        <div class="row q-col-gutter-md q-mb-md">
+                          <div class="col-6">
+                            <q-input
+                              v-model="billingAddress.city"
+                              label="Billing City *"
+                              filled
+                              :error="billingCityError"
+                              :error-message="
+                                billingCityError ? 'Billing city is required' : ''
+                              "
+                              :input-attrs="{
+                                autocomplete: 'billing address-level2',
+                              }"
+                            />
+                          </div>
+                          <div class="col-6">
+                            <q-input
+                              v-model="billingAddress.state"
+                              label="Billing State *"
+                              filled
+                              :error="billingStateError"
+                              :error-message="
+                                billingStateError
+                                  ? 'Billing state is required'
+                                  : ''
+                              "
+                              :input-attrs="{
+                                autocomplete: 'billing address-level1',
+                              }"
+                            />
+                          </div>
                         </div>
-                        <div class="col-6">
-                          <q-input
-                            v-model="billingAddress.state"
-                            label="Billing State *"
-                            filled
-                            :error="billingStateError"
-                            :error-message="
-                              billingStateError
-                                ? 'Billing state is required'
-                                : ''
-                            "
-                            :input-attrs="{
-                              autocomplete: 'billing address-level1',
-                            }"
-                          />
+                        <div class="row q-col-gutter-md">
+                          <div class="col-6">
+                            <q-input
+                              v-model="billingAddress.zip"
+                              label="Billing ZIP Code *"
+                              filled
+                              :error="billingZipError"
+                              :error-message="
+                                billingZipError ? 'Billing ZIP is required' : ''
+                              "
+                              :input-attrs="{
+                                autocomplete: 'billing postal-code',
+                              }"
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div class="row q-col-gutter-md">
-                        <div class="col-6">
-                          <q-input
-                            v-model="billingAddress.zip"
-                            label="Billing ZIP Code *"
-                            filled
-                            :error="billingZipError"
-                            :error-message="
-                              billingZipError ? 'Billing ZIP is required' : ''
-                            "
-                            :input-attrs="{
-                              autocomplete: 'billing postal-code',
-                            }"
-                          />
-                        </div>
+                      <div
+                        v-if="
+                          skipShipping &&
+                          requiresBillingAddress &&
+                          billingSameAsShipping
+                        "
+                        class="text-body2 text-grey-7 q-mt-md"
+                      >
+                        Please provide a billing address so we can verify your
+                        payment details.
                       </div>
-                    </div>
-                    <div
-                      v-if="
-                        skipShipping &&
-                        requiresBillingAddress &&
-                        billingSameAsShipping
-                      "
-                      class="text-body2 text-grey-7 q-mt-md"
-                    >
-                      Please provide a billing address so we can verify your
-                      payment details.
                     </div>
                   </div>
                 </q-card-section>
@@ -652,6 +660,7 @@ export default {
     const applePayError = ref(null);
     const googlePayError = ref(null);
     const squareProcessing = ref(false);
+    const showCreditCardForm = ref(false); // Track if credit card form should be shown
 
     const customerInfo = ref({
       firstName: '',
