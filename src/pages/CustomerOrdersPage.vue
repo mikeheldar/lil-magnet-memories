@@ -118,7 +118,7 @@
                   <strong>Total Photos:</strong> {{ order.photos?.length || order.cartItems?.length || 0 }}
                 </div>
                 <div>
-                  <strong>Total Magnets:</strong> {{ order.totalMagnets }}
+                  <strong>Total Magnets:</strong> {{ getTotalMagnets(order) }}
                 </div>
                 <div>
                   <strong>Order Date:</strong>
@@ -199,15 +199,19 @@
             <div class="text-weight-medium text-primary q-mb-sm">
               Photos & Quantities
             </div>
-            <div class="row q-col-gutter-sm">
+            <!-- Legacy orders with photos array -->
+            <div
+              v-if="order.photos && order.photos.length > 0"
+              class="row q-col-gutter-sm"
+            >
               <div
                 v-for="(photo, index) in order.photos"
                 :key="index"
                 class="col-6 col-sm-4 col-md-3 col-lg-2"
               >
-                <q-img :src="photo.url" ratio="1" class="rounded-borders" />
+                <q-img :src="photo.url || photo" ratio="1" class="rounded-borders" />
                 <div class="text-caption text-center q-mt-xs">
-                  {{ photo.name }}
+                  {{ photo.name || `Photo ${index + 1}` }}
                 </div>
                 <div class="text-center q-mt-xs">
                   <q-chip
@@ -216,10 +220,52 @@
                     size="sm"
                     icon="style"
                   >
-                    {{ order.quantities[index] }}
+                    {{ order.quantities?.[index] || 1 }}
                   </q-chip>
                 </div>
               </div>
+            </div>
+            <!-- Cart-based orders -->
+            <div
+              v-else-if="order.cartItems && order.cartItems.length > 0"
+              class="row q-col-gutter-sm"
+            >
+              <template v-for="(item, itemIndex) in order.cartItems" :key="itemIndex">
+                <div
+                  v-for="(photo, photoIndex) in (item.photos || [])"
+                  :key="`${itemIndex}-${photoIndex}`"
+                  class="col-6 col-sm-4 col-md-3 col-lg-2"
+                >
+                  <q-img
+                    :src="getPhotoUrl(photo)"
+                    ratio="1"
+                    class="rounded-borders"
+                    @error="handlePhotoError($event, photo)"
+                  >
+                    <template v-slot:error>
+                      <div class="absolute-full flex flex-center bg-grey-3 text-grey-8">
+                        <q-icon name="broken_image" size="24px" />
+                      </div>
+                    </template>
+                  </q-img>
+                  <div class="text-caption text-center q-mt-xs">
+                    {{ photo.name || `Photo ${photoIndex + 1}` }}
+                  </div>
+                  <div class="text-center q-mt-xs">
+                    <q-chip
+                      color="primary"
+                      text-color="white"
+                      size="sm"
+                      icon="style"
+                    >
+                      {{ item.photoQuantities?.[photoIndex] || item.quantities?.[photoIndex] || 1 }}
+                    </q-chip>
+                  </div>
+                </div>
+              </template>
+            </div>
+            <div v-else class="text-body2 text-grey-6 text-center q-pa-md">
+              No photos available for this order
             </div>
           </div>
         </q-card-section>
@@ -369,8 +415,62 @@ export default {
 
     const formatDate = (timestamp) => {
       if (!timestamp) return 'N/A';
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleString();
+      try {
+        // Handle Firestore Timestamp
+        if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+          const date = timestamp.toDate();
+          return date.toLocaleString();
+        }
+        // Handle string or number timestamp
+        const date = new Date(timestamp);
+        if (isNaN(date.getTime())) {
+          return 'N/A';
+        }
+        return date.toLocaleString();
+      } catch (error) {
+        console.error('Error formatting date:', error, timestamp);
+        return 'N/A';
+      }
+    };
+
+    // Calculate total magnets from order
+    const getTotalMagnets = (order) => {
+      if (order.totalMagnets) {
+        return order.totalMagnets;
+      }
+      // Calculate from cartItems
+      if (order.cartItems && Array.isArray(order.cartItems)) {
+        return order.cartItems.reduce((total, item) => {
+          if (item.photoQuantities && Array.isArray(item.photoQuantities)) {
+            return total + item.photoQuantities.reduce((sum, qty) => sum + (qty || 0), 0);
+          }
+          return total + (item.quantity || 0);
+        }, 0);
+      }
+      // Calculate from legacy photos/quantities
+      if (order.quantities && Array.isArray(order.quantities)) {
+        return order.quantities.reduce((sum, qty) => sum + (qty || 0), 0);
+      }
+      return 0;
+    };
+
+    // Get photo URL (handles both string URLs and objects)
+    const getPhotoUrl = (photo) => {
+      if (typeof photo === 'string') {
+        return photo;
+      }
+      if (photo?.url) {
+        return photo.url;
+      }
+      if (photo?.downloadURL) {
+        return photo.downloadURL;
+      }
+      return '';
+    };
+
+    // Handle photo loading errors
+    const handlePhotoError = (event, photo) => {
+      console.warn('Photo failed to load:', photo);
     };
 
     const getStatusColor = (status) => {
@@ -512,6 +612,9 @@ export default {
       userOrders,
       loadUserOrders,
       formatDate,
+      getTotalMagnets,
+      getPhotoUrl,
+      handlePhotoError,
       getStatusColor,
       getDisplayStatus,
       formatAddress,
