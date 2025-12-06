@@ -1388,6 +1388,33 @@ export default {
       { immediate: true }
     );
 
+    // Watch cart items for customer info updates (in case items are added while on checkout page)
+    watch(
+      () => cartItems.value,
+      (newItems) => {
+        // Check if any cart item has formData with customer info
+        const customUploadItem = newItems.find(
+          (item) => item.isCustomUpload && item.formData
+        );
+        if (customUploadItem?.formData) {
+          // Only update if field is currently empty (don't overwrite user input)
+          if (!customerInfo.value.firstName && customUploadItem.formData.firstName) {
+            customerInfo.value.firstName = customUploadItem.formData.firstName;
+          }
+          if (!customerInfo.value.lastName && customUploadItem.formData.lastName) {
+            customerInfo.value.lastName = customUploadItem.formData.lastName;
+          }
+          if (!customerInfo.value.email && customUploadItem.formData.email) {
+            customerInfo.value.email = customUploadItem.formData.email;
+          }
+          if (!customerInfo.value.phone && customUploadItem.formData.phone) {
+            customerInfo.value.phone = customUploadItem.formData.phone;
+          }
+        }
+      },
+      { deep: true }
+    );
+
     watch(selectedShippingOption, () => {
       if (
         paymentOptions.value.length > 0 &&
