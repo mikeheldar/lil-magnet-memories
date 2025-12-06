@@ -527,7 +527,7 @@
                         class="q-mb-md"
                       />
                       <div
-                        v-if="
+                        v-show="
                           requiresBillingAddress &&
                           (skipShipping ||
                             !billingSameAsShipping ||
@@ -1183,33 +1183,22 @@ export default {
       return false;
     });
     const requiresBillingAddress = computed(() => {
-      const result = (() => {
-        // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
-        // Check both selectedPaymentOption and applePayToken to handle cases where
-        // Apple Pay button is clicked but selectedPaymentOption isn't set yet
-        if (selectedPaymentOption.value === 'apple_pay' || applePayToken.value) {
-          return false;
-        }
-        // Always require billing address for credit card payments
-        if (selectedPaymentOption.value === 'square_card') {
-          return true;
-        }
-        // For other payment methods, only require if shipping address is required
-        // and billing is different from shipping
-        if (requiresShippingAddress.value && !billingSameAsShipping.value) {
-          return true;
-        }
+      // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
+      // Check both selectedPaymentOption and applePayToken to handle cases where
+      // Apple Pay button is clicked but selectedPaymentOption isn't set yet
+      if (selectedPaymentOption.value === 'apple_pay' || applePayToken.value) {
         return false;
-      })();
-      console.log('🟣 REQUIRES BILLING ADDRESS COMPUTED:', {
-        result,
-        selectedPaymentOption: selectedPaymentOption.value,
-        applePayToken: !!applePayToken.value,
-        requiresShippingAddress: requiresShippingAddress.value,
-        billingSameAsShipping: billingSameAsShipping.value,
-        billingAddress: JSON.parse(JSON.stringify(billingAddress.value))
-      });
-      return result;
+      }
+      // Always require billing address for credit card payments
+      if (selectedPaymentOption.value === 'square_card') {
+        return true;
+      }
+      // For other payment methods, only require if shipping address is required
+      // and billing is different from shipping
+      if (requiresShippingAddress.value && !billingSameAsShipping.value) {
+        return true;
+      }
+      return false;
     });
 
     const addressIsComplete = (address) => {
