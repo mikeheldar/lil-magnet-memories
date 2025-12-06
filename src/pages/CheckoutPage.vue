@@ -2908,6 +2908,8 @@ export default {
 
         // NOW process payment (order is already saved, so if payment fails we still have the order)
         let squarePaymentDetails = null;
+        let paymentOptionPayload = initialPaymentOptionPayload; // Start with initial payload, will be updated after payment
+        
         if (selectedPaymentOption.value === 'square_card') {
           squarePaymentDetails = await processSquareCardPayment(orderNumber);
         } else if (
@@ -3007,9 +3009,9 @@ export default {
           );
         }
 
-        // Update order with payment details and status
-        if (squarePaymentDetails && savedOrderId) {
-          const paymentOptionPayload = {
+        // Update paymentOptionPayload with payment details if payment was processed
+        if (squarePaymentDetails) {
+          paymentOptionPayload = {
             type: selectedPaymentOption.value,
             processor: paymentProcessor,
             paymentId: squarePaymentDetails.id,
@@ -3019,34 +3021,37 @@ export default {
             billingAddress: billingAddressData,
           };
 
-          const finalOrderStatus = squarePaymentDetails.status === 'COMPLETED' ? 'paid' : 'pending_payment';
+          // Update order with payment details and status
+          if (savedOrderId) {
+            const finalOrderStatus = squarePaymentDetails.status === 'COMPLETED' ? 'paid' : 'pending_payment';
 
-          console.log('💾 Updating order with payment details...');
-          try {
-            await firebaseService.updateOrderPaymentStatus(savedOrderId, {
-              paymentOption: paymentOptionPayload,
-              status: finalOrderStatus,
-            });
-            console.log('✅ Order updated with payment details');
-          } catch (updateError) {
-            console.error('⚠️ Failed to update order with payment details:', updateError);
-            // Don't fail the whole transaction - order is saved and payment is processed
-            // Log the error for admin review
-            await firebaseService.logTransactionError({
-              errorType: 'order_update_failed',
-              errorMessage: 'Failed to update order with payment details after successful payment',
-              errorDetails: {
-                orderId: savedOrderId,
-                paymentDetails: squarePaymentDetails,
-                updateError: updateError.message,
-              },
-              transactionData: {
-                orderNumber,
-                amount: orderTotal.value,
-                paymentMethod: selectedPaymentOption.value,
-                customerEmail: customerInfo.value.email,
-              },
-            });
+            console.log('💾 Updating order with payment details...');
+            try {
+              await firebaseService.updateOrderPaymentStatus(savedOrderId, {
+                paymentOption: paymentOptionPayload,
+                status: finalOrderStatus,
+              });
+              console.log('✅ Order updated with payment details');
+            } catch (updateError) {
+              console.error('⚠️ Failed to update order with payment details:', updateError);
+              // Don't fail the whole transaction - order is saved and payment is processed
+              // Log the error for admin review
+              await firebaseService.logTransactionError({
+                errorType: 'order_update_failed',
+                errorMessage: 'Failed to update order with payment details after successful payment',
+                errorDetails: {
+                  orderId: savedOrderId,
+                  paymentDetails: squarePaymentDetails,
+                  updateError: updateError.message,
+                },
+                transactionData: {
+                  orderNumber,
+                  amount: orderTotal.value,
+                  paymentMethod: selectedPaymentOption.value,
+                  customerEmail: customerInfo.value.email,
+                },
+              });
+            }
           }
         }
 
