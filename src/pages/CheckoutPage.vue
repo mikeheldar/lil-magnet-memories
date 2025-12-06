@@ -700,7 +700,7 @@ export default {
     });
 
     // Check for active market event and check-in status
-    onMounted(() => {
+    onMounted(async () => {
       console.log('🛒 Checkout page route query:', route.query);
       console.log(
         '🛒 Checkout page isFromMarketEventUpload:',
