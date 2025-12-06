@@ -544,9 +544,6 @@
                             billingStreetError ? 'Billing street is required' : ''
                           "
                           :input-attrs="{ autocomplete: 'billing address-line1' }"
-                          @input="handleBillingStreetInput"
-                          @focus="handleBillingStreetFocus"
-                          @blur="handleBillingStreetBlur"
                         />
                         <div class="row q-col-gutter-md q-mb-md">
                           <div class="col-6">
@@ -561,9 +558,6 @@
                               :input-attrs="{
                                 autocomplete: 'billing address-level2',
                               }"
-                              @input="handleBillingCityInput"
-                              @focus="handleBillingCityFocus"
-                              @blur="handleBillingCityBlur"
                             />
                           </div>
                           <div class="col-6">
@@ -580,9 +574,6 @@
                               :input-attrs="{
                                 autocomplete: 'billing address-level1',
                               }"
-                              @input="handleBillingStateInput"
-                              @focus="handleBillingStateFocus"
-                              @blur="handleBillingStateBlur"
                             />
                           </div>
                         </div>
@@ -599,9 +590,6 @@
                               :input-attrs="{
                                 autocomplete: 'billing postal-code',
                               }"
-                              @input="handleBillingZipInput"
-                              @focus="handleBillingZipFocus"
-                              @blur="handleBillingZipBlur"
                             />
                           </div>
                         </div>
@@ -1724,46 +1712,13 @@ export default {
       }
     });
 
-    // Watch billingSameAsShipping toggle - only sync when explicitly toggled ON
-    // Use a flag to track if we're updating from toggle to prevent interference
-    watch(billingSameAsShipping, (same, prevSame) => {
-      console.log('🟡 BILLING SAME AS SHIPPING WATCHER:', {
-        same,
-        prevSame,
-        requiresShippingAddress: requiresShippingAddress.value,
-        currentBillingAddress: JSON.parse(JSON.stringify(billingAddress.value)),
-        shippingAddress: JSON.parse(JSON.stringify(shippingAddress.value)),
-        stackTrace: new Error().stack
-      });
+    watch(billingSameAsShipping, (same) => {
       if (same && requiresShippingAddress.value) {
-        console.log('🟡 SYNCING BILLING ADDRESS FROM SHIPPING:', {
-          before: JSON.parse(JSON.stringify(billingAddress.value)),
-          after: JSON.parse(JSON.stringify(shippingAddress.value))
-        });
         billingAddress.value = { ...shippingAddress.value };
-        console.log('🟡 BILLING ADDRESS AFTER SYNC:', JSON.parse(JSON.stringify(billingAddress.value)));
       }
     });
 
-    // Watch billing form visibility
-    watch(() => requiresBillingAddress.value && 
-                (skipShipping.value || 
-                 !billingSameAsShipping.value || 
-                 !requiresShippingAddress.value), 
-          (isVisible) => {
-      console.log('🟢 BILLING FORM VISIBILITY CHANGED:', {
-        isVisible,
-        requiresBillingAddress: requiresBillingAddress.value,
-        skipShipping: skipShipping.value,
-        billingSameAsShipping: billingSameAsShipping.value,
-        requiresShippingAddress: requiresShippingAddress.value,
-        billingAddress: JSON.parse(JSON.stringify(billingAddress.value)),
-        timestamp: new Date().toISOString()
-      });
-    });
 
-    // Removed individual field watchers - they were causing excessive Vue re-renders
-    // The form works fine without them, and the input handlers provide sufficient logging
 
     // Billing address input handlers
     const handleBillingStreetInput = (val) => {
@@ -4156,18 +4111,6 @@ export default {
       goToHome,
       goToMyOrders,
       isAuthenticated,
-      handleBillingStreetInput,
-      handleBillingStreetFocus,
-      handleBillingStreetBlur,
-      handleBillingCityInput,
-      handleBillingCityFocus,
-      handleBillingCityBlur,
-      handleBillingStateInput,
-      handleBillingStateFocus,
-      handleBillingStateBlur,
-      handleBillingZipInput,
-      handleBillingZipFocus,
-      handleBillingZipBlur,
     };
   },
 };
