@@ -1970,23 +1970,75 @@ export default {
                   throw new Error('Square card method not available. Please refresh the page.');
                 }
                 
+                // Clean up old card instance first
+                console.log('🧹 Cleaning up old card instance...');
+                try {
+                  // Try to detach if there's a detach method
+                  if (squareCard.value && typeof squareCard.value.destroy === 'function') {
+                    await squareCard.value.destroy();
+                    console.log('✅ Old card instance destroyed');
+                  }
+                } catch (cleanupError) {
+                  console.warn('⚠️ Error during cleanup (non-fatal):', cleanupError);
+                }
+                
+                // Clear the old reference
+                squareCard.value = null;
+                squareCardMounted.value = false;
+                
+                // Clear container completely
+                container.innerHTML = '';
+                
+                // Wait for DOM to be ready
+                await nextTick();
+                await new Promise((resolve) => setTimeout(resolve, 200));
+                
+                // Verify container is ready
+                const containerAfterCleanup = document.getElementById('square-payment-form');
+                if (!containerAfterCleanup) {
+                  throw new Error('Container not found after cleanup');
+                }
+                
                 console.log('🔵 Creating new Square card instance...');
                 squareCard.value = squarePayments.value.card();
                 console.log('✅ New Square card instance created');
                 
-                // Retry attach with new instance
-                await squareCard.value.attach('#square-payment-form');
+                // Wait a bit more before attaching
                 await nextTick();
-                await new Promise((resolve) => setTimeout(resolve, 150));
-                squareCardMounted.value = true;
-                console.log('✅ New Square card instance attached successfully');
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                
+                // Retry attach with new instance
+                console.log('🔵 Attaching new card instance to container...');
+                await squareCard.value.attach('#square-payment-form');
+                
+                // Wait for Square to finish DOM manipulation
+                await nextTick();
+                await new Promise((resolve) => setTimeout(resolve, 200));
+                
+                // Verify form was attached
+                const hasFormAfterAttach = containerAfterCleanup.querySelector('.sq-card') || 
+                                          containerAfterCleanup.querySelector('[id*="sq-"]') ||
+                                          containerAfterCleanup.children.length > 0;
+                
+                if (hasFormAfterAttach) {
+                  squareCardMounted.value = true;
+                  console.log('✅ New Square card instance attached successfully and verified');
+                } else {
+                  console.warn('⚠️ Card attached but form not visible in container');
+                  squareCardMounted.value = true; // Still mark as mounted, might be a timing issue
+                }
               } catch (retryError) {
                 console.error('❌ Error attaching new card instance:', retryError, {
                   hasSquarePayments: !!squarePayments.value,
                   hasCardMethod: squarePayments.value ? typeof squarePayments.value.card === 'function' : false,
                   squareInitialized: squareInitialized.value,
+                  errorMessage: retryError?.message,
+                  errorStack: retryError?.stack,
                 });
                 squareInitError.value = retryError;
+                // Reset state on error
+                squareCard.value = null;
+                squareCardMounted.value = false;
                 // Don't throw - let error be displayed in UI
                 return;
               }
