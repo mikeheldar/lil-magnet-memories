@@ -2502,19 +2502,26 @@ export default {
     watch(showApplePaySection, async (isExpanded) => {
       if (isExpanded) {
         // Collapse credit card form if it's visible
-        if (showCreditCardForm.value) {
+        const wasShowingCreditCard = showCreditCardForm.value;
+        if (wasShowingCreditCard) {
           showCreditCardForm.value = false;
           // Reset mounted flag when hiding credit card form
           // This allows re-mounting when form is shown again
           squareCardMounted.value = false;
         }
+        
         // Render Apple Pay button when section is expanded
         if (applePayReady.value && squareApplePay.value) {
-          console.log('🍎 Apple Pay section expanded, rendering button...');
-          // Wait for DOM to update and expansion item to be fully expanded
-          // Quasar expansion items need time to render their content
+          console.log('🍎 Apple Pay section expanded, rendering button...', {
+            wasShowingCreditCard,
+            showCreditCardForm: showCreditCardForm.value,
+            showApplePaySection: showApplePaySection.value,
+          });
+          
+          // Wait for DOM to update - need to wait for credit card form to hide and regular Apple Pay to show
           await nextTick();
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // Give more time if we just hid the credit card form
+          await new Promise(resolve => setTimeout(resolve, wasShowingCreditCard ? 400 : 300));
           
           // Reset attachment to allow re-rendering
           applePayAttached.value = false;
@@ -2522,14 +2529,29 @@ export default {
           // Try rendering multiple times with delays to ensure container is available
           let retries = 0;
           let success = false;
-          while (retries < 10 && !success) {
+          while (retries < 15 && !success) {
             try {
               // Check if container exists before trying to render
-              const container = document.getElementById('square-apple-pay-button-collapsed') || 
-                                document.getElementById('square-apple-pay-button');
+              // When credit card form is hidden, we should use the regular container
+              // When credit card form is shown, we should use the collapsed container
+              let container = null;
+              let containerId = null;
+              
+              if (showCreditCardForm.value) {
+                // Credit card form is visible, use collapsed container
+                container = document.getElementById('square-apple-pay-button-collapsed');
+                containerId = '#square-apple-pay-button-collapsed';
+              } else {
+                // Credit card form is hidden, use regular container
+                container = document.getElementById('square-apple-pay-button');
+                containerId = '#square-apple-pay-button';
+              }
               
               if (container) {
-                console.log(`✅ Container found on attempt ${retries + 1}, rendering button...`);
+                console.log(`✅ Container found on attempt ${retries + 1}, rendering button...`, {
+                  containerId,
+                  showCreditCardForm: showCreditCardForm.value,
+                });
                 await renderApplePayButton();
                 // Verify button was successfully rendered
                 await nextTick();
@@ -2553,13 +2575,18 @@ export default {
               console.warn(`⚠️ Attempt ${retries + 1} to render Apple Pay button failed:`, error);
             }
             retries++;
-            if (retries < 10 && !success) {
-              await new Promise(resolve => setTimeout(resolve, 150));
+            if (retries < 15 && !success) {
+              await new Promise(resolve => setTimeout(resolve, 200));
             }
           }
           
           if (!success) {
-            console.error('❌ Failed to render Apple Pay button after all retries');
+            console.error('❌ Failed to render Apple Pay button after all retries', {
+              collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
+              regularExists: !!document.getElementById('square-apple-pay-button'),
+              showCreditCardForm: showCreditCardForm.value,
+              showApplePaySection: showApplePaySection.value,
+            });
           }
         }
       }
