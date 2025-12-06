@@ -3140,6 +3140,7 @@ export default {
         }
       }
     });
+    */
 
     const processSquareCardPayment = async (orderNumber) => {
       if (!squareCard.value) {
