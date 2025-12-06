@@ -107,6 +107,17 @@
           </q-btn>
 
           <q-btn
+            v-if="isAuthenticated"
+            color="purple"
+            size="lg"
+            class="action-btn q-mb-md"
+            @click="viewMyOrders"
+          >
+            <q-icon name="list_alt" class="q-mr-sm" />
+            View My Orders
+          </q-btn>
+
+          <q-btn
             flat
             color="grey-7"
             size="lg"
@@ -448,9 +459,9 @@ export default {
 }
 
 .action-btn {
-  min-width: 200px;
+  min-width: 280px;
   width: 100%;
-  max-width: 250px;
+  max-width: 350px;
 }
 
 .contact-info {
