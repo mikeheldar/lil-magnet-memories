@@ -1762,22 +1762,28 @@ export default {
       });
     });
 
-    // Watch billingAddress for any changes - but throttle to avoid excessive logging
-    let billingAddressChangeTimeout = null;
-    watch(billingAddress, (newVal, oldVal) => {
-      // Clear any pending log
-      if (billingAddressChangeTimeout) {
-        clearTimeout(billingAddressChangeTimeout);
+    // Watch billingAddress for any changes - but only log significant changes, not every keystroke
+    // Using individual field watchers instead of deep watch to reduce reactivity overhead
+    watch(() => billingAddress.value.street, (newVal, oldVal) => {
+      if (newVal !== oldVal && (newVal || oldVal)) {
+        console.log('🔴 BILLING STREET CHANGED:', { from: oldVal, to: newVal });
       }
-      // Throttle logging to once per 500ms
-      billingAddressChangeTimeout = setTimeout(() => {
-        console.log('🔴 BILLING ADDRESS VALUE CHANGED:', {
-          old: JSON.parse(JSON.stringify(oldVal)),
-          new: JSON.parse(JSON.stringify(newVal)),
-          timestamp: new Date().toISOString()
-        });
-      }, 500);
-    }, { deep: true });
+    });
+    watch(() => billingAddress.value.city, (newVal, oldVal) => {
+      if (newVal !== oldVal && (newVal || oldVal)) {
+        console.log('🔴 BILLING CITY CHANGED:', { from: oldVal, to: newVal });
+      }
+    });
+    watch(() => billingAddress.value.state, (newVal, oldVal) => {
+      if (newVal !== oldVal && (newVal || oldVal)) {
+        console.log('🔴 BILLING STATE CHANGED:', { from: oldVal, to: newVal });
+      }
+    });
+    watch(() => billingAddress.value.zip, (newVal, oldVal) => {
+      if (newVal !== oldVal && (newVal || oldVal)) {
+        console.log('🔴 BILLING ZIP CHANGED:', { from: oldVal, to: newVal });
+      }
+    });
 
     // Billing address input handlers
     const handleBillingStreetInput = (val) => {
