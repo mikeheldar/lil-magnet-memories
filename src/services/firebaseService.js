@@ -257,22 +257,30 @@ class FirebaseService {
       console.log(`Photo uploads completed: ${uploadedPhotos.length} photos uploaded`);
 
       // Prepare payment and shipping options for pay_at_tent orders
+      // ALL orders from MarketEventUploadPage should have these fields
       let paymentOption = null;
       let shippingOption = null;
       
-      if (orderData.paymentChoice === 'pay_at_tent' && orderData.checkedInEvent) {
-        // Set payment option for pay at tent
-        paymentOption = {
-          type: 'pay_at_event',
-          processor: 'in_person',
-          paymentId: null,
-          paidAt: null,
-          status: 'pending', // Payment will be collected at event
-          receiptUrl: null,
-          billingAddress: null,
-        };
+      // Check if this is a market event upload order (has paymentChoice or checkedInEvent)
+      const isMarketEventOrder = orderData.paymentChoice === 'pay_at_tent' || orderData.checkedInEvent;
+      
+      if (isMarketEventOrder) {
+        // Set payment option for pay at tent (default to pay_at_event if paymentChoice is pay_at_tent)
+        if (orderData.paymentChoice === 'pay_at_tent') {
+          paymentOption = {
+            type: 'pay_at_event',
+            processor: 'in_person',
+            paymentId: null,
+            paidAt: null,
+            status: 'pending', // Payment will be collected at event
+            receiptUrl: null,
+            billingAddress: null,
+          };
+        }
         
         // Set shipping option for market event pickup
+        // Use checkedInEvent if available, otherwise create default
+        const eventId = orderData.checkedInEvent?.id || null;
         shippingOption = {
           value: 'collect_at_event',
           label: 'Collect at Market Event',
@@ -280,7 +288,7 @@ class FirebaseService {
           cost: 0,
           estimatedTimeline: 'Ready for pickup at the event',
           type: 'pickup',
-          eventId: orderData.checkedInEvent?.id || null,
+          eventId: eventId,
           address: null,
         };
       }
@@ -344,7 +352,13 @@ class FirebaseService {
       console.log('Saving order to Firestore...');
       console.log('Firestore database:', db.app.options.projectId);
       console.log('Current auth user:', auth?.currentUser?.uid || 'null');
-      console.log('Order document to save:', { ...orderDoc, photos: `[${orderDoc.photos.length} photos]` });
+      console.log('Order document to save:', { 
+        ...orderDoc, 
+        photos: `[${orderDoc.photos.length} photos]`,
+        paymentOption: orderDoc.paymentOption || 'null',
+        shippingOption: orderDoc.shippingOption || 'null',
+        status: orderDoc.status
+      });
       
       const savePromise = addDoc(collection(db, 'orders'), orderDoc)
         .then((docRef) => {
