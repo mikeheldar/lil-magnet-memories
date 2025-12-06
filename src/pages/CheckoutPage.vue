@@ -742,12 +742,36 @@ export default {
       // 2. From route query params (from market event upload direct navigation)
       // 3. From authenticated user (if logged in)
       
-      // Priority 1: Check cart items for formData (from upload forms)
+      // Use nextTick to ensure cart items are loaded (they might be loading from Firestore/localStorage)
+      await nextTick();
+      
+      // Small delay to ensure cart items from Firestore are loaded
+      setTimeout(() => {
+        // Priority 1: Check cart items for formData (from upload forms)
+        const customUploadItem = cartItems.value.find(
+          (item) => item.isCustomUpload && item.formData
+        );
+        if (customUploadItem?.formData) {
+          console.log('📝 Pre-filling customer info from cart item formData:', customUploadItem.formData);
+          customerInfo.value.firstName = customUploadItem.formData.firstName || customerInfo.value.firstName || '';
+          customerInfo.value.lastName = customUploadItem.formData.lastName || customerInfo.value.lastName || '';
+          customerInfo.value.email = customUploadItem.formData.email || customerInfo.value.email || '';
+          customerInfo.value.phone = customUploadItem.formData.phone || customerInfo.value.phone || '';
+        } else {
+          console.log('⚠️ No formData found in cart items. Cart items:', cartItems.value.map(item => ({
+            isCustomUpload: item.isCustomUpload,
+            hasFormData: !!item.formData,
+            productName: item.productName
+          })));
+        }
+      }, 100);
+      
+      // Also check immediately (in case cart items are already loaded)
       const customUploadItem = cartItems.value.find(
         (item) => item.isCustomUpload && item.formData
       );
       if (customUploadItem?.formData) {
-        console.log('📝 Pre-filling customer info from cart item formData:', customUploadItem.formData);
+        console.log('📝 Pre-filling customer info from cart item formData (immediate):', customUploadItem.formData);
         customerInfo.value.firstName = customUploadItem.formData.firstName || customerInfo.value.firstName || '';
         customerInfo.value.lastName = customUploadItem.formData.lastName || customerInfo.value.lastName || '';
         customerInfo.value.email = customUploadItem.formData.email || customerInfo.value.email || '';
