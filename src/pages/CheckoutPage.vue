@@ -1666,28 +1666,54 @@ export default {
       }
     );
 
-    watch(requiresBillingAddress, (required) => {
-      if (!required) {
-        billingAddress.value = {
-          street: '',
-          city: '',
-          state: '',
-          zip: '',
-        };
+    watch(requiresBillingAddress, (required, prevRequired) => {
+      // Only clear billing address if it's changing from required to not required
+      // Don't clear if it's just initializing or if user has entered data
+      if (!required && prevRequired !== undefined && prevRequired === true) {
+        // Only clear if all fields are empty (don't clear user input)
+        const hasUserInput = billingAddress.value.street || 
+                            billingAddress.value.city || 
+                            billingAddress.value.state || 
+                            billingAddress.value.zip;
+        if (!hasUserInput) {
+          billingAddress.value = {
+            street: '',
+            city: '',
+            state: '',
+            zip: '',
+          };
+        }
       }
     });
 
     watch(
       () => ({ ...shippingAddress.value }),
       () => {
+        // Only update billing address if billingSameAsShipping is true
+        // AND the user hasn't manually edited the billing address
         if (billingSameAsShipping.value && requiresShippingAddress.value) {
-          billingAddress.value = { ...shippingAddress.value };
+          // Only update if billing address is empty or matches shipping (to avoid overwriting user input)
+          const billingIsEmpty = !billingAddress.value.street && 
+                                 !billingAddress.value.city && 
+                                 !billingAddress.value.state && 
+                                 !billingAddress.value.zip;
+          const billingMatchesShipping = 
+            billingAddress.value.street === shippingAddress.value.street &&
+            billingAddress.value.city === shippingAddress.value.city &&
+            billingAddress.value.state === shippingAddress.value.state &&
+            billingAddress.value.zip === shippingAddress.value.zip;
+          
+          if (billingIsEmpty || billingMatchesShipping) {
+            billingAddress.value = { ...shippingAddress.value };
+          }
         }
       },
       { deep: true }
     );
 
     watch(billingSameAsShipping, (same) => {
+      // Only update billing address when toggle changes to true
+      // Don't overwrite if user has already entered billing address
       if (same && requiresShippingAddress.value) {
         billingAddress.value = { ...shippingAddress.value };
       }
