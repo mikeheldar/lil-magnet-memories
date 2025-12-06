@@ -2512,29 +2512,54 @@ export default {
         if (applePayReady.value && squareApplePay.value) {
           console.log('🍎 Apple Pay section expanded, rendering button...');
           // Wait for DOM to update and expansion item to be fully expanded
+          // Quasar expansion items need time to render their content
           await nextTick();
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
           // Reset attachment to allow re-rendering
           applePayAttached.value = false;
+          
           // Try rendering multiple times with delays to ensure container is available
           let retries = 0;
-          while (retries < 5) {
+          let success = false;
+          while (retries < 10 && !success) {
             try {
-              await renderApplePayButton();
-              // Check if button was successfully rendered
+              // Check if container exists before trying to render
               const container = document.getElementById('square-apple-pay-button-collapsed') || 
                                 document.getElementById('square-apple-pay-button');
-              if (container && container.querySelector('button')) {
-                console.log('✅ Apple Pay button successfully rendered');
-                break;
+              
+              if (container) {
+                console.log(`✅ Container found on attempt ${retries + 1}, rendering button...`);
+                await renderApplePayButton();
+                // Verify button was successfully rendered
+                await nextTick();
+                const button = container.querySelector('button');
+                if (button) {
+                  console.log('✅ Apple Pay button successfully rendered');
+                  success = true;
+                  break;
+                } else {
+                  console.warn(`⚠️ Container found but button not rendered on attempt ${retries + 1}`);
+                }
+              } else {
+                console.log(`⚠️ Container not found on attempt ${retries + 1}, retrying...`, {
+                  collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
+                  regularExists: !!document.getElementById('square-apple-pay-button'),
+                  showCreditCardForm: showCreditCardForm.value,
+                  showApplePaySection: showApplePaySection.value,
+                });
               }
             } catch (error) {
               console.warn(`⚠️ Attempt ${retries + 1} to render Apple Pay button failed:`, error);
             }
             retries++;
-            if (retries < 5) {
-              await new Promise(resolve => setTimeout(resolve, 100));
+            if (retries < 10 && !success) {
+              await new Promise(resolve => setTimeout(resolve, 150));
             }
+          }
+          
+          if (!success) {
+            console.error('❌ Failed to render Apple Pay button after all retries');
           }
         }
       }
