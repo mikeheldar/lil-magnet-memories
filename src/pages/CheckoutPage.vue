@@ -426,7 +426,7 @@
                       </div>
                       <div
                         v-show="applePayReady"
-                        id="square-apple-pay-button"
+                        id="square-apple-pay-button-collapsed"
                         class="wallet-button"
                       ></div>
                       <div
@@ -2457,7 +2457,8 @@ export default {
 
     const handleCreditCardButtonClick = async () => {
       showCreditCardForm.value = true;
-      showApplePaySection.value = false; // Collapse Apple Pay section
+      // Keep Apple Pay section collapsed (not hidden) so it can be expanded later
+      showApplePaySection.value = false; // Collapse but don't hide the section
       selectedPaymentOption.value = 'square_card';
       
       // Wait for DOM to update and container to be available
