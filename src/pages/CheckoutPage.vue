@@ -2543,13 +2543,25 @@ export default {
         // Reset mounted flag when hiding credit card form
         // This allows re-mounting when form is shown again
         squareCardMounted.value = false;
+        
         // Force Vue to update the DOM immediately
         await nextTick();
         // Small delay to ensure Vue has fully processed the change
         await new Promise(resolve => setTimeout(resolve, 50));
+        
+        // Explicitly hide the Square form container if it's still in DOM
+        // (Square SDK might keep it visible even when parent is removed)
+        const squareFormContainer = document.getElementById('square-payment-form');
+        if (squareFormContainer) {
+          squareFormContainer.style.display = 'none';
+          console.log('🔧 Explicitly hid Square form container');
+        }
+        
         console.log('✅ Credit card form hidden, showCreditCardForm set to false', {
           showCreditCardForm: showCreditCardForm.value,
+          creditCardFormInDOM: !!document.getElementById('square-payment-form'),
           creditCardFormVisible: !!document.querySelector('[id="square-payment-form"]')?.offsetParent,
+          billingAddressInDOM: !!document.querySelector('.text-h6')?.textContent?.includes('Billing Address'),
           billingAddressVisible: !!document.querySelector('.text-h6')?.textContent?.includes('Billing Address') && document.querySelector('.text-h6')?.offsetParent !== null,
         });
         
