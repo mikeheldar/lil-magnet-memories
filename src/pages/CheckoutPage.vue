@@ -544,9 +544,9 @@
                             billingStreetError ? 'Billing street is required' : ''
                           "
                           :input-attrs="{ autocomplete: 'billing address-line1' }"
-                          @input="(val) => { console.log('🔵 BILLING STREET INPUT:', val, 'Current value:', billingAddress.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
-                          @focus="() => { console.log('🔵 BILLING STREET FOCUS:', 'Current value:', billingAddress.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
-                          @blur="() => { console.log('🔵 BILLING STREET BLUR:', 'Final value:', billingAddress.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                          @input="handleBillingStreetInput"
+                          @focus="handleBillingStreetFocus"
+                          @blur="handleBillingStreetBlur"
                         />
                         <div class="row q-col-gutter-md q-mb-md">
                           <div class="col-6">
@@ -561,9 +561,9 @@
                               :input-attrs="{
                                 autocomplete: 'billing address-level2',
                               }"
-                              @input="(val) => { console.log('🔵 BILLING CITY INPUT:', val, 'Current value:', billingAddress.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
-                              @focus="() => { console.log('🔵 BILLING CITY FOCUS:', 'Current value:', billingAddress.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
-                              @blur="() => { console.log('🔵 BILLING CITY BLUR:', 'Final value:', billingAddress.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @input="handleBillingCityInput"
+                              @focus="handleBillingCityFocus"
+                              @blur="handleBillingCityBlur"
                             />
                           </div>
                           <div class="col-6">
@@ -580,9 +580,9 @@
                               :input-attrs="{
                                 autocomplete: 'billing address-level1',
                               }"
-                              @input="(val) => { console.log('🔵 BILLING STATE INPUT:', val, 'Current value:', billingAddress.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
-                              @focus="() => { console.log('🔵 BILLING STATE FOCUS:', 'Current value:', billingAddress.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
-                              @blur="() => { console.log('🔵 BILLING STATE BLUR:', 'Final value:', billingAddress.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @input="handleBillingStateInput"
+                              @focus="handleBillingStateFocus"
+                              @blur="handleBillingStateBlur"
                             />
                           </div>
                         </div>
@@ -599,9 +599,9 @@
                               :input-attrs="{
                                 autocomplete: 'billing postal-code',
                               }"
-                              @input="(val) => { console.log('🔵 BILLING ZIP INPUT:', val, 'Current value:', billingAddress.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
-                              @focus="() => { console.log('🔵 BILLING ZIP FOCUS:', 'Current value:', billingAddress.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
-                              @blur="() => { console.log('🔵 BILLING ZIP BLUR:', 'Final value:', billingAddress.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @input="handleBillingZipInput"
+                              @focus="handleBillingZipFocus"
+                              @blur="handleBillingZipBlur"
                             />
                           </div>
                         </div>
@@ -1773,15 +1773,60 @@ export default {
       });
     });
 
-    // Watch billingAddress for any changes
+    // Watch billingAddress for any changes - but throttle to avoid excessive logging
+    let billingAddressChangeTimeout = null;
     watch(billingAddress, (newVal, oldVal) => {
-      console.log('🔴 BILLING ADDRESS VALUE CHANGED:', {
-        old: JSON.parse(JSON.stringify(oldVal)),
-        new: JSON.parse(JSON.stringify(newVal)),
-        stackTrace: new Error().stack,
-        timestamp: new Date().toISOString()
-      });
+      // Clear any pending log
+      if (billingAddressChangeTimeout) {
+        clearTimeout(billingAddressChangeTimeout);
+      }
+      // Throttle logging to once per 500ms
+      billingAddressChangeTimeout = setTimeout(() => {
+        console.log('🔴 BILLING ADDRESS VALUE CHANGED:', {
+          old: JSON.parse(JSON.stringify(oldVal)),
+          new: JSON.parse(JSON.stringify(newVal)),
+          timestamp: new Date().toISOString()
+        });
+      }, 500);
     }, { deep: true });
+
+    // Billing address input handlers
+    const handleBillingStreetInput = (val) => {
+      console.log('🔵 BILLING STREET INPUT:', val, 'Current value:', billingAddress.value.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingStreetFocus = () => {
+      console.log('🔵 BILLING STREET FOCUS:', 'Current value:', billingAddress.value.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingStreetBlur = () => {
+      console.log('🔵 BILLING STREET BLUR:', 'Final value:', billingAddress.value.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingCityInput = (val) => {
+      console.log('🔵 BILLING CITY INPUT:', val, 'Current value:', billingAddress.value.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingCityFocus = () => {
+      console.log('🔵 BILLING CITY FOCUS:', 'Current value:', billingAddress.value.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingCityBlur = () => {
+      console.log('🔵 BILLING CITY BLUR:', 'Final value:', billingAddress.value.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingStateInput = (val) => {
+      console.log('🔵 BILLING STATE INPUT:', val, 'Current value:', billingAddress.value.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingStateFocus = () => {
+      console.log('🔵 BILLING STATE FOCUS:', 'Current value:', billingAddress.value.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingStateBlur = () => {
+      console.log('🔵 BILLING STATE BLUR:', 'Final value:', billingAddress.value.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingZipInput = (val) => {
+      console.log('🔵 BILLING ZIP INPUT:', val, 'Current value:', billingAddress.value.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingZipFocus = () => {
+      console.log('🔵 BILLING ZIP FOCUS:', 'Current value:', billingAddress.value.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
+    const handleBillingZipBlur = () => {
+      console.log('🔵 BILLING ZIP BLUR:', 'Final value:', billingAddress.value.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress.value)));
+    };
 
     watch(orderTotal, () => {
       updateSquarePaymentRequest();
@@ -4136,6 +4181,18 @@ export default {
       goToHome,
       goToMyOrders,
       isAuthenticated,
+      handleBillingStreetInput,
+      handleBillingStreetFocus,
+      handleBillingStreetBlur,
+      handleBillingCityInput,
+      handleBillingCityFocus,
+      handleBillingCityBlur,
+      handleBillingStateInput,
+      handleBillingStateFocus,
+      handleBillingStateBlur,
+      handleBillingZipInput,
+      handleBillingZipFocus,
+      handleBillingZipBlur,
     };
   },
 };
