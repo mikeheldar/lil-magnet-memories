@@ -707,9 +707,9 @@
                 </q-card-section>
 
                 <q-card-actions vertical class="q-pa-md q-pt-none">
-                  <!-- Submit button (only shown when credit card form is visible) -->
+                  <!-- Submit button (shown when credit card section is expanded OR when Apple Pay is not available) -->
                   <q-btn
-                    v-if="showCreditCardForm"
+                    v-if="showCreditCardSection || !availablePaymentMethods.applePay"
                     color="primary"
                     label="Place Order"
                     icon="check"
