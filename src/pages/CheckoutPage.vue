@@ -408,7 +408,8 @@
                   </div>
 
                   <!-- Apple Pay Section (expandable when credit card form is shown) -->
-                  <div v-if="availablePaymentMethods.applePay && showCreditCardForm" class="q-mb-lg">
+                  <!-- Use v-show to keep container in DOM -->
+                  <div v-show="availablePaymentMethods.applePay && showCreditCardForm" class="q-mb-lg">
                     <q-expansion-item
                       v-model="showApplePaySection"
                       :default-opened="false"
