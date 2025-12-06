@@ -441,9 +441,10 @@ export default {
 
 .action-buttons {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 0;
 }
 
 .action-btn {
