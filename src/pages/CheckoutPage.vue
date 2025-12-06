@@ -1955,10 +1955,22 @@ export default {
               console.log('⚠️ Card attached but form not in container, creating new card instance...');
               // Create a new card instance
               try {
+                // Check if payments is available
                 if (!payments.value) {
-                  throw new Error('Square payments object not available');
+                  console.error('❌ Square payments object not available, cannot create new card instance');
+                  throw new Error('Square payments object not available. Please refresh the page.');
                 }
+                
+                // Check if card method exists
+                if (typeof payments.value.card !== 'function') {
+                  console.error('❌ Square payments.card is not a function', payments.value);
+                  throw new Error('Square card method not available. Please refresh the page.');
+                }
+                
+                console.log('🔵 Creating new Square card instance...');
                 squareCard.value = payments.value.card();
+                console.log('✅ New Square card instance created');
+                
                 // Retry attach with new instance
                 await squareCard.value.attach('#square-payment-form');
                 await nextTick();
@@ -1966,9 +1978,14 @@ export default {
                 squareCardMounted.value = true;
                 console.log('✅ New Square card instance attached successfully');
               } catch (retryError) {
-                console.error('❌ Error attaching new card instance:', retryError);
+                console.error('❌ Error attaching new card instance:', retryError, {
+                  hasPayments: !!payments.value,
+                  hasCardMethod: payments.value ? typeof payments.value.card === 'function' : false,
+                  squareInitialized: squareInitialized.value,
+                });
                 squareInitError.value = retryError;
-                throw retryError;
+                // Don't throw - let error be displayed in UI
+                return;
               }
             }
             } else {
