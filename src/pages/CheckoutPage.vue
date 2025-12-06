@@ -1940,12 +1940,19 @@ export default {
         return;
       }
       await nextTick();
-      const container = document.getElementById('square-apple-pay-button');
+      // Try to find the container - could be in regular view or collapsed section
+      let container = document.getElementById('square-apple-pay-button');
       if (!container) {
         console.log('⚠️ Cannot render Apple Pay button: container not found');
         return;
       }
-      if (applePayAttached.value) {
+      // Reset attachment flag if container changed (e.g., from collapsed to expanded)
+      // Check if there's already a button in the container
+      if (applePayAttached.value && !container.querySelector('button')) {
+        console.log('🔄 Apple Pay container changed, resetting attachment');
+        applePayAttached.value = false;
+      }
+      if (applePayAttached.value && container.querySelector('button')) {
         console.log('ℹ️ Apple Pay button already attached');
         return;
       }
