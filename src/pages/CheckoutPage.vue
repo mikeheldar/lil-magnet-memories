@@ -1653,17 +1653,12 @@ export default {
 
     // Watch billingSameAsShipping toggle - only sync when explicitly toggled ON
     // Use a flag to track if we're updating from toggle to prevent interference
-    let isSyncingFromToggle = false;
+    // Watch billingSameAsShipping - only sync when user explicitly toggles ON
     watch(billingSameAsShipping, (same, prevSame) => {
-      // Only update billing address when toggle changes FROM false TO true
-      // Don't update if it's already true (initial state) or if user is typing
-      if (same && !prevSame && requiresShippingAddress.value) {
-        isSyncingFromToggle = true;
+      // Only sync when toggle changes from false to true (user action)
+      // Don't sync on initial load or if already true
+      if (same && prevSame === false && requiresShippingAddress.value) {
         billingAddress.value = { ...shippingAddress.value };
-        // Reset flag after sync completes
-        nextTick(() => {
-          isSyncingFromToggle = false;
-        });
       }
       // When toggle is turned off, do nothing - let user edit freely
     });
