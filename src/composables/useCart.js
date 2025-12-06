@@ -385,7 +385,7 @@ export function useCart() {
 
   const addCustomUploadToCart = (uploadData) => {
     // Add custom upload item with photos
-    cartItems.value.push({
+    const cartItem = {
       isCustomUpload: true,
       productId: `custom-upload-${Date.now()}`, // Unique ID for custom uploads
       productName: uploadData.productName || 'Custom Photo Magnets',
@@ -397,7 +397,15 @@ export function useCart() {
       costBreakdown: uploadData.costBreakdown,
       pricing: uploadData.pricing,
       marketEventContext: uploadData.marketEventContext || false, // Remember if from market event
-    });
+    };
+    
+    // Include formData if provided (customer info from upload form)
+    if (uploadData.formData) {
+      cartItem.formData = uploadData.formData;
+      console.log('📝 Adding formData to cart item:', uploadData.formData);
+    }
+    
+    cartItems.value.push(cartItem);
     // Explicitly trigger save to ensure immediate sync
     saveCart(cartItems.value);
   };
