@@ -1840,6 +1840,15 @@ export default {
     watch(availablePaymentMethods, async (methods) => {
       if (!methods.applePay && squareInitialized.value && squareCard.value && !squareCardMounted.value) {
         console.log('🔵 Apple Pay not available, mounting credit card form directly...');
+        // Set showCreditCardForm to true so mountSquareCard will proceed
+        showCreditCardForm.value = true;
+        // Ensure Square form container is visible
+        const squareFormContainer = document.getElementById('square-payment-form');
+        if (squareFormContainer) {
+          squareFormContainer.style.display = '';
+          squareFormContainer.style.visibility = '';
+          squareFormContainer.style.minHeight = '20px';
+        }
         await nextTick();
         await new Promise(resolve => setTimeout(resolve, 300));
         await mountSquareCard();
@@ -2062,8 +2071,10 @@ export default {
     };
 
     const mountSquareCard = async () => {
-      // Only mount if credit card form is visible
-      if (!showCreditCardForm.value) {
+      // Only mount if credit card form is visible OR if Apple Pay is not available
+      // When Apple Pay is not available, the form is shown directly (not collapsible)
+      const shouldMount = showCreditCardForm.value || !availablePaymentMethods.value.applePay;
+      if (!shouldMount) {
         console.log('ℹ️ Skipping mount - credit card form not visible');
         return;
       }
