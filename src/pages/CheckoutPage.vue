@@ -426,7 +426,7 @@
                       </div>
                       <div
                         v-show="applePayReady"
-                        id="square-apple-pay-button-collapsed"
+                        id="square-apple-pay-button"
                         class="wallet-button"
                       ></div>
                       <div
