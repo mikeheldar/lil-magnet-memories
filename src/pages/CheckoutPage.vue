@@ -2009,7 +2009,14 @@ export default {
       }
       await nextTick();
       // Try to find the container - could be in regular view or collapsed section
-      let container = document.getElementById('square-apple-pay-button');
+      // First try the collapsed section (when credit card form is shown)
+      let container = document.getElementById('square-apple-pay-button-collapsed');
+      let containerId = '#square-apple-pay-button-collapsed';
+      // If not found, try the regular standalone button
+      if (!container) {
+        container = document.getElementById('square-apple-pay-button');
+        containerId = '#square-apple-pay-button';
+      }
       if (!container) {
         console.log('⚠️ Cannot render Apple Pay button: container not found');
         return;
@@ -2041,13 +2048,13 @@ export default {
         // Try attach first (if it exists)
         if (typeof squareApplePay.value.attach === 'function') {
           console.log('✅ Using attach method');
-          await squareApplePay.value.attach('#square-apple-pay-button');
+          await squareApplePay.value.attach(containerId);
           applePayAttached.value = true;
         }
         // Try mount as alternative
         else if (typeof squareApplePay.value.mount === 'function') {
           console.log('✅ Using mount method');
-          await squareApplePay.value.mount('#square-apple-pay-button');
+          await squareApplePay.value.mount(containerId);
           applePayAttached.value = true;
         }
         // Try createButton if available
