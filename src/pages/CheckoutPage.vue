@@ -2,7 +2,23 @@
   <q-page padding class="checkout-page">
     <div class="row justify-center">
       <div class="col-12 col-md-10 col-lg-8">
-        <div class="text-h4 q-mb-md">Checkout</div>
+        <div class="row items-center q-mb-md">
+          <div class="col">
+            <div class="text-h4">Checkout</div>
+          </div>
+          <div class="col-auto">
+            <q-btn
+              flat
+              round
+              icon="delete"
+              color="negative"
+              size="md"
+              @click="handleDeleteOrder"
+            >
+              <q-tooltip>Clear cart and go back</q-tooltip>
+            </q-btn>
+          </div>
+        </div>
 
         <div v-if="cartItems.length === 0" class="text-center q-pa-xl">
           <q-icon
@@ -634,6 +650,52 @@
         </div>
       </div>
     </div>
+
+    <!-- Order Success Dialog -->
+    <q-dialog v-model="showOrderSuccessDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Order Placed Successfully!</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <div class="text-center q-mb-md">
+            <q-icon name="check_circle" size="64px" color="positive" class="q-mb-sm" />
+            <div class="text-h6 q-mb-xs">Thank you for your order!</div>
+            <div class="text-body2 text-grey-7">
+              Order #{{ lastOrderNumber }}
+            </div>
+          </div>
+          <div class="text-body2 text-grey-8 q-mt-md">
+            We've received your order and will get started on your custom magnets right away.
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            v-if="isAuthenticated"
+            flat
+            label="Go to Home"
+            color="grey-7"
+            @click="goToHome"
+          />
+          <q-btn
+            v-if="isAuthenticated"
+            color="primary"
+            label="View My Orders"
+            @click="goToMyOrders"
+          />
+          <q-btn
+            v-else
+            color="primary"
+            label="Go to Home"
+            @click="goToHome"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -685,6 +747,8 @@ export default {
     const checkedInEvent = ref(null);
     const selectedShippingOption = ref(null);
     const selectedPaymentOption = ref('square_card'); // Default to credit card
+    const showOrderSuccessDialog = ref(false);
+    const lastOrderNumber = ref('');
     const squareInitialized = ref(false);
     const squarePayments = ref(null);
     const squarePaymentRequest = ref(null);
@@ -3855,10 +3919,9 @@ export default {
           })
         );
 
-        // Navigate to My Orders page
-        router.push({
-          path: '/my-orders',
-        });
+        // Show order success dialog
+        lastOrderNumber.value = orderNumber;
+        showOrderSuccessDialog.value = true;
       } catch (error) {
         console.error('Error placing order:', error);
         
@@ -3906,6 +3969,34 @@ export default {
         submitting.value = false;
       }
     };
+
+    // Handler functions
+    const handleDeleteOrder = async () => {
+      $q.dialog({
+        title: 'Clear Cart?',
+        message: 'Are you sure you want to clear your cart and go back?',
+        cancel: true,
+        persistent: true,
+      }).onOk(async () => {
+        await clearCart();
+        router.push('/');
+      });
+    };
+
+    const goToHome = () => {
+      showOrderSuccessDialog.value = false;
+      router.push('/');
+    };
+
+    const goToMyOrders = () => {
+      showOrderSuccessDialog.value = false;
+      router.push('/my-orders');
+    };
+
+    const isAuthenticated = computed(() => {
+      const user = authService.getCurrentUser();
+      return user && !user.isAnonymous;
+    });
 
     return {
       cartItems,
@@ -3955,6 +4046,12 @@ export default {
       showCreditCardForm,
       showApplePaySection,
       handleCreditCardButtonClick,
+      showOrderSuccessDialog,
+      lastOrderNumber,
+      handleDeleteOrder,
+      goToHome,
+      goToMyOrders,
+      isAuthenticated,
     };
   },
 };
