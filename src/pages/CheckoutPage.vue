@@ -3894,15 +3894,6 @@ export default {
         // Clear cart
         clearCart();
 
-        // Show success notification
-        safeNotify({
-          type: 'positive',
-          message: 'Order placed successfully!',
-          caption: `Order #${orderNumber}`,
-          position: 'top',
-          timeout: 5000,
-        });
-
         localStorage.setItem(
           'lastOrderData',
           JSON.stringify({
@@ -3919,7 +3910,7 @@ export default {
           })
         );
 
-        // Show order success dialog
+        // Show order success dialog (same for both Apple Pay and credit card payments)
         lastOrderNumber.value = orderNumber;
         showOrderSuccessDialog.value = true;
       } catch (error) {
