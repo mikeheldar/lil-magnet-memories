@@ -2545,7 +2545,13 @@ export default {
         squareCardMounted.value = false;
         // Force Vue to update the DOM immediately
         await nextTick();
-        console.log('✅ Credit card form hidden, showCreditCardForm set to false');
+        // Small delay to ensure Vue has fully processed the change
+        await new Promise(resolve => setTimeout(resolve, 50));
+        console.log('✅ Credit card form hidden, showCreditCardForm set to false', {
+          showCreditCardForm: showCreditCardForm.value,
+          creditCardFormVisible: !!document.querySelector('[id="square-payment-form"]')?.offsetParent,
+          billingAddressVisible: !!document.querySelector('.text-h6')?.textContent?.includes('Billing Address') && document.querySelector('.text-h6')?.offsetParent !== null,
+        });
         
         // Render Apple Pay button when section is expanded
         if (applePayReady.value && squareApplePay.value) {
