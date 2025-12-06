@@ -3343,6 +3343,7 @@ export default {
       squareInitError,
       squareProcessing,
       showCreditCardForm,
+      handleCreditCardButtonClick,
     };
   },
 };
