@@ -476,40 +476,41 @@
                     </q-btn>
                   </div>
 
-                  <!-- Credit Card Form (shown when Pay with Credit Card button is clicked) -->
-                  <!-- Use v-show instead of v-if to keep billing address fields in DOM -->
+                  <!-- Square payment form container - STATIC, NON-REACTIVE -->
+                  <!-- Must be outside v-if/v-show to prevent Vue from destroying Square's DOM -->
+                  <!-- v-once prevents Vue from patching this container -->
+                  <div
+                    id="square-payment-form"
+                    v-once
+                    style="min-height: 20px"
+                    class="q-mb-md"
+                    :style="{ display: showCreditCardForm ? '' : 'none' }"
+                  >
+                    <!-- Form will be rendered here by Square SDK when mounted -->
+                    <!-- Square SDK manages its own DOM - Vue must not touch it -->
+                  </div>
+
+                  <!-- Credit Card Form wrapper (shown when Pay with Credit Card button is clicked) -->
                   <div v-show="showCreditCardForm">
-                    <!-- Square payment form container -->
-                    <!-- Key attribute ensures container is recreated when form is shown -->
+                    <!-- Loading and error messages (outside Square container to avoid conflicts) -->
                     <div
-                      :key="`square-form-${showCreditCardForm}`"
-                      id="square-payment-form"
-                      style="min-height: 20px"
-                      class="q-mb-md"
+                      v-if="!squareCardMounted && !squareInitError"
+                      class="text-body2 text-grey-6 q-pa-md text-center"
                     >
-                      <!-- Show loading only if not initialized AND no error -->
-                      <div
-                        v-if="!squareCardMounted && !squareInitError"
-                        class="text-body2 text-grey-6 q-pa-md text-center"
-                      >
-                        <q-spinner size="24px" class="q-mr-sm" />
-                        Loading secure payment form...
+                      <q-spinner size="24px" class="q-mr-sm" />
+                      Loading secure payment form...
+                    </div>
+                    <div
+                      v-if="squareInitError"
+                      class="text-negative text-caption q-pa-sm bg-red-1 rounded-borders"
+                    >
+                      <q-icon name="error" class="q-mr-xs" />
+                      <strong>Error loading payment form:</strong>
+                      <div class="q-mt-xs">{{ squareInitError.message }}</div>
+                      <div class="q-mt-xs text-caption">
+                        Please refresh the page or contact support if the
+                        issue persists.
                       </div>
-                      <!-- Show error if initialization failed -->
-                      <div
-                        v-if="squareInitError"
-                        class="text-negative text-caption q-pa-sm bg-red-1 rounded-borders"
-                      >
-                        <q-icon name="error" class="q-mr-xs" />
-                        <strong>Error loading payment form:</strong>
-                        <div class="q-mt-xs">{{ squareInitError.message }}</div>
-                        <div class="q-mt-xs text-caption">
-                          Please refresh the page or contact support if the
-                          issue persists.
-                        </div>
-                      </div>
-                      <!-- Form will be rendered here by Square SDK when mounted -->
-                      <!-- The loading spinner above will be hidden once squareCardMounted is true -->
                     </div>
 
                     <!-- Billing Address Section (moved from left side) -->
@@ -753,6 +754,8 @@ export default {
     const squareInitialized = ref(false);
     const squarePayments = ref(null);
     const squarePaymentRequest = ref(null);
+    // Square card instance - only initialize once
+    let squareCardInstance = null;
     const squareCard = ref(null);
     const squareApplePay = ref(null);
     const applePayToken = ref(null);
