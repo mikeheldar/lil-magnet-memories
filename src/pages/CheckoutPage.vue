@@ -787,7 +787,8 @@ export default {
       state: '',
       zip: '',
     });
-    const billingSameAsShipping = ref(true);
+    // Default to false so user can type freely - they can toggle if they want to copy shipping
+    const billingSameAsShipping = ref(false);
     const shippingOptionsData = ref([]);
     const loadingShippingOptions = ref(true);
     const showValidationErrors = ref(false);
