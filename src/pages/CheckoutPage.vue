@@ -2529,7 +2529,8 @@ export default {
       });
       
       if (isExpanded) {
-        // Collapse credit card form if it's visible
+        // Always hide credit card form when Apple Pay section is expanded
+        // This ensures we show just the buttons (Apple Pay + Pay with Credit Card)
         const wasShowingCreditCard = showCreditCardForm.value;
         console.log('📋 State before hiding credit card form:', {
           wasShowingCreditCard,
@@ -2537,13 +2538,12 @@ export default {
           showApplePaySection: showApplePaySection.value,
         });
         
-        if (wasShowingCreditCard) {
-          showCreditCardForm.value = false;
-          // Reset mounted flag when hiding credit card form
-          // This allows re-mounting when form is shown again
-          squareCardMounted.value = false;
-          console.log('✅ Credit card form hidden, showCreditCardForm set to false');
-        }
+        // Always set to false when expanding Apple Pay (even if already false)
+        showCreditCardForm.value = false;
+        // Reset mounted flag when hiding credit card form
+        // This allows re-mounting when form is shown again
+        squareCardMounted.value = false;
+        console.log('✅ Credit card form hidden, showCreditCardForm set to false');
         
         // Render Apple Pay button when section is expanded
         if (applePayReady.value && squareApplePay.value) {
