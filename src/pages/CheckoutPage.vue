@@ -1947,23 +1947,27 @@ export default {
                 console.log('✅ Square form is present, marking as mounted');
                 squareCardMounted.value = true;
                 return; // Success - form is already attached and visible
-              } else {
-                // Form is attached but not in this container - need to create new instance
-                console.log('⚠️ Card attached but form not in container, creating new card instance...');
-                // Create a new card instance
-                try {
-                  squareCard.value = payments.value.card();
-                  // Retry attach with new instance
-                  await squareCard.value.attach('#square-payment-form');
-                  await nextTick();
-                  await new Promise((resolve) => setTimeout(resolve, 150));
-                  squareCardMounted.value = true;
-                  console.log('✅ New Square card instance attached successfully');
-                } catch (retryError) {
-                  console.error('❌ Error attaching new card instance:', retryError);
-                  throw retryError;
+            } else {
+              // Form is attached but not in this container - need to create new instance
+              console.log('⚠️ Card attached but form not in container, creating new card instance...');
+              // Create a new card instance
+              try {
+                if (!payments.value) {
+                  throw new Error('Square payments object not available');
                 }
+                squareCard.value = payments.value.card();
+                // Retry attach with new instance
+                await squareCard.value.attach('#square-payment-form');
+                await nextTick();
+                await new Promise((resolve) => setTimeout(resolve, 150));
+                squareCardMounted.value = true;
+                console.log('✅ New Square card instance attached successfully');
+              } catch (retryError) {
+                console.error('❌ Error attaching new card instance:', retryError);
+                squareInitError.value = retryError;
+                throw retryError;
               }
+            }
             } else {
               console.error('❌ Error attaching Square card form:', attachError);
               throw attachError;
