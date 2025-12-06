@@ -2497,11 +2497,24 @@ export default {
       await nextTick();
       await new Promise(resolve => setTimeout(resolve, 200));
       
+      // Wait for Vue to create the credit card form container (v-if="showCreditCardForm")
+      await nextTick();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Explicitly show the Square form container if it exists
       const squareFormContainer = document.getElementById('square-payment-form');
       if (squareFormContainer) {
         squareFormContainer.style.display = '';
+        squareFormContainer.style.visibility = '';
         console.log('🔧 Explicitly showed Square form container');
+      }
+      
+      // Find and show the credit card form container if it exists
+      const creditCardFormContainer = document.querySelector('[id="square-payment-form"]')?.parentElement;
+      if (creditCardFormContainer) {
+        creditCardFormContainer.style.display = '';
+        creditCardFormContainer.style.visibility = '';
+        console.log('🔧 Explicitly showed credit card form container');
       }
       
       // Explicitly show billing address section if it exists
@@ -2512,6 +2525,11 @@ export default {
         const billingSection = heading.closest('div');
         if (billingSection) {
           billingSection.style.display = '';
+          billingSection.style.visibility = '';
+          billingSection.style.height = '';
+          billingSection.style.overflow = '';
+          billingSection.style.margin = '';
+          billingSection.style.padding = '';
           console.log('🔧 Explicitly showed billing address section');
         }
       });
@@ -2570,23 +2588,23 @@ export default {
         // Longer delay to ensure Vue has fully processed the change and removed elements
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Explicitly hide the Square form container if it's still in DOM
-        // (Square SDK might keep it visible even when parent is removed)
+        // Note: We don't need to explicitly hide these because v-if="showCreditCardForm" 
+        // will remove them from the DOM when showCreditCardForm is false.
+        // However, if they're still in DOM (timing issue), hide them as a safety measure.
         const squareFormContainer = document.getElementById('square-payment-form');
         if (squareFormContainer) {
           squareFormContainer.style.display = 'none';
           squareFormContainer.style.visibility = 'hidden';
-          console.log('🔧 Explicitly hid Square form container');
+          console.log('🔧 Explicitly hid Square form container (safety measure)');
         }
         
-        // Explicitly hide billing address section - it should be removed by v-if, but ensure it's hidden
-        // Find the parent container that has v-if="showCreditCardForm" and hide everything inside it
+        // Find the parent container that has v-if="showCreditCardForm" and hide it if still in DOM
         const creditCardFormContainer = document.querySelector('[id="square-payment-form"]')?.parentElement;
-        if (creditCardFormContainer) {
+        if (creditCardFormContainer && creditCardFormContainer.offsetParent !== null) {
           // Hide the entire credit card form container (which includes billing address)
           creditCardFormContainer.style.display = 'none';
           creditCardFormContainer.style.visibility = 'hidden';
-          console.log('🔧 Explicitly hid credit card form container (includes billing address)');
+          console.log('🔧 Explicitly hid credit card form container (safety measure)');
         }
         
         // Also find and hide any billing address elements that might still be in DOM
