@@ -1145,13 +1145,19 @@ export default {
         hasMarketEventCartItems,
       });
 
-      // Only default to pickup if actually at a market event or have market event items
-      // Don't default to pickup just because user is a market customer (they might be doing an online order)
+      // Check if user is an online customer (explicitly chose "No, Order Online")
+      // If they're an online customer, they should NOT default to pickup even if they're at an event
+      const isOnlineCustomer = !userIsMarketCustomer;
+      
+      // Only default to pickup if:
+      // 1. User is actually at a market event (checked in) AND
+      // 2. User is a market customer (not an online customer) AND
+      // 3. Either coming from market event upload OR has market event items
+      // This ensures online customers always get shipping options, not pickup
       if (
-        isFromMarketEventUpload.value ||
-        currentCheckedInEvent ||
-        checkedInEvent.value ||
-        hasMarketEventCartItems
+        !isOnlineCustomer && // User must be a market customer
+        (currentCheckedInEvent || checkedInEvent.value) && // User must be checked in at event
+        (isFromMarketEventUpload.value || hasMarketEventCartItems) // Must have market event context
       ) {
         const pickupOption = options.find((option) => option.type === 'pickup');
         console.log('🔄 Looking for pickup option, found:', pickupOption);
@@ -1165,6 +1171,7 @@ export default {
               currentCheckedInEvent: !!currentCheckedInEvent,
               checkedInEvent: !!checkedInEvent.value,
               userIsMarketCustomer,
+              isOnlineCustomer,
               hasMarketEventCartItems,
             }
           );
@@ -1177,11 +1184,27 @@ export default {
         }
       }
 
-      // Otherwise use default or first option
-      const defaultOption =
-        options.find((option) => option.default) || options[0];
-      console.log('🔄 Using default/first option:', defaultOption?.value);
-      selectedShippingOption.value = defaultOption.value;
+      // For online customers OR when not at market event, use default shipping option
+      // Prefer the option marked as default, but only if it's a shipping option (not pickup)
+      // If no default shipping option, use first shipping option
+      const defaultShippingOption = options.find(
+        (option) => option.default && option.type === 'shipping'
+      );
+      const firstShippingOption = options.find(
+        (option) => option.type === 'shipping'
+      );
+      const defaultOption = defaultShippingOption || firstShippingOption || options[0];
+      
+      console.log('🔄 Using default shipping option for online order:', defaultOption?.value, {
+        isOnlineCustomer,
+        userIsMarketCustomer,
+        hasDefault: !!defaultShippingOption,
+        optionType: defaultOption?.type,
+      });
+      
+      if (defaultOption) {
+        selectedShippingOption.value = defaultOption.value;
+      }
     };
 
     const loadShippingOptions = async () => {

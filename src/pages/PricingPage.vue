@@ -663,7 +663,8 @@
           />
           <q-toggle
             v-model="editingShippingOption.default"
-            label="Make this the default option"
+            label="Make this the default option for online orders"
+            hint="Only shipping options (not pickup) should be set as default. This will be used when customers order online."
           />
         </q-card-section>
         <q-card-actions align="right">
