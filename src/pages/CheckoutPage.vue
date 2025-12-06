@@ -2565,6 +2565,20 @@ export default {
           console.log('🔧 Explicitly hid Square form container');
         }
         
+        // Explicitly hide billing address section if it's still visible
+        // Find all elements that contain "Billing Address" heading
+        const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6')).filter(
+          el => el.textContent?.includes('Billing Address')
+        );
+        billingAddressHeadings.forEach(heading => {
+          // Hide the parent container that holds the billing address section
+          const billingSection = heading.closest('div');
+          if (billingSection && billingSection.offsetParent !== null) {
+            billingSection.style.display = 'none';
+            console.log('🔧 Explicitly hid billing address section');
+          }
+        });
+        
         console.log('✅ Credit card form hidden, showCreditCardForm set to false', {
           showCreditCardForm: showCreditCardForm.value,
           creditCardFormInDOM: !!document.getElementById('square-payment-form'),
