@@ -1141,15 +1141,29 @@ export default {
         selectedShippingOption.value = null;
         return;
       }
+      
+      // Check if currently selected option exists and is the default
       const existing = options.find(
         (option) => option.value === selectedShippingOption.value
       );
+      
+      // Check if the existing selection is actually the default option
       if (existing) {
-        console.log(
-          '✅ Selected option already exists in options, keeping it:',
-          selectedShippingOption.value
-        );
-        return;
+        const isDefault = existing.default === true || existing.default === 'true' || existing.default === 1 || existing.default === '1';
+        if (isDefault) {
+          console.log(
+            '✅ Selected option is already the default, keeping it:',
+            selectedShippingOption.value
+          );
+          return;
+        } else {
+          console.log(
+            '🔄 Selected option exists but is not the default, will check for default option:',
+            selectedShippingOption.value,
+            'Default status:', existing.default
+          );
+          // Don't return - continue to check for default option below
+        }
       }
 
       // Check if cart items are from market event
