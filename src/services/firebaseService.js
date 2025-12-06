@@ -257,15 +257,16 @@ class FirebaseService {
       console.log(`Photo uploads completed: ${uploadedPhotos.length} photos uploaded`);
 
       // Prepare payment and shipping options for pay_at_tent orders
-      // ALL orders from MarketEventUploadPage should have these fields
+      // ALL orders from MarketEventUploadPage should have these fields to appear in OrderList
       let paymentOption = null;
       let shippingOption = null;
       
-      // Check if this is a market event upload order (has paymentChoice or checkedInEvent)
+      // If paymentChoice is 'pay_at_tent', this is definitely a market event order
+      // Also check if checkedInEvent exists (market event upload page always has this)
       const isMarketEventOrder = orderData.paymentChoice === 'pay_at_tent' || orderData.checkedInEvent;
       
       if (isMarketEventOrder) {
-        // Set payment option for pay at tent (default to pay_at_event if paymentChoice is pay_at_tent)
+        // Set payment option for pay at tent orders
         if (orderData.paymentChoice === 'pay_at_tent') {
           paymentOption = {
             type: 'pay_at_event',
@@ -278,8 +279,8 @@ class FirebaseService {
           };
         }
         
-        // Set shipping option for market event pickup
-        // Use checkedInEvent if available, otherwise create default
+        // ALWAYS set shipping option for market event orders (pickup at event)
+        // This ensures orders appear in OrderList with type='pickup'
         const eventId = orderData.checkedInEvent?.id || null;
         shippingOption = {
           value: 'collect_at_event',
@@ -287,8 +288,23 @@ class FirebaseService {
           description: 'Pick up your magnets at the market booth for free.',
           cost: 0,
           estimatedTimeline: 'Ready for pickup at the event',
-          type: 'pickup',
+          type: 'pickup', // CRITICAL: This ensures order appears in OrderList
           eventId: eventId,
+          address: null,
+        };
+      }
+      
+      // Fallback: If no shippingOption but this looks like a market event order (has photos/quantities but no cartItems)
+      // This handles legacy orders or edge cases
+      if (!shippingOption && orderData.photos && !orderData.cartItems) {
+        shippingOption = {
+          value: 'collect_at_event',
+          label: 'Collect at Market Event',
+          description: 'Pick up your magnets at the market booth for free.',
+          cost: 0,
+          estimatedTimeline: 'Ready for pickup at the event',
+          type: 'pickup',
+          eventId: null,
           address: null,
         };
       }
