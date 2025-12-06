@@ -733,8 +733,9 @@ export default {
     const applePayError = ref(null);
     const googlePayError = ref(null);
     const squareProcessing = ref(false);
-    const showCreditCardForm = ref(false); // Track if credit card form should be shown
-    const showApplePaySection = ref(false); // Track if Apple Pay section is expanded
+    const showCreditCardForm = ref(false); // Track if credit card form should be shown (deprecated - use showCreditCardSection)
+    const showApplePaySection = ref(true); // Track if Apple Pay section is expanded (default true)
+    const showCreditCardSection = ref(false); // Track if Credit Card section is expanded (default false)
 
     const customerInfo = ref({
       firstName: '',
