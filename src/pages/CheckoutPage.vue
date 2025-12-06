@@ -735,51 +735,52 @@ export default {
         );
       }
 
-      // Pre-fill customer info from route query if available (from market event upload)
-      if (route.query.firstName) {
-        customerInfo.value.firstName = route.query.firstName;
-      }
-      if (route.query.lastName) {
-        customerInfo.value.lastName = route.query.lastName;
-      }
-      if (route.query.email) {
-        customerInfo.value.email = route.query.email;
-      }
-      if (route.query.phone) {
-        customerInfo.value.phone = route.query.phone;
-      }
-
       loadShippingOptions();
 
-      // Pre-fill customer info if user is authenticated (only if not already set from query)
-      const currentUser = authService.getCurrentUser();
-      if (currentUser && !customerInfo.value.email) {
-        customerInfo.value.email = currentUser.email || '';
-        if (currentUser.displayName && !customerInfo.value.firstName) {
-          const nameParts = currentUser.displayName.split(' ');
-          customerInfo.value.firstName = nameParts[0] || '';
-          customerInfo.value.lastName = nameParts.slice(1).join(' ') || '';
-        }
-      }
-
-      // Pre-fill customer info from custom upload form data if available (only if not already set)
+      // Pre-fill customer info in priority order:
+      // 1. From cart items' formData (most recent, from upload forms)
+      // 2. From route query params (from market event upload direct navigation)
+      // 3. From authenticated user (if logged in)
+      
+      // Priority 1: Check cart items for formData (from upload forms)
       const customUploadItem = cartItems.value.find(
         (item) => item.isCustomUpload && item.formData
       );
       if (customUploadItem?.formData) {
-        if (!customerInfo.value.firstName) {
-          customerInfo.value.firstName =
-            customUploadItem.formData.firstName || '';
-        }
-        if (!customerInfo.value.lastName) {
-          customerInfo.value.lastName =
-            customUploadItem.formData.lastName || '';
-        }
+        console.log('📝 Pre-filling customer info from cart item formData:', customUploadItem.formData);
+        customerInfo.value.firstName = customUploadItem.formData.firstName || customerInfo.value.firstName || '';
+        customerInfo.value.lastName = customUploadItem.formData.lastName || customerInfo.value.lastName || '';
+        customerInfo.value.email = customUploadItem.formData.email || customerInfo.value.email || '';
+        customerInfo.value.phone = customUploadItem.formData.phone || customerInfo.value.phone || '';
+      }
+
+      // Priority 2: Pre-fill from route query if available (from market event upload direct navigation)
+      // Only use if not already set from cart item formData
+      if (!customerInfo.value.firstName && route.query.firstName) {
+        customerInfo.value.firstName = route.query.firstName;
+      }
+      if (!customerInfo.value.lastName && route.query.lastName) {
+        customerInfo.value.lastName = route.query.lastName;
+      }
+      if (!customerInfo.value.email && route.query.email) {
+        customerInfo.value.email = route.query.email;
+      }
+      if (!customerInfo.value.phone && route.query.phone) {
+        customerInfo.value.phone = route.query.phone;
+      }
+
+      // Priority 3: Pre-fill from authenticated user (only if not already set)
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
         if (!customerInfo.value.email) {
-          customerInfo.value.email = customUploadItem.formData.email || '';
+          customerInfo.value.email = currentUser.email || '';
         }
-        if (!customerInfo.value.phone) {
-          customerInfo.value.phone = customUploadItem.formData.phone || '';
+        if (currentUser.displayName && !customerInfo.value.firstName) {
+          const nameParts = currentUser.displayName.split(' ');
+          customerInfo.value.firstName = nameParts[0] || '';
+          if (!customerInfo.value.lastName && nameParts.length > 1) {
+            customerInfo.value.lastName = nameParts.slice(1).join(' ') || '';
+          }
         }
       }
 
