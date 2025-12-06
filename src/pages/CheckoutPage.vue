@@ -2504,6 +2504,18 @@ export default {
         console.log('🔧 Explicitly showed Square form container');
       }
       
+      // Explicitly show billing address section if it exists
+      const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6')).filter(
+        el => el.textContent?.includes('Billing Address')
+      );
+      billingAddressHeadings.forEach(heading => {
+        const billingSection = heading.closest('div');
+        if (billingSection) {
+          billingSection.style.display = '';
+          console.log('🔧 Explicitly showed billing address section');
+        }
+      });
+      
       // Ensure Square card form is mounted if not already
       if (squareInitialized.value && squareCard.value) {
         // Always try to mount, even if previously mounted (container might have changed)
