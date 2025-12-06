@@ -2537,10 +2537,15 @@ export default {
           await nextTick();
           console.log('⏱️ After first nextTick');
           
-          // Give more time if we just hid the credit card form
-          const waitTime = wasShowingCreditCard ? 500 : 300;
-          console.log(`⏱️ Waiting ${waitTime}ms for DOM to update...`);
+          // Since we're using v-show now, containers should always be in DOM
+          // But we still need to wait for Vue to update visibility
+          const waitTime = wasShowingCreditCard ? 300 : 200;
+          console.log(`⏱️ Waiting ${waitTime}ms for Vue to update visibility...`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
+          
+          // Force another nextTick to ensure Vue has updated
+          await nextTick();
+          console.log('⏱️ After second nextTick');
           
           // Check DOM state after waiting
           const afterWait = {
