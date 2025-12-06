@@ -526,7 +526,7 @@
                         class="q-mb-md"
                       />
                       <div
-                        v-if="
+                        v-show="
                           requiresBillingAddress &&
                           (skipShipping ||
                             !billingSameAsShipping ||
@@ -543,6 +543,7 @@
                             billingStreetError ? 'Billing street is required' : ''
                           "
                           :input-attrs="{ autocomplete: 'billing address-line1' }"
+                          :disable="!requiresBillingAddress || (billingSameAsShipping && requiresShippingAddress && !skipShipping)"
                         />
                         <div class="row q-col-gutter-md q-mb-md">
                           <div class="col-6">
@@ -557,6 +558,7 @@
                               :input-attrs="{
                                 autocomplete: 'billing address-level2',
                               }"
+                              :disable="!requiresBillingAddress || (billingSameAsShipping && requiresShippingAddress && !skipShipping)"
                             />
                           </div>
                           <div class="col-6">
@@ -573,6 +575,7 @@
                               :input-attrs="{
                                 autocomplete: 'billing address-level1',
                               }"
+                              :disable="!requiresBillingAddress || (billingSameAsShipping && requiresShippingAddress && !skipShipping)"
                             />
                           </div>
                         </div>
@@ -589,6 +592,7 @@
                               :input-attrs="{
                                 autocomplete: 'billing postal-code',
                               }"
+                              :disable="!requiresBillingAddress || (billingSameAsShipping && requiresShippingAddress && !skipShipping)"
                             />
                           </div>
                         </div>
