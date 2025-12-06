@@ -512,8 +512,8 @@
                       <!-- The loading spinner above will be hidden once squareCardMounted is true -->
                     </div>
 
-                    <!-- Billing Address Section -->
-                    <div v-show="requiresBillingAddress" class="q-mt-md">
+                    <!-- Billing Address Section - SIMPLIFIED -->
+                    <div v-if="showCreditCardForm && requiresBillingAddress" class="q-mt-md">
                       <div class="text-h6 q-mb-md">Billing Address</div>
                       <q-toggle
                         v-if="
@@ -526,23 +526,14 @@
                         label="Billing address matches shipping address"
                         class="q-mb-md"
                       />
-                      <div
-                        v-show="
-                          skipShipping ||
-                          !billingSameAsShipping ||
-                          !requiresShippingAddress
-                        "
-                        class="row q-col-gutter-md"
-                      >
+                      <div class="row q-col-gutter-md">
                         <div class="col-12">
                           <q-input
                             v-model="billingAddress.street"
                             label="Billing Street Address *"
                             filled
                             :error="billingStreetError"
-                            :error-message="
-                              billingStreetError ? 'Billing street is required' : ''
-                            "
+                            :error-message="billingStreetError ? 'Billing street is required' : ''"
                             :input-attrs="{ autocomplete: 'billing address-line1' }"
                           />
                         </div>
@@ -552,12 +543,8 @@
                             label="Billing City *"
                             filled
                             :error="billingCityError"
-                            :error-message="
-                              billingCityError ? 'Billing city is required' : ''
-                            "
-                            :input-attrs="{
-                              autocomplete: 'billing address-level2',
-                            }"
+                            :error-message="billingCityError ? 'Billing city is required' : ''"
+                            :input-attrs="{ autocomplete: 'billing address-level2' }"
                           />
                         </div>
                         <div class="col-12 col-sm-6">
@@ -566,14 +553,8 @@
                             label="Billing State *"
                             filled
                             :error="billingStateError"
-                            :error-message="
-                              billingStateError
-                                ? 'Billing state is required'
-                                : ''
-                            "
-                            :input-attrs="{
-                              autocomplete: 'billing address-level1',
-                            }"
+                            :error-message="billingStateError ? 'Billing state is required' : ''"
+                            :input-attrs="{ autocomplete: 'billing address-level1' }"
                           />
                         </div>
                         <div class="col-12 col-sm-6">
@@ -582,12 +563,8 @@
                             label="Billing ZIP Code *"
                             filled
                             :error="billingZipError"
-                            :error-message="
-                              billingZipError ? 'Billing ZIP is required' : ''
-                            "
-                            :input-attrs="{
-                              autocomplete: 'billing postal-code',
-                            }"
+                            :error-message="billingZipError ? 'Billing ZIP is required' : ''"
+                            :input-attrs="{ autocomplete: 'billing postal-code' }"
                           />
                         </div>
                       </div>
