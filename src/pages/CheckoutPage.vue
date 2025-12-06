@@ -2820,7 +2820,12 @@ export default {
         });
         
         // Always set to false when expanding Apple Pay (even if already false)
+        // This will hide the credit card form and show the "Pay with Credit Card" button
         showCreditCardForm.value = false;
+        
+        // Wait for Vue to update the DOM so buttons become visible
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 50));
         // Reset mounted flag when hiding credit card form
         // This allows re-mounting when form is shown again
         squareCardMounted.value = false;
