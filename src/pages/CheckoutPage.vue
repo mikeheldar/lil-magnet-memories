@@ -875,7 +875,8 @@ export default {
         allowAddress: option.allowAddress !== false,
         requiresAddress: requiresAddress,
         type: option.type || 'shipping',
-        default: option.default || false,
+        // Preserve default value - handle boolean, string, and number
+        default: option.default === true || option.default === 'true' || option.default === 1 || option.default === '1',
         rawLabel: title,
       };
     };
