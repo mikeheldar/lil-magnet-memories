@@ -985,12 +985,24 @@ export default {
         default: option.default || false,
       };
 
+      // If setting this as default, unset all other defaults
+      // Also ensure only shipping options (not pickup) can be default
       if (updatedOption.default) {
-        shippingOptions.value = shippingOptions.value.map((existing, index) =>
-          index === shippingOptionIndex.value
-            ? existing
-            : { ...existing, default: false }
-        );
+        if (updatedOption.type === 'pickup') {
+          safeNotify({
+            type: 'warning',
+            message: 'Pickup options cannot be set as default. Only shipping options can be default for online orders.',
+            position: 'top',
+          });
+          updatedOption.default = false;
+        } else {
+          // Unset all other defaults
+          shippingOptions.value = shippingOptions.value.map((existing, index) =>
+            index === shippingOptionIndex.value
+              ? existing
+              : { ...existing, default: false }
+          );
+        }
       }
 
       if (shippingOptionIndex.value >= 0) {
