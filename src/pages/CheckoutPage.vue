@@ -2483,14 +2483,30 @@ export default {
     
     // Watch for Apple Pay section expansion - render button and collapse credit card form when expanded
     watch(showApplePaySection, async (isExpanded) => {
+      console.log('🔍 showApplePaySection watcher triggered', {
+        isExpanded,
+        showCreditCardForm: showCreditCardForm.value,
+        showApplePaySection: showApplePaySection.value,
+        applePayReady: applePayReady.value,
+        hasSquareApplePay: !!squareApplePay.value,
+        availablePaymentMethods: availablePaymentMethods.value,
+      });
+      
       if (isExpanded) {
         // Collapse credit card form if it's visible
         const wasShowingCreditCard = showCreditCardForm.value;
+        console.log('📋 State before hiding credit card form:', {
+          wasShowingCreditCard,
+          showCreditCardForm: showCreditCardForm.value,
+          showApplePaySection: showApplePaySection.value,
+        });
+        
         if (wasShowingCreditCard) {
           showCreditCardForm.value = false;
           // Reset mounted flag when hiding credit card form
           // This allows re-mounting when form is shown again
           squareCardMounted.value = false;
+          console.log('✅ Credit card form hidden, showCreditCardForm set to false');
         }
         
         // Render Apple Pay button when section is expanded
@@ -2499,12 +2515,51 @@ export default {
             wasShowingCreditCard,
             showCreditCardForm: showCreditCardForm.value,
             showApplePaySection: showApplePaySection.value,
+            applePayReady: applePayReady.value,
+            hasSquareApplePay: !!squareApplePay.value,
           });
+          
+          // Check DOM state before waiting
+          const beforeWait = {
+            collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
+            regularExists: !!document.getElementById('square-apple-pay-button'),
+            collapsedParent: document.getElementById('square-apple-pay-button-collapsed')?.parentElement?.tagName,
+            regularParent: document.getElementById('square-apple-pay-button')?.parentElement?.tagName,
+            allDivsWithId: Array.from(document.querySelectorAll('[id*="apple-pay"]')).map(el => ({
+              id: el.id,
+              visible: el.offsetParent !== null,
+              parent: el.parentElement?.tagName,
+            })),
+          };
+          console.log('🔍 DOM state before waiting:', beforeWait);
           
           // Wait for DOM to update - need to wait for credit card form to hide and regular Apple Pay to show
           await nextTick();
+          console.log('⏱️ After first nextTick');
+          
           // Give more time if we just hid the credit card form
-          await new Promise(resolve => setTimeout(resolve, wasShowingCreditCard ? 400 : 300));
+          const waitTime = wasShowingCreditCard ? 500 : 300;
+          console.log(`⏱️ Waiting ${waitTime}ms for DOM to update...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          
+          // Check DOM state after waiting
+          const afterWait = {
+            collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
+            regularExists: !!document.getElementById('square-apple-pay-button'),
+            collapsedParent: document.getElementById('square-apple-pay-button-collapsed')?.parentElement?.tagName,
+            regularParent: document.getElementById('square-apple-pay-button')?.parentElement?.tagName,
+            allDivsWithId: Array.from(document.querySelectorAll('[id*="apple-pay"]')).map(el => ({
+              id: el.id,
+              visible: el.offsetParent !== null,
+              parent: el.parentElement?.tagName,
+            })),
+            allPaymentContainers: Array.from(document.querySelectorAll('[class*="wallet"]')).map(el => ({
+              id: el.id,
+              classList: Array.from(el.classList),
+              visible: el.offsetParent !== null,
+            })),
+          };
+          console.log('🔍 DOM state after waiting:', afterWait);
           
           // Reset attachment to allow re-rendering
           applePayAttached.value = false;
@@ -2520,42 +2575,68 @@ export default {
               let container = null;
               let containerId = null;
               
+              const currentState = {
+                showCreditCardForm: showCreditCardForm.value,
+                showApplePaySection: showApplePaySection.value,
+                collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
+                regularExists: !!document.getElementById('square-apple-pay-button'),
+              };
+              
               if (showCreditCardForm.value) {
                 // Credit card form is visible, use collapsed container
                 container = document.getElementById('square-apple-pay-button-collapsed');
                 containerId = '#square-apple-pay-button-collapsed';
+                console.log(`🔍 Attempt ${retries + 1}: Looking for collapsed container (credit card form visible)`, currentState);
               } else {
                 // Credit card form is hidden, use regular container
                 container = document.getElementById('square-apple-pay-button');
                 containerId = '#square-apple-pay-button';
+                console.log(`🔍 Attempt ${retries + 1}: Looking for regular container (credit card form hidden)`, currentState);
               }
               
               if (container) {
                 console.log(`✅ Container found on attempt ${retries + 1}, rendering button...`, {
                   containerId,
                   showCreditCardForm: showCreditCardForm.value,
+                  containerVisible: container.offsetParent !== null,
+                  containerParent: container.parentElement?.tagName,
+                  containerClasses: Array.from(container.classList),
                 });
                 await renderApplePayButton();
                 // Verify button was successfully rendered
                 await nextTick();
                 const button = container.querySelector('button');
                 if (button) {
-                  console.log('✅ Apple Pay button successfully rendered');
+                  console.log('✅ Apple Pay button successfully rendered', {
+                    buttonType: button.type,
+                    buttonVisible: button.offsetParent !== null,
+                    buttonText: button.textContent,
+                  });
                   success = true;
                   break;
                 } else {
-                  console.warn(`⚠️ Container found but button not rendered on attempt ${retries + 1}`);
+                  console.warn(`⚠️ Container found but button not rendered on attempt ${retries + 1}`, {
+                    containerHTML: container.innerHTML.substring(0, 100),
+                    containerChildren: container.children.length,
+                  });
                 }
               } else {
                 console.log(`⚠️ Container not found on attempt ${retries + 1}, retrying...`, {
-                  collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
-                  regularExists: !!document.getElementById('square-apple-pay-button'),
-                  showCreditCardForm: showCreditCardForm.value,
-                  showApplePaySection: showApplePaySection.value,
+                  ...currentState,
+                  allApplePayElements: Array.from(document.querySelectorAll('[id*="apple-pay"]')).map(el => ({
+                    id: el.id,
+                    visible: el.offsetParent !== null,
+                    parent: el.parentElement?.tagName,
+                    classes: Array.from(el.classList),
+                  })),
+                  paymentMethodSection: document.querySelector('[class*="payment"]')?.outerHTML?.substring(0, 200),
                 });
               }
             } catch (error) {
-              console.warn(`⚠️ Attempt ${retries + 1} to render Apple Pay button failed:`, error);
+              console.warn(`⚠️ Attempt ${retries + 1} to render Apple Pay button failed:`, error, {
+                errorMessage: error?.message,
+                errorStack: error?.stack,
+              });
             }
             retries++;
             if (retries < 15 && !success) {
@@ -2564,13 +2645,26 @@ export default {
           }
           
           if (!success) {
-            console.error('❌ Failed to render Apple Pay button after all retries', {
+            const finalState = {
               collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
               regularExists: !!document.getElementById('square-apple-pay-button'),
               showCreditCardForm: showCreditCardForm.value,
               showApplePaySection: showApplePaySection.value,
-            });
+              allApplePayElements: Array.from(document.querySelectorAll('[id*="apple-pay"]')).map(el => ({
+                id: el.id,
+                visible: el.offsetParent !== null,
+                parent: el.parentElement?.tagName,
+                classes: Array.from(el.classList),
+              })),
+              paymentMethodSectionHTML: document.querySelector('.payment-method-section, [class*="payment"]')?.outerHTML?.substring(0, 500),
+            };
+            console.error('❌ Failed to render Apple Pay button after all retries', finalState);
           }
+        } else {
+          console.warn('⚠️ Cannot render Apple Pay button - not ready', {
+            applePayReady: applePayReady.value,
+            hasSquareApplePay: !!squareApplePay.value,
+          });
         }
       }
     });
