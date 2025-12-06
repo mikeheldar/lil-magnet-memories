@@ -2543,6 +2543,8 @@ export default {
         // Reset mounted flag when hiding credit card form
         // This allows re-mounting when form is shown again
         squareCardMounted.value = false;
+        // Force Vue to update the DOM immediately
+        await nextTick();
         console.log('✅ Credit card form hidden, showCreditCardForm set to false');
         
         // Render Apple Pay button when section is expanded
