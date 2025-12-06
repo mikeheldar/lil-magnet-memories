@@ -414,7 +414,7 @@
                       size="lg"
                       class="full-width"
                       style="height: 50px; min-height: 50px; border-radius: 8px;"
-                      @click="showCreditCardForm = true; selectedPaymentOption = 'square_card'"
+                      @click="handleCreditCardButtonClick"
                     >
                       <q-icon name="credit_card" class="q-mr-sm" />
                       Pay with Credit Card with Square
