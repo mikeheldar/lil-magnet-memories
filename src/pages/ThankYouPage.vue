@@ -31,10 +31,10 @@
               </div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-sm" />
 
             <!-- Customer Info -->
-            <div class="customer-info q-mb-md">
+            <div class="customer-info q-mb-sm">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
                 Order Details:
               </div>
@@ -51,138 +51,55 @@
               </div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-sm" />
 
-            <div class="receipt-summary q-mb-md">
+            <div class="receipt-summary q-mb-sm">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
                 Receipt Summary:
               </div>
-              <div class="row justify-between text-body2">
-                <div>Subtotal</div>
-                <div>{{ formatCurrency(subtotal) }}</div>
-              </div>
-              <div class="row justify-between text-body2">
-                <div>Shipping</div>
-                <div>{{ formatCurrency(shippingCost) }}</div>
-              </div>
-              <div class="row justify-between text-body2">
-                <div>Tax</div>
-                <div>{{ formatCurrency(tax) }}</div>
-              </div>
-              <q-separator class="q-my-sm" />
               <div
-                class="row justify-between text-body1 text-weight-medium q-mt-sm"
+                class="row justify-between text-body1 text-weight-medium"
               >
-                <div>Total</div>
+                <div>{{ isPayAtTent ? 'Total for Collection at Tent' : 'Total Paid' }}</div>
                 <div class="text-primary">
                   {{ formatCurrency(totalAmount) }}
                 </div>
               </div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-sm" />
 
-            <div class="shipping-info q-mb-md">
+            <div class="delivery-info q-mb-sm">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
                 <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
-                Shipping
+                Delivery Option
               </div>
               <div class="text-body2 text-grey-7">
-                <!-- Market Event Pickup -->
-                <div v-if="isPickupOrder">
-                  <strong>Pickup at Market Event Tent</strong>
-                  <span class="q-ml-sm">(Free)</span>
-                  <div class="q-mt-xs text-body2">
-                    You'll receive an email when your magnets are ready for pickup at the tent.
-                  </div>
-                </div>
-                <!-- Online Shipping -->
-                <div v-else>
-                  <div>
-                    <strong>{{ shippingMethodLabel }}</strong>
-                    <span class="q-ml-sm">
-                      ({{ formatCurrency(shippingCost) }})
-                    </span>
-                  </div>
-                  <div v-if="shippingTimeline" class="q-mt-xs">
-                    {{ shippingTimeline }}
-                  </div>
-                  <div v-if="shippingAddressLines.length" class="q-mt-sm">
-                    <div class="text-caption text-grey-6">Deliver to:</div>
-                    <div
-                      v-for="(line, index) in shippingAddressLines"
-                      :key="`ship-${index}`"
-                    >
-                      {{ line }}
-                    </div>
-                  </div>
-                </div>
+                <strong>{{ deliveryOptionLabel }}</strong>
               </div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-sm" />
 
-            <div class="billing-info q-mb-md">
+            <div class="payment-info q-mb-sm">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
                 <q-icon name="credit_card" size="20px" class="q-mr-sm" />
-                Payment
+                Payment Method
               </div>
               <div class="text-body2 text-grey-7">
-                <div>
-                  Method:
-                  <strong>{{ displayPaymentMethod }}</strong>
-                </div>
-                <div v-if="billingAddressLines.length && !isPayAtTent" class="q-mt-sm">
-                  <div class="text-caption text-grey-6">Billing address:</div>
-                  <div
-                    v-for="(line, index) in billingAddressLines"
-                    :key="`bill-${index}`"
-                  >
-                    {{ line }}
-                  </div>
-                </div>
+                <strong>{{ displayPaymentMethod }}</strong>
               </div>
             </div>
 
-            <!-- Next Steps (only for online orders) -->
-            <div v-if="!isPickupOrder" class="next-steps">
-              <div class="text-subtitle1 text-weight-medium q-mb-sm">
-                <q-icon name="email" size="20px" class="q-mr-sm" />
-                What's Next?
-              </div>
-              <div class="text-body2 text-grey-7">
-                <p class="q-mb-sm">
-                  • We'll review your photos and contact you within 24 hours
-                </p>
-                <p class="q-mb-sm">
-                  • You'll receive an email with pricing and timeline details
-                </p>
-                <p class="q-mb-sm">
-                  • We'll send another email when your magnets are ready!
-                </p>
-              </div>
-            </div>
           </q-card-section>
         </q-card>
 
         <!-- Action Buttons -->
-        <div class="action-buttons q-mt-xl">
-          <!-- Show "View My Orders" button first for authenticated users -->
-          <q-btn
-            v-if="isAuthenticated"
-            color="purple"
-            size="lg"
-            class="action-btn"
-            @click="viewMyOrders"
-          >
-            <q-icon name="list_alt" class="q-mr-sm" />
-            View My Orders
-          </q-btn>
-
+        <div class="action-buttons q-mt-lg">
           <q-btn
             color="primary"
             size="lg"
-            class="action-btn"
+            class="action-btn q-mb-sm"
             @click="submitAnotherOrder"
           >
             <q-icon name="camera_alt" class="q-mr-sm" />
@@ -423,6 +340,7 @@ export default {
       billingAddressLines,
       paymentMethodLabel,
       displayPaymentMethod,
+      deliveryOptionLabel,
       isPayAtTent,
       isPickupOrder,
       isAuthenticated,
@@ -506,8 +424,8 @@ export default {
   margin: 4px 0;
 }
 
-.shipping-info,
-.billing-info {
+.delivery-info,
+.payment-info {
   text-align: left;
 }
 
