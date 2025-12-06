@@ -263,11 +263,21 @@ class FirebaseService {
       
       // If paymentChoice is 'pay_at_tent', this is definitely a market event order
       // Also check if checkedInEvent exists (market event upload page always has this)
-      const isMarketEventOrder = orderData.paymentChoice === 'pay_at_tent' || orderData.checkedInEvent;
+      const hasPaymentChoice = orderData.paymentChoice === 'pay_at_tent';
+      const hasCheckedInEvent = !!orderData.checkedInEvent;
+      const isMarketEventOrder = hasPaymentChoice || hasCheckedInEvent;
+      
+      console.log('🔍 saveOrder - Market event order check:', {
+        paymentChoice: orderData.paymentChoice,
+        hasPaymentChoice,
+        hasCheckedInEvent,
+        checkedInEvent: orderData.checkedInEvent ? { id: orderData.checkedInEvent.id, name: orderData.checkedInEvent.name } : null,
+        isMarketEventOrder,
+      });
       
       if (isMarketEventOrder) {
         // Set payment option for pay at tent orders
-        if (orderData.paymentChoice === 'pay_at_tent') {
+        if (hasPaymentChoice) {
           paymentOption = {
             type: 'pay_at_event',
             processor: 'in_person',
@@ -277,6 +287,7 @@ class FirebaseService {
             receiptUrl: null,
             billingAddress: null,
           };
+          console.log('✅ Added paymentOption for pay_at_tent order');
         }
         
         // ALWAYS set shipping option for market event orders (pickup at event)
@@ -292,11 +303,16 @@ class FirebaseService {
           eventId: eventId,
           address: null,
         };
+        console.log('✅ Added shippingOption for market event order:', {
+          type: shippingOption.type,
+          eventId: shippingOption.eventId,
+        });
       }
       
       // Fallback: If no shippingOption but this looks like a market event order (has photos/quantities but no cartItems)
-      // This handles legacy orders or edge cases
-      if (!shippingOption && orderData.photos && !orderData.cartItems) {
+      // This handles legacy orders or edge cases where paymentChoice/checkedInEvent weren't passed
+      if (!shippingOption && orderData.photos && Array.isArray(orderData.photos) && orderData.photos.length > 0) {
+        console.log('⚠️ No shippingOption but has photos - adding default pickup option');
         shippingOption = {
           value: 'collect_at_event',
           label: 'Collect at Market Event',
