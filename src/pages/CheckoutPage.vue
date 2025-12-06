@@ -1641,6 +1641,26 @@ export default {
       }
     });
 
+    // Watch for Apple Pay section expansion - render button when expanded
+    watch(showApplePaySection, async (isExpanded) => {
+      if (isExpanded && applePayReady.value && squareApplePay.value) {
+        console.log('🍎 Apple Pay section expanded, rendering button...');
+        // Small delay to ensure DOM is ready
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 100));
+        // Reset attachment to allow re-rendering
+        applePayAttached.value = false;
+        await renderApplePayButton();
+      }
+      // When collapsing Apple Pay and credit card form is visible, keep credit card form
+      if (!isExpanded && showCreditCardForm.value) {
+        // Credit card form stays visible
+      } else if (isExpanded && showCreditCardForm.value) {
+        // When expanding Apple Pay, collapse credit card form
+        showCreditCardForm.value = false;
+      }
+    });
+
     watch(selectedPaymentOption, async (option) => {
       if (option === 'square_card') {
         // Wait for Square to be initialized before mounting
