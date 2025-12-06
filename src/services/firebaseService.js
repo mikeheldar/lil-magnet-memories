@@ -256,6 +256,35 @@ class FirebaseService {
       const uploadedPhotos = await this.uploadPhotos(orderData.photos, onProgress);
       console.log(`Photo uploads completed: ${uploadedPhotos.length} photos uploaded`);
 
+      // Prepare payment and shipping options for pay_at_tent orders
+      let paymentOption = null;
+      let shippingOption = null;
+      
+      if (orderData.paymentChoice === 'pay_at_tent' && orderData.checkedInEvent) {
+        // Set payment option for pay at tent
+        paymentOption = {
+          type: 'pay_at_event',
+          processor: 'in_person',
+          paymentId: null,
+          paidAt: null,
+          status: 'pending', // Payment will be collected at event
+          receiptUrl: null,
+          billingAddress: null,
+        };
+        
+        // Set shipping option for market event pickup
+        shippingOption = {
+          value: 'collect_at_event',
+          label: 'Collect at Market Event',
+          description: 'Pick up your magnets at the market booth for free.',
+          cost: 0,
+          estimatedTimeline: 'Ready for pickup at the event',
+          type: 'pickup',
+          eventId: orderData.checkedInEvent?.id || null,
+          address: null,
+        };
+      }
+
       // Prepare order document
       const orderDoc = {
         orderNumber: orderData.orderNumber,
@@ -274,6 +303,9 @@ class FirebaseService {
         submissionDate: serverTimestamp(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        // Add payment and shipping options for pay_at_tent orders
+        ...(paymentOption && { paymentOption }),
+        ...(shippingOption && { shippingOption }),
       };
 
       // Ensure we have an auth context for Firestore rules (request.auth != null)

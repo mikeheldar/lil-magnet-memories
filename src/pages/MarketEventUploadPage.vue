@@ -951,6 +951,8 @@ export default {
           orderNumber: orderNumber.value,
           totalMagnets: totalMagnets.value,
           userId: currentUser.value?.uid || null,
+          paymentChoice: paymentChoice.value, // Include payment choice
+          checkedInEvent: checkedInEvent.value, // Include checked-in event for shipping option
         };
 
         console.log('Submitting order with userId:', customerData.userId);
