@@ -477,7 +477,8 @@
                   </div>
 
                   <!-- Credit Card Form (shown when Pay with Credit Card button is clicked) -->
-                  <div v-if="showCreditCardForm">
+                  <!-- Use v-show instead of v-if to keep billing address fields in DOM -->
+                  <div v-show="showCreditCardForm">
                     <!-- Square payment form container -->
                     <!-- Key attribute ensures container is recreated when form is shown -->
                     <div
