@@ -2849,6 +2849,64 @@ export default {
             ? 'in_person'
             : null;
 
+        const totalMagnets = cartItemsSnapshot.reduce(
+          (sum, item) => sum + getCartItemQuantity(item),
+          0
+        );
+
+        // CRITICAL: Save order to Firestore FIRST (before processing payment)
+        // This ensures we have an order record even if payment processing fails
+        // Initial order status is 'pending_payment' - will be updated to 'paid' after successful payment
+        const initialPaymentOptionPayload = {
+          type: selectedPaymentOption.value,
+          processor: paymentProcessor,
+          paymentId: null, // Will be set after payment
+          paidAt: null,
+          status: null,
+          receiptUrl: null,
+          billingAddress: billingAddressData,
+        };
+
+        let initialOrderStatus =
+          selectedPaymentOption.value === 'pay_at_event'
+            ? 'pending_payment'
+            : 'pending_payment'; // Start as pending_payment for all payment methods
+
+        const initialOrderData = {
+          orderNumber,
+          orderType: 'product_cart',
+          cartItems: cartItemsSnapshot,
+          customer: {
+            firstName: customerInfo.value.firstName,
+            lastName: customerInfo.value.lastName,
+            email: customerInfo.value.email,
+            phone: customerInfo.value.phone || '',
+          },
+          userId: currentUser?.uid || null,
+          shippingOption: shippingOptionPayload,
+          paymentOption: initialPaymentOptionPayload,
+          subtotal: cartSubtotal.value,
+          shipping: shippingCost.value,
+          tax: 0, // TODO: Calculate tax if needed
+          totalAmount: orderTotal.value,
+          shippingTimeline: shippingTimeline.value,
+          status: initialOrderStatus,
+        };
+
+        console.log('💾 Saving order to Firestore BEFORE processing payment...');
+        let savedOrderId = null;
+        try {
+          savedOrderId = await firebaseService.saveCartOrder(initialOrderData);
+          console.log('✅ Order saved to Firestore with ID:', savedOrderId);
+        } catch (saveError) {
+          console.error('❌ Failed to save order to Firestore:', saveError);
+          // Don't process payment if order save fails
+          throw new Error(
+            'Failed to save order. Please try again. Your payment has not been processed.'
+          );
+        }
+
+        // NOW process payment (order is already saved, so if payment fails we still have the order)
         let squarePaymentDetails = null;
         if (selectedPaymentOption.value === 'square_card') {
           squarePaymentDetails = await processSquareCardPayment(orderNumber);
@@ -2911,9 +2969,20 @@ export default {
               throw error;
             }
           } catch (paymentError) {
+            // Payment failed but order is saved - update order status
+            console.error('❌ Payment failed, but order is saved:', savedOrderId);
+            // Try to update order to reflect payment failure
+            try {
+              await firebaseService.updateOrderPaymentStatus(savedOrderId, {
+                status: 'payment_failed',
+                error: paymentError.message,
+              });
+            } catch (updateError) {
+              console.error('Failed to update order status after payment failure:', updateError);
+            }
             // Re-throw with user-friendly message
             const userFriendlyError = new Error(
-              'There was a problem processing your Apple Pay payment. Don\'t worry - you have not been charged.'
+              'There was a problem processing your Apple Pay payment. Your order has been saved but payment failed. Please contact support.'
             );
             userFriendlyError.originalError = paymentError;
             throw userFriendlyError;
@@ -2938,51 +3007,48 @@ export default {
           );
         }
 
-        const paymentOptionPayload = {
-          type: selectedPaymentOption.value,
-          processor: paymentProcessor,
-          paymentId: squarePaymentDetails?.id || null,
-          paidAt: squarePaymentDetails?.createdAt || null,
-          status: squarePaymentDetails?.status || null,
-          receiptUrl: squarePaymentDetails?.receiptUrl || null,
-          billingAddress: billingAddressData,
-        };
-        const totalMagnets = cartItemsSnapshot.reduce(
-          (sum, item) => sum + getCartItemQuantity(item),
-          0
-        );
+        // Update order with payment details and status
+        if (squarePaymentDetails && savedOrderId) {
+          const paymentOptionPayload = {
+            type: selectedPaymentOption.value,
+            processor: paymentProcessor,
+            paymentId: squarePaymentDetails.id,
+            paidAt: squarePaymentDetails.createdAt || null,
+            status: squarePaymentDetails.status,
+            receiptUrl: squarePaymentDetails.receiptUrl || null,
+            billingAddress: billingAddressData,
+          };
 
-        let orderStatus =
-          selectedPaymentOption.value === 'pay_at_event'
-            ? 'pending_payment'
-            : 'pending';
-        if (squarePaymentDetails?.status === 'COMPLETED') {
-          orderStatus = 'paid';
+          const finalOrderStatus = squarePaymentDetails.status === 'COMPLETED' ? 'paid' : 'pending_payment';
+
+          console.log('💾 Updating order with payment details...');
+          try {
+            await firebaseService.updateOrderPaymentStatus(savedOrderId, {
+              paymentOption: paymentOptionPayload,
+              status: finalOrderStatus,
+            });
+            console.log('✅ Order updated with payment details');
+          } catch (updateError) {
+            console.error('⚠️ Failed to update order with payment details:', updateError);
+            // Don't fail the whole transaction - order is saved and payment is processed
+            // Log the error for admin review
+            await firebaseService.logTransactionError({
+              errorType: 'order_update_failed',
+              errorMessage: 'Failed to update order with payment details after successful payment',
+              errorDetails: {
+                orderId: savedOrderId,
+                paymentDetails: squarePaymentDetails,
+                updateError: updateError.message,
+              },
+              transactionData: {
+                orderNumber,
+                amount: orderTotal.value,
+                paymentMethod: selectedPaymentOption.value,
+                customerEmail: customerInfo.value.email,
+              },
+            });
+          }
         }
-
-        const orderData = {
-          orderNumber,
-          orderType: 'product_cart',
-          cartItems: cartItemsSnapshot,
-          customer: {
-            firstName: customerInfo.value.firstName,
-            lastName: customerInfo.value.lastName,
-            email: customerInfo.value.email,
-            phone: customerInfo.value.phone || '',
-          },
-          userId: currentUser?.uid || null,
-          shippingOption: shippingOptionPayload,
-          paymentOption: paymentOptionPayload,
-          subtotal: cartSubtotal.value,
-          shipping: shippingCost.value,
-          tax: 0, // TODO: Calculate tax if needed
-          totalAmount: orderTotal.value,
-          shippingTimeline: shippingTimeline.value,
-          status: orderStatus,
-        };
-
-        // Save order to Firebase
-        await firebaseService.saveCartOrder(orderData);
 
         // Clear cart
         clearCart();

@@ -1221,17 +1221,20 @@ class FirebaseService {
       // Remove all undefined values before saving (Firestore doesn't allow undefined)
       const cleanedOrderDoc = this.removeUndefinedValues(orderDoc);
 
-      // Add to Firestore with timeout
+      // Add to Firestore with increased timeout (60 seconds for large orders with many photos)
       const savePromise = addDoc(collection(db, 'orders'), cleanedOrderDoc);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
-          () => reject(new Error('Firebase operation timed out')),
-          10000
+          () => reject(new Error('Firebase operation timed out after 60 seconds')),
+          60000
         )
       );
 
       const docRef = await Promise.race([savePromise, timeoutPromise]);
       console.log('Cart order saved with ID:', docRef.id);
+      
+      // Return the document ID so we can update it later
+      return docRef.id;
 
       // Send email notification for new order (to admin)
       try {
@@ -1258,6 +1261,30 @@ class FirebaseService {
       return docRef.id;
     } catch (error) {
       console.error('Error saving cart order:', error);
+      throw error;
+    }
+  }
+
+  // Update order payment status and payment details
+  async updateOrderPaymentStatus(orderId, updates) {
+    try {
+      if (!orderId) {
+        throw new Error('Order ID is required to update payment status');
+      }
+
+      const orderRef = doc(db, 'orders', orderId);
+      const updateData = {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      };
+
+      // Remove undefined values
+      const cleanedUpdateData = this.removeUndefinedValues(updateData);
+
+      await updateDoc(orderRef, cleanedUpdateData);
+      console.log('✅ Order payment status updated:', orderId);
+    } catch (error) {
+      console.error('Error updating order payment status:', error);
       throw error;
     }
   }
