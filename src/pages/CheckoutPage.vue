@@ -1210,8 +1210,9 @@ export default {
         }
       }
 
-      // For online customers OR when not at market event, use default shipping option
-      // Prefer the option marked as default, but only if it's a shipping option (not pickup)
+      // For online customers OR when not at market event, use the default option
+      // First try to find the option marked as default (regardless of type)
+      // If default is a pickup option and user is online, prefer shipping options
       // If no default shipping option, use first shipping option
       
       // Log all options with their default status for debugging
@@ -1224,7 +1225,14 @@ export default {
         isDefault: o.default === true || o.default === 'true' || o.default === 1
       })));
       
-      // Check for default option - handle both boolean true and string "true"
+      // Check for any default option (regardless of type)
+      const anyDefaultOption = options.find(
+        (option) => {
+          return option.default === true || option.default === 'true' || option.default === 1;
+        }
+      );
+      
+      // Check for default shipping option specifically
       const defaultShippingOption = options.find(
         (option) => {
           const isDefault = option.default === true || option.default === 'true' || option.default === 1;
@@ -1233,19 +1241,27 @@ export default {
         }
       );
       
-      const firstShippingOption = options.find(
-        (option) => option.type === 'shipping'
-      );
-      const defaultOption = defaultShippingOption || firstShippingOption || options[0];
+      // For online customers, prefer shipping options over pickup
+      // If the default is a pickup option but user is online, use default shipping instead
+      let defaultOption;
+      if (isOnlineCustomer && anyDefaultOption?.type === 'pickup') {
+        // User is online and default is pickup - prefer shipping options
+        defaultOption = defaultShippingOption || options.find(o => o.type === 'shipping') || options[0];
+        console.log('🔄 Default is pickup but user is online, using shipping option instead');
+      } else {
+        // Use the default option (whether shipping or pickup)
+        defaultOption = anyDefaultOption || defaultShippingOption || options.find(o => o.type === 'shipping') || options[0];
+      }
       
       console.log('🔄 Using default shipping option for online order:', {
         selectedValue: defaultOption?.value,
         selectedLabel: defaultOption?.label,
         isOnlineCustomer,
         userIsMarketCustomer,
-        hasDefault: !!defaultShippingOption,
-        defaultOptionValue: defaultShippingOption?.value,
-        defaultOptionLabel: defaultShippingOption?.label,
+        anyDefaultOptionValue: anyDefaultOption?.value,
+        anyDefaultOptionType: anyDefaultOption?.type,
+        hasDefaultShipping: !!defaultShippingOption,
+        defaultShippingOptionValue: defaultShippingOption?.value,
         optionType: defaultOption?.type,
         allOptions: options.length,
       });
