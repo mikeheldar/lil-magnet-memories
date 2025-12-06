@@ -1955,20 +1955,23 @@ export default {
               console.log('⚠️ Card attached but form not in container, creating new card instance...');
               // Create a new card instance
               try {
-                // Check if payments is available
-                if (!payments.value) {
-                  console.error('❌ Square payments object not available, cannot create new card instance');
+                // Check if squarePayments is available (this is the ref that stores the payments object)
+                if (!squarePayments.value) {
+                  console.error('❌ Square payments object not available, cannot create new card instance', {
+                    squareInitialized: squareInitialized.value,
+                    hasSquarePayments: !!squarePayments.value,
+                  });
                   throw new Error('Square payments object not available. Please refresh the page.');
                 }
                 
                 // Check if card method exists
-                if (typeof payments.value.card !== 'function') {
-                  console.error('❌ Square payments.card is not a function', payments.value);
+                if (typeof squarePayments.value.card !== 'function') {
+                  console.error('❌ Square payments.card is not a function', squarePayments.value);
                   throw new Error('Square card method not available. Please refresh the page.');
                 }
                 
                 console.log('🔵 Creating new Square card instance...');
-                squareCard.value = payments.value.card();
+                squareCard.value = squarePayments.value.card();
                 console.log('✅ New Square card instance created');
                 
                 // Retry attach with new instance
@@ -1979,8 +1982,8 @@ export default {
                 console.log('✅ New Square card instance attached successfully');
               } catch (retryError) {
                 console.error('❌ Error attaching new card instance:', retryError, {
-                  hasPayments: !!payments.value,
-                  hasCardMethod: payments.value ? typeof payments.value.card === 'function' : false,
+                  hasSquarePayments: !!squarePayments.value,
+                  hasCardMethod: squarePayments.value ? typeof squarePayments.value.card === 'function' : false,
                   squareInitialized: squareInitialized.value,
                 });
                 squareInitError.value = retryError;
