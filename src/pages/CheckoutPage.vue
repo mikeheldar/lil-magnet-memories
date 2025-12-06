@@ -1748,14 +1748,22 @@ export default {
       updateSquarePaymentRequest();
     });
 
-    // Watch for payment option changes - if pay at tent is selected, clear shipping selection
+    // Watch for payment option changes - if pay at tent is selected, ensure pickup option is set
     watch(selectedPaymentOption, (newOption) => {
       if (newOption === 'pay_at_event') {
-        // Clear shipping selection when pay at tent is selected
-        selectedShippingOption.value = null;
-        // Ensure switchToMarketEventPickup is true when pay at event is selected
+        // Don't clear shipping selection - user may have already selected pickup option
+        // Instead, ensure we have a pickup option selected if one exists
         if (checkedInEvent.value) {
           switchToMarketEventPickup.value = true;
+          // If no shipping option is selected, try to find and select the market event pickup option
+          if (!selectedShippingOption.value) {
+            const pickupOption = shippingOptions.value.find(
+              (opt) => opt.type === 'pickup' && opt.value === 'collect_at_event'
+            );
+            if (pickupOption) {
+              selectedShippingOption.value = pickupOption.value;
+            }
+          }
         }
       } else if (
         newOption !== 'pay_at_event' &&
@@ -3937,21 +3945,40 @@ export default {
                 : billingAddress.value
             )
           : null;
-        const shippingOptionPayload = selectedShippingDetails.value
-          ? {
-              value: selectedShippingDetails.value.value,
-              label: selectedShippingDetails.value.rawLabel,
-              description: selectedShippingDetails.value.description,
-              cost: shippingCost.value,
-              estimatedTimeline: shippingTimeline.value,
-              type: selectedShippingDetails.value.type,
-              eventId:
-                selectedShippingDetails.value.type === 'pickup'
-                  ? checkedInEvent.value?.id || null
-                  : null,
-              address: shippingAddressData,
-            }
-          : null;
+        // For pay_at_event orders, ensure we have a shipping option (pickup at event)
+        let shippingOptionPayload = null;
+        if (selectedShippingDetails.value) {
+          shippingOptionPayload = {
+            value: selectedShippingDetails.value.value,
+            label: selectedShippingDetails.value.rawLabel,
+            description: selectedShippingDetails.value.description,
+            cost: shippingCost.value,
+            estimatedTimeline: shippingTimeline.value,
+            type: selectedShippingDetails.value.type,
+            eventId:
+              selectedShippingDetails.value.type === 'pickup'
+                ? checkedInEvent.value?.id || null
+                : null,
+            address: shippingAddressData,
+          };
+        } else if (selectedPaymentOption.value === 'pay_at_event' && checkedInEvent.value) {
+          // If pay_at_event is selected but no shipping option, create a default pickup option
+          const defaultPickupOption = shippingOptions.value.find(
+            (opt) => opt.type === 'pickup' && opt.value === 'collect_at_event'
+          );
+          if (defaultPickupOption) {
+            shippingOptionPayload = {
+              value: defaultPickupOption.value,
+              label: defaultPickupOption.rawLabel || defaultPickupOption.label,
+              description: defaultPickupOption.description || 'Pick up your magnets at the market booth for free.',
+              cost: 0,
+              estimatedTimeline: defaultPickupOption.estimatedTimeline || 'Ready for pickup at the event',
+              type: 'pickup',
+              eventId: checkedInEvent.value?.id || null,
+              address: null,
+            };
+          }
+        }
         const paymentProcessor =
           selectedPaymentOption.value === 'square_card'
             ? 'square'
