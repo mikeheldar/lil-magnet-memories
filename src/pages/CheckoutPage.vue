@@ -2633,11 +2633,78 @@ export default {
       return normalized;
     };
 
+    // Handle Apple Pay section toggle - collapse credit card when Apple Pay expands
+    const handleApplePaySectionToggle = async (isExpanded) => {
+      if (isExpanded) {
+        // When Apple Pay expands, collapse credit card section
+        showCreditCardSection.value = false;
+        showCreditCardForm.value = false;
+        // Hide Square form container
+        const squareFormContainer = document.getElementById('square-payment-form');
+        if (squareFormContainer) {
+          squareFormContainer.style.display = 'none';
+          squareFormContainer.style.visibility = 'hidden';
+        }
+      }
+      // Render Apple Pay button when section expands
+      if (isExpanded && applePayReady.value && squareApplePay.value) {
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await renderApplePayButton();
+      }
+    };
+
+    // Handle Credit Card section toggle - collapse Apple Pay when credit card expands
+    const handleCreditCardSectionToggle = async (isExpanded) => {
+      if (isExpanded) {
+        // When credit card expands, collapse Apple Pay section
+        showApplePaySection.value = false;
+        showCreditCardForm.value = true;
+        selectedPaymentOption.value = 'square_card';
+        
+        // Show Square form container
+        const squareFormContainer = document.getElementById('square-payment-form');
+        if (squareFormContainer) {
+          squareFormContainer.style.display = '';
+          squareFormContainer.style.visibility = '';
+          squareFormContainer.style.minHeight = '20px';
+        }
+        
+        // Wait for DOM to update
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 150));
+        
+        // Mount Square card form if initialized
+        if (squareInitialized.value && squareCard.value) {
+          await mountSquareCard();
+        } else if (!squareInitialized.value) {
+          try {
+            await waitForSquareSDK();
+            await initializeSquarePayments();
+            await nextTick();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await mountSquareCard();
+          } catch (error) {
+            console.error('Failed to initialize Square:', error);
+            squareInitError.value = error;
+          }
+        }
+      } else {
+        // When credit card collapses, hide the form
+        showCreditCardForm.value = false;
+        const squareFormContainer = document.getElementById('square-payment-form');
+        if (squareFormContainer) {
+          squareFormContainer.style.display = 'none';
+          squareFormContainer.style.visibility = 'hidden';
+        }
+      }
+    };
+
     const handleCreditCardButtonClick = async () => {
-      showCreditCardForm.value = true;
-      // Keep Apple Pay section collapsed (not hidden) so it can be expanded later
-      showApplePaySection.value = false; // Collapse but don't hide the section
-      selectedPaymentOption.value = 'square_card';
+      // This function is now deprecated - use handleCreditCardSectionToggle instead
+      // But keep it for backwards compatibility
+      showCreditCardSection.value = true;
+      await handleCreditCardSectionToggle(true);
       
       // Wait for DOM to update and container to be available
       await nextTick();
@@ -4083,7 +4150,10 @@ export default {
       squareProcessing,
       showCreditCardForm,
       showApplePaySection,
+      showCreditCardSection,
       handleCreditCardButtonClick,
+      handleApplePaySectionToggle,
+      handleCreditCardSectionToggle,
       showOrderSuccessDialog,
       lastOrderNumber,
       handleDeleteOrder,
