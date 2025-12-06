@@ -2579,15 +2579,44 @@ export default {
         
         // Explicitly hide billing address section if it's still visible
         // Find all elements that contain "Billing Address" heading
-        const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6')).filter(
-          el => el.textContent?.includes('Billing Address')
+        const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6, h6, [class*="text-h6"]')).filter(
+          el => el.textContent?.trim() === 'Billing Address' || el.textContent?.includes('Billing Address')
         );
         billingAddressHeadings.forEach(heading => {
           // Hide the parent container that holds the billing address section
-          const billingSection = heading.closest('div');
-          if (billingSection && billingSection.offsetParent !== null) {
-            billingSection.style.display = 'none';
-            console.log('🔧 Explicitly hid billing address section');
+          // Go up the DOM tree to find the section container
+          let billingSection = heading.parentElement;
+          // Keep going up until we find a container that's likely the section
+          while (billingSection && billingSection !== document.body) {
+            // Check if this is likely the billing address section container
+            if (billingSection.querySelector('input[placeholder*="Billing"]') || 
+                billingSection.querySelector('input[label*="Billing"]') ||
+                billingSection.querySelector('.q-input[label*="Billing"]')) {
+              billingSection.style.display = 'none';
+              billingSection.style.visibility = 'hidden';
+              billingSection.style.height = '0';
+              billingSection.style.overflow = 'hidden';
+              console.log('🔧 Explicitly hid billing address section', {
+                element: billingSection,
+                hasInputs: !!billingSection.querySelector('input'),
+              });
+              break;
+            }
+            billingSection = billingSection.parentElement;
+          }
+        });
+        
+        // Also hide any billing address inputs directly
+        const billingInputs = Array.from(document.querySelectorAll('input')).filter(
+          input => input.placeholder?.includes('Billing') || 
+                   input.getAttribute('label')?.includes('Billing') ||
+                   input.closest('[class*="billing"]')
+        );
+        billingInputs.forEach(input => {
+          const inputContainer = input.closest('.q-input, .q-field, div');
+          if (inputContainer && inputContainer.offsetParent !== null) {
+            inputContainer.style.display = 'none';
+            inputContainer.style.visibility = 'hidden';
           }
         });
         
