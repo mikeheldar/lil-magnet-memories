@@ -379,12 +379,39 @@
                 <q-card-section v-if="selectedShippingOption">
                   <div class="text-h6 q-mb-md">Payment Method</div>
 
+                  <!-- Apple Pay Button (shown when credit card form is NOT visible) -->
+                  <div v-if="availablePaymentMethods.applePay && !showCreditCardForm" class="q-mb-lg">
+                    <div
+                      v-if="!applePayReady && !applePayError"
+                      class="text-body2 text-grey-6 q-mb-sm"
+                    >
+                      <q-spinner size="20px" class="q-mr-sm" />
+                      Checking Apple Pay availability...
+                    </div>
+                    <div
+                      v-show="applePayReady"
+                      id="square-apple-pay-button"
+                      class="wallet-button"
+                    ></div>
+                    <div
+                      v-if="applePayError"
+                      class="text-negative q-mt-sm q-pa-sm bg-red-1 rounded-borders"
+                    >
+                      <q-icon name="error" class="q-mr-sm" />
+                      <span v-if="typeof applePayError === 'string'">{{
+                        applePayError
+                      }}</span>
+                      <span v-else>{{
+                        applePayError?.message || 'Apple Pay is not available'
+                      }}</span>
+                    </div>
+                  </div>
+
                   <!-- Apple Pay Section (expandable when credit card form is shown) -->
-                  <div class="q-mb-lg">
+                  <div v-if="availablePaymentMethods.applePay && showCreditCardForm" class="q-mb-lg">
                     <q-expansion-item
-                      v-if="availablePaymentMethods.applePay"
                       v-model="showApplePaySection"
-                      :default-opened="!showCreditCardForm"
+                      :default-opened="false"
                       expand-separator
                       icon="apple"
                       label="Buy with Apple Pay"
@@ -399,7 +426,7 @@
                       </div>
                       <div
                         v-show="applePayReady"
-                        id="square-apple-pay-button"
+                        id="square-apple-pay-button-collapsed"
                         class="wallet-button"
                       ></div>
                       <div
@@ -415,34 +442,6 @@
                         }}</span>
                       </div>
                     </q-expansion-item>
-                    
-                    <!-- Apple Pay Button (shown when not in expansion mode) -->
-                    <div v-if="availablePaymentMethods.applePay && !showCreditCardForm && !showApplePaySection" class="q-mb-lg">
-                      <div
-                        v-if="!applePayReady && !applePayError"
-                        class="text-body2 text-grey-6 q-mb-sm"
-                      >
-                        <q-spinner size="20px" class="q-mr-sm" />
-                        Checking Apple Pay availability...
-                      </div>
-                      <div
-                        v-show="applePayReady"
-                        id="square-apple-pay-button"
-                        class="wallet-button"
-                      ></div>
-                      <div
-                        v-if="applePayError"
-                        class="text-negative q-mt-sm q-pa-sm bg-red-1 rounded-borders"
-                      >
-                        <q-icon name="error" class="q-mr-sm" />
-                        <span v-if="typeof applePayError === 'string'">{{
-                          applePayError
-                        }}</span>
-                        <span v-else>{{
-                          applePayError?.message || 'Apple Pay is not available'
-                        }}</span>
-                      </div>
-                    </div>
                   </div>
 
                   <!-- Pay with Credit Card Button -->
@@ -592,9 +591,11 @@
                 </q-card-section>
 
                 <q-card-actions vertical class="q-pa-md q-pt-none">
+                  <!-- Submit button (only shown when credit card form is visible) -->
                   <q-btn
+                    v-if="showCreditCardForm"
                     color="primary"
-                    label="Buy with Credit Card"
+                    label="Place Order"
                     icon="check"
                     size="lg"
                     class="full-width"
@@ -3390,6 +3391,7 @@ export default {
       squareInitError,
       squareProcessing,
       showCreditCardForm,
+      showApplePaySection,
       handleCreditCardButtonClick,
     };
   },
