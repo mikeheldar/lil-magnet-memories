@@ -3331,6 +3331,7 @@ export default {
       squareCardMounted,
       squareInitError,
       squareProcessing,
+      showCreditCardForm,
     };
   },
 };
