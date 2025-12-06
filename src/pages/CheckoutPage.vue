@@ -1891,7 +1891,10 @@ export default {
         container.setAttribute('aria-label', 'Secure credit card form');
         container.classList.add('square-card-container');
 
-        if (!squareCardMounted.value) {
+        // Check if form is already attached to this container
+        const hasSquareForm = container.querySelector('.sq-card') || container.querySelector('[id*="sq-"]');
+        
+        if (!hasSquareForm) {
           // Clear any existing content (including loading spinner)
           // Use multiple nextTick calls and delays to ensure Vue has finished rendering
           await nextTick();
