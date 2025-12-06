@@ -99,7 +99,7 @@
           <q-btn
             color="primary"
             size="lg"
-            class="action-btn q-mb-sm"
+            class="action-btn q-mb-md"
             @click="submitAnotherOrder"
           >
             <q-icon name="camera_alt" class="q-mr-sm" />
