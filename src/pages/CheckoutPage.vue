@@ -2000,8 +2000,19 @@ export default {
                 }
                 
                 console.log('🔵 Creating new Square card instance...');
-                squareCard.value = squarePayments.value.card();
-                console.log('✅ New Square card instance created');
+                // card() might return a Promise, so await it
+                const newCard = await squarePayments.value.card();
+                squareCard.value = newCard;
+                console.log('✅ New Square card instance created', {
+                  hasAttach: typeof newCard?.attach === 'function',
+                  cardType: typeof newCard,
+                  cardKeys: newCard ? Object.keys(newCard) : 'null',
+                });
+                
+                // Verify the card instance has an attach method
+                if (!squareCard.value || typeof squareCard.value.attach !== 'function') {
+                  throw new Error('Card instance does not have attach method. Card type: ' + typeof squareCard.value);
+                }
                 
                 // Wait a bit more before attaching
                 await nextTick();
