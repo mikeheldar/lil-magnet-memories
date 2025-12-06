@@ -2564,38 +2564,51 @@ export default {
         // This allows re-mounting when form is shown again
         squareCardMounted.value = false;
         
-        // Force Vue to update the DOM immediately
+        // Force Vue to update the DOM immediately - wait multiple ticks
         await nextTick();
-        // Small delay to ensure Vue has fully processed the change
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await nextTick(); // Extra tick for Vue to process
+        // Longer delay to ensure Vue has fully processed the change and removed elements
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         // Explicitly hide the Square form container if it's still in DOM
         // (Square SDK might keep it visible even when parent is removed)
         const squareFormContainer = document.getElementById('square-payment-form');
         if (squareFormContainer) {
           squareFormContainer.style.display = 'none';
+          squareFormContainer.style.visibility = 'hidden';
           console.log('🔧 Explicitly hid Square form container');
         }
         
-        // Explicitly hide billing address section if it's still visible
-        // Find all elements that contain "Billing Address" heading
-        const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6, h6, [class*="text-h6"]')).filter(
+        // Explicitly hide billing address section - it should be removed by v-if, but ensure it's hidden
+        // Find the parent container that has v-if="showCreditCardForm" and hide everything inside it
+        const creditCardFormContainer = document.querySelector('[id="square-payment-form"]')?.parentElement;
+        if (creditCardFormContainer) {
+          // Hide the entire credit card form container (which includes billing address)
+          creditCardFormContainer.style.display = 'none';
+          creditCardFormContainer.style.visibility = 'hidden';
+          console.log('🔧 Explicitly hid credit card form container (includes billing address)');
+        }
+        
+        // Also find and hide any billing address elements that might still be in DOM
+        const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6, h6, [class*="text-h6"], [class*="text-h"]')).filter(
           el => el.textContent?.trim() === 'Billing Address' || el.textContent?.includes('Billing Address')
         );
         billingAddressHeadings.forEach(heading => {
           // Hide the parent container that holds the billing address section
-          // Go up the DOM tree to find the section container
           let billingSection = heading.parentElement;
           // Keep going up until we find a container that's likely the section
           while (billingSection && billingSection !== document.body) {
             // Check if this is likely the billing address section container
             if (billingSection.querySelector('input[placeholder*="Billing"]') || 
                 billingSection.querySelector('input[label*="Billing"]') ||
-                billingSection.querySelector('.q-input[label*="Billing"]')) {
+                billingSection.querySelector('.q-input[label*="Billing"]') ||
+                billingSection.querySelector('[label*="Billing"]')) {
               billingSection.style.display = 'none';
               billingSection.style.visibility = 'hidden';
               billingSection.style.height = '0';
               billingSection.style.overflow = 'hidden';
+              billingSection.style.margin = '0';
+              billingSection.style.padding = '0';
               console.log('🔧 Explicitly hid billing address section', {
                 element: billingSection,
                 hasInputs: !!billingSection.querySelector('input'),
@@ -2607,16 +2620,20 @@ export default {
         });
         
         // Also hide any billing address inputs directly
-        const billingInputs = Array.from(document.querySelectorAll('input')).filter(
-          input => input.placeholder?.includes('Billing') || 
-                   input.getAttribute('label')?.includes('Billing') ||
-                   input.closest('[class*="billing"]')
+        const billingInputs = Array.from(document.querySelectorAll('input, .q-input, .q-field')).filter(
+          el => {
+            const placeholder = el.placeholder || el.getAttribute('placeholder') || '';
+            const label = el.getAttribute('label') || el.querySelector('[label]')?.getAttribute('label') || '';
+            return placeholder.includes('Billing') || label.includes('Billing');
+          }
         );
         billingInputs.forEach(input => {
-          const inputContainer = input.closest('.q-input, .q-field, div');
+          const inputContainer = input.closest('.q-input, .q-field, div') || input;
           if (inputContainer && inputContainer.offsetParent !== null) {
             inputContainer.style.display = 'none';
             inputContainer.style.visibility = 'hidden';
+            inputContainer.style.height = '0';
+            inputContainer.style.overflow = 'hidden';
           }
         });
         
