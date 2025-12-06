@@ -835,6 +835,16 @@ export default {
         '🛒 Checkout page isFromMarketEventUpload:',
         isFromMarketEventUpload.value
       );
+      console.log('🔵 BILLING ADDRESS INITIAL STATE:', {
+        billingAddress: JSON.parse(JSON.stringify(billingAddress.value)),
+        billingSameAsShipping: billingSameAsShipping.value,
+        requiresBillingAddress: requiresBillingAddress.value,
+        requiresShippingAddress: requiresShippingAddress.value,
+        skipShipping: skipShipping.value,
+        selectedPaymentOption: selectedPaymentOption.value,
+        showCreditCardForm: showCreditCardForm.value,
+        timestamp: new Date().toISOString()
+      });
       checkedInEvent.value = marketEventService.getCheckedInEvent();
       console.log('🛒 Checkout page - checkedInEvent:', checkedInEvent.value);
       console.log(
