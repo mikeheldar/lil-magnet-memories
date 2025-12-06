@@ -1212,23 +1212,47 @@ export default {
       // For online customers OR when not at market event, use default shipping option
       // Prefer the option marked as default, but only if it's a shipping option (not pickup)
       // If no default shipping option, use first shipping option
+      
+      // Log all options with their default status for debugging
+      console.log('🔄 All shipping options with default status:', options.map(o => ({
+        value: o.value,
+        label: o.label,
+        type: o.type,
+        default: o.default,
+        defaultType: typeof o.default,
+        isDefault: o.default === true || o.default === 'true' || o.default === 1
+      })));
+      
+      // Check for default option - handle both boolean true and string "true"
       const defaultShippingOption = options.find(
-        (option) => option.default && option.type === 'shipping'
+        (option) => {
+          const isDefault = option.default === true || option.default === 'true' || option.default === 1;
+          const isShipping = option.type === 'shipping';
+          return isDefault && isShipping;
+        }
       );
+      
       const firstShippingOption = options.find(
         (option) => option.type === 'shipping'
       );
       const defaultOption = defaultShippingOption || firstShippingOption || options[0];
       
-      console.log('🔄 Using default shipping option for online order:', defaultOption?.value, {
+      console.log('🔄 Using default shipping option for online order:', {
+        selectedValue: defaultOption?.value,
+        selectedLabel: defaultOption?.label,
         isOnlineCustomer,
         userIsMarketCustomer,
         hasDefault: !!defaultShippingOption,
+        defaultOptionValue: defaultShippingOption?.value,
+        defaultOptionLabel: defaultShippingOption?.label,
         optionType: defaultOption?.type,
+        allOptions: options.length,
       });
       
       if (defaultOption) {
         selectedShippingOption.value = defaultOption.value;
+      } else {
+        console.warn('⚠️ No default option found! Available options:', options);
       }
     };
 
