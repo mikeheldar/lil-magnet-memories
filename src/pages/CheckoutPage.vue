@@ -2496,6 +2496,13 @@ export default {
       await nextTick();
       await new Promise(resolve => setTimeout(resolve, 200));
       
+      // Explicitly show the Square form container if it exists
+      const squareFormContainer = document.getElementById('square-payment-form');
+      if (squareFormContainer) {
+        squareFormContainer.style.display = '';
+        console.log('🔧 Explicitly showed Square form container');
+      }
+      
       // Ensure Square card form is mounted if not already
       if (squareInitialized.value && squareCard.value) {
         // Always try to mount, even if previously mounted (container might have changed)
