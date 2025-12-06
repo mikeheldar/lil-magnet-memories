@@ -446,7 +446,8 @@
                   </div>
 
                   <!-- Pay with Credit Card Button -->
-                  <div v-if="!showCreditCardForm" class="q-mb-lg">
+                  <!-- Use v-show to keep button in DOM for faster toggling -->
+                  <div v-show="!showCreditCardForm" class="q-mb-lg">
                     <q-btn
                       color="primary"
                       size="lg"
