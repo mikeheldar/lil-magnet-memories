@@ -2412,10 +2412,28 @@ export default {
       showApplePaySection.value = false; // Collapse Apple Pay section
       selectedPaymentOption.value = 'square_card';
       
+      // Wait for DOM to update and container to be available
+      await nextTick();
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       // Ensure Square card form is mounted if not already
-      if (squareInitialized.value && squareCard.value && !squareCardMounted.value) {
-        await nextTick();
+      if (squareInitialized.value && squareCard.value) {
+        // Always try to mount, even if previously mounted (container might have changed)
         await mountSquareCard();
+      } else if (!squareInitialized.value) {
+        // Try to initialize if not already done
+        console.log('Square not initialized yet, attempting initialization...');
+        try {
+          await waitForSquareSDK();
+          await initializeSquarePayments();
+          // Wait a bit more for initialization to complete
+          await nextTick();
+          await new Promise(resolve => setTimeout(resolve, 300));
+          await mountSquareCard();
+        } catch (error) {
+          console.error('Failed to initialize Square:', error);
+          squareInitError.value = error;
+        }
       }
     };
     
