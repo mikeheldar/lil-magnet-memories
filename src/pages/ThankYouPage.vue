@@ -276,9 +276,22 @@ export default {
 
     const displayPaymentMethod = computed(() => {
       if (isPayAtTent.value) {
-        return 'Payment Options at Tent';
+        return 'Pay at Tent';
       }
       return paymentMethodLabel.value;
+    });
+
+    const deliveryOptionLabel = computed(() => {
+      if (shippingOption.value?.label) {
+        return shippingOption.value.label;
+      }
+      if (shippingOption.value?.type === 'pickup') {
+        return 'Pickup at Market Event Tent';
+      }
+      if (shippingOption.value?.value) {
+        return shippingOption.value.value.replace(/_/g, ' ');
+      }
+      return 'Delivery';
     });
 
     const formattedOrderNumber = computed(() => {
