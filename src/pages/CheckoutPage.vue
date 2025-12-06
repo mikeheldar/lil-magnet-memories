@@ -544,6 +544,9 @@
                             billingStreetError ? 'Billing street is required' : ''
                           "
                           :input-attrs="{ autocomplete: 'billing address-line1' }"
+                          @input="(val) => { console.log('🔵 BILLING STREET INPUT:', val, 'Current value:', billingAddress.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                          @focus="() => { console.log('🔵 BILLING STREET FOCUS:', 'Current value:', billingAddress.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                          @blur="() => { console.log('🔵 BILLING STREET BLUR:', 'Final value:', billingAddress.street, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
                         />
                         <div class="row q-col-gutter-md q-mb-md">
                           <div class="col-6">
@@ -558,6 +561,9 @@
                               :input-attrs="{
                                 autocomplete: 'billing address-level2',
                               }"
+                              @input="(val) => { console.log('🔵 BILLING CITY INPUT:', val, 'Current value:', billingAddress.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @focus="() => { console.log('🔵 BILLING CITY FOCUS:', 'Current value:', billingAddress.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @blur="() => { console.log('🔵 BILLING CITY BLUR:', 'Final value:', billingAddress.city, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
                             />
                           </div>
                           <div class="col-6">
@@ -574,6 +580,9 @@
                               :input-attrs="{
                                 autocomplete: 'billing address-level1',
                               }"
+                              @input="(val) => { console.log('🔵 BILLING STATE INPUT:', val, 'Current value:', billingAddress.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @focus="() => { console.log('🔵 BILLING STATE FOCUS:', 'Current value:', billingAddress.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @blur="() => { console.log('🔵 BILLING STATE BLUR:', 'Final value:', billingAddress.state, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
                             />
                           </div>
                         </div>
@@ -590,6 +599,9 @@
                               :input-attrs="{
                                 autocomplete: 'billing postal-code',
                               }"
+                              @input="(val) => { console.log('🔵 BILLING ZIP INPUT:', val, 'Current value:', billingAddress.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @focus="() => { console.log('🔵 BILLING ZIP FOCUS:', 'Current value:', billingAddress.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
+                              @blur="() => { console.log('🔵 BILLING ZIP BLUR:', 'Final value:', billingAddress.zip, 'Full object:', JSON.parse(JSON.stringify(billingAddress))); }"
                             />
                           </div>
                         </div>
@@ -1161,22 +1173,33 @@ export default {
       return false;
     });
     const requiresBillingAddress = computed(() => {
-      // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
-      // Check both selectedPaymentOption and applePayToken to handle cases where
-      // Apple Pay button is clicked but selectedPaymentOption isn't set yet
-      if (selectedPaymentOption.value === 'apple_pay' || applePayToken.value) {
+      const result = (() => {
+        // Apple Pay doesn't require billing address (handled by Apple Pay sheet)
+        // Check both selectedPaymentOption and applePayToken to handle cases where
+        // Apple Pay button is clicked but selectedPaymentOption isn't set yet
+        if (selectedPaymentOption.value === 'apple_pay' || applePayToken.value) {
+          return false;
+        }
+        // Always require billing address for credit card payments
+        if (selectedPaymentOption.value === 'square_card') {
+          return true;
+        }
+        // For other payment methods, only require if shipping address is required
+        // and billing is different from shipping
+        if (requiresShippingAddress.value && !billingSameAsShipping.value) {
+          return true;
+        }
         return false;
-      }
-      // Always require billing address for credit card payments
-      if (selectedPaymentOption.value === 'square_card') {
-        return true;
-      }
-      // For other payment methods, only require if shipping address is required
-      // and billing is different from shipping
-      if (requiresShippingAddress.value && !billingSameAsShipping.value) {
-        return true;
-      }
-      return false;
+      })();
+      console.log('🟣 REQUIRES BILLING ADDRESS COMPUTED:', {
+        result,
+        selectedPaymentOption: selectedPaymentOption.value,
+        applePayToken: !!applePayToken.value,
+        requiresShippingAddress: requiresShippingAddress.value,
+        billingSameAsShipping: billingSameAsShipping.value,
+        billingAddress: JSON.parse(JSON.stringify(billingAddress.value))
+      });
+      return result;
     });
 
     const addressIsComplete = (address) => {
@@ -1669,6 +1692,12 @@ export default {
     );
 
     watch(requiresBillingAddress, (required, prevRequired) => {
+      console.log('🟠 REQUIRES BILLING ADDRESS WATCHER:', {
+        required,
+        prevRequired,
+        currentBillingAddress: JSON.parse(JSON.stringify(billingAddress.value)),
+        stackTrace: new Error().stack
+      });
       // Only clear billing address if it's changing from required to not required
       // Don't clear if it's just initializing or if user has entered data
       if (!required && prevRequired !== undefined && prevRequired === true) {
@@ -1677,24 +1706,72 @@ export default {
                             billingAddress.value.city || 
                             billingAddress.value.state || 
                             billingAddress.value.zip;
+        console.log('🟠 CHECKING IF SHOULD CLEAR BILLING ADDRESS:', {
+          hasUserInput,
+          billingAddress: JSON.parse(JSON.stringify(billingAddress.value))
+        });
         if (!hasUserInput) {
+          console.log('🟠 CLEARING BILLING ADDRESS');
           billingAddress.value = {
             street: '',
             city: '',
             state: '',
             zip: '',
           };
+          console.log('🟠 BILLING ADDRESS AFTER CLEAR:', JSON.parse(JSON.stringify(billingAddress.value)));
+        } else {
+          console.log('🟠 NOT CLEARING - USER HAS INPUT');
         }
       }
     });
 
     // Watch billingSameAsShipping toggle - only sync when explicitly toggled ON
     // Use a flag to track if we're updating from toggle to prevent interference
-    watch(billingSameAsShipping, (same) => {
+    watch(billingSameAsShipping, (same, prevSame) => {
+      console.log('🟡 BILLING SAME AS SHIPPING WATCHER:', {
+        same,
+        prevSame,
+        requiresShippingAddress: requiresShippingAddress.value,
+        currentBillingAddress: JSON.parse(JSON.stringify(billingAddress.value)),
+        shippingAddress: JSON.parse(JSON.stringify(shippingAddress.value)),
+        stackTrace: new Error().stack
+      });
       if (same && requiresShippingAddress.value) {
+        console.log('🟡 SYNCING BILLING ADDRESS FROM SHIPPING:', {
+          before: JSON.parse(JSON.stringify(billingAddress.value)),
+          after: JSON.parse(JSON.stringify(shippingAddress.value))
+        });
         billingAddress.value = { ...shippingAddress.value };
+        console.log('🟡 BILLING ADDRESS AFTER SYNC:', JSON.parse(JSON.stringify(billingAddress.value)));
       }
     });
+
+    // Watch billing form visibility
+    watch(() => requiresBillingAddress.value && 
+                (skipShipping.value || 
+                 !billingSameAsShipping.value || 
+                 !requiresShippingAddress.value), 
+          (isVisible) => {
+      console.log('🟢 BILLING FORM VISIBILITY CHANGED:', {
+        isVisible,
+        requiresBillingAddress: requiresBillingAddress.value,
+        skipShipping: skipShipping.value,
+        billingSameAsShipping: billingSameAsShipping.value,
+        requiresShippingAddress: requiresShippingAddress.value,
+        billingAddress: JSON.parse(JSON.stringify(billingAddress.value)),
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    // Watch billingAddress for any changes
+    watch(billingAddress, (newVal, oldVal) => {
+      console.log('🔴 BILLING ADDRESS VALUE CHANGED:', {
+        old: JSON.parse(JSON.stringify(oldVal)),
+        new: JSON.parse(JSON.stringify(newVal)),
+        stackTrace: new Error().stack,
+        timestamp: new Date().toISOString()
+      });
+    }, { deep: true });
 
     watch(orderTotal, () => {
       updateSquarePaymentRequest();
