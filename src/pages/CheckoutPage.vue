@@ -1686,26 +1686,21 @@ export default {
       }
     });
 
+    // Watch shipping address changes - only sync if billingSameAsShipping is true
+    // Use a flag to prevent overwriting user input
+    let isUpdatingBillingFromShipping = false;
     watch(
       () => ({ ...shippingAddress.value }),
       () => {
         // Only update billing address if billingSameAsShipping is true
-        // AND the user hasn't manually edited the billing address
-        if (billingSameAsShipping.value && requiresShippingAddress.value) {
-          // Only update if billing address is empty or matches shipping (to avoid overwriting user input)
-          const billingIsEmpty = !billingAddress.value.street && 
-                                 !billingAddress.value.city && 
-                                 !billingAddress.value.state && 
-                                 !billingAddress.value.zip;
-          const billingMatchesShipping = 
-            billingAddress.value.street === shippingAddress.value.street &&
-            billingAddress.value.city === shippingAddress.value.city &&
-            billingAddress.value.state === shippingAddress.value.state &&
-            billingAddress.value.zip === shippingAddress.value.zip;
-          
-          if (billingIsEmpty || billingMatchesShipping) {
-            billingAddress.value = { ...shippingAddress.value };
-          }
+        // AND we're not in the middle of a user edit
+        if (billingSameAsShipping.value && requiresShippingAddress.value && !isUpdatingBillingFromShipping) {
+          isUpdatingBillingFromShipping = true;
+          billingAddress.value = { ...shippingAddress.value };
+          // Use nextTick to ensure the update completes before allowing more updates
+          nextTick(() => {
+            isUpdatingBillingFromShipping = false;
+          });
         }
       },
       { deep: true }
@@ -1713,11 +1708,40 @@ export default {
 
     watch(billingSameAsShipping, (same) => {
       // Only update billing address when toggle changes to true
-      // Don't overwrite if user has already entered billing address
       if (same && requiresShippingAddress.value) {
+        isUpdatingBillingFromShipping = true;
         billingAddress.value = { ...shippingAddress.value };
+        nextTick(() => {
+          isUpdatingBillingFromShipping = false;
+        });
+      } else if (!same) {
+        // When toggle is turned off, don't sync anymore
+        isUpdatingBillingFromShipping = false;
       }
     });
+
+    // Watch billing address changes - if user types, turn off billingSameAsShipping
+    watch(
+      () => ({ ...billingAddress.value }),
+      (newBilling, oldBilling) => {
+        // If billingSameAsShipping is true and user is typing (fields are changing)
+        // and the new values don't match shipping, turn off the toggle
+        if (billingSameAsShipping.value && requiresShippingAddress.value && !isUpdatingBillingFromShipping) {
+          const billingMatchesShipping = 
+            newBilling.street === shippingAddress.value.street &&
+            newBilling.city === shippingAddress.value.city &&
+            newBilling.state === shippingAddress.value.state &&
+            newBilling.zip === shippingAddress.value.zip;
+          
+          // If billing no longer matches shipping, user is editing - turn off toggle
+          if (!billingMatchesShipping && 
+              (newBilling.street || newBilling.city || newBilling.state || newBilling.zip)) {
+            billingSameAsShipping.value = false;
+          }
+        }
+      },
+      { deep: true }
+    );
 
     watch(orderTotal, () => {
       updateSquarePaymentRequest();
