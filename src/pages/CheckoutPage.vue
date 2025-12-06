@@ -2491,6 +2491,9 @@ export default {
         // Collapse credit card form if it's visible
         if (showCreditCardForm.value) {
           showCreditCardForm.value = false;
+          // Reset mounted flag when hiding credit card form
+          // This allows re-mounting when form is shown again
+          squareCardMounted.value = false;
         }
         // Render Apple Pay button when section is expanded
         if (applePayReady.value && squareApplePay.value) {
