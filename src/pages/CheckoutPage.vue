@@ -452,11 +452,11 @@
                       color="primary"
                       size="lg"
                       class="full-width"
-                      style="height: 50px; min-height: 50px; border-radius: 8px; font-size: 17px; font-weight: 400;"
+                      style="height: 50px; min-height: 50px; border-radius: 8px; font-size: 17px; font-weight: 400; padding: 0 16px; display: flex; align-items: center; justify-content: flex-start;"
                       @click="handleCreditCardButtonClick"
                     >
-                      <q-icon name="credit_card" class="q-mr-sm" />
-                      Pay with Credit Card with Square
+                      <q-icon name="credit_card" class="q-mr-sm" style="font-size: 20px;" />
+                      <span style="flex: 1; text-align: left;">Pay with Credit Card with Square</span>
                     </q-btn>
                   </div>
 
