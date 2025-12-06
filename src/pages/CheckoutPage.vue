@@ -478,13 +478,13 @@
 
                   <!-- Square payment form container - STATIC, NON-REACTIVE -->
                   <!-- Must be outside v-if/v-show to prevent Vue from destroying Square's DOM -->
-                  <!-- v-once prevents Vue from patching this container -->
+                  <!-- v-once prevents Vue from patching this container's children -->
+                  <!-- Visibility controlled by inline style (not reactive binding to avoid conflicts) -->
                   <div
                     id="square-payment-form"
                     v-once
-                    style="min-height: 20px"
                     class="q-mb-md"
-                    :style="{ display: showCreditCardForm ? '' : 'none' }"
+                    style="min-height: 20px"
                   >
                     <!-- Form will be rendered here by Square SDK when mounted -->
                     <!-- Square SDK manages its own DOM - Vue must not touch it -->
@@ -2712,18 +2712,30 @@ export default {
       }
       
       // Explicitly show the Square form container if it exists
+      // This must happen BEFORE mounting Square so the container is visible
       const squareFormContainer = document.getElementById('square-payment-form');
       if (squareFormContainer) {
+        // Remove any inline display:none that might have been set
         squareFormContainer.style.display = '';
         squareFormContainer.style.visibility = '';
         squareFormContainer.style.minHeight = '20px';
+        squareFormContainer.style.height = '';
+        squareFormContainer.style.overflow = '';
+        // Force visibility
+        squareFormContainer.removeAttribute('hidden');
         console.log('🔧 Explicitly showed Square form container', {
           container: squareFormContainer,
           visible: squareFormContainer.offsetParent !== null,
+          display: squareFormContainer.style.display,
+          computedDisplay: window.getComputedStyle(squareFormContainer).display,
         });
       } else {
         console.warn('⚠️ Square form container not found');
       }
+      
+      // Wait a moment for the container to be fully visible before mounting
+      await nextTick();
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Explicitly show billing address section if it exists
       const billingAddressHeadings = Array.from(document.querySelectorAll('.text-h6')).filter(
