@@ -2832,7 +2832,8 @@ export default {
     
     // OLD WATCHER - REMOVED - Now using handleApplePaySectionToggle instead
     // This watcher was causing conflicts with the new collapsible section structure
-    // watch(showApplePaySection, async (isExpanded) => {
+    /*
+    watch(showApplePaySection, async (isExpanded) => {
       console.log('🔍 showApplePaySection watcher triggered', {
         isExpanded,
         showCreditCardForm: showCreditCardForm.value,
