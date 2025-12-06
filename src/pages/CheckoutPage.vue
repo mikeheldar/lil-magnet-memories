@@ -4169,6 +4169,46 @@ export default {
               });
             }
           }
+        } else if (selectedPaymentOption.value === 'pay_at_event') {
+          // For pay at event orders, no payment processing occurs
+          // Update order status to 'new' so it shows up in orders list
+          paymentOptionPayload = {
+            type: selectedPaymentOption.value,
+            processor: paymentProcessor,
+            paymentId: null,
+            paidAt: null,
+            status: 'pending', // Payment will be collected at event
+            receiptUrl: null,
+            billingAddress: billingAddressData,
+          };
+
+          if (savedOrderId) {
+            console.log('💾 Updating pay at event order status to "new"...');
+            try {
+              await firebaseService.updateOrderPaymentStatus(savedOrderId, {
+                paymentOption: paymentOptionPayload,
+                status: 'new', // Set to 'new' so it appears in orders list
+              });
+              console.log('✅ Pay at event order updated with status "new"');
+            } catch (updateError) {
+              console.error('⚠️ Failed to update pay at event order status:', updateError);
+              // Log the error but don't fail - order is saved
+              await firebaseService.logTransactionError({
+                errorType: 'order_update_failed',
+                errorMessage: 'Failed to update pay at event order status',
+                errorDetails: {
+                  orderId: savedOrderId,
+                  updateError: updateError.message,
+                },
+                transactionData: {
+                  orderNumber,
+                  amount: orderTotal.value,
+                  paymentMethod: selectedPaymentOption.value,
+                  customerEmail: customerInfo.value.email,
+                },
+              });
+            }
+          }
         }
 
         // Clear cart
