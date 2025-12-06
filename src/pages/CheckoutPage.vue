@@ -380,7 +380,7 @@
                   <div class="text-h6 q-mb-md">Payment Method</div>
 
                   <!-- Apple Pay Button (shown when credit card form is NOT visible) -->
-                  <div v-if="availablePaymentMethods.applePay && !showCreditCardForm" class="q-mb-lg">
+                  <div v-show="availablePaymentMethods.applePay && !showCreditCardForm" class="q-mb-lg">
                     <div
                       v-if="!applePayReady && !applePayError"
                       class="text-body2 text-grey-6 q-mb-sm"
