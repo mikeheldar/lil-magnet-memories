@@ -2340,6 +2340,17 @@ export default {
       return normalized;
     };
 
+    const handleCreditCardButtonClick = async () => {
+      showCreditCardForm.value = true;
+      selectedPaymentOption.value = 'square_card';
+      
+      // Ensure Square card form is mounted if not already
+      if (squareInitialized.value && squareCard.value && !squareCardMounted.value) {
+        await nextTick();
+        await mountSquareCard();
+      }
+    };
+
     const processSquareCardPayment = async (orderNumber) => {
       if (!squareCard.value) {
         throw new Error(
