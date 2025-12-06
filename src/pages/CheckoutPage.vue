@@ -2499,22 +2499,49 @@ export default {
       
       // Wait for Vue to create the credit card form container (v-if="showCreditCardForm")
       await nextTick();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      // Find and show the credit card form container if it exists
+      // This is the parent div with v-if="showCreditCardForm"
+      let creditCardFormContainer = null;
+      let retries = 0;
+      while (!creditCardFormContainer && retries < 10) {
+        creditCardFormContainer = document.querySelector('[id="square-payment-form"]')?.parentElement;
+        if (!creditCardFormContainer) {
+          await nextTick();
+          await new Promise(resolve => setTimeout(resolve, 50));
+          retries++;
+        }
+      }
+      
+      if (creditCardFormContainer) {
+        // Reset all CSS properties to ensure it's visible
+        creditCardFormContainer.style.display = '';
+        creditCardFormContainer.style.visibility = '';
+        creditCardFormContainer.style.height = '';
+        creditCardFormContainer.style.overflow = '';
+        creditCardFormContainer.style.margin = '';
+        creditCardFormContainer.style.padding = '';
+        console.log('🔧 Explicitly showed credit card form container', {
+          container: creditCardFormContainer,
+          visible: creditCardFormContainer.offsetParent !== null,
+        });
+      } else {
+        console.warn('⚠️ Credit card form container not found after waiting');
+      }
       
       // Explicitly show the Square form container if it exists
       const squareFormContainer = document.getElementById('square-payment-form');
       if (squareFormContainer) {
         squareFormContainer.style.display = '';
         squareFormContainer.style.visibility = '';
-        console.log('🔧 Explicitly showed Square form container');
-      }
-      
-      // Find and show the credit card form container if it exists
-      const creditCardFormContainer = document.querySelector('[id="square-payment-form"]')?.parentElement;
-      if (creditCardFormContainer) {
-        creditCardFormContainer.style.display = '';
-        creditCardFormContainer.style.visibility = '';
-        console.log('🔧 Explicitly showed credit card form container');
+        squareFormContainer.style.minHeight = '20px';
+        console.log('🔧 Explicitly showed Square form container', {
+          container: squareFormContainer,
+          visible: squareFormContainer.offsetParent !== null,
+        });
+      } else {
+        console.warn('⚠️ Square form container not found');
       }
       
       // Explicitly show billing address section if it exists
@@ -2537,6 +2564,7 @@ export default {
       // Ensure Square card form is mounted if not already
       if (squareInitialized.value && squareCard.value) {
         // Always try to mount, even if previously mounted (container might have changed)
+        console.log('🔵 Mounting Square card form...');
         await mountSquareCard();
       } else if (!squareInitialized.value) {
         // Try to initialize if not already done
