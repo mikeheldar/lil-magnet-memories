@@ -1992,23 +1992,53 @@ export default {
         return;
       }
       await nextTick();
-      // Try to find the container - could be in regular view or collapsed section
-      // First try the collapsed section (when credit card form is shown)
-      let container = document.getElementById('square-apple-pay-button-collapsed');
-      let containerId = '#square-apple-pay-button-collapsed';
-      // If not found, try the regular standalone button
-      if (!container) {
+      // Try to find the container - prioritize the one that should be visible
+      // When credit card form is shown, use collapsed container
+      // When credit card form is hidden, use regular container
+      let container = null;
+      let containerId = null;
+      
+      if (showCreditCardForm.value) {
+        // Credit card form is visible, use collapsed container
+        container = document.getElementById('square-apple-pay-button-collapsed');
+        containerId = '#square-apple-pay-button-collapsed';
+      } else {
+        // Credit card form is hidden, use regular container
         container = document.getElementById('square-apple-pay-button');
         containerId = '#square-apple-pay-button';
       }
+      
       if (!container) {
         console.log('⚠️ Cannot render Apple Pay button: container not found', {
           collapsedExists: !!document.getElementById('square-apple-pay-button-collapsed'),
           regularExists: !!document.getElementById('square-apple-pay-button'),
           showCreditCardForm: showCreditCardForm.value,
           showApplePaySection: showApplePaySection.value,
+          collapsedVisible: document.getElementById('square-apple-pay-button-collapsed')?.offsetParent !== null,
+          regularVisible: document.getElementById('square-apple-pay-button')?.offsetParent !== null,
         });
         return;
+      }
+      
+      // Check if container is actually visible (not hidden by v-show)
+      const containerVisible = container.offsetParent !== null;
+      if (!containerVisible) {
+        console.warn('⚠️ Container found but not visible, checking other container...', {
+          containerId,
+          showCreditCardForm: showCreditCardForm.value,
+          containerVisible,
+        });
+        // Try the other container as fallback
+        const otherContainer = showCreditCardForm.value 
+          ? document.getElementById('square-apple-pay-button')
+          : document.getElementById('square-apple-pay-button-collapsed');
+        if (otherContainer && otherContainer.offsetParent !== null) {
+          console.log('✅ Found visible fallback container, using it instead');
+          container = otherContainer;
+          containerId = showCreditCardForm.value 
+            ? '#square-apple-pay-button'
+            : '#square-apple-pay-button-collapsed';
+        }
       }
       // Reset attachment flag if container changed (e.g., from collapsed to expanded)
       // Check if there's already a button in the container
