@@ -148,6 +148,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { authService } from '../services/authService';
+import { marketEventService } from '../services/marketEventService.js';
 
 export default {
   name: 'ThankYouPage',
@@ -171,9 +172,13 @@ export default {
     const isAuthenticated = ref(false);
 
     const submitAnotherOrder = () => {
-      // Route to market event upload if this was a market event order,
+      // Check if user is currently at a market event (checked in)
+      const checkedInEvent = marketEventService.getCheckedInEvent();
+      const isAtMarketEvent = checkedInEvent !== null;
+
+      // Route to market event upload if user is at market event,
       // otherwise route to online order page
-      if (isPayAtTent.value) {
+      if (isAtMarketEvent) {
         router.push('/market-event-upload');
       } else {
         router.push('/online-order');
