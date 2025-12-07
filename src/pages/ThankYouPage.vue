@@ -108,6 +108,7 @@
           </q-btn>
 
           <q-btn
+            v-if="isAuthenticated"
             color="purple"
             size="lg"
             class="action-btn q-mb-md"
@@ -315,17 +316,12 @@ export default {
     });
 
     onMounted(() => {
-      const currentAuthUser = authService.getCurrentUser();
-      if (currentAuthUser) {
-        console.log(
-          'User already authenticated on thank you page:',
-          currentAuthUser
-        );
-        isAuthenticated.value = true;
-      }
+      // Check authentication status (excludes anonymous users)
+      isAuthenticated.value = authService.isAuthenticated();
 
       authService.onAuthStateChanged((user) => {
-        isAuthenticated.value = !!user;
+        // Only set authenticated if user exists and is not anonymous
+        isAuthenticated.value = authService.isAuthenticated();
       });
 
       if (route.query.orderNumber) {

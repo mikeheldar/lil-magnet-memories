@@ -11,7 +11,13 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
-import { ref, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 import { db, storage } from '../firebase/config.js';
@@ -95,17 +101,21 @@ class FirebaseService {
         let actualTotalSize = totalSize;
         const allProgress = Array.from(progressMap.values());
         if (allProgress.length > 0) {
-          const sumOfTotals = allProgress.reduce((sum, p) => sum + (p.total || 0), 0);
+          const sumOfTotals = allProgress.reduce(
+            (sum, p) => sum + (p.total || 0),
+            0
+          );
           if (sumOfTotals > 0) {
             actualTotalSize = sumOfTotals;
           }
         }
-        
-        const overallPercent = actualTotalSize > 0 
-          ? Math.min(100, Math.round((totalUploaded / actualTotalSize) * 100))
-          : 0;
-        const completedCount = allProgress.filter(p => p.completed).length;
-        
+
+        const overallPercent =
+          actualTotalSize > 0
+            ? Math.min(100, Math.round((totalUploaded / actualTotalSize) * 100))
+            : 0;
+        const completedCount = allProgress.filter((p) => p.completed).length;
+
         const progressData = {
           overall: overallPercent,
           completed: completedCount,
@@ -113,7 +123,7 @@ class FirebaseService {
           uploaded: totalUploaded,
           totalSize: actualTotalSize,
         };
-        
+
         // Call the progress callback with error handling
         try {
           onProgress(progressData);
@@ -134,9 +144,15 @@ class FirebaseService {
       const storageRef = ref(storage, fileName);
 
       try {
-        console.log(`Uploading photo ${i + 1}/${photos.length}: ${photo.name} (${(photo.size / 1024 / 1024).toFixed(2)} MB)`);
+        console.log(
+          `Uploading photo ${i + 1}/${photos.length}: ${photo.name} (${(
+            photo.size /
+            1024 /
+            1024
+          ).toFixed(2)} MB)`
+        );
         const uploadStartTime = Date.now();
-        
+
         // Provide metadata to avoid multipart quirks and ensure proper Content-Type
         const metadata = {
           contentType: photo.type || 'image/jpeg',
@@ -144,12 +160,16 @@ class FirebaseService {
         };
 
         const uploadTask = uploadBytesResumable(storageRef, photo, metadata);
-        
+
         // Initialize progress tracking for this photo
-        progressMap.set(i, { uploaded: 0, total: photo.size || 0, completed: false });
+        progressMap.set(i, {
+          uploaded: 0,
+          total: photo.size || 0,
+          completed: false,
+        });
         let lastProgressUpdate = Date.now();
         let lastBytesTransferred = 0;
-        
+
         await new Promise((resolve, reject) => {
           uploadTask.on(
             'state_changed',
@@ -158,31 +178,42 @@ class FirebaseService {
               const bytesTransferred = snapshot.bytesTransferred;
               const totalBytes = snapshot.totalBytes;
               const photoProgress = progressMap.get(i);
-              
+
               if (photoProgress) {
                 const previousUploaded = photoProgress.uploaded;
                 photoProgress.uploaded = bytesTransferred;
                 photoProgress.total = totalBytes; // Update total in case it wasn't known initially
-                
+
                 // Calculate bytes uploaded since last update
                 const bytesDelta = bytesTransferred - previousUploaded;
                 totalUploaded += bytesDelta;
-                
+
                 // Log upload speed every second
                 const now = Date.now();
                 const timeDelta = now - lastProgressUpdate;
-                if (timeDelta >= 1000) { // Log every second
-                  const bytesSinceLastUpdate = bytesTransferred - lastBytesTransferred;
-                  const speedMBps = (bytesSinceLastUpdate / 1024 / 1024) / (timeDelta / 1000);
+                if (timeDelta >= 1000) {
+                  // Log every second
+                  const bytesSinceLastUpdate =
+                    bytesTransferred - lastBytesTransferred;
+                  const speedMBps =
+                    bytesSinceLastUpdate / 1024 / 1024 / (timeDelta / 1000);
                   const elapsedSeconds = (now - uploadStartTime) / 1000;
                   const totalMB = bytesTransferred / 1024 / 1024;
-                  
-                  console.log(`📤 Photo ${i + 1}/${photos.length} (${photo.name}): ${totalMB.toFixed(2)} MB uploaded in ${elapsedSeconds.toFixed(1)}s (${speedMBps.toFixed(2)} MB/s)`);
-                  
+
+                  console.log(
+                    `📤 Photo ${i + 1}/${photos.length} (${
+                      photo.name
+                    }): ${totalMB.toFixed(
+                      2
+                    )} MB uploaded in ${elapsedSeconds.toFixed(
+                      1
+                    )}s (${speedMBps.toFixed(2)} MB/s)`
+                  );
+
                   lastProgressUpdate = now;
                   lastBytesTransferred = bytesTransferred;
                 }
-                
+
                 // Update overall progress immediately (this triggers the callback)
                 updateOverallProgress();
               }
@@ -194,20 +225,28 @@ class FirebaseService {
               const uploadDuration = (uploadEndTime - uploadStartTime) / 1000;
               const totalMB = (photo.size || 0) / 1024 / 1024;
               const avgSpeedMBps = totalMB / uploadDuration;
-              
+
               const photoProgress = progressMap.get(i);
               if (photoProgress) {
                 photoProgress.completed = true;
                 photoProgress.uploaded = photoProgress.total;
                 updateOverallProgress();
               }
-              
-              console.log(`✅ Photo ${i + 1}/${photos.length} (${photo.name}) completed: ${totalMB.toFixed(2)} MB in ${uploadDuration.toFixed(1)}s (avg ${avgSpeedMBps.toFixed(2)} MB/s)`);
+
+              console.log(
+                `✅ Photo ${i + 1}/${photos.length} (${
+                  photo.name
+                }) completed: ${totalMB.toFixed(
+                  2
+                )} MB in ${uploadDuration.toFixed(
+                  1
+                )}s (avg ${avgSpeedMBps.toFixed(2)} MB/s)`
+              );
               resolve();
             }
           );
         });
-        
+
         const downloadURL = await getDownloadURL(storageRef);
         console.log(`Photo ${i + 1} uploaded successfully`);
 
@@ -233,7 +272,7 @@ class FirebaseService {
     // Wait for all uploads to complete in parallel
     const uploadedPhotos = await Promise.all(uploadPromises);
     console.log(`All ${photos.length} photos uploaded successfully`);
-    
+
     // Final progress update
     if (onProgress) {
       onProgress({
@@ -244,7 +283,7 @@ class FirebaseService {
         totalSize: totalSize,
       });
     }
-    
+
     return uploadedPhotos;
   }
 
@@ -253,8 +292,13 @@ class FirebaseService {
     try {
       // Upload photos first
       console.log('Starting photo uploads...');
-      const uploadedPhotos = await this.uploadPhotos(orderData.photos, onProgress);
-      console.log(`Photo uploads completed: ${uploadedPhotos.length} photos uploaded`);
+      const uploadedPhotos = await this.uploadPhotos(
+        orderData.photos,
+        onProgress
+      );
+      console.log(
+        `Photo uploads completed: ${uploadedPhotos.length} photos uploaded`
+      );
 
       // Prepare order document
       const orderDoc = {
@@ -272,7 +316,9 @@ class FirebaseService {
         totalMagnets: orderData.totalMagnets,
         status: 'new',
         submissionDate: serverTimestamp(),
+        submissionDateClient: Date.now(), // Client-side timestamp (milliseconds) - always available
         createdAt: serverTimestamp(),
+        createdAtClient: Date.now(), // Client-side timestamp (milliseconds) - always available
         updatedAt: serverTimestamp(),
       };
 
@@ -282,18 +328,28 @@ class FirebaseService {
       // Never replace an authenticated user with anonymous
       // Wait once per page load to allow Firebase to restore authenticated sessions
       if (!authStateWaitCompleted) {
-        await new Promise((resolve) => setTimeout(resolve, AUTH_STATE_WAIT_TIME));
+        await new Promise((resolve) =>
+          setTimeout(resolve, AUTH_STATE_WAIT_TIME)
+        );
         authStateWaitCompleted = true;
       }
       const currentUser = auth?.currentUser;
       if (!currentUser || currentUser.isAnonymous) {
-        console.log('No authenticated user before Firestore save, signing in anonymously...');
+        console.log(
+          'No authenticated user before Firestore save, signing in anonymously...'
+        );
         try {
           await signInAnonymously(auth);
           // Auth state should propagate immediately
-          console.log('Anonymous sign-in completed, current user:', auth.currentUser?.uid);
+          console.log(
+            'Anonymous sign-in completed, current user:',
+            auth.currentUser?.uid
+          );
         } catch (authError) {
-          console.error('Anonymous sign-in failed before Firestore save:', authError);
+          console.error(
+            'Anonymous sign-in failed before Firestore save:',
+            authError
+          );
           // Continue anyway - rules might allow unauthenticated writes
         }
       } else {
@@ -301,19 +357,24 @@ class FirebaseService {
       }
 
       // Log the operation (Step 1: Track when errors occur)
-      const { logOperation, completeOperation } = await import('../utils/firestoreLogger.js');
+      const { logOperation, completeOperation } = await import(
+        '../utils/firestoreLogger.js'
+      );
       const logId = logOperation('saveOrder', {
         collection: 'orders',
         orderNumber: orderData.orderNumber,
         photoCount: orderDoc.photos.length,
       });
-      
+
       // Add to Firestore with timeout (increased to 30 seconds to account for slow uploads)
       console.log('Saving order to Firestore...');
       console.log('Firestore database:', db.app.options.projectId);
       console.log('Current auth user:', auth?.currentUser?.uid || 'null');
-      console.log('Order document to save:', { ...orderDoc, photos: `[${orderDoc.photos.length} photos]` });
-      
+      console.log('Order document to save:', {
+        ...orderDoc,
+        photos: `[${orderDoc.photos.length} photos]`,
+      });
+
       const savePromise = addDoc(collection(db, 'orders'), orderDoc)
         .then((docRef) => {
           completeOperation(logId, { data: { docId: docRef.id } });
@@ -326,10 +387,11 @@ class FirebaseService {
           console.error('Error message:', error.message);
           throw error;
         });
-      
+
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
-          () => reject(new Error('Firebase operation timed out after 30 seconds')),
+          () =>
+            reject(new Error('Firebase operation timed out after 30 seconds')),
           30000
         )
       );
@@ -492,7 +554,10 @@ class FirebaseService {
       });
 
       // Send shipping status update email to customer if order has shipping
-      if (orderDoc.shippingOption && orderDoc.shippingOption.type === 'shipping') {
+      if (
+        orderDoc.shippingOption &&
+        orderDoc.shippingOption.type === 'shipping'
+      ) {
         try {
           // You can add email notification for shipping updates here if needed
           console.log('Shipping status updated:', shippingStatus);
@@ -540,7 +605,7 @@ class FirebaseService {
       // Firebase Storage URLs are like: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media&token={token}
       // Or: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media
       let filePath = null;
-      
+
       try {
         const urlObj = new URL(photoUrl);
         // Try to match the path in the URL
@@ -568,7 +633,9 @@ class FirebaseService {
 
       if (!filePath) {
         console.warn('Could not extract file path from URL:', photoUrl);
-        throw new Error(`Invalid photo URL format: ${photoUrl.substring(0, 100)}`);
+        throw new Error(
+          `Invalid photo URL format: ${photoUrl.substring(0, 100)}`
+        );
       }
 
       const storageRef = ref(storage, filePath);
@@ -712,16 +779,17 @@ class FirebaseService {
         // Handle network errors (firewall, CORS, etc.)
         console.error('Network error processing payment:', fetchError);
         const errorMessage = fetchError.message || 'Network error';
-        const isFirewallError = errorMessage.includes('Failed to fetch') || 
-                                errorMessage.includes('NetworkError') ||
-                                errorMessage.includes('CORS') ||
-                                errorMessage.includes('blocked');
-        
+        const isFirewallError =
+          errorMessage.includes('Failed to fetch') ||
+          errorMessage.includes('NetworkError') ||
+          errorMessage.includes('CORS') ||
+          errorMessage.includes('blocked');
+
         // Log the error
         await this.logTransactionError({
           errorType: 'payment_network_error',
-          errorMessage: isFirewallError 
-            ? 'Payment request was blocked (firewall/network issue)' 
+          errorMessage: isFirewallError
+            ? 'Payment request was blocked (firewall/network issue)'
             : errorMessage,
           errorDetails: {
             originalError: errorMessage,
@@ -738,10 +806,10 @@ class FirebaseService {
             customerEmail: paymentData.buyerEmail,
             customerName: paymentData.customerName,
           },
-        }).catch(logError => {
+        }).catch((logError) => {
           console.error('Failed to log transaction error:', logError);
         });
-        
+
         throw new Error(
           isFirewallError
             ? 'Payment request was blocked. Please check your network connection or try again later.'
@@ -785,7 +853,10 @@ class FirebaseService {
         await this.logTransactionError({
           errorType: 'payment_failed',
           errorMessage: errorMessage,
-          errorDetails: result?.details || { status: response.status, statusText: response.statusText },
+          errorDetails: result?.details || {
+            status: response.status,
+            statusText: response.statusText,
+          },
           transactionData: {
             orderNumber: paymentData.orderNumber,
             amount: paymentData.amount,
@@ -892,22 +963,24 @@ class FirebaseService {
           options = data.options;
         }
       }
-      
+
       // If no options in database, use defaults
       if (options.length === 0) {
         options = DEFAULT_SHIPPING_OPTIONS.map((option) => ({ ...option }));
       }
-      
+
       // Filter out testing options unless explicitly requested (for admins)
       if (!includeTesting) {
         options = options.filter((option) => !option.isTesting);
       }
-      
+
       return options;
     } catch (error) {
       console.error('Error loading shipping options:', error);
       // Return defaults filtered by testing flag
-      const defaults = DEFAULT_SHIPPING_OPTIONS.map((option) => ({ ...option }));
+      const defaults = DEFAULT_SHIPPING_OPTIONS.map((option) => ({
+        ...option,
+      }));
       if (!includeTesting) {
         return defaults.filter((option) => !option.isTesting);
       }
@@ -992,13 +1065,13 @@ class FirebaseService {
         console.warn('⚠️ Cannot save cart: no user ID');
         return;
       }
-      
+
       // Sanitize cart items for Firestore - remove base64 previews (too large for Firestore 1MB limit)
       // Keep only Firebase Storage URLs which are small and persistent
-      const sanitizedItems = cartItems.map(item => {
+      const sanitizedItems = cartItems.map((item) => {
         if (item.isCustomUpload && item.photos) {
           // Remove base64 previews, keep only Firebase Storage URLs
-          const sanitizedPhotos = item.photos.map(photo => ({
+          const sanitizedPhotos = item.photos.map((photo) => ({
             name: photo.name,
             url: photo.url, // Firebase Storage URL (persistent, small)
             // Don't include preview (base64 can be 1-5MB per image, exceeds Firestore limit)
@@ -1014,13 +1087,18 @@ class FirebaseService {
         }
         return item;
       });
-      
+
       // Calculate approximate size to warn if too large
       const estimatedSize = JSON.stringify(sanitizedItems).length;
-      if (estimatedSize > 900000) { // Warn if approaching 1MB limit
-        console.warn('⚠️ Cart size is large:', estimatedSize, 'bytes. Firestore limit is 1MB.');
+      if (estimatedSize > 900000) {
+        // Warn if approaching 1MB limit
+        console.warn(
+          '⚠️ Cart size is large:',
+          estimatedSize,
+          'bytes. Firestore limit is 1MB.'
+        );
       }
-      
+
       const cartDocRef = doc(db, 'user_carts', userId);
       await setDoc(
         cartDocRef,
@@ -1030,13 +1108,19 @@ class FirebaseService {
         },
         { merge: true }
       );
-      console.log('✅ Cart saved to Firestore for user:', userId, sanitizedItems.length, 'items', `(${estimatedSize} bytes)`);
+      console.log(
+        '✅ Cart saved to Firestore for user:',
+        userId,
+        sanitizedItems.length,
+        'items',
+        `(${estimatedSize} bytes)`
+      );
     } catch (error) {
       console.error('❌ Error saving cart to Firestore:', error);
       console.error('   Error details:', {
         message: error.message,
         code: error.code,
-        stack: error.stack
+        stack: error.stack,
       });
       throw error;
     }
@@ -1054,7 +1138,12 @@ class FirebaseService {
       if (snapshot.exists()) {
         const data = snapshot.data();
         const items = data.items || [];
-        console.log('✅ Cart loaded from Firestore for user:', userId, items.length, 'items');
+        console.log(
+          '✅ Cart loaded from Firestore for user:',
+          userId,
+          items.length,
+          'items'
+        );
         return items;
       }
       console.log('ℹ️ No cart found in Firestore for user:', userId);
@@ -1086,7 +1175,9 @@ class FirebaseService {
       return null;
     }
     if (Array.isArray(obj)) {
-      return obj.map(item => this.removeUndefinedValues(item)).filter(item => item !== undefined);
+      return obj
+        .map((item) => this.removeUndefinedValues(item))
+        .filter((item) => item !== undefined);
     }
     if (typeof obj === 'object') {
       const cleaned = {};
@@ -1105,7 +1196,7 @@ class FirebaseService {
 
   // Clean cart items for Firestore - remove File objects, base64 previews, and other non-serializable data
   cleanCartItemsForFirestore(cartItems) {
-    return cartItems.map(item => {
+    return cartItems.map((item) => {
       const cleaned = {
         productId: item.productId,
         productName: item.productName,
@@ -1118,7 +1209,7 @@ class FirebaseService {
 
       // For custom uploads, clean photos - only keep URLs, not File objects or base64
       if (item.isCustomUpload && item.photos) {
-        cleaned.photos = item.photos.map(photo => {
+        cleaned.photos = item.photos.map((photo) => {
           const cleanedPhoto = {
             name: photo.name || '',
             url: photo.url || null,
@@ -1139,7 +1230,7 @@ class FirebaseService {
 
       // Clean cost breakdown if it exists
       if (item.costBreakdown) {
-        cleaned.costBreakdown = item.costBreakdown.map(breakdown => ({
+        cleaned.costBreakdown = item.costBreakdown.map((breakdown) => ({
           qty: breakdown.qty,
           count: breakdown.count,
           price: breakdown.price,
@@ -1154,12 +1245,16 @@ class FirebaseService {
   async saveCartOrder(orderData) {
     try {
       // Clean cart items to remove File objects, base64 previews, and other non-serializable data
-      const cartItems = this.cleanCartItemsForFirestore(orderData.cartItems || []);
-      
+      const cartItems = this.cleanCartItemsForFirestore(
+        orderData.cartItems || []
+      );
+
       // Clean shipping and payment options
       const shippingOption = orderData.shippingOption
         ? (() => {
-            const cleaned = JSON.parse(JSON.stringify(orderData.shippingOption));
+            const cleaned = JSON.parse(
+              JSON.stringify(orderData.shippingOption)
+            );
             // Remove any File objects or non-serializable data from address
             if (cleaned.address) {
               cleaned.address = {
@@ -1173,7 +1268,7 @@ class FirebaseService {
             return cleaned;
           })()
         : null;
-      
+
       const paymentOption = orderData.paymentOption
         ? (() => {
             const cleaned = JSON.parse(JSON.stringify(orderData.paymentOption));
@@ -1212,9 +1307,14 @@ class FirebaseService {
         shippingTimeline: orderData.shippingTimeline || null,
         status: orderData.status || 'pending',
         // Set default shipping status for orders with shipping
-        shippingStatus: shippingOption && shippingOption.type === 'shipping' ? 'pending' : null,
+        shippingStatus:
+          shippingOption && shippingOption.type === 'shipping'
+            ? 'pending'
+            : null,
         submissionDate: serverTimestamp(),
+        submissionDateClient: Date.now(), // Client-side timestamp (milliseconds) - always available
         createdAt: serverTimestamp(),
+        createdAtClient: Date.now(), // Client-side timestamp (milliseconds) - always available
         updatedAt: serverTimestamp(),
       };
 
@@ -1225,14 +1325,15 @@ class FirebaseService {
       const savePromise = addDoc(collection(db, 'orders'), cleanedOrderDoc);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
-          () => reject(new Error('Firebase operation timed out after 60 seconds')),
+          () =>
+            reject(new Error('Firebase operation timed out after 60 seconds')),
           60000
         )
       );
 
       const docRef = await Promise.race([savePromise, timeoutPromise]);
       console.log('Cart order saved with ID:', docRef.id);
-      
+
       // Return the document ID so we can update it later
       return docRef.id;
 
@@ -1415,4 +1516,3 @@ class FirebaseService {
 }
 
 export const firebaseService = new FirebaseService();
-

@@ -210,7 +210,14 @@
                 </div>
                 <div>
                   <strong>Order Date:</strong>
-                  {{ formatDate(order.submissionDate || order.createdAt) }}
+                  {{
+                    formatDate(
+                      order.submissionDate ||
+                        order.submissionDateClient ||
+                        order.createdAt ||
+                        order.createdAtClient
+                    )
+                  }}
                 </div>
                 <div v-if="order.totalAmount">
                   <strong>Total Amount:</strong> ${{
@@ -591,18 +598,30 @@ export default {
             // Sort by submissionDate (most recent first), handling missing/invalid dates
             ordersList.sort((a, b) => {
               const getDateValue = (order) => {
+                // Prefer server timestamp, fall back to client timestamp, then other dates
                 const date =
-                  order.submissionDate || order.createdAt || order.updatedAt;
+                  order.submissionDate ||
+                  order.submissionDateClient ||
+                  order.createdAt ||
+                  order.createdAtClient ||
+                  order.updatedAt;
                 if (!date) return 0;
                 try {
+                  // Handle Firestore Timestamp
                   if (date && typeof date.toDate === 'function') {
                     return date.toDate().getTime();
                   }
+                  // Handle number timestamps (milliseconds since epoch)
+                  if (typeof date === 'number') {
+                    return date;
+                  }
+                  // Handle Firestore timestamp object with seconds/nanoseconds
                   if (date && typeof date === 'object' && 'seconds' in date) {
                     return (
                       date.seconds * 1000 + (date.nanoseconds || 0) / 1000000
                     );
                   }
+                  // Handle Date objects or string timestamps
                   const parsed = new Date(date);
                   return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
                 } catch {
@@ -827,7 +846,12 @@ export default {
     });
 
     const formatDate = (timestamp) => {
-      if (!timestamp) return 'Unknown';
+      // This function should never be called with null/undefined for orders
+      // as we always set a client-side date fallback (submissionDateClient as timestamp number)
+      if (timestamp === null || timestamp === undefined) {
+        console.warn('formatDate called with null/undefined timestamp');
+        return new Date().toLocaleString(); // Fallback to current date
+      }
 
       try {
         let date;
@@ -835,11 +859,12 @@ export default {
         if (timestamp && typeof timestamp.toDate === 'function') {
           date = timestamp.toDate();
         }
-        // Handle string or number timestamps
-        else if (
-          typeof timestamp === 'string' ||
-          typeof timestamp === 'number'
-        ) {
+        // Handle number timestamps (milliseconds since epoch - from Date.now() or submissionDateClient)
+        else if (typeof timestamp === 'number') {
+          date = new Date(timestamp);
+        }
+        // Handle string timestamps
+        else if (typeof timestamp === 'string') {
           date = new Date(timestamp);
         }
         // Handle Date objects
@@ -861,13 +886,14 @@ export default {
 
         // Check if date is valid
         if (isNaN(date.getTime())) {
-          return 'Unknown';
+          console.warn('Invalid date detected, using current date as fallback');
+          return new Date().toLocaleString(); // Fallback to current date instead of Unknown
         }
 
         return date.toLocaleString();
       } catch (error) {
         console.error('Error formatting date:', error, timestamp);
-        return 'Unknown';
+        return new Date().toLocaleString(); // Fallback to current date
       }
     };
 

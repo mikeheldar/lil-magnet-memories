@@ -2653,6 +2653,9 @@ export default {
             button.style.backgroundColor = '#1a1a1a';
           });
 
+          // Store button reference for state updates
+          const applePayButtonRef = button;
+
           // Handle button click - tokenize with Square and place order
           button.addEventListener('click', async (e) => {
             console.log('🍎 Native Apple Pay button clicked!');
@@ -2683,6 +2686,14 @@ export default {
             try {
               console.log('🍎 Apple Pay button clicked, preparing payment...');
               submitting.value = true;
+
+              // Disable button and show loading state
+              if (applePayButtonRef) {
+                applePayButtonRef.disabled = true;
+                applePayButtonRef.style.opacity = '0.6';
+                applePayButtonRef.style.cursor = 'not-allowed';
+                applePayButtonRef.textContent = 'Processing...';
+              }
 
               // Update payment request with current order details before tokenizing
               if (squarePaymentRequest.value) {
@@ -2859,6 +2870,14 @@ export default {
             } catch (error) {
               console.error('❌ Apple Pay payment error:', error);
               submitting.value = false;
+
+              // Re-enable button on error
+              if (applePayButtonRef) {
+                applePayButtonRef.disabled = false;
+                applePayButtonRef.style.opacity = '1';
+                applePayButtonRef.style.cursor = 'pointer';
+                applePayButtonRef.textContent = 'Buy with Apple Pay';
+              }
 
               // Log error to Firestore for admin review
               try {
@@ -4111,6 +4130,7 @@ export default {
       }
 
       submitting.value = true;
+      let navigationSucceeded = false;
 
       try {
         showValidationErrors.value = false;
@@ -4329,7 +4349,7 @@ export default {
             type: selectedPaymentOption.value,
             processor: paymentProcessor,
             paymentId: squarePaymentDetails.id,
-            paidAt: squarePaymentDetails.createdAt || null,
+            paidAt: squarePaymentDetails.createdAt || new Date().toISOString(),
             status: squarePaymentDetails.status,
             receiptUrl: squarePaymentDetails.receiptUrl || null,
             billingAddress: billingAddressData,
@@ -4399,6 +4419,7 @@ export default {
         showOrderSuccessDialog.value = false;
 
         // Navigate to thank you page (same for both Apple Pay and credit card payments)
+        // Keep submitting=true until navigation completes - button will stay spinning
         try {
           await router.push({
             path: '/thank-you',
@@ -4409,9 +4430,13 @@ export default {
               totalMagnets: totalMagnets.toString(),
             },
           });
+          // Navigation successful - mark as succeeded so we don't clear submitting state
+          // The button will stay spinning until the page changes
+          navigationSucceeded = true;
         } catch (routerError) {
           console.error('Router navigation error:', routerError);
           // Fallback: use window.location if router.push fails
+          // This will cause a full page reload, so submitting state doesn't matter
           const queryParams = new URLSearchParams({
             orderNumber,
             customerName: `${customerInfo.value.firstName} ${customerInfo.value.lastName}`,
@@ -4419,6 +4444,7 @@ export default {
             totalMagnets: totalMagnets.toString(),
           });
           window.location.href = `/thank-you?${queryParams.toString()}`;
+          // Full page reload will happen, so we don't need to manage submitting state
         }
       } catch (error) {
         console.error('Error placing order:', error);
@@ -4469,7 +4495,13 @@ export default {
           timeout: 8000,
         });
       } finally {
-        submitting.value = false;
+        // Only set submitting to false if navigation didn't succeed
+        // On successful navigation, we're leaving the page so the button will stay spinning
+        // until the thank you page loads, which provides better UX feedback
+        if (!navigationSucceeded) {
+          submitting.value = false;
+        }
+        // If navigation succeeded, we're leaving the page and the loading state will naturally clear
       }
     };
 
