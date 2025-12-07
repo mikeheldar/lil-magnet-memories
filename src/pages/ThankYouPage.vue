@@ -176,13 +176,8 @@ export default {
       const checkedInEvent = marketEventService.getCheckedInEvent();
       const isAtMarketEvent = checkedInEvent !== null;
 
-      // Route to market event upload if user is at market event,
-      // otherwise route to online order page
-      if (isAtMarketEvent) {
-        router.push('/market-event-upload');
-      } else {
-        router.push('/online-order');
-      }
+      // Route to photo upload form (unified page handles both market and online)
+      router.push('/market-event-upload');
     };
 
     const goHome = () => {

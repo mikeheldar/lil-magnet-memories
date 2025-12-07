@@ -852,7 +852,7 @@ export default {
         // No active event - go to online order
         setCustomerType('online_customer');
         router.push({
-          path: '/online-order',
+          path: '/market-event-upload',
           query: queryParams
         });
       }

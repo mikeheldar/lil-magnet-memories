@@ -3,9 +3,10 @@
     <div class="col-12 col-md-8 col-lg-6 q-pa-md">
       <!-- Header -->
       <div class="text-center q-mb-lg">
-        <div class="text-h5 text-grey-7">Market Event Magnet Creation</div>
+        <div class="text-h5 text-grey-7">Photo Upload Form</div>
         <div class="text-body1 text-grey-6 q-mt-sm">
-          Create custom magnets for market event pickup
+          <span v-if="isAtMarketEvent">Create custom magnets for market event pickup</span>
+          <span v-else>Create custom magnets for home delivery</span>
         </div>
 
         <!-- Login Section for Non-Authenticated Users -->
@@ -380,7 +381,7 @@
                 @click="handleSubmitClick"
               >
                 <q-icon name="send" class="q-mr-sm" />
-                {{ isAtMarketEvent && paymentChoice === 'pay_online' ? 'Continue to Payment' : 'Submit Photos for Magnet Creation' }}
+                {{ isAtMarketEvent && paymentChoice === 'pay_online' ? 'Continue to Payment' : isAtMarketEvent ? 'Submit Photos for Magnet Creation' : 'Add to Cart' }}
               </q-btn>
             </div>
           </q-form>
@@ -1140,6 +1141,116 @@ export default {
               phone: formData.value.phone || '',
             },
           });
+          return;
+        } catch (error) {
+          console.error('❌ Error uploading photos for cart:', error);
+          submitting.value = false;
+          showUploadProgress.value = false;
+          safeNotify({
+            type: 'negative',
+            message: 'Failed to upload photos',
+            caption: error.message || 'Please try again',
+            position: 'top',
+          });
+        }
+      }
+      
+      // If NOT at market event (online order), add to cart and go to cart
+      if (!isAtMarketEvent.value) {
+        // Upload photos to Firebase Storage first to get persistent URLs
+        submitting.value = true;
+        showUploadProgress.value = true;
+        uploadProgress.value = {
+          overall: 0,
+          completed: 0,
+          total: selectedFiles.value.length,
+          uploaded: 0,
+          totalSize: selectedFiles.value.reduce((sum, file) => sum + (file.size || 0), 0),
+        };
+        try {
+          console.log('📤 Uploading photos to Firebase Storage for cart...');
+          const uploadedPhotos = await firebaseService.uploadPhotos(
+            selectedFiles.value,
+            (progress) => {
+              uploadProgress.value = progress;
+            }
+          );
+          console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
+          
+          // Prepare photos with download URLs and quantities for cart
+          const photosForCart = await Promise.all(
+            uploadedPhotos.map(async (uploadedPhoto, index) => {
+              const file = selectedFiles.value[index];
+              let base64Preview = null;
+              if (file) {
+                try {
+                  base64Preview = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                  });
+                } catch (error) {
+                  console.warn('Failed to convert file to base64:', error);
+                }
+              }
+              return {
+                name: uploadedPhoto.name,
+                url: uploadedPhoto.url, // Persistent Firebase Storage URL
+                preview: base64Preview || uploadedPhoto.url,
+                fileName: uploadedPhoto.fileName,
+                size: uploadedPhoto.size,
+                type: uploadedPhoto.type,
+                quantity: fileQuantities.value[index] || 1,
+              };
+            })
+          );
+          
+          // Add order to cart (no market event context for online orders)
+          addCustomUploadToCart({
+            productName: selectedProduct.value?.description || 'Custom Photo Magnets',
+            photos: photosForCart,
+            quantities: fileQuantities.value,
+            specialInstructions: formData.value.specialInstructions,
+            totalMagnets: totalMagnets.value,
+            totalCost: totalCost.value,
+            costBreakdown: totalCost.value.breakdown,
+            pricing: selectedProduct.value?.pricing || {},
+            marketEventContext: false, // Online orders don't have market event context
+            formData: {
+              firstName: formData.value.firstName,
+              lastName: formData.value.lastName,
+              email: formData.value.email,
+              phone: formData.value.phone,
+              specialInstructions: formData.value.specialInstructions,
+            },
+          });
+          
+          submitting.value = false;
+          showUploadProgress.value = false;
+          
+          // Show success notification
+          safeNotify({
+            type: 'positive',
+            message: 'Added to cart!',
+            caption: `${totalMagnets.value} magnets added to your cart`,
+            position: 'top',
+            timeout: 3000,
+          });
+          
+          // Navigate to cart page
+          try {
+            await router.push('/cart');
+          } catch (error) {
+            console.error('Failed to navigate to cart:', error);
+            safeNotify({
+              type: 'warning',
+              message: 'Added to cart, but navigation failed',
+              caption: 'Please open the cart manually.',
+              position: 'top',
+              timeout: 4000,
+            });
+          }
           return;
         } catch (error) {
           console.error('❌ Error uploading photos for cart:', error);

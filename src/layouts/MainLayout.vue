@@ -544,7 +544,7 @@ export default {
       } else {
         // No active event - go to online order
         setCustomerType('online_customer');
-        router.push('/online-order');
+        router.push('/market-event-upload');
       }
       leftDrawerOpen.value = false;
     };

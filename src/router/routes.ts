@@ -6,10 +6,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/LandingPage.vue') },
-      // Always use market event upload form; keep legacy /upload for compatibility
+      // Always use unified photo upload form; keep legacy /upload for compatibility
       { path: 'upload', redirect: '/market-event-upload' },
       { path: 'market-event-upload', component: () => import('pages/MarketEventUploadPage.vue') },
-      { path: 'online-order', component: () => import('pages/OnlineOrderPage.vue') },
+      { path: 'online-order', redirect: '/market-event-upload' },
       { path: 'cart', component: () => import('pages/CartPage.vue') },
       { path: 'checkout', component: () => import('pages/CheckoutPage.vue') },
       { path: 'thank-you', component: () => import('pages/ThankYouPage.vue') },
