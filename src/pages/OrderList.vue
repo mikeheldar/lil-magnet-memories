@@ -8,6 +8,22 @@
         View and manage all customer orders
       </div>
 
+      <!-- Search Bar -->
+      <div class="q-mt-md q-mb-md">
+        <q-input
+          v-model="searchQuery"
+          filled
+          placeholder="Search by name or email..."
+          clearable
+          class="max-width-600"
+          style="margin: 0 auto; max-width: 600px"
+        >
+          <template v-slot:prepend>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </div>
+
       <!-- Filter Toggles -->
       <div class="q-mt-md q-gutter-md">
         <div class="row items-center q-gutter-md justify-center">
@@ -570,6 +586,7 @@ export default {
     const hideCompleted = ref(false);
     const showCompletedDialog = ref(false);
     const orderTypeFilter = ref('all'); // 'all', 'shipping', 'pickup'
+    const searchQuery = ref('');
     const $q = useQuasar();
     const router = useRouter();
     let unsubscribeOrders = null;
@@ -628,7 +645,10 @@ export default {
                   return 0;
                 }
               };
-              return getDateValue(b) - getDateValue(a);
+              const dateA = getDateValue(a);
+              const dateB = getDateValue(b);
+              // Sort descending (newest first): larger date (b) - smaller date (a) = positive, so b comes first
+              return dateB - dateA;
             });
 
             orders.value = ordersList;
@@ -662,6 +682,25 @@ export default {
     const filteredOrders = computed(() => {
       let filtered = orders.value;
 
+      // Filter by search query (name or email)
+      if (searchQuery.value && searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase().trim();
+        filtered = filtered.filter((order) => {
+          const customer = order.customer || {};
+          const firstName = (customer.firstName || '').toLowerCase();
+          const lastName = (customer.lastName || '').toLowerCase();
+          const fullName = `${firstName} ${lastName}`.trim();
+          const email = (customer.email || '').toLowerCase();
+
+          return (
+            fullName.includes(query) ||
+            firstName.includes(query) ||
+            lastName.includes(query) ||
+            email.includes(query)
+          );
+        });
+      }
+
       // Filter by completion status
       if (hideCompleted.value) {
         filtered = filtered.filter((order) => order.status !== 'completed');
@@ -674,6 +713,41 @@ export default {
           return orderType === orderTypeFilter.value;
         });
       }
+
+      // Ensure filtered results are sorted by date (most recent first)
+      filtered.sort((a, b) => {
+        const getDateValue = (order) => {
+          // Prefer server timestamp, fall back to client timestamp, then other dates
+          const date =
+            order.submissionDate ||
+            order.submissionDateClient ||
+            order.createdAt ||
+            order.createdAtClient ||
+            order.updatedAt;
+          if (!date) return 0;
+          try {
+            // Handle Firestore Timestamp
+            if (date && typeof date.toDate === 'function') {
+              return date.toDate().getTime();
+            }
+            // Handle number timestamps (milliseconds since epoch)
+            if (typeof date === 'number') {
+              return date;
+            }
+            // Handle Firestore timestamp object with seconds/nanoseconds
+            if (date && typeof date === 'object' && 'seconds' in date) {
+              return date.seconds * 1000 + (date.nanoseconds || 0) / 1000000;
+            }
+            // Handle Date objects or string timestamps
+            const parsed = new Date(date);
+            return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+          } catch {
+            return 0;
+          }
+        };
+        // Sort descending (newest first): b - a
+        return getDateValue(b) - getDateValue(a);
+      });
 
       return filtered;
     });
@@ -1192,6 +1266,7 @@ export default {
       hideCompleted,
       showCompletedDialog,
       orderTypeFilter,
+      searchQuery,
       filteredOrders,
       completedOrders,
       loadOrders,
