@@ -66,56 +66,50 @@
               Your Information
             </div>
 
-            <div class="row q-col-gutter-xs">
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="formData.firstName"
-                  label="First Name *"
-                  filled
-                  ref="firstNameInput"
-                  :rules="[(val) => !!val || 'First name is required']"
-                  dense
-                  class="compact-input"
-                />
+            <div class="form-fields-container">
+              <div class="row q-col-gutter-xs">
+                <div class="col-12 col-md-6">
+                  <q-input
+                    v-model="formData.firstName"
+                    label="First Name *"
+                    filled
+                    ref="firstNameInput"
+                    :rules="[(val) => !!val || 'First name is required']"
+                  />
+                </div>
+                <div class="col-12 col-md-6">
+                  <q-input
+                    v-model="formData.lastName"
+                    label="Last Name *"
+                    filled
+                    ref="lastNameInput"
+                    :rules="[(val) => !!val || 'Last name is required']"
+                  />
+                </div>
               </div>
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="formData.lastName"
-                  label="Last Name *"
-                  filled
-                  ref="lastNameInput"
-                  :rules="[(val) => !!val || 'Last name is required']"
-                  dense
-                  class="compact-input"
-                />
-              </div>
-            </div>
 
-            <div class="row q-col-gutter-xs">
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="formData.email"
-                  label="Email Address *"
-                  type="email"
-                  filled
-                  ref="emailInput"
-                  :rules="[
-                    (val) => !!val || 'Email is required',
-                    (val) => isValidEmail(val) || 'Please enter a valid email',
-                  ]"
-                  dense
-                  class="compact-input"
-                />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="formData.phone"
-                  label="Phone Number"
-                  filled
-                  mask="(###) ###-####"
-                  dense
-                  class="compact-input"
-                />
+              <div class="row q-col-gutter-xs">
+                <div class="col-12 col-md-6">
+                  <q-input
+                    v-model="formData.email"
+                    label="Email Address *"
+                    type="email"
+                    filled
+                    ref="emailInput"
+                    :rules="[
+                      (val) => !!val || 'Email is required',
+                      (val) => isValidEmail(val) || 'Please enter a valid email',
+                    ]"
+                  />
+                </div>
+                <div class="col-12 col-md-6">
+                  <q-input
+                    v-model="formData.phone"
+                    label="Phone Number"
+                    filled
+                    mask="(###) ###-####"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1964,16 +1958,33 @@ export default {
   }
 }
 
-.compact-input {
-  margin-bottom: 4px;
-  
-  :deep(.q-field__control) {
-    min-height: 40px;
+.form-fields-container {
+  :deep(.row) {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
   }
   
-  :deep(.q-field__native) {
-    padding-top: 8px;
-    padding-bottom: 8px;
+  :deep(.row + .row) {
+    margin-top: 4px !important;
+  }
+  
+  :deep(.q-field) {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  :deep(.q-field__control) {
+    margin-bottom: 0 !important;
+  }
+  
+  :deep(.col) {
+    margin-bottom: 0 !important;
+  }
+  
+  :deep(.q-field__bottom) {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    min-height: 0 !important;
   }
 }
 </style>
