@@ -1,63 +1,43 @@
 <template>
   <q-page class="row justify-center">
     <div class="col-12 col-md-8 col-lg-6 q-pa-md">
-      <!-- Header -->
-      <div class="text-center q-mb-lg">
-        <div class="text-h5 text-grey-7">Photo Upload Form</div>
-        <div class="text-body1 text-grey-6 q-mt-sm">
-          <span v-if="isAtMarketEvent"
-            >Create custom magnets for market event pickup</span
-          >
-          <span v-else>Create custom magnets for home delivery</span>
-        </div>
-
-        <!-- Login Section for Non-Authenticated Users -->
-        <div v-if="!isAuthenticated" class="q-mb-lg">
-          <q-card class="q-pa-md bg-blue-1">
-            <q-card-section class="text-center">
-              <div class="text-h6 q-mb-sm text-primary">
-                <q-icon name="login" class="q-mr-sm" />
-                Already have an account?
+      <!-- Compact Login Section for Non-Authenticated Users -->
+      <div v-if="!isAuthenticated" class="q-mb-sm compact-sign-in">
+        <q-card class="q-pa-xs bg-blue-1">
+          <q-card-section class="q-pa-sm">
+            <div class="row items-center justify-between">
+              <div class="col-auto">
+                <span class="text-caption text-grey-7">Already have an account?</span>
               </div>
-              <div class="text-body2 q-mb-md text-grey-7">
-                Sign in to track your orders and get faster service
+              <div class="col-auto">
+                <q-btn
+                  @click="handleGoogleSignIn"
+                  color="primary"
+                  size="sm"
+                  dense
+                  class="q-px-sm"
+                  :loading="signingIn"
+                  :disable="signingIn"
+                >
+                  <q-icon name="login" size="16px" class="q-mr-xs" />
+                  <span class="text-caption">{{ signingIn ? 'Signing in...' : 'Sign in' }}</span>
+                </q-btn>
               </div>
-              <q-btn
-                @click="handleGoogleSignIn"
-                color="primary"
-                size="lg"
-                class="q-px-xl q-py-md"
-                :loading="signingIn"
-                :disable="signingIn"
-              >
-                <q-icon name="login" class="q-mr-sm" />
-                {{ signingIn ? 'Signing in...' : 'Sign in with Google' }}
-              </q-btn>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
 
-              <!-- Help text for popup blockers -->
-              <div class="text-caption text-grey-6 q-mt-sm text-center">
-                <q-icon name="info" size="14px" class="q-mr-xs" />
-                If sign-in hangs, check that popups are allowed for this site
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
-
-        <!-- User Info Pre-fill Notice for Authenticated Users -->
-        <div v-if="isAuthenticated" class="q-mb-md">
-          <q-card class="q-pa-sm bg-green-1">
-            <q-card-section class="text-center">
-              <q-icon name="check_circle" color="positive" class="q-mr-sm" />
-              <span class="text-positive text-weight-medium">
-                Signed in as
-                {{ currentUser?.displayName || currentUser?.email }}
-              </span>
-              <span class="text-grey-7 q-ml-sm">
-                - Your information will be saved and you can track your orders
-              </span>
-            </q-card-section>
-          </q-card>
-        </div>
+      <!-- User Info Pre-fill Notice for Authenticated Users -->
+      <div v-if="isAuthenticated" class="q-mb-sm">
+        <q-card class="q-pa-xs bg-green-1">
+          <q-card-section class="q-pa-sm text-center">
+            <q-icon name="check_circle" color="positive" size="16px" class="q-mr-xs" />
+            <span class="text-caption text-positive text-weight-medium">
+              Signed in as {{ currentUser?.displayName || currentUser?.email }}
+            </span>
+          </q-card-section>
+        </q-card>
       </div>
 
       <!-- Upload Form Card -->
@@ -71,6 +51,13 @@
             />
             Photo Upload Form
           </div>
+          
+          <div class="text-body2 text-grey-6 text-center q-mb-md">
+            <span v-if="isAtMarketEvent"
+              >Create custom magnets for market event pickup</span
+            >
+            <span v-else>Create custom magnets for home delivery</span>
+          </div>
 
           <q-form @submit="onSubmit" class="q-gutter-sm">
             <!-- Customer Information -->
@@ -79,7 +66,7 @@
               Your Information
             </div>
 
-            <div class="row q-col-gutter-sm">
+            <div class="row q-col-gutter-xs">
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="formData.firstName"
@@ -87,7 +74,8 @@
                   filled
                   ref="firstNameInput"
                   :rules="[(val) => !!val || 'First name is required']"
-                  class="q-mb-sm"
+                  dense
+                  class="compact-input"
                 />
               </div>
               <div class="col-12 col-md-6">
@@ -97,12 +85,13 @@
                   filled
                   ref="lastNameInput"
                   :rules="[(val) => !!val || 'Last name is required']"
-                  class="q-mb-sm"
+                  dense
+                  class="compact-input"
                 />
               </div>
             </div>
 
-            <div class="row q-col-gutter-sm">
+            <div class="row q-col-gutter-xs">
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="formData.email"
@@ -114,7 +103,8 @@
                     (val) => !!val || 'Email is required',
                     (val) => isValidEmail(val) || 'Please enter a valid email',
                   ]"
-                  class="q-mb-sm"
+                  dense
+                  class="compact-input"
                 />
               </div>
               <div class="col-12 col-md-6">
@@ -123,7 +113,8 @@
                   label="Phone Number"
                   filled
                   mask="(###) ###-####"
-                  class="q-mb-sm"
+                  dense
+                  class="compact-input"
                 />
               </div>
             </div>
@@ -138,8 +129,8 @@
               </div>
 
               <div class="text-body2 text-grey-7 q-mb-md">
-                Upload your photos below. You can select multiple photos at once.
-                We'll turn them into beautiful custom magnets!
+                Upload your photos below. You can select multiple photos at
+                once. We'll turn them into beautiful custom magnets!
               </div>
 
               <!-- File Upload -->
@@ -1951,7 +1942,11 @@ export default {
 .photo-upload-section {
   border: 3px solid #667eea;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%
+  );
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
   transition: all 0.3s ease;
 }
@@ -1959,5 +1954,26 @@ export default {
 .photo-upload-section:hover {
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25);
   border-color: #764ba2;
+}
+
+.compact-sign-in {
+  @media (max-width: 599px) {
+    .q-card {
+      border-radius: 8px;
+    }
+  }
+}
+
+.compact-input {
+  margin-bottom: 4px;
+  
+  :deep(.q-field__control) {
+    min-height: 40px;
+  }
+  
+  :deep(.q-field__native) {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
 }
 </style>
