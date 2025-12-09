@@ -75,11 +75,7 @@
           aria-label="Shopping Cart"
           class="q-mr-sm"
         >
-          <q-badge
-            color="orange"
-            :label="cartItemCount"
-            floating
-          />
+          <q-badge color="orange" :label="cartItemCount" floating />
           <q-tooltip>Shopping Cart</q-tooltip>
         </q-btn>
 
@@ -179,7 +175,8 @@
 
         <q-card-section>
           <div class="text-body1 q-mb-md">
-            We're currently at <strong>{{ activeMarketEvent?.name }}</strong>!
+            We're currently at <strong>{{ activeMarketEvent?.name }}</strong
+            >!
           </div>
           <div class="text-body2 text-grey-7 q-mb-md">
             Are you at the market event?
@@ -328,11 +325,17 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Print Template</q-item-label>
-                  <q-item-label caption>Select photos for print template</q-item-label>
+                  <q-item-label caption
+                    >Select photos for print template</q-item-label
+                  >
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple @click="navigateTo('/photo-management')">
+              <q-item
+                clickable
+                v-ripple
+                @click="navigateTo('/photo-management')"
+              >
                 <q-item-section avatar>
                   <q-icon name="delete_sweep" color="red" />
                 </q-item-section>
@@ -358,7 +361,9 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Manage Products</q-item-label>
-                  <q-item-label caption>Manage products and pricing</q-item-label>
+                  <q-item-label caption
+                    >Manage products and pricing</q-item-label
+                  >
                 </q-item-section>
               </q-item>
             </q-expansion-item>
@@ -401,13 +406,19 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple @click="navigateTo('/errored-transactions')">
+              <q-item
+                clickable
+                v-ripple
+                @click="navigateTo('/errored-transactions')"
+              >
                 <q-item-section avatar>
                   <q-icon name="error_outline" color="red" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Errored Transactions</q-item-label>
-                  <q-item-label caption>View failed payments and uploads</q-item-label>
+                  <q-item-label caption
+                    >View failed payments and uploads</q-item-label
+                  >
                 </q-item-section>
               </q-item>
             </q-expansion-item>
@@ -423,22 +434,21 @@
           default-opened
           header-class="text-grey-8"
         >
-
-        <!-- Sign In for non-authenticated users -->
-        <q-item
-          v-if="!isAuthenticated"
-          clickable
-          v-ripple
-          @click="handleSignIn"
-        >
-          <q-item-section avatar>
-            <q-icon name="login" color="positive" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Sign In</q-item-label>
-            <q-item-label caption>Log in to your account</q-item-label>
-          </q-item-section>
-        </q-item>
+          <!-- Sign In for non-authenticated users -->
+          <q-item
+            v-if="!isAuthenticated"
+            clickable
+            v-ripple
+            @click="handleSignIn"
+          >
+            <q-item-section avatar>
+              <q-icon name="login" color="positive" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Sign In</q-item-label>
+              <q-item-label caption>Log in to your account</q-item-label>
+            </q-item-section>
+          </q-item>
 
           <!-- Sign Out for authenticated users -->
           <q-item v-else clickable v-ripple @click="handleSignOut">
@@ -487,17 +497,17 @@ export default {
     });
 
     const { setCustomerType, isMarketCustomer } = useCustomerType();
-    
+
     // Create a ref that gets updated periodically to trigger reactivity
     const marketEventCheckTrigger = ref(0);
-    
+
     // Market event dialog state
     const showMarketEventDialog = ref(false);
 
     // Initialize market event cache immediately
     const marketEventCacheInitialized = ref(false);
     let marketEventUnsubscribe = null;
-    
+
     // Set up real-time listener for immediate updates
     marketEventUnsubscribe = marketEventService.addListener(() => {
       // Trigger reactivity when events change
@@ -505,7 +515,7 @@ export default {
       marketEventCacheInitialized.value = true;
       console.log('🔄 Market events updated in MainLayout');
     });
-    
+
     // Initial trigger to ensure UI reflects current state
     marketEventCheckTrigger.value++;
     marketEventCacheInitialized.value = true;
@@ -531,12 +541,12 @@ export default {
     const handleUploadClick = () => {
       // Check if there's an active market event
       const activeEvent = marketEventService.getCheckedInEvent();
-      
+
       if (activeEvent) {
         // If user has toggled "I'm at the event", go directly to market upload
         if (isMarketCustomer.value) {
           setCustomerType('market_customer');
-          router.push('/market-event-upload');
+          router.push('/photo-upload');
         } else {
           // Show popup to ask if they're at the event
           showMarketEventDialog.value = true;
@@ -544,25 +554,25 @@ export default {
       } else {
         // No active event - go to online order
         setCustomerType('online_customer');
-        router.push('/market-event-upload');
+        router.push('/photo-upload');
       }
       leftDrawerOpen.value = false;
     };
-    
+
     const confirmAtMarketEvent = () => {
       // Set the toggle state (this persists via localStorage in customerType composable)
       setCustomerType('market_customer');
-      // Close dialog and navigate to market event upload
+      // Close dialog and navigate to photo upload form
       showMarketEventDialog.value = false;
-      router.push('/market-event-upload');
+      router.push('/photo-upload');
       leftDrawerOpen.value = false;
     };
 
     const goToOnlineOrder = () => {
-      // User said they're not at the event - go to online ordering
+      // User said they're not at the event - go to photo upload form (online mode)
       showMarketEventDialog.value = false;
       setCustomerType('online_customer');
-      router.push('/online-order');
+      router.push('/photo-upload');
       leftDrawerOpen.value = false;
     };
 
@@ -664,7 +674,7 @@ export default {
         const { clearCart } = useCart();
         await clearCart();
         console.log('Cart cleared before sign out');
-        
+
         await authService.signOut();
         console.log('Sign out successful, showing notification...');
 
@@ -718,7 +728,7 @@ export default {
         // Anonymous users should see sign-in options, not be treated as signed in
         const isRealUser = user && !isAnonymousUser(user);
         isAuthenticated.value = isRealUser;
-        
+
         if (isRealUser) {
           userProfile.value = {
             displayName: user.displayName,
@@ -728,16 +738,19 @@ export default {
           // Check admin status immediately (sync check is fast and works offline)
           isAdmin.value = authService.isAdmin();
           console.log('Admin status updated (immediate):', isAdmin.value);
-          
+
           // Also check async in background for Firebase-based admins (non-blocking)
-          authService.isAdminAsync().then((adminStatus) => {
-            if (adminStatus !== isAdmin.value) {
-              isAdmin.value = adminStatus;
-              console.log('Admin status updated (async):', adminStatus);
-            }
-          }).catch(() => {
-            // Silently fail - sync check already handled it
-          });
+          authService
+            .isAdminAsync()
+            .then((adminStatus) => {
+              if (adminStatus !== isAdmin.value) {
+                isAdmin.value = adminStatus;
+                console.log('Admin status updated (async):', adminStatus);
+              }
+            })
+            .catch(() => {
+              // Silently fail - sync check already handled it
+            });
         } else {
           userProfile.value = {
             displayName: null,
@@ -856,11 +869,11 @@ export default {
 .market-event-chip {
   cursor: pointer;
   transition: opacity 0.2s;
-  
+
   &:hover {
     opacity: 0.9;
   }
-  
+
   @media (max-width: 600px) {
     min-width: 24px;
     width: 24px;
@@ -870,7 +883,7 @@ export default {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    
+
     :deep(.q-chip__content) {
       padding: 0 !important;
       display: flex !important;
@@ -880,12 +893,12 @@ export default {
       height: 100% !important;
       margin: 0 !important;
     }
-    
+
     // Hide icons on small screens
     :deep(.q-chip__icon) {
       display: none !important;
     }
-    
+
     // Hide text on small screens
     :deep(span) {
       display: none !important;
@@ -903,7 +916,7 @@ export default {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    
+
     :deep(.q-chip__content) {
       padding: 0 !important;
       display: flex !important;
@@ -913,12 +926,12 @@ export default {
       height: 100% !important;
       margin: 0 !important;
     }
-    
+
     // Hide icons on small screens
     :deep(.q-chip__icon) {
       display: none !important;
     }
-    
+
     // Hide text on small screens
     :deep(span) {
       display: none !important;

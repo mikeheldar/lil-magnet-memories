@@ -177,7 +177,7 @@ export default {
       const isAtMarketEvent = checkedInEvent !== null;
 
       // Route to photo upload form (unified page handles both market and online)
-      router.push('/market-event-upload');
+      router.push('/photo-upload');
     };
 
     const goHome = () => {

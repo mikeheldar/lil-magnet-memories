@@ -96,7 +96,7 @@
               color="primary"
               icon="camera_alt"
               label="Upload Photos"
-              @click="$router.push('/upload')"
+              @click="$router.push('/photo-upload')"
             />
           </p>
         </div>

@@ -4,7 +4,9 @@
     <div v-if="hasActiveEvent" class="market-event-banner bg-green-5">
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
-        <div class="text-body1 text-white flex items-center q-gutter-md banner-text">
+        <div
+          class="text-body1 text-white flex items-center q-gutter-md banner-text"
+        >
           <!-- Full text for larger screens -->
           <div class="gt-xs">
             <strong>Market Event Live!</strong> We're at
@@ -22,7 +24,9 @@
             @update:model-value="toggleCustomerAtEvent"
             class="banner-toggle"
           >
-            <span class="text-white text-body2 q-ml-sm gt-xs">I'm at the event</span>
+            <span class="text-white text-body2 q-ml-sm gt-xs"
+              >I'm at the event</span
+            >
             <span class="text-white text-body2 q-ml-sm lt-sm">At event</span>
           </q-toggle>
         </div>
@@ -97,9 +101,7 @@
     <div class="landing-container">
       <!-- How It Works Section -->
       <div class="how-it-works-section q-mb-xl">
-        <div class="text-h4 text-center q-mb-lg text-primary">
-          How It Works
-        </div>
+        <div class="text-h4 text-center q-mb-lg text-primary">How It Works</div>
         <div class="text-body1 text-center text-grey-7 q-mb-xl">
           Create personalized magnets in just a few simple steps
         </div>
@@ -186,10 +188,14 @@
           <!-- Multiple collections: show in collapsible groups -->
           <template v-if="Object.keys(customProductsByCollection).length > 1">
             <q-expansion-item
-              v-for="(productsInCollection, collectionName) in customProductsByCollection"
+              v-for="(
+                productsInCollection, collectionName
+              ) in customProductsByCollection"
               :key="collectionName"
               :label="collectionName"
-              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              :caption="`${productsInCollection.length} product${
+                productsInCollection.length !== 1 ? 's' : ''
+              }`"
               default-opened
               class="collection-group q-mb-md"
             >
@@ -261,10 +267,7 @@
             </q-expansion-item>
           </template>
           <!-- Single collection: show products directly -->
-          <div
-            v-else
-            class="q-col-gutter-md"
-          >
+          <div v-else class="q-col-gutter-md">
             <div
               v-for="product in customProducts"
               :key="product.id"
@@ -345,10 +348,14 @@
           <!-- Multiple collections: show in collapsible groups -->
           <template v-if="Object.keys(designerProductsByCollection).length > 1">
             <q-expansion-item
-              v-for="(productsInCollection, collectionName) in designerProductsByCollection"
+              v-for="(
+                productsInCollection, collectionName
+              ) in designerProductsByCollection"
               :key="collectionName"
               :label="collectionName"
-              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              :caption="`${productsInCollection.length} product${
+                productsInCollection.length !== 1 ? 's' : ''
+              }`"
               default-opened
               class="collection-group q-mb-md"
             >
@@ -358,65 +365,67 @@
                   :key="product.id"
                   class="col-12 col-md-6 col-lg-4"
                 >
-              <q-card class="product-card">
-                <q-card-section class="product-card-content text-center">
-                  <div v-if="product.imageUrl" class="product-image-wrapper">
-                    <img
-                      :src="product.imageUrl"
-                      :alt="product.description"
-                      class="product-image"
-                    />
-                  </div>
-                  <div v-else class="product-image-placeholder">
-                    <q-icon name="image" size="64px" color="grey-4" />
-                  </div>
-                  <div class="text-h6 q-mt-md q-mb-sm">
-                    {{ product.description }}
-                  </div>
-
-                  <div
-                    v-if="product.detailedDescription"
-                    class="product-description"
-                  >
-                    <div class="text-body2 text-grey-7">
-                      {{ product.detailedDescription }}
-                    </div>
-                  </div>
-
-                  <div class="product-pricing">
-                    <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                    <div
-                      v-for="(price, qty) in product.pricing"
-                      :key="qty"
-                      class="text-body2 q-mb-xs"
-                    >
-                      <strong>{{ qty }}x</strong> for
-                      <strong class="text-primary"
-                        >${{ price.toFixed(2) }}</strong
+                  <q-card class="product-card">
+                    <q-card-section class="product-card-content text-center">
+                      <div
+                        v-if="product.imageUrl"
+                        class="product-image-wrapper"
                       >
-                    </div>
-                  </div>
-                </q-card-section>
+                        <img
+                          :src="product.imageUrl"
+                          :alt="product.description"
+                          class="product-image"
+                        />
+                      </div>
+                      <div v-else class="product-image-placeholder">
+                        <q-icon name="image" size="64px" color="grey-4" />
+                      </div>
+                      <div class="text-h6 q-mt-md q-mb-sm">
+                        {{ product.description }}
+                      </div>
 
-                <q-card-actions class="product-card-actions q-pa-md">
-                  <q-btn
-                    color="secondary"
-                    label="Add to Cart"
-                    icon="add_shopping_cart"
-                    class="full-width"
-                    @click="addProductToCart(product)"
-                  />
-                </q-card-actions>
-              </q-card>
-            </div>
-            </div>
-          </q-expansion-item>
+                      <div
+                        v-if="product.detailedDescription"
+                        class="product-description"
+                      >
+                        <div class="text-body2 text-grey-7">
+                          {{ product.detailedDescription }}
+                        </div>
+                      </div>
+
+                      <div class="product-pricing">
+                        <div class="text-caption text-grey-8 q-mb-sm">
+                          Pricing:
+                        </div>
+                        <div
+                          v-for="(price, qty) in product.pricing"
+                          :key="qty"
+                          class="text-body2 q-mb-xs"
+                        >
+                          <strong>{{ qty }}x</strong> for
+                          <strong class="text-primary"
+                            >${{ price.toFixed(2) }}</strong
+                          >
+                        </div>
+                      </div>
+                    </q-card-section>
+
+                    <q-card-actions class="product-card-actions q-pa-md">
+                      <q-btn
+                        color="secondary"
+                        label="Add to Cart"
+                        icon="add_shopping_cart"
+                        class="full-width"
+                        @click="addProductToCart(product)"
+                      />
+                    </q-card-actions>
+                  </q-card>
+                </div>
+              </div>
+            </q-expansion-item>
           </template>
           <!-- Single collection: show products directly -->
-          <div
-            v-else
-            class="row q-col-gutter-md"
-          >
+          <div v-else class="row q-col-gutter-md">
             <div
               v-for="product in designerProducts"
               :key="product.id"
@@ -491,12 +500,18 @@
 
         <div v-if="specialtyProducts.length > 0" class="q-mb-xl">
           <!-- Multiple collections: show in collapsible groups -->
-          <template v-if="Object.keys(specialtyProductsByCollection).length > 1">
+          <template
+            v-if="Object.keys(specialtyProductsByCollection).length > 1"
+          >
             <q-expansion-item
-              v-for="(productsInCollection, collectionName) in specialtyProductsByCollection"
+              v-for="(
+                productsInCollection, collectionName
+              ) in specialtyProductsByCollection"
               :key="collectionName"
               :label="collectionName"
-              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              :caption="`${productsInCollection.length} product${
+                productsInCollection.length !== 1 ? 's' : ''
+              }`"
               default-opened
               class="collection-group q-mb-md"
             >
@@ -506,65 +521,67 @@
                   :key="product.id"
                   class="col-12 col-md-6 col-lg-4"
                 >
-              <q-card class="product-card">
-                <q-card-section class="text-center">
-                  <div v-if="product.imageUrl" class="product-image-wrapper">
-                    <img
-                      :src="product.imageUrl"
-                      :alt="product.description"
-                      class="product-image"
-                    />
-                  </div>
-                  <div v-else class="product-image-placeholder">
-                    <q-icon name="image" size="64px" color="grey-4" />
-                  </div>
-                  <div class="text-h6 q-mt-md q-mb-sm">
-                    {{ product.description }}
-                  </div>
-                </q-card-section>
+                  <q-card class="product-card">
+                    <q-card-section class="text-center">
+                      <div
+                        v-if="product.imageUrl"
+                        class="product-image-wrapper"
+                      >
+                        <img
+                          :src="product.imageUrl"
+                          :alt="product.description"
+                          class="product-image"
+                        />
+                      </div>
+                      <div v-else class="product-image-placeholder">
+                        <q-icon name="image" size="64px" color="grey-4" />
+                      </div>
+                      <div class="text-h6 q-mt-md q-mb-sm">
+                        {{ product.description }}
+                      </div>
+                    </q-card-section>
 
-                <q-card-section
-                  v-if="product.detailedDescription"
-                  class="product-description"
-                >
-                  <div class="text-body2 text-grey-7">
-                    {{ product.detailedDescription }}
-                  </div>
-                </q-card-section>
-
-                <q-card-section class="product-pricing">
-                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                  <div
-                    v-for="(price, qty) in product.pricing"
-                    :key="qty"
-                    class="text-body2 q-mb-xs"
-                  >
-                    <strong>{{ qty }}x</strong> for
-                    <strong class="text-primary"
-                      >${{ price.toFixed(2) }}</strong
+                    <q-card-section
+                      v-if="product.detailedDescription"
+                      class="product-description"
                     >
-                  </div>
-                </q-card-section>
+                      <div class="text-body2 text-grey-7">
+                        {{ product.detailedDescription }}
+                      </div>
+                    </q-card-section>
 
-                <q-card-actions class="q-pa-md">
-                  <q-btn
-                    color="primary"
-                    label="Add to Cart"
-                    icon="add_shopping_cart"
-                    class="full-width"
-                    @click="addProductToCart(product)"
-                  />
-                </q-card-actions>
-              </q-card>
-            </div>
-            </div>
-          </q-expansion-item>
+                    <q-card-section class="product-pricing">
+                      <div class="text-caption text-grey-8 q-mb-sm">
+                        Pricing:
+                      </div>
+                      <div
+                        v-for="(price, qty) in product.pricing"
+                        :key="qty"
+                        class="text-body2 q-mb-xs"
+                      >
+                        <strong>{{ qty }}x</strong> for
+                        <strong class="text-primary"
+                          >${{ price.toFixed(2) }}</strong
+                        >
+                      </div>
+                    </q-card-section>
+
+                    <q-card-actions class="q-pa-md">
+                      <q-btn
+                        color="primary"
+                        label="Add to Cart"
+                        icon="add_shopping_cart"
+                        class="full-width"
+                        @click="addProductToCart(product)"
+                      />
+                    </q-card-actions>
+                  </q-card>
+                </div>
+              </div>
+            </q-expansion-item>
           </template>
           <!-- Single collection: show products directly -->
-          <div
-            v-else
-            class="row q-col-gutter-md"
-          >
+          <div v-else class="row q-col-gutter-md">
             <div
               v-for="product in specialtyProducts"
               :key="product.id"
@@ -831,16 +848,16 @@ export default {
     const goToUpload = (product = null) => {
       // Check if there's an active market event
       const activeEvent = marketEventService.getCheckedInEvent();
-      
+
       const queryParams = product?.id ? { productId: product.id } : {};
-      
+
       if (activeEvent) {
         // If user has toggled "I'm at the event", go directly to market upload
         if (isCustomerAtEvent.value) {
           setCustomerType('market_customer');
           router.push({
-            path: '/market-event-upload',
-            query: queryParams
+            path: '/photo-upload',
+            query: queryParams,
           });
         } else {
           // Show popup to ask if they're at the event
@@ -852,8 +869,8 @@ export default {
         // No active event - go to online order
         setCustomerType('online_customer');
         router.push({
-          path: '/market-event-upload',
-          query: queryParams
+          path: '/photo-upload',
+          query: queryParams,
         });
       }
     };
@@ -863,10 +880,12 @@ export default {
       setCustomerType('market_customer');
       // Close dialog and navigate to market event upload
       showMarketEventDialog.value = false;
-      const queryParams = pendingProduct.value?.id ? { productId: pendingProduct.value.id } : {};
+      const queryParams = pendingProduct.value?.id
+        ? { productId: pendingProduct.value.id }
+        : {};
       router.push({
-        path: '/market-event-upload',
-        query: queryParams
+        path: '/photo-upload',
+        query: queryParams,
       });
       pendingProduct.value = null;
     };
@@ -875,10 +894,12 @@ export default {
       // User said they're not at the event - go to online ordering
       showMarketEventDialog.value = false;
       setCustomerType('online_customer');
-      const queryParams = pendingProduct.value?.id ? { productId: pendingProduct.value.id } : {};
+      const queryParams = pendingProduct.value?.id
+        ? { productId: pendingProduct.value.id }
+        : {};
       router.push({
         path: '/online-order',
-        query: queryParams
+        query: queryParams,
       });
       pendingProduct.value = null;
     };
@@ -901,15 +922,21 @@ export default {
         // Non-admins should not see testing products
         const isAdmin = authService.isAdmin();
         const productsData = await firebaseService.getProducts(isAdmin);
-        
+
         if (productsData && productsData.length > 0) {
           products.value = productsData;
           console.log(`✅ Loaded ${productsData.length} products`);
         } else {
           // If no products returned, retry if we haven't exceeded max retries
           if (retryCount < maxRetries) {
-            console.log(`⚠️ No products returned, retrying (${retryCount + 1}/${maxRetries})...`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+            console.log(
+              `⚠️ No products returned, retrying (${
+                retryCount + 1
+              }/${maxRetries})...`
+            );
+            await new Promise((resolve) =>
+              setTimeout(resolve, 1000 * (retryCount + 1))
+            );
             return loadProducts(retryCount + 1);
           } else {
             console.warn('⚠️ No products found after retries');
@@ -920,8 +947,14 @@ export default {
         console.error('Error loading products:', error);
         // Retry on error if we haven't exceeded max retries
         if (retryCount < maxRetries) {
-          console.log(`⚠️ Error loading products, retrying (${retryCount + 1}/${maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+          console.log(
+            `⚠️ Error loading products, retrying (${
+              retryCount + 1
+            }/${maxRetries})...`
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * (retryCount + 1))
+          );
           return loadProducts(retryCount + 1);
         } else {
           console.error('❌ Failed to load products after retries');
@@ -934,7 +967,7 @@ export default {
     const customProducts = computed(() => {
       return products.value.filter((p) => p.category === 'custom');
     });
-    
+
     const designerProducts = computed(() => {
       return products.value.filter((p) => p.category === 'designer');
     });
@@ -1024,7 +1057,6 @@ export default {
       }
     };
 
-
     // Check if user is already authenticated
     onMounted(async () => {
       // Set up real-time listener for immediate updates
@@ -1058,7 +1090,7 @@ export default {
       });
 
       // Load products with retry logic
-      loadProducts().catch(err => {
+      loadProducts().catch((err) => {
         console.error('Failed to load products:', err);
       });
 
@@ -1193,7 +1225,7 @@ export default {
   padding: 16px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
-  
+
   @media (max-width: 600px) {
     padding: 8px 12px;
   }
@@ -1206,7 +1238,7 @@ export default {
   align-items: center;
   justify-content: center;
   text-align: center;
-  
+
   @media (max-width: 600px) {
     gap: 8px;
   }

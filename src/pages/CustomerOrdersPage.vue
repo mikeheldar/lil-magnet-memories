@@ -44,7 +44,7 @@
           color="primary"
           label="Place Your First Order"
           icon="camera_alt"
-          @click="$router.push('/upload')"
+          @click="$router.push('/photo-upload')"
           class="q-mt-md"
         />
       </q-card-section>
