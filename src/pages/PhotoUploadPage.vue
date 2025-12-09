@@ -72,14 +72,14 @@
             Photo Upload Form
           </div>
 
-          <q-form @submit="onSubmit" class="q-gutter-md">
+          <q-form @submit="onSubmit" class="q-gutter-sm">
             <!-- Customer Information -->
             <div class="text-h6 text-weight-medium q-mb-sm text-primary">
               <q-icon name="person" class="q-mr-sm" />
               Your Information
             </div>
 
-            <div class="row q-col-gutter-md">
+            <div class="row q-col-gutter-sm">
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="formData.firstName"
@@ -87,6 +87,7 @@
                   filled
                   ref="firstNameInput"
                   :rules="[(val) => !!val || 'First name is required']"
+                  class="q-mb-sm"
                 />
               </div>
               <div class="col-12 col-md-6">
@@ -96,11 +97,12 @@
                   filled
                   ref="lastNameInput"
                   :rules="[(val) => !!val || 'Last name is required']"
+                  class="q-mb-sm"
                 />
               </div>
             </div>
 
-            <div class="row q-col-gutter-md">
+            <div class="row q-col-gutter-sm">
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="formData.email"
@@ -112,6 +114,7 @@
                     (val) => !!val || 'Email is required',
                     (val) => isValidEmail(val) || 'Please enter a valid email',
                   ]"
+                  class="q-mb-sm"
                 />
               </div>
               <div class="col-12 col-md-6">
@@ -120,6 +123,7 @@
                   label="Phone Number"
                   filled
                   mask="(###) ###-####"
+                  class="q-mb-sm"
                 />
               </div>
             </div>
@@ -127,102 +131,104 @@
             <!-- Photo Upload Section -->
             <q-separator class="q-my-md" />
 
-            <div class="text-h6 text-weight-medium q-mb-sm text-primary">
-              <q-icon name="photo_library" class="q-mr-sm" />
-              Your Photos
-            </div>
-
-            <div class="text-body2 text-grey-7 q-mb-md">
-              Upload your photos below. You can select multiple photos at once.
-              We'll turn them into beautiful custom magnets!
-            </div>
-
-            <!-- File Upload -->
-            <q-file
-              v-model="selectedFiles"
-              label="Choose Photos"
-              filled
-              multiple
-              accept="image/*"
-              @rejected="onRejected"
-              @update:model-value="onFileSelected"
-              class="q-mb-md"
-            >
-              <template v-slot:prepend>
-                <q-icon name="attach_file" />
-              </template>
-            </q-file>
-
-            <!-- Selected Files Preview -->
-            <div
-              v-if="selectedFiles && selectedFiles.length > 0"
-              class="q-mb-md"
-            >
-              <div class="text-subtitle2 q-mb-sm">
-                Selected Photos ({{ selectedFiles.length }}):
+            <div class="photo-upload-section q-pa-md q-mt-md">
+              <div class="text-h6 text-weight-medium q-mb-sm text-primary">
+                <q-icon name="photo_library" class="q-mr-sm" />
+                Your Photos
               </div>
-              <div class="row q-col-gutter-sm">
-                <div
-                  v-for="(file, index) in selectedFiles"
-                  :key="index"
-                  class="col-6 col-md-4 col-lg-3"
-                >
-                  <q-card class="q-pa-sm">
-                    <!-- Square frame with centered photo -->
-                    <div
-                      class="square-photo-frame q-mb-sm"
-                      style="
-                        width: 100%;
-                        aspect-ratio: 1;
-                        position: relative;
-                        overflow: hidden;
-                        border: 2px solid #e0e0e0;
-                        border-radius: 4px;
-                        background: #f5f5f5;
-                      "
-                    >
-                      <img
-                        :src="getFilePreview(file)"
+
+              <div class="text-body2 text-grey-7 q-mb-md">
+                Upload your photos below. You can select multiple photos at once.
+                We'll turn them into beautiful custom magnets!
+              </div>
+
+              <!-- File Upload -->
+              <q-file
+                v-model="selectedFiles"
+                label="Choose Photos"
+                filled
+                multiple
+                accept="image/*"
+                @rejected="onRejected"
+                @update:model-value="onFileSelected"
+                class="q-mb-md"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
+
+              <!-- Selected Files Preview -->
+              <div
+                v-if="selectedFiles && selectedFiles.length > 0"
+                class="q-mb-md"
+              >
+                <div class="text-subtitle2 q-mb-sm">
+                  Selected Photos ({{ selectedFiles.length }}):
+                </div>
+                <div class="row q-col-gutter-sm">
+                  <div
+                    v-for="(file, index) in selectedFiles"
+                    :key="index"
+                    class="col-6 col-md-4 col-lg-3"
+                  >
+                    <q-card class="q-pa-sm">
+                      <!-- Square frame with centered photo -->
+                      <div
+                        class="square-photo-frame q-mb-sm"
                         style="
-                          position: absolute;
-                          top: 50%;
-                          left: 50%;
-                          transform: translate(-50%, -50%);
                           width: 100%;
-                          height: 100%;
-                          object-fit: contain;
+                          aspect-ratio: 1;
+                          position: relative;
+                          overflow: hidden;
+                          border: 2px solid #e0e0e0;
+                          border-radius: 4px;
+                          background: #f5f5f5;
                         "
-                        class="rounded-borders"
-                      />
-                    </div>
-                    <div class="text-caption text-center q-mb-xs">
-                      {{ file.name }}
-                    </div>
-                    <div class="text-center">
-                      <div class="text-caption q-mb-xs">Quantity:</div>
-                      <q-btn-group>
-                        <q-btn
-                          dense
-                          size="sm"
-                          icon="remove"
-                          @click="decreaseQuantity(index)"
-                          :disable="fileQuantities[index] <= 1"
+                      >
+                        <img
+                          :src="getFilePreview(file)"
+                          style="
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            width: 100%;
+                            height: 100%;
+                            object-fit: contain;
+                          "
+                          class="rounded-borders"
                         />
-                        <q-btn
-                          dense
-                          size="sm"
-                          :label="fileQuantities[index]"
-                          class="q-px-md"
-                        />
-                        <q-btn
-                          dense
-                          size="sm"
-                          icon="add"
-                          @click="increaseQuantity(index)"
-                        />
-                      </q-btn-group>
-                    </div>
-                  </q-card>
+                      </div>
+                      <div class="text-caption text-center q-mb-xs">
+                        {{ file.name }}
+                      </div>
+                      <div class="text-center">
+                        <div class="text-caption q-mb-xs">Quantity:</div>
+                        <q-btn-group>
+                          <q-btn
+                            dense
+                            size="sm"
+                            icon="remove"
+                            @click="decreaseQuantity(index)"
+                            :disable="fileQuantities[index] <= 1"
+                          />
+                          <q-btn
+                            dense
+                            size="sm"
+                            :label="fileQuantities[index]"
+                            class="q-px-md"
+                          />
+                          <q-btn
+                            dense
+                            size="sm"
+                            icon="add"
+                            @click="increaseQuantity(index)"
+                          />
+                        </q-btn-group>
+                      </div>
+                    </q-card>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1940,5 +1946,18 @@ export default {
   height: 60px;
   object-fit: contain;
   display: block;
+}
+
+.photo-upload-section {
+  border: 3px solid #667eea;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  transition: all 0.3s ease;
+}
+
+.photo-upload-section:hover {
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25);
+  border-color: #764ba2;
 }
 </style>
