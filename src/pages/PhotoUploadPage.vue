@@ -1975,7 +1975,7 @@ export default {
   }
   
   :deep(.q-field--with-bottom) {
-    margin-bottom: 5px !important;
+    padding-bottom: 5px !important;
   }
   
   :deep(.q-field__bottom) {
