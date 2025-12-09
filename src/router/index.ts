@@ -58,100 +58,12 @@ export default route(function (/* { store, ssrContext } */) {
       }
     }
 
-    // Check for market event upload page - allow if there's an active event
+    // Photo upload page - always allow navigation (handles both market events and online orders)
+    // The page itself adapts based on market event status, so no need to block navigation
     if (to.path === '/photo-upload') {
-      // Detect refresh: from.path is empty (hard refresh) or same as to.path (soft refresh)
-      const isRefresh = !from.path || from.path === '' || from.path === to.path;
-
-      // First, check cache synchronously (fast check)
-      const cachedCheckedInEvent = marketEventService.getCheckedInEvent();
-      const activeEvent = marketEventService.getActiveEventSync();
-
-      // If there's an active event (checked in or not), allow navigation
-      // This allows anonymous users to access the page when an event is live
-      if (activeEvent) {
-        console.log(
-          'Route guard: Active market event found, allowing navigation'
-        );
-        // If anonymous user and event is active, they'll be auto-checked in on the page
-        next();
-        return;
-      }
-
-      // If cache has a checked-in event, allow navigation immediately
-      // This handles refresh cases where cache is already populated
-      if (cachedCheckedInEvent) {
-        console.log(
-          'Route guard: Checked-in event found in cache, allowing navigation'
-        );
-        next();
-        return;
-      }
-
-      // If this is a refresh, always allow it - the real-time listener will populate cache
-      // The page won't redirect aggressively, so user can stay on page
-      if (isRefresh) {
-        console.log(
-          'Route guard: Refresh detected, allowing navigation (real-time listener will update cache)'
-        );
-        next();
-        return;
-      }
-
-      // For new navigation (not refresh), check if there's an active event
-      try {
-        // Wait for real-time listener to connect and populate cache (if not already)
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        // Check for active event first (more permissive)
-        const quickActiveEvent = marketEventService.getActiveEventSync();
-        if (quickActiveEvent) {
-          console.log(
-            'Route guard: Active event found after wait, allowing navigation'
-          );
-          next();
-          return;
-        }
-
-        // Check cache again for checked-in event (should be populated by now if listener is working)
-        const quickCheck = marketEventService.getCheckedInEvent();
-        if (quickCheck) {
-          console.log(
-            'Route guard: Checked-in event found after wait, allowing navigation'
-          );
-          next();
-          return;
-        }
-
-        // If still not in cache, do async check (fallback)
-        const activeEventAsync = await marketEventService.getActiveEvent();
-        if (activeEventAsync) {
-          console.log(
-            'Route guard: Active event found via async check, allowing navigation'
-          );
-          next();
-          return;
-        }
-
-        const checkedInEvent =
-          await marketEventService.getCheckedInEventAsync();
-        if (!checkedInEvent) {
-          console.log(
-            'Route guard: No active market event found, redirecting to landing page'
-          );
-          next('/');
-          return;
-        }
-
-        console.log(
-          'Route guard: Checked-in market event found via async check, allowing navigation'
-        );
-      } catch (error) {
-        console.error('Route guard: Error checking market event:', error);
-        // On error for new navigation, redirect to be safe
-        next('/');
-        return;
-      }
+      console.log('Route guard: Allowing navigation to photo upload page');
+      next();
+      return;
     }
 
     console.log('Route guard:', {
