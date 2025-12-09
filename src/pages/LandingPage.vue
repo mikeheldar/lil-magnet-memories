@@ -50,8 +50,6 @@
           <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets</h1>
           <p class="hero-subtitle">
             Create custom photo magnets from your favorite moments.
-            High-quality, personalized magnets for your fridge, office, or
-            anywhere you want to display your memories.
           </p>
 
           <div class="hero-actions">
@@ -1173,7 +1171,7 @@ export default {
 
 <style lang="scss" scoped>
 .landing-page {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
   min-height: 100vh;
 }
 
@@ -1182,8 +1180,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px 100px 20px;
+  background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
   position: relative;
   overflow: hidden;
 }
@@ -1280,16 +1278,21 @@ export default {
 }
 
 .hero-actions {
+  margin-bottom: 40px;
+  
   .cta-button {
     font-size: 1.3rem;
     font-weight: 600;
     padding: 16px 32px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    border: 3px solid white;
+    color: white;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 12px 40px rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.9);
     }
   }
 }
@@ -1662,7 +1665,11 @@ export default {
 
 @media (max-width: 599px) {
   .hero-section {
-    padding: 20px 15px;
+    padding: 20px 15px 100px 15px;
+  }
+  
+  .hero-actions {
+    margin-bottom: 60px;
   }
 
   .hero-title {
