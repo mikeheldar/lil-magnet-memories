@@ -68,7 +68,7 @@
 
             <div class="form-fields-container">
               <div class="row q-col-gutter-xs">
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-3">
                   <q-input
                     v-model="formData.firstName"
                     label="First Name *"
@@ -77,7 +77,7 @@
                     :rules="[(val) => !!val || 'First name is required']"
                   />
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-3">
                   <q-input
                     v-model="formData.lastName"
                     label="Last Name *"
@@ -86,10 +86,7 @@
                     :rules="[(val) => !!val || 'Last name is required']"
                   />
                 </div>
-              </div>
-
-              <div class="row q-col-gutter-xs">
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-3">
                   <q-input
                     v-model="formData.email"
                     label="Email Address *"
@@ -102,7 +99,7 @@
                     ]"
                   />
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-3">
                   <q-input
                     v-model="formData.phone"
                     label="Phone Number"
@@ -1964,10 +1961,6 @@ export default {
     margin-top: 0 !important;
   }
   
-  :deep(.row + .row) {
-    margin-top: 4px !important;
-  }
-  
   :deep(.q-field) {
     margin-bottom: 0 !important;
     margin-top: 0 !important;
@@ -1979,6 +1972,10 @@ export default {
   
   :deep(.col) {
     margin-bottom: 0 !important;
+  }
+  
+  :deep(.q-field--with-bottom) {
+    margin-bottom: 5px !important;
   }
   
   :deep(.q-field__bottom) {
