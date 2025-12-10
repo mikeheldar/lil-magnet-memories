@@ -3531,9 +3531,19 @@ export default {
             ? shippingAddress.value
             : billingAddress.value;
 
+        // Convert dollars to cents for Square API
+        const amountInCents = Math.round((Number(orderTotal.value) || 0) * 100);
+
+        console.log('💳 Credit card payment amount:', {
+          orderTotal: orderTotal.value,
+          amountInCents,
+          cartItems: cartItems.value.length,
+          cartSubtotal: cartSubtotal.value,
+        });
+
         const paymentPayload = {
           sourceId: tokenResult.token,
-          amount: Number(orderTotal.value) || 0,
+          amount: amountInCents, // Square expects amount in cents
           currency: 'USD',
           orderNumber,
           buyerEmail: customerInfo.value.email,
@@ -3581,9 +3591,19 @@ export default {
           billingAddressToUse = billingAddress.value;
         }
 
+        // Convert dollars to cents for Square API
+        const amountInCents = Math.round((Number(orderTotal.value) || 0) * 100);
+
+        console.log('💳 Apple Pay payment amount:', {
+          orderTotal: orderTotal.value,
+          amountInCents,
+          cartItems: cartItems.value.length,
+          cartSubtotal: cartSubtotal.value,
+        });
+
         const paymentPayload = {
           sourceId: token,
-          amount: Number(orderTotal.value) || 0,
+          amount: amountInCents, // Square expects amount in cents
           currency: 'USD',
           orderNumber,
           buyerEmail: customerInfo.value.email,

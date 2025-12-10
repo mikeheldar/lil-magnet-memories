@@ -61,7 +61,7 @@ export const DEFAULT_SHIPPING_OPTIONS = [
 
 // Track if we've waited for auth state restoration on this page load
 let authStateWaitCompleted = false;
-const AUTH_STATE_WAIT_TIME = 500; // ms to wait for Firebase to restore auth state
+const AUTH_STATE_WAIT_TIME = 100; // ms to wait for Firebase to restore auth state (reduced from 500ms for faster uploads)
 
 class FirebaseService {
   // Upload photos to Firebase Storage with progress tracking
@@ -78,8 +78,8 @@ class FirebaseService {
     if (!currentUser || currentUser.isAnonymous) {
       try {
         const userCredential = await signInAnonymously(auth);
-        // Wait a moment for auth state to propagate
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Wait a moment for auth state to propagate (reduced from 100ms for faster uploads)
+        await new Promise((resolve) => setTimeout(resolve, 50));
       } catch (e) {
         // Silent failure - proceed with uploads anyway
         // Storage rules may reject if they require auth, but we'll try
