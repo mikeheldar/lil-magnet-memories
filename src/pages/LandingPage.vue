@@ -858,10 +858,13 @@ export default {
             query: queryParams,
           });
         } else {
-          // Show popup to ask if they're at the event
-          activeMarketEvent.value = activeEvent;
-          pendingProduct.value = product;
-          showMarketEventDialog.value = true;
+          // User has explicitly toggled to say they're NOT at the event
+          // Respect their choice and go directly to online mode (no dialog)
+          setCustomerType('online_customer');
+          router.push({
+            path: '/photo-upload',
+            query: queryParams,
+          });
         }
       } else {
         // No active event - go to online order
