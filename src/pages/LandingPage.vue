@@ -71,7 +71,13 @@
         </div>
 
         <div class="hero-images">
-          <div class="easel-container">
+          <div 
+            class="easel-container"
+            @click="nextImage"
+            @touchstart="handleTouchStart"
+            @touchmove="handleTouchMove"
+            @touchend="handleTouchEnd"
+          >
             <img
               :src="currentEaselImage"
               alt="Custom photo magnets on easel display"
@@ -87,7 +93,7 @@
                   'carousel-dot',
                   { 'dot-active': index === easelImageIndex },
                 ]"
-                @click="goToImage(index)"
+                @click.stop="goToImage(index)"
                 aria-label="Go to image"
               />
             </div>
@@ -736,9 +742,56 @@ export default {
       () => easelImages[easelImageIndex.value]
     );
 
-    // Navigation function for carousel dots
+    // Navigation functions for easel gallery
     const goToImage = (index) => {
       easelImageIndex.value = index;
+    };
+
+    const nextImage = () => {
+      if (easelImages.length > 1) {
+        easelImageIndex.value = (easelImageIndex.value + 1) % easelImages.length;
+      }
+    };
+
+    const previousImage = () => {
+      if (easelImages.length > 1) {
+        easelImageIndex.value = easelImageIndex.value === 0 
+          ? easelImages.length - 1 
+          : easelImageIndex.value - 1;
+      }
+    };
+
+    // Touch/swipe handling for mobile
+    const touchStartX = ref(0);
+    const touchEndX = ref(0);
+    const minSwipeDistance = 50; // Minimum distance in pixels to trigger swipe
+
+    const handleTouchStart = (e) => {
+      touchStartX.value = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e) => {
+      touchEndX.value = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+      if (!touchStartX.value || !touchEndX.value) return;
+      
+      const distance = touchStartX.value - touchEndX.value;
+      
+      if (Math.abs(distance) > minSwipeDistance) {
+        if (distance > 0) {
+          // Swiped left - go to next image
+          nextImage();
+        } else {
+          // Swiped right - go to previous image
+          previousImage();
+        }
+      }
+      
+      // Reset touch values
+      touchStartX.value = 0;
+      touchEndX.value = 0;
     };
 
     const handleGoogleSignIn = async () => {
@@ -1166,7 +1219,12 @@ export default {
       confirmAtMarketEvent,
       goToOnlineOrder,
       goToImage,
+      nextImage,
+      previousImage,
       toggleCustomerAtEvent,
+      handleTouchStart,
+      handleTouchMove,
+      handleTouchEnd,
     };
   },
 };
