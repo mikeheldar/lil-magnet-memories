@@ -892,11 +892,22 @@ export default {
       width: 100% !important;
       height: 100% !important;
       margin: 0 !important;
+      position: relative;
     }
 
-    // Hide icons on small screens
+    // Center icons on small screens
     :deep(.q-chip__icon) {
-      display: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: auto !important;
+      height: auto !important;
     }
 
     // Hide text on small screens
@@ -925,11 +936,22 @@ export default {
       width: 100% !important;
       height: 100% !important;
       margin: 0 !important;
+      position: relative;
     }
 
-    // Hide icons on small screens
+    // Center icons on small screens
     :deep(.q-chip__icon) {
-      display: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: auto !important;
+      height: auto !important;
     }
 
     // Hide text on small screens
