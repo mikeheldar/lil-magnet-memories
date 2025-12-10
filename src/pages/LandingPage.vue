@@ -1372,9 +1372,12 @@ export default {
   justify-content: center;
   align-items: center;
   position: relative;
+  cursor: pointer;
+  user-select: none;
 
   img {
     display: block;
+    pointer-events: none; // Prevent image from blocking container clicks
   }
 }
 
