@@ -189,19 +189,20 @@
               </div>
             </q-card-section>
 
-            <q-card-actions align="right" class="q-pa-md">
-              <q-btn
-                flat
-                label="Continue Shopping"
-                @click="$router.push('/')"
-                class="q-mr-sm"
-              />
+            <q-card-actions vertical class="q-pa-md">
               <q-btn
                 color="primary"
                 label="Proceed to Checkout"
                 icon="shopping_cart"
                 size="lg"
+                class="full-width"
                 @click="goToCheckout"
+              />
+              <q-btn
+                flat
+                label="Continue Shopping"
+                class="full-width q-mt-sm"
+                @click="$router.push('/')"
               />
             </q-card-actions>
           </q-card>
