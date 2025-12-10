@@ -1068,7 +1068,10 @@ class FirebaseService {
 
       // Sanitize cart items for Firestore - remove base64 previews (too large for Firestore 1MB limit)
       // Keep only Firebase Storage URLs which are small and persistent
+      // CRITICAL: Preserve totalCost, pricing, and totalPrice for proper order total calculation
       const sanitizedItems = cartItems.map((item) => {
+        const sanitized = { ...item };
+        
         if (item.isCustomUpload && item.photos) {
           // Remove base64 previews, keep only Firebase Storage URLs
           const sanitizedPhotos = item.photos.map((photo) => ({
@@ -1080,12 +1083,31 @@ class FirebaseService {
             type: photo.type,
             quantity: photo.quantity,
           }));
-          return {
-            ...item,
-            photos: sanitizedPhotos,
-          };
+          sanitized.photos = sanitizedPhotos;
         }
-        return item;
+        
+        // Preserve totalCost for custom uploads (critical for order total)
+        if (item.isCustomUpload && item.totalCost) {
+          sanitized.totalCost = item.totalCost;
+        }
+        
+        // Preserve pricing for custom uploads (needed to recalculate if totalCost is missing)
+        if (item.isCustomUpload && item.pricing) {
+          sanitized.pricing = item.pricing;
+        }
+        
+        // Preserve totalPrice for regular products
+        if (!item.isCustomUpload && item.totalPrice !== undefined) {
+          sanitized.totalPrice = item.totalPrice;
+        }
+        
+        // Preserve pricePerUnit and productPricing for regular products
+        if (!item.isCustomUpload) {
+          if (item.pricePerUnit !== undefined) sanitized.pricePerUnit = item.pricePerUnit;
+          if (item.productPricing) sanitized.productPricing = item.productPricing;
+        }
+        
+        return sanitized;
       });
 
       // Calculate approximate size to warn if too large
@@ -1195,6 +1217,7 @@ class FirebaseService {
   }
 
   // Clean cart items for Firestore - remove File objects, base64 previews, and other non-serializable data
+  // CRITICAL: Preserve totalCost, pricing, and totalPrice for proper order total calculation
   cleanCartItemsForFirestore(cartItems) {
     return cartItems.map((item) => {
       const cleaned = {
@@ -1223,6 +1246,16 @@ class FirebaseService {
         });
       }
 
+      // CRITICAL: Preserve totalCost for custom uploads (needed for order total)
+      if (item.isCustomUpload && item.totalCost) {
+        cleaned.totalCost = item.totalCost;
+      }
+
+      // CRITICAL: Preserve pricing for custom uploads (needed to recalculate if totalCost is missing)
+      if (item.isCustomUpload && item.pricing) {
+        cleaned.pricing = item.pricing;
+      }
+
       // Clean photoQuantities if it exists
       if (item.photoQuantities) {
         cleaned.photoQuantities = item.photoQuantities;
@@ -1235,6 +1268,17 @@ class FirebaseService {
           count: breakdown.count,
           price: breakdown.price,
         }));
+      }
+
+      // CRITICAL: Preserve totalPrice for regular products
+      if (!item.isCustomUpload && item.totalPrice !== undefined) {
+        cleaned.totalPrice = item.totalPrice;
+      }
+
+      // Preserve pricePerUnit and productPricing for regular products
+      if (!item.isCustomUpload) {
+        if (item.pricePerUnit !== undefined) cleaned.pricePerUnit = item.pricePerUnit;
+        if (item.productPricing) cleaned.productPricing = item.productPricing;
       }
 
       return cleaned;
