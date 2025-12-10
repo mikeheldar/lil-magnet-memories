@@ -471,14 +471,120 @@ export function useCart() {
     return cartItems.value.reduce((total, item) => total + item.quantity, 0);
   });
 
+  // Recalculate totalCost for custom upload items if missing or invalid
+  const recalculateCustomUploadCost = (item) => {
+    if (!item.isCustomUpload || !item.pricing || !item.quantity) {
+      return 0;
+    }
+
+    const pricing = item.pricing;
+    const totalQty = item.quantity || 0;
+
+    if (totalQty === 0 || !pricing || Object.keys(pricing).length === 0) {
+      console.warn('⚠️ Cannot recalculate cost: missing pricing or quantity', item);
+      return 0;
+    }
+
+    // Sort tiers from largest to smallest
+    const sortedTiers = Object.keys(pricing)
+      .map(Number)
+      .sort((a, b) => b - a);
+
+    let remainingQty = totalQty;
+    let totalCost = 0;
+
+    // Use a greedy algorithm to find the best combination
+    for (const tier of sortedTiers) {
+      const count = Math.floor(remainingQty / tier);
+      if (count > 0) {
+        const tierPrice = pricing[tier] * count;
+        totalCost += tierPrice;
+        remainingQty -= tier * count;
+      }
+    }
+
+    // Handle any remaining items with the smallest tier
+    if (remainingQty > 0 && sortedTiers.length > 0) {
+      const smallestTier = sortedTiers[sortedTiers.length - 1];
+      const remainingPrice = (pricing[smallestTier] / smallestTier) * remainingQty;
+      totalCost += remainingPrice;
+    }
+
+    return totalCost;
+  };
+
   const cartSubtotal = computed(() => {
-    return cartItems.value.reduce((total, item) => {
+    const subtotal = cartItems.value.reduce((total, item) => {
       // Handle both regular products and custom uploads
       if (item.isCustomUpload) {
-        return total + (item.totalCost?.total || 0);
+        let itemTotal = 0;
+        
+        // Check if totalCost exists and is valid
+        if (item.totalCost && typeof item.totalCost === 'object' && typeof item.totalCost.total === 'number') {
+          itemTotal = item.totalCost.total;
+        } else if (typeof item.totalCost === 'number') {
+          // Handle case where totalCost is a number directly
+          itemTotal = item.totalCost;
+        } else {
+          // Recalculate if missing or invalid
+          console.warn('⚠️ Missing or invalid totalCost for custom upload item, recalculating:', {
+            productId: item.productId,
+            productName: item.productName,
+            quantity: item.quantity,
+            hasPricing: !!item.pricing,
+            totalCost: item.totalCost,
+          });
+          itemTotal = recalculateCustomUploadCost(item);
+          
+          // Update the item with recalculated cost
+          if (itemTotal > 0) {
+            item.totalCost = { total: itemTotal, breakdown: [] };
+            console.log('✅ Recalculated and updated totalCost:', itemTotal);
+          }
+        }
+        
+        if (itemTotal === 0) {
+          console.error('❌ Custom upload item has $0 total:', {
+            productId: item.productId,
+            productName: item.productName,
+            quantity: item.quantity,
+            pricing: item.pricing,
+            totalCost: item.totalCost,
+          });
+        }
+        
+        return total + itemTotal;
       }
-      return total + (item.totalPrice || 0);
+      
+      // Regular products
+      const itemPrice = item.totalPrice || 0;
+      if (itemPrice === 0 && item.quantity > 0) {
+        console.error('❌ Regular product item has $0 totalPrice:', {
+          productId: item.productId,
+          productName: item.productName,
+          quantity: item.quantity,
+          pricePerUnit: item.pricePerUnit,
+        });
+      }
+      return total + itemPrice;
     }, 0);
+    
+    if (subtotal === 0 && cartItems.value.length > 0) {
+      console.error('❌ Cart subtotal is $0 but cart has items:', {
+        itemCount: cartItems.value.length,
+        items: cartItems.value.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          isCustomUpload: item.isCustomUpload,
+          quantity: item.quantity,
+          totalCost: item.totalCost,
+          totalPrice: item.totalPrice,
+          pricing: item.pricing,
+        })),
+      });
+    }
+    
+    return subtotal;
   });
 
   const getCartItem = (productId) => {
