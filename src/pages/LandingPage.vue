@@ -64,14 +64,14 @@
               Start Creating Magnets
             </q-btn>
 
-            <div class="text-caption text-grey-6 q-mt-md">
+            <div class="text-caption text-white q-mt-md">
               No sign-in required • Upload photos and specify quantities
             </div>
           </div>
         </div>
 
         <div class="hero-images">
-          <div 
+          <div
             class="easel-container"
             @click="nextImage"
             @touchstart="handleTouchStart"
@@ -749,15 +749,17 @@ export default {
 
     const nextImage = () => {
       if (easelImages.length > 1) {
-        easelImageIndex.value = (easelImageIndex.value + 1) % easelImages.length;
+        easelImageIndex.value =
+          (easelImageIndex.value + 1) % easelImages.length;
       }
     };
 
     const previousImage = () => {
       if (easelImages.length > 1) {
-        easelImageIndex.value = easelImageIndex.value === 0 
-          ? easelImages.length - 1 
-          : easelImageIndex.value - 1;
+        easelImageIndex.value =
+          easelImageIndex.value === 0
+            ? easelImages.length - 1
+            : easelImageIndex.value - 1;
       }
     };
 
@@ -776,9 +778,9 @@ export default {
 
     const handleTouchEnd = () => {
       if (!touchStartX.value || !touchEndX.value) return;
-      
+
       const distance = touchStartX.value - touchEndX.value;
-      
+
       if (Math.abs(distance) > minSwipeDistance) {
         if (distance > 0) {
           // Swiped left - go to next image
@@ -788,7 +790,7 @@ export default {
           previousImage();
         }
       }
-      
+
       // Reset touch values
       touchStartX.value = 0;
       touchEndX.value = 0;
@@ -1340,7 +1342,7 @@ export default {
 
 .hero-actions {
   margin-bottom: 40px;
-  
+
   .cta-button {
     font-size: 1.3rem;
     font-weight: 600;
@@ -1731,7 +1733,7 @@ export default {
   .hero-section {
     padding: 20px 15px 100px 15px;
   }
-  
+
   .hero-actions {
     margin-bottom: 60px;
   }
