@@ -967,6 +967,13 @@ export default {
   }
 }
 
+// Global chip icon styling
+:deep(.q-chip__icon) {
+  color: #0000008a;
+  font-size: 1.5em;
+  margin: 0.27em;
+}
+
 // Mobile responsive adjustments
 @media (max-width: 768px) {
   .q-toolbar-title {
