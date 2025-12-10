@@ -875,39 +875,42 @@ export default {
   }
 
   @media (max-width: 600px) {
-    min-width: 24px;
-    width: 24px;
-    height: 24px;
+    min-width: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
     padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    position: relative !important;
 
     :deep(.q-chip__content) {
       padding: 0 !important;
+      margin: 0 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
       width: 100% !important;
       height: 100% !important;
-      margin: 0 !important;
-      position: relative;
+      position: relative !important;
     }
 
     // Center icons on small screens
     :deep(.q-chip__icon) {
+      margin: 0 !important;
+      padding: 0 !important;
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: 16px !important;
+      height: 16px !important;
+      font-size: 16px !important;
+      line-height: 1 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: auto !important;
-      height: auto !important;
     }
 
     // Hide text on small screens
@@ -919,39 +922,42 @@ export default {
 
 .test-environment-chip {
   @media (max-width: 600px) {
-    min-width: 24px;
-    width: 24px;
-    height: 24px;
+    min-width: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
     padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    position: relative !important;
 
     :deep(.q-chip__content) {
       padding: 0 !important;
+      margin: 0 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
       width: 100% !important;
       height: 100% !important;
-      margin: 0 !important;
-      position: relative;
+      position: relative !important;
     }
 
     // Center icons on small screens
     :deep(.q-chip__icon) {
+      margin: 0 !important;
+      padding: 0 !important;
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: 16px !important;
+      height: 16px !important;
+      font-size: 16px !important;
+      line-height: 1 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: auto !important;
-      height: auto !important;
     }
 
     // Hide text on small screens
