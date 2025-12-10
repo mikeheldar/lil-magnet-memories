@@ -969,9 +969,9 @@ export default {
 
 // Global chip icon styling
 :deep(.q-chip__icon) {
-  color: #0000008a;
-  font-size: 1.5em;
-  margin: 0.27em;
+  color: #0000008a !important;
+  font-size: 1.5em !important;
+  margin: 0.27em !important;
 }
 
 // Mobile responsive adjustments
