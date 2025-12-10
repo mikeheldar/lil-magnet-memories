@@ -100,7 +100,7 @@
           <q-btn
             color="primary"
             size="lg"
-            class="action-btn q-mb-md"
+            class="full-width q-mb-md"
             @click="submitAnotherOrder"
           >
             <q-icon name="camera_alt" class="q-mr-sm" />
@@ -111,7 +111,7 @@
             v-if="isAuthenticated"
             color="purple"
             size="lg"
-            class="action-btn q-mb-md"
+            class="full-width q-mb-md"
             @click="viewMyOrders"
           >
             <q-icon name="list_alt" class="q-mr-sm" />
@@ -122,7 +122,7 @@
             flat
             color="grey-7"
             size="lg"
-            class="action-btn"
+            class="full-width"
             @click="goHome"
           >
             <q-icon name="arrow_back" class="q-mr-sm" />

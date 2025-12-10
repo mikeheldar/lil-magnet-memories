@@ -402,14 +402,14 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="text-center q-mt-lg">
+            <div class="q-mt-lg">
               <q-btn
                 type="submit"
                 color="primary"
                 size="lg"
                 :loading="submitting"
                 :disable="!canSubmit"
-                class="q-px-xl"
+                class="full-width"
                 @click="handleSubmitClick"
               >
                 <q-icon name="send" class="q-mr-sm" />
