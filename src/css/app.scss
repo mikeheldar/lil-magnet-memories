@@ -91,6 +91,13 @@
     }
   }
 
+  // Global chip icon styling
+  .q-chip__icon {
+    color: #0000008a !important;
+    font-size: 1.5em !important;
+    margin: 0.27em !important;
+  }
+
   // Adjust spacing
   .q-pa-md {
     padding: 8px !important;
