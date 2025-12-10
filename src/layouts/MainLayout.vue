@@ -969,7 +969,7 @@ export default {
 
 // Global chip icon styling
 :deep(.q-chip__icon) {
-  color: #0000008a !important;
+  color: rgba(255, 255, 255, 0.9) !important;
   font-size: 1.5em !important;
   margin: 0.27em !important;
 }
