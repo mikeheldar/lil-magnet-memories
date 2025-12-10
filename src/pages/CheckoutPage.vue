@@ -3531,19 +3531,33 @@ export default {
             ? shippingAddress.value
             : billingAddress.value;
 
-        // Convert dollars to cents for Square API
-        const amountInCents = Math.round((Number(orderTotal.value) || 0) * 100);
-
+        // Ensure orderTotal is calculated correctly before payment
+        const paymentAmount = Number(orderTotal.value) || 0;
+        
+        if (paymentAmount <= 0) {
+          console.error('❌ Invalid payment amount:', {
+            orderTotal: orderTotal.value,
+            cartItems: cartItems.value.length,
+            cartSubtotal: cartSubtotal.value,
+            shippingCost: shippingCost.value,
+            selectedShippingDetails: selectedShippingDetails.value,
+          });
+          throw new Error(
+            `Invalid order total: $${paymentAmount}. Please refresh the page and try again.`
+          );
+        }
+        
         console.log('💳 Credit card payment amount:', {
           orderTotal: orderTotal.value,
-          amountInCents,
+          paymentAmount,
           cartItems: cartItems.value.length,
           cartSubtotal: cartSubtotal.value,
+          shippingCost: shippingCost.value,
         });
 
         const paymentPayload = {
           sourceId: tokenResult.token,
-          amount: amountInCents, // Square expects amount in cents
+          amount: paymentAmount, // Backend expects dollars and converts to cents
           currency: 'USD',
           orderNumber,
           buyerEmail: customerInfo.value.email,
@@ -3591,19 +3605,33 @@ export default {
           billingAddressToUse = billingAddress.value;
         }
 
-        // Convert dollars to cents for Square API
-        const amountInCents = Math.round((Number(orderTotal.value) || 0) * 100);
-
+        // Ensure orderTotal is calculated correctly before payment
+        const paymentAmount = Number(orderTotal.value) || 0;
+        
+        if (paymentAmount <= 0) {
+          console.error('❌ Invalid payment amount:', {
+            orderTotal: orderTotal.value,
+            cartItems: cartItems.value.length,
+            cartSubtotal: cartSubtotal.value,
+            shippingCost: shippingCost.value,
+            selectedShippingDetails: selectedShippingDetails.value,
+          });
+          throw new Error(
+            `Invalid order total: $${paymentAmount}. Please refresh the page and try again.`
+          );
+        }
+        
         console.log('💳 Apple Pay payment amount:', {
           orderTotal: orderTotal.value,
-          amountInCents,
+          paymentAmount,
           cartItems: cartItems.value.length,
           cartSubtotal: cartSubtotal.value,
+          shippingCost: shippingCost.value,
         });
 
         const paymentPayload = {
           sourceId: token,
-          amount: amountInCents, // Square expects amount in cents
+          amount: paymentAmount, // Backend expects dollars and converts to cents
           currency: 'USD',
           orderNumber,
           buyerEmail: customerInfo.value.email,
