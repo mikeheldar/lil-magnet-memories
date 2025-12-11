@@ -238,7 +238,7 @@ export default {
 
       // Calculate total amount - prioritize stored values, then calculate
       let calculatedTotal = subtotal.value + shippingCost.value + tax.value;
-      
+
       // Priority order:
       // 1. If totalAmount is provided and greater than 0, use it (most reliable)
       if (data.totalAmount !== undefined && Number(data.totalAmount) > 0) {

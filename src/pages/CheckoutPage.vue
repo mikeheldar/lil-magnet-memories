@@ -4403,13 +4403,6 @@ export default {
             billingAddress: billingAddressData,
             amount: orderTotal.value, // Store the amount that was charged
           };
-        } else if (selectedPaymentOption.value === 'pay_at_event') {
-          // For pay-at-tent, store the amount they should pay
-          paymentOptionPayload = {
-            ...paymentOptionPayload,
-            amount: orderTotal.value,
-          };
-        }
 
           // Update order with payment details and status
           if (savedOrderId) {
@@ -4450,6 +4443,12 @@ export default {
               });
             }
           }
+        } else if (selectedPaymentOption.value === 'pay_at_event') {
+          // For pay-at-tent, store the amount they should pay
+          paymentOptionPayload = {
+            ...paymentOptionPayload,
+            amount: orderTotal.value,
+          };
         }
 
         // Clear cart
@@ -4459,7 +4458,7 @@ export default {
         // Always use orderTotal.value as it's the amount that was charged (Square) or should be paid (pay-at-tent)
         // Make sure it's never 0 if there's an actual order
         let displayTotalAmount = Number(orderTotal.value) || 0;
-        
+
         // If for some reason orderTotal is 0 but we have items, calculate it
         if (displayTotalAmount === 0 && cartItems.value.length > 0) {
           displayTotalAmount = cartSubtotal.value + shippingCost.value + tax.value;
