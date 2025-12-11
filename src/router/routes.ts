@@ -92,6 +92,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/ErroredTransactionsPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },
       },
+      {
+        path: 'test-runner',
+        component: () => import('pages/TestRunnerPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
     ],
   },
 

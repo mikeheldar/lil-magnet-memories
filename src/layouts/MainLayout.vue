@@ -406,6 +406,16 @@
                 </q-item-section>
               </q-item>
 
+              <q-item clickable v-ripple @click="navigateTo('/test-runner')">
+                <q-item-section avatar>
+                  <q-icon name="bug_report" color="purple" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Test Runner</q-item-label>
+                  <q-item-label caption>Run automated test suites</q-item-label>
+                </q-item-section>
+              </q-item>
+
               <q-item
                 clickable
                 v-ripple
@@ -595,6 +605,8 @@ export default {
             return 'Admin Settings';
           case '/email-test':
             return 'Admin - Email Test';
+          case '/test-runner':
+            return 'Admin - Test Runner';
           case '/errored-transactions':
             return 'Admin - Errored Transactions';
           case '/market-events':

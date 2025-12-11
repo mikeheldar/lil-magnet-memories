@@ -3533,7 +3533,7 @@ export default {
 
         // Ensure orderTotal is calculated correctly before payment
         const paymentAmount = Number(orderTotal.value) || 0;
-        
+
         if (paymentAmount <= 0) {
           console.error('❌ Invalid payment amount:', {
             orderTotal: orderTotal.value,
@@ -3546,7 +3546,7 @@ export default {
             `Invalid order total: $${paymentAmount}. Please refresh the page and try again.`
           );
         }
-        
+
         console.log('💳 Credit card payment amount:', {
           orderTotal: orderTotal.value,
           paymentAmount,
@@ -3607,7 +3607,7 @@ export default {
 
         // Ensure orderTotal is calculated correctly before payment
         const paymentAmount = Number(orderTotal.value) || 0;
-        
+
         if (paymentAmount <= 0) {
           console.error('❌ Invalid payment amount:', {
             orderTotal: orderTotal.value,
@@ -3620,7 +3620,7 @@ export default {
             `Invalid order total: $${paymentAmount}. Please refresh the page and try again.`
           );
         }
-        
+
         console.log('💳 Apple Pay payment amount:', {
           orderTotal: orderTotal.value,
           paymentAmount,
