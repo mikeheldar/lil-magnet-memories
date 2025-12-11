@@ -36,7 +36,7 @@ const handler = async (req, res) => {
 
     // Determine which tests to run
     let testCommand = 'npx playwright test';
-    
+
     if (testId) {
       // Run a specific test by ID (e.g., TC-1.1)
       // Playwright supports running tests by name pattern
@@ -50,7 +50,7 @@ const handler = async (req, res) => {
       // Run entire suite
       testCommand += ` tests/e2e/scenarios/${testSuite}.spec.ts`;
     }
-    
+
     testCommand += ' --reporter=json';
 
     console.log(`Running tests: ${testCommand}`);
@@ -70,27 +70,30 @@ const handler = async (req, res) => {
         console.error('No output from Playwright');
         return res.status(500).json({
           error: 'No test results returned',
-          message: 'Playwright did not return any output. Check that tests exist and Playwright is installed.',
+          message:
+            'Playwright did not return any output. Check that tests exist and Playwright is installed.',
           stderr: stderr.substring(0, 1000),
         });
       }
-      
+
       results = JSON.parse(stdout);
     } catch (parseError) {
       // If JSON parsing fails, check if it's a file not found error
       console.error('Failed to parse test results:', parseError);
       console.error('Stdout:', stdout.substring(0, 500));
       console.error('Stderr:', stderr.substring(0, 500));
-      
+
       // Check for common errors
       if (stderr.includes('Cannot find module') || stderr.includes('ENOENT')) {
         return res.status(404).json({
           error: 'Test file not found',
-          message: `Could not find test file. Make sure the test suite exists: ${testSuite || 'all'}`,
+          message: `Could not find test file. Make sure the test suite exists: ${
+            testSuite || 'all'
+          }`,
           details: stderr.substring(0, 1000),
         });
       }
-      
+
       return res.status(500).json({
         error: 'Failed to parse test results',
         message: parseError.message,
@@ -168,19 +171,22 @@ const handler = async (req, res) => {
     return res.status(200).json(testResults);
   } catch (error) {
     console.error('Error running tests:', error);
-    
+
     // Check for specific error types
     let statusCode = 500;
     let errorMessage = 'Failed to run tests';
-    
+
     if (error.code === 'ENOENT' || error.message.includes('not found')) {
       statusCode = 404;
       errorMessage = 'Test file or Playwright not found';
-    } else if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+    } else if (
+      error.code === 'ETIMEDOUT' ||
+      error.message.includes('timeout')
+    ) {
       statusCode = 504;
       errorMessage = 'Test execution timed out';
     }
-    
+
     return res.status(statusCode).json({
       error: errorMessage,
       message: error.message,

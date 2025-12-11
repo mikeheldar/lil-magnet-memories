@@ -315,6 +315,7 @@ import {
   searchTests,
 } from '../../tests/test-catalog';
 import { testHistoryService } from '../services/testHistoryService';
+import { testGridService } from '../services/testGridService';
 
 export default {
   name: 'TestRunnerPage',
@@ -393,7 +394,7 @@ export default {
       // Initialize only the tests that will actually run
       // If a specific suite is selected, only mark those tests
       const testsToRun = selectedSuite.value
-        ? filteredTests.value.filter(t => t.suiteFile === selectedSuite.value)
+        ? filteredTests.value.filter((t) => t.suiteFile === selectedSuite.value)
         : filteredTests.value;
 
       testsToRun.forEach((testCase) => {
@@ -471,19 +472,24 @@ export default {
         });
       } catch (err) {
         console.error('Error running tests:', err);
-        
+
         // Extract error message with helpful context
         let errorMsg = err.message || 'Failed to run tests';
         if (err.response?.data) {
-          errorMsg = err.response.data.error || err.response.data.message || errorMsg;
+          errorMsg =
+            err.response.data.error || err.response.data.message || errorMsg;
           // Provide helpful messages for common errors
           if (err.response.status === 404) {
             errorMsg = `Test file not found. Make sure:
 1. Test server is running: npm run test:server
 2. Playwright is installed: npm run test:setup
 3. Test files exist in tests/e2e/scenarios/`;
-          } else if (err.response.status === 504 || err.message?.includes('timeout')) {
-            errorMsg = 'Test execution timed out. Tests may be taking too long.';
+          } else if (
+            err.response.status === 504 ||
+            err.message?.includes('timeout')
+          ) {
+            errorMsg =
+              'Test execution timed out. Tests may be taking too long.';
           }
         }
 
@@ -532,21 +538,35 @@ export default {
       };
 
       try {
-        const apiUrl =
-          window.location.hostname === 'localhost'
-            ? 'http://localhost:3000/api/run-tests'
-            : '/api/run-tests';
+        // Use TestGrid API if configured, otherwise fall back to local
+        const useTestGrid = !!process.env.VITE_TESTGRID_API_URL;
 
-        const response = await axios.post(
-          apiUrl,
-          {
+        let response;
+        if (useTestGrid) {
+          // Use TestGrid service
+          const result = await testGridService.runTest({
             testSuite: testCase.suiteFile,
-            testId: testCase.id, // Pass the specific test ID
-          },
-          {
-            timeout: 300000,
-          }
-        );
+            testCaseId: testCase.id,
+          });
+          response = { data: result };
+        } else {
+          // Fall back to local API
+          const apiUrl =
+            window.location.hostname === 'localhost'
+              ? 'http://localhost:3000/api/run-tests'
+              : '/api/run-tests';
+
+          response = await axios.post(
+            apiUrl,
+            {
+              testSuite: testCase.suiteFile,
+              testId: testCase.id, // Pass the specific test ID
+            },
+            {
+              timeout: 300000,
+            }
+          );
+        }
 
         testResults.value = response.data;
 
@@ -558,7 +578,12 @@ export default {
               if (match && match[1] === testCase.id) {
                 runningTests.value[testCase.id] = {
                   status: test.status,
-                  progress: test.status === 'passed' ? 1 : test.status === 'failed' ? 1 : 0,
+                  progress:
+                    test.status === 'passed'
+                      ? 1
+                      : test.status === 'failed'
+                      ? 1
+                      : 0,
                   error: test.error || null,
                 };
                 // Save to history
@@ -573,23 +598,29 @@ export default {
         }
 
         $q.notify({
-          type: runningTests.value[testCase.id]?.status === 'passed' ? 'positive' : 'negative',
-          message: runningTests.value[testCase.id]?.status === 'passed'
-            ? 'Test passed!'
-            : 'Test failed',
+          type:
+            runningTests.value[testCase.id]?.status === 'passed'
+              ? 'positive'
+              : 'negative',
+          message:
+            runningTests.value[testCase.id]?.status === 'passed'
+              ? 'Test passed!'
+              : 'Test failed',
           position: 'top',
           timeout: 5000,
         });
       } catch (err) {
         console.error('Error running test:', err);
-        
+
         // Extract error message
         let errorMsg = err.message || 'Failed to run test';
         if (err.response?.data) {
-          errorMsg = err.response.data.error || err.response.data.message || errorMsg;
+          errorMsg =
+            err.response.data.error || err.response.data.message || errorMsg;
           // If it's a 404, provide more helpful message
           if (err.response.status === 404) {
-            errorMsg = `Test file not found. Make sure the test server is running (npm run test:server) and Playwright is installed (npm run test:setup).`;
+            errorMsg =
+              'Test file not found. Make sure the test server is running (npm run test:server) and Playwright is installed (npm run test:setup).';
           }
         }
 
@@ -600,7 +631,7 @@ export default {
           progress: 1,
           error: errorMsg,
         };
-        
+
         // Save failed status to history
         testHistoryService.saveTestResult(testCase.id, {
           status: 'failed',

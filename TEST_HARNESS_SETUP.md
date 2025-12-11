@@ -61,6 +61,7 @@ npm install
 ```
 
 This installs all project dependencies including:
+
 - `@playwright/test` - Playwright testing framework
 - `express` - Test API server
 - `axios` - HTTP client for API calls
@@ -159,6 +160,7 @@ npm run test:server
 ```
 
 You should see:
+
 ```
 ✅ Test API server running on http://localhost:3000
 📋 Health check: http://localhost:3000/api/health
@@ -287,31 +289,37 @@ TEST_API_PORT=3000
 The test harness includes the following test suites:
 
 ### 1. Market Event NOT Live
+
 - **File**: `market-event-not-live.spec.ts`
 - **Tests**: Online ordering scenarios when no market event is active
 - **Coverage**: Credit card, Apple Pay, shipping, local pickup, bulk orders
 
 ### 2. Market Event LIVE - User Toggles "At Event"
+
 - **File**: `market-event-live.spec.ts`
 - **Tests**: Market event scenarios with user toggle enabled
 - **Coverage**: Pay at tent, online payment, bulk orders at events
 
 ### 3. Market Event LIVE - Popup Flow
+
 - **File**: `market-event-live.spec.ts`
 - **Tests**: Market event dialog scenarios
 - **Coverage**: Popup handling, toggle persistence, navigation
 
 ### 4. Authenticated User Scenarios
+
 - **File**: `authenticated-users.spec.ts`
 - **Tests**: Signed-in user flows
 - **Coverage**: "My Orders" visibility, order history
 
 ### 5. Data Integrity and Button Functionality
+
 - **File**: `data-integrity.spec.ts`
 - **Tests**: Data validation and UI functionality
 - **Coverage**: Sorting, search, receipt data, button states, upload progress
 
 ### 6. Edge Cases and Error Handling
+
 - **File**: `edge-cases.spec.ts`
 - **Tests**: Error scenarios and edge cases
 - **Coverage**: Form validation, toggle persistence, order uniqueness
@@ -384,7 +392,7 @@ Mock Square and Apple Pay payments:
 ```typescript
 import { PaymentMocker } from '../utils/payments/payment-mocker';
 
-await PaymentMocker.mockSquarePayment(page, { success: true, amount: 25.00 });
+await PaymentMocker.mockSquarePayment(page, { success: true, amount: 25.0 });
 await PaymentMocker.mockApplePay(page, { success: true });
 ```
 
@@ -397,7 +405,7 @@ import { DataValidators } from '../utils/validation/data-validators';
 
 DataValidators.validateOrderNumber('ORD-12345');
 DataValidators.validateOrderDate(new Date());
-DataValidators.validateOrderTotal(25.00);
+DataValidators.validateOrderTotal(25.0);
 ```
 
 ## Troubleshooting
@@ -407,11 +415,13 @@ DataValidators.validateOrderTotal(25.00);
 #### 404 Error: "The page could not be found"
 
 **Causes:**
+
 1. Test API server not running
 2. Playwright browsers not installed
 3. Test files missing
 
 **Solutions:**
+
 ```bash
 # 1. Start test server
 npm run test:server
@@ -426,11 +436,13 @@ ls tests/e2e/scenarios/
 #### Tests Timeout
 
 **Causes:**
+
 - Slow network
 - Large photo uploads
 - Firebase connection issues
 
 **Solutions:**
+
 - Increase timeout in `playwright.config.ts`
 - Check network connection
 - Verify Firebase project is accessible
@@ -438,10 +450,12 @@ ls tests/e2e/scenarios/
 #### "Cannot find module" Errors
 
 **Causes:**
+
 - Missing dependencies
 - TypeScript compilation issues
 
 **Solutions:**
+
 ```bash
 npm install
 npx playwright install --with-deps
@@ -458,11 +472,13 @@ npx playwright install --with-deps
 ### Debugging Tips
 
 1. **Use headed mode** to see what's happening:
+
    ```bash
    npm run test:e2e:headed
    ```
 
 2. **Use Playwright UI** for step-by-step debugging:
+
    ```bash
    npm run test:e2e:ui
    ```
@@ -470,6 +486,7 @@ npx playwright install --with-deps
 3. **Check browser console** for JavaScript errors
 
 4. **Review test reports**:
+
    ```bash
    npm run test:report
    ```
@@ -532,15 +549,17 @@ The Vercel serverless functions cannot run Playwright due to binary size and exe
 ## Adding New Tests
 
 1. **Create test file** in `tests/e2e/scenarios/`:
+
    ```typescript
    import { test, expect } from '@playwright/test';
-   
+
    test('TC-X.X: New Test Name', async ({ page }) => {
      // Test implementation
    });
    ```
 
 2. **Add to test catalog** in `tests/test-catalog.ts`:
+
    ```typescript
    {
      id: 'TC-X.X',
@@ -578,6 +597,6 @@ After setup:
 
 ---
 
-**Last Updated**: December 2024  
-**Playwright Version**: 1.40.0  
+**Last Updated**: December 2024
+**Playwright Version**: 1.40.0
 **Node.js Requirement**: 18+
