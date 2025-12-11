@@ -83,7 +83,9 @@
           <q-icon name="list" class="q-mr-sm" />
           Test Cases
           <q-chip color="grey-6" text-color="white" size="sm" class="q-ml-sm">
-            {{ filteredTests.length }} test{{ filteredTests.length !== 1 ? 's' : '' }}
+            {{ filteredTests.length }} test{{
+              filteredTests.length !== 1 ? 's' : ''
+            }}
           </q-chip>
         </div>
 
@@ -148,9 +150,7 @@
                     {{ formatLastRunDate(testCase.id) }}
                   </div>
                 </div>
-                <div v-else class="text-caption text-grey-5">
-                  Never run
-                </div>
+                <div v-else class="text-caption text-grey-5">Never run</div>
 
                 <!-- Progress Bar (when running) -->
                 <div
@@ -160,8 +160,14 @@
                 >
                   <q-linear-progress
                     :value="runningTests[testCase.id].progress"
-                    :color="runningTests[testCase.id].status === 'failed' ? 'negative' : 'primary'"
-                    :indeterminate="runningTests[testCase.id].status === 'running'"
+                    :color="
+                      runningTests[testCase.id].status === 'failed'
+                        ? 'negative'
+                        : 'primary'
+                    "
+                    :indeterminate="
+                      runningTests[testCase.id].status === 'running'
+                    "
                     size="8px"
                     class="q-mb-xs"
                   />
@@ -213,7 +219,12 @@
 
         <!-- Empty State -->
         <div v-if="filteredTests.length === 0" class="text-center q-pa-xl">
-          <q-icon name="search_off" size="64px" color="grey-4" class="q-mb-md" />
+          <q-icon
+            name="search_off"
+            size="64px"
+            color="grey-4"
+            class="q-mb-md"
+          />
           <div class="text-h6 text-grey-6">No tests match your filters</div>
           <div class="text-body2 text-grey-5 q-mt-sm">
             Try adjusting your search or filter criteria
@@ -298,7 +309,11 @@
 import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
-import { testCatalog, getTestsBySuite, searchTests } from '../../tests/test-catalog';
+import {
+  testCatalog,
+  getTestsBySuite,
+  searchTests,
+} from '../../tests/test-catalog';
 import { testHistoryService } from '../services/testHistoryService';
 
 export default {
@@ -324,7 +339,10 @@ export default {
 
     const categories = computed(() => {
       const cats = [...new Set(testCatalog.map((t) => t.category))];
-      return [{ label: 'All Categories', value: null }, ...cats.map((c) => ({ label: c, value: c }))];
+      return [
+        { label: 'All Categories', value: null },
+        ...cats.map((c) => ({ label: c, value: c })),
+      ];
     });
 
     // Filter tests based on suite, category, and search
@@ -372,8 +390,13 @@ export default {
       testResults.value = null;
       runningTests.value = {};
 
-      // Initialize all filtered tests as running
-      filteredTests.value.forEach((testCase) => {
+      // Initialize only the tests that will actually run
+      // If a specific suite is selected, only mark those tests
+      const testsToRun = selectedSuite.value 
+        ? filteredTests.value.filter(t => t.suiteFile === selectedSuite.value)
+        : filteredTests.value;
+      
+      testsToRun.forEach((testCase) => {
         runningTests.value[testCase.id] = {
           status: 'running',
           progress: 0,
@@ -403,18 +426,31 @@ export default {
         testResults.value = response.data;
 
         // Update running tests with results
+        // Only update tests that were actually running (not all tests)
         if (testResults.value.suites) {
           testResults.value.suites.forEach((suite) => {
             suite.tests.forEach((test) => {
               const match = test.name.match(/^(TC-[0-9]+\.[0-9]+)/);
               if (match) {
                 const testId = match[1];
+                // Only update if this test was in our running list
                 if (runningTests.value[testId]) {
                   runningTests.value[testId] = {
                     status: test.status,
-                    progress: test.status === 'passed' ? 1 : test.status === 'failed' ? 1 : 0,
+                    progress:
+                      test.status === 'passed'
+                        ? 1
+                        : test.status === 'failed'
+                        ? 1
+                        : 0,
                     error: test.error || null,
                   };
+                  // Save to history
+                  testHistoryService.saveTestResult(testId, {
+                    status: test.status,
+                    duration: test.duration,
+                    error: test.error,
+                  });
                 }
               }
             });
@@ -440,7 +476,7 @@ export default {
           err.message ||
           'Failed to run tests. Please check the server logs.';
 
-        // Mark all running tests as failed
+        // Mark only currently running tests as failed
         Object.keys(runningTests.value).forEach((testId) => {
           if (runningTests.value[testId].status === 'running') {
             runningTests.value[testId] = {
@@ -448,6 +484,12 @@ export default {
               progress: 1,
               error: error.value,
             };
+            // Save failed status to history
+            testHistoryService.saveTestResult(testId, {
+              status: 'failed',
+              duration: 0,
+              error: error.value,
+            });
           }
         });
 
@@ -464,10 +506,90 @@ export default {
     };
 
     const runSingleTest = async (testCase) => {
-      // For single test, we'd need to modify the API to run specific tests
-      // For now, just run the suite that contains this test
-      selectedSuite.value = testCase.suiteFile;
-      await runTests();
+      running.value = true;
+      error.value = null;
+      testResults.value = null;
+      runningTests.value = {};
+
+      // Initialize only this test as running
+      runningTests.value[testCase.id] = {
+        status: 'running',
+        progress: 0,
+        error: null,
+      };
+
+      try {
+        const apiUrl =
+          window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api/run-tests'
+            : '/api/run-tests';
+
+        const response = await axios.post(
+          apiUrl,
+          {
+            testSuite: testCase.suiteFile,
+            testId: testCase.id, // Pass the specific test ID
+          },
+          {
+            timeout: 300000,
+          }
+        );
+
+        testResults.value = response.data;
+
+        // Update only this test's status
+        if (testResults.value.suites) {
+          testResults.value.suites.forEach((suite) => {
+            suite.tests.forEach((test) => {
+              const match = test.name.match(/^(TC-[0-9]+\.[0-9]+)/);
+              if (match && match[1] === testCase.id) {
+                runningTests.value[testCase.id] = {
+                  status: test.status,
+                  progress: test.status === 'passed' ? 1 : test.status === 'failed' ? 1 : 0,
+                  error: test.error || null,
+                };
+                // Save to history
+                testHistoryService.saveTestResult(testCase.id, {
+                  status: test.status,
+                  duration: test.duration,
+                  error: test.error,
+                });
+              }
+            });
+          });
+        }
+
+        $q.notify({
+          type: runningTests.value[testCase.id]?.status === 'passed' ? 'positive' : 'negative',
+          message: runningTests.value[testCase.id]?.status === 'passed' 
+            ? 'Test passed!' 
+            : 'Test failed',
+          position: 'top',
+          timeout: 5000,
+        });
+      } catch (err) {
+        console.error('Error running test:', err);
+        error.value =
+          err.response?.data?.error ||
+          err.message ||
+          'Failed to run test. Please check the server logs.';
+
+        runningTests.value[testCase.id] = {
+          status: 'failed',
+          progress: 1,
+          error: error.value,
+        };
+
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to run test',
+          caption: error.value,
+          position: 'top',
+          timeout: 8000,
+        });
+      } finally {
+        running.value = false;
+      }
     };
 
     const getLastRun = (testId) => {
@@ -554,7 +676,7 @@ export default {
       const colors = {
         'Online Orders': 'blue',
         'Market Events': 'green',
-        'Authentication': 'purple',
+        Authentication: 'purple',
         'Data Integrity': 'orange',
         'Edge Cases': 'grey',
       };
