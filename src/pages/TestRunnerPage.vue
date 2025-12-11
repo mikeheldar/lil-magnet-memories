@@ -409,20 +409,33 @@ export default {
         // Determine which suite file to run
         const suiteFile = selectedSuite.value || 'all';
 
-        const apiUrl =
-          window.location.hostname === 'localhost'
-            ? 'http://localhost:3000/api/run-tests'
-            : '/api/run-tests';
+        // Use TestGrid API if configured, otherwise fall back to local
+        const useTestGrid = !!import.meta.env.VITE_TESTGRID_API_URL;
 
-        const response = await axios.post(
-          apiUrl,
-          {
+        let response;
+        if (useTestGrid) {
+          // Use TestGrid service
+          const result = await testGridService.runTest({
             testSuite: suiteFile,
-          },
-          {
-            timeout: 300000, // 5 minute timeout
-          }
-        );
+          });
+          response = { data: result };
+        } else {
+          // Fall back to local API
+          const apiUrl =
+            window.location.hostname === 'localhost'
+              ? 'http://localhost:3000/api/run-tests'
+              : '/api/run-tests';
+
+          response = await axios.post(
+            apiUrl,
+            {
+              testSuite: suiteFile,
+            },
+            {
+              timeout: 300000, // 5 minute timeout
+            }
+          );
+        }
 
         testResults.value = response.data;
 
