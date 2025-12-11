@@ -552,7 +552,7 @@ export default {
 
       try {
         // Use TestGrid API if configured, otherwise fall back to local
-        const useTestGrid = !!process.env.VITE_TESTGRID_API_URL;
+        const useTestGrid = !!import.meta.env.VITE_TESTGRID_API_URL;
 
         let response;
         if (useTestGrid) {
