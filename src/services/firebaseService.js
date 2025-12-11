@@ -1465,6 +1465,7 @@ class FirebaseService {
         location: eventData.location,
         startDateTime: eventData.startDateTime,
         endDateTime: eventData.endDateTime,
+        eventLink: eventData.eventLink || null,
         isTesting: eventData.isTesting || false,
         checkedIn: false,
         checkedOut: false,

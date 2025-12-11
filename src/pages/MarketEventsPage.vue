@@ -97,6 +97,24 @@
                         />
                         <span class="text-body2">{{ event.location }}</span>
                       </div>
+                      <div v-if="event.eventLink" class="col-12">
+                        <q-icon
+                          name="link"
+                          color="grey-6"
+                          size="sm"
+                          class="q-mr-xs"
+                        />
+                        <a
+                          :href="event.eventLink"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-body2 text-primary text-weight-medium"
+                          style="text-decoration: none;"
+                        >
+                          Event Details
+                          <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+                        </a>
+                      </div>
                       <div class="col-12 col-sm-6">
                         <q-icon
                           name="schedule"
@@ -288,6 +306,14 @@
               </div>
             </div>
 
+            <q-input
+              v-model="newEvent.eventLink"
+              label="Event Details Link (Optional)"
+              hint="Add a link to event details, social media post, or website"
+              type="url"
+              filled
+            />
+
             <q-toggle
               v-model="newEvent.isTesting"
               label="Testing Only (visible to admins only)"
@@ -406,6 +432,7 @@ export default {
         location: '',
         startDateTime: formatDateTimeLocal(startTime),
         endDateTime: formatDateTimeLocal(endTime),
+        eventLink: '',
         isTesting: false,
       };
     };
@@ -684,6 +711,7 @@ export default {
           location: newEvent.value.location,
           startDateTime: newEvent.value.startDateTime,
           endDateTime: newEvent.value.endDateTime,
+          eventLink: newEvent.value.eventLink || null,
           isTesting: newEvent.value.isTesting || false,
         };
 

@@ -11,10 +11,32 @@
           <div class="gt-xs">
             <strong>Market Event Live!</strong> We're at
             {{ activeMarketEventName }}.
+            <a
+              v-if="activeMarketEventLink"
+              :href="activeMarketEventLink"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-white text-weight-medium banner-link"
+              style="text-decoration: underline; margin-left: 8px;"
+            >
+              Event Details
+              <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+            </a>
           </div>
           <!-- Short text for mobile -->
           <div class="lt-sm">
             <strong>Market Event Live!</strong>
+            <a
+              v-if="activeMarketEventLink"
+              :href="activeMarketEventLink"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-white text-weight-medium banner-link"
+              style="text-decoration: underline; margin-left: 4px;"
+            >
+              Details
+              <q-icon name="open_in_new" size="12px" class="q-ml-xs" />
+            </a>
           </div>
           <q-toggle
             v-model="isCustomerAtEvent"
@@ -1077,6 +1099,14 @@ export default {
       return event ? event.name : '';
     });
 
+    // Get the active market event link for display
+    const activeMarketEventLink = computed(() => {
+      // Trigger reactivity
+      marketEventCheckTrigger.value;
+      const event = marketEventService.getCheckedInEvent();
+      return event?.eventLink || null;
+    });
+
     // Safe notify wrapper
     const safeNotify = (options) => {
       try {
@@ -1207,6 +1237,7 @@ export default {
       specialtyProductsByCollection,
       hasActiveEvent,
       activeMarketEventName,
+      activeMarketEventLink,
       isCustomerAtEvent,
       easelImages,
       currentEaselImage,
