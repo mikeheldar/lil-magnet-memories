@@ -4542,8 +4542,9 @@ export default {
         }
 
         // Show user-friendly error message
-        let errorMessage = 'Failed to place order';
-        let errorCaption = error.message || 'Please try again';
+        // Check if error has user-friendly messages from Square error parsing
+        let errorMessage = error.userMessage || 'Failed to place order';
+        let errorCaption = error.userCaption || error.message || "Don't worry - you have not been charged. Please try again.";
 
         // For Apple Pay errors, ensure user knows they weren't charged
         if (error.message && error.message.includes('Apple Pay')) {
@@ -4552,12 +4553,18 @@ export default {
             "Don't worry - you have not been charged. Please try again or use another payment method.";
         }
 
+        // If we have a user-friendly message from Square, use it
+        if (error.userMessage && error.userCaption) {
+          errorMessage = error.userMessage;
+          errorCaption = error.userCaption;
+        }
+
         safeNotify({
           type: 'negative',
           message: errorMessage,
           caption: errorCaption,
           position: 'top',
-          timeout: 8000,
+          timeout: 10000, // Longer timeout for payment errors
         });
       } finally {
         // Only set submitting to false if navigation didn't succeed

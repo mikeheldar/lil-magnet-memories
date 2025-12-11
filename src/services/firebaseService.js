@@ -845,15 +845,19 @@ class FirebaseService {
       }
 
       if (!response.ok) {
-        const errorMessage =
-          result?.error || 'Failed to process Square payment';
-        const error = new Error(errorMessage);
-        error.details = result?.details || null;
-        // Log error before throwing
+        // Get user-friendly error message
+        const friendlyError = this.getSquareErrorMessage(result);
+        const error = new Error(friendlyError.message);
+        error.userMessage = friendlyError.message;
+        error.userCaption = friendlyError.caption;
+        error.details = result || { status: response.status, statusText: response.statusText };
+        error.originalResult = result; // Keep original for logging
+        
+        // Log error before throwing (with full technical details for admin)
         await this.logTransactionError({
           errorType: 'payment_failed',
-          errorMessage: errorMessage,
-          errorDetails: result?.details || {
+          errorMessage: result?.error || friendlyError.message,
+          errorDetails: result || {
             status: response.status,
             statusText: response.statusText,
           },
@@ -868,14 +872,20 @@ class FirebaseService {
         throw error;
       }
 
-      if (result?.error) {
-        const error = new Error(result.error);
-        error.details = result?.details || null;
-        // Log error before throwing
+      if (result?.error || (result?.errors && result.errors.length > 0)) {
+        // Get user-friendly error message
+        const friendlyError = this.getSquareErrorMessage(result);
+        const error = new Error(friendlyError.message);
+        error.userMessage = friendlyError.message;
+        error.userCaption = friendlyError.caption;
+        error.details = result?.details || result;
+        error.originalResult = result; // Keep original for logging
+        
+        // Log error before throwing (with full technical details for admin)
         await this.logTransactionError({
           errorType: 'payment_failed',
-          errorMessage: result.error,
-          errorDetails: result?.details || null,
+          errorMessage: result?.error || friendlyError.message,
+          errorDetails: result?.details || result,
           transactionData: {
             orderNumber: paymentData.orderNumber,
             amount: paymentData.amount,
@@ -907,6 +917,82 @@ class FirebaseService {
       }
       throw error;
     }
+  }
+
+  // Translate Square error codes to user-friendly messages
+  getSquareErrorMessage(result) {
+    if (!result || !result.errors || !Array.isArray(result.errors)) {
+      return {
+        message: 'Your payment could not be processed',
+        caption: "Don't worry - you have not been charged. Please check your payment information and try again.",
+      };
+    }
+
+    const errors = result.errors;
+    const errorCodes = errors.map((e) => e.code).filter(Boolean);
+
+    // Check for specific error codes and provide helpful messages
+    if (errorCodes.includes('CVV_FAILURE')) {
+      return {
+        message: 'Card Security Code Incorrect',
+        caption: 'The 3-digit security code on the back of your card (or 4 digits on the front for Amex) appears to be incorrect. Please check and try again.',
+      };
+    }
+
+    if (errorCodes.includes('GENERIC_DECLINE')) {
+      // Check if CVV also failed
+      if (errorCodes.includes('CVV_FAILURE')) {
+        return {
+          message: 'Payment Declined',
+          caption: 'Your card was declined and the security code was incorrect. Please verify your card details, check with your bank, or try a different payment method.',
+        };
+      }
+      return {
+        message: 'Payment Declined',
+        caption: 'Your card was declined by your bank. This could be due to insufficient funds, account restrictions, or security measures. Please check with your bank or try a different payment method.',
+      };
+    }
+
+    if (errorCodes.includes('INSUFFICIENT_FUNDS')) {
+      return {
+        message: 'Insufficient Funds',
+        caption: 'Your card does not have enough funds to complete this transaction. Please use a different payment method or contact your bank.',
+      };
+    }
+
+    if (errorCodes.includes('CARD_EXPIRED')) {
+      return {
+        message: 'Card Expired',
+        caption: 'The expiration date on your card has passed. Please use a different card or update your card information.',
+      };
+    }
+
+    if (errorCodes.includes('INVALID_EXPIRATION')) {
+      return {
+        message: 'Invalid Expiration Date',
+        caption: 'The card expiration date appears to be incorrect. Please check and try again.',
+      };
+    }
+
+    if (errorCodes.includes('INVALID_CARD')) {
+      return {
+        message: 'Invalid Card Information',
+        caption: 'The card information you entered appears to be invalid. Please check your card number, expiration date, and security code, then try again.',
+      };
+    }
+
+    if (errorCodes.includes('CARD_NOT_SUPPORTED')) {
+      return {
+        message: 'Card Not Supported',
+        caption: 'This card type is not supported for this transaction. Please use a different payment method.',
+      };
+    }
+
+    // Default message for other errors
+    return {
+      message: 'Payment Could Not Be Processed',
+      caption: "Don't worry - you have not been charged. Please check your payment information and try again, or use a different payment method.",
+    };
   }
 
   // Log transaction errors to Firestore for admin review
