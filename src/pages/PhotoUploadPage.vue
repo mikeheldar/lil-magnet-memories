@@ -67,8 +67,9 @@
             </div>
 
             <div class="form-fields-container">
-              <div class="row q-col-gutter-xs">
-                <div class="col-12 col-md-3">
+              <div class="row q-col-gutter-md">
+                <!-- Top row: First Name and Last Name -->
+                <div class="col-12 col-sm-6">
                   <q-input
                     v-model="formData.firstName"
                     label="First Name *"
@@ -77,7 +78,7 @@
                     :rules="[(val) => !!val || 'First name is required']"
                   />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-sm-6">
                   <q-input
                     v-model="formData.lastName"
                     label="Last Name *"
@@ -86,7 +87,8 @@
                     :rules="[(val) => !!val || 'Last name is required']"
                   />
                 </div>
-                <div class="col-12 col-md-3">
+                <!-- Bottom row: Email and Phone Number -->
+                <div class="col-12 col-sm-6">
                   <q-input
                     v-model="formData.email"
                     label="Email Address *"
@@ -99,7 +101,7 @@
                     ]"
                   />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-sm-6">
                   <q-input
                     v-model="formData.phone"
                     label="Phone Number"

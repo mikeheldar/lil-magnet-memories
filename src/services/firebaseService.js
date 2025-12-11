@@ -852,7 +852,7 @@ class FirebaseService {
         error.userCaption = friendlyError.caption;
         error.details = result || { status: response.status, statusText: response.statusText };
         error.originalResult = result; // Keep original for logging
-        
+
         // Log error before throwing (with full technical details for admin)
         await this.logTransactionError({
           errorType: 'payment_failed',
@@ -880,7 +880,7 @@ class FirebaseService {
         error.userCaption = friendlyError.caption;
         error.details = result?.details || result;
         error.originalResult = result; // Keep original for logging
-        
+
         // Log error before throwing (with full technical details for admin)
         await this.logTransactionError({
           errorType: 'payment_failed',
