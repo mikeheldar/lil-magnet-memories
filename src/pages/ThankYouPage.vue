@@ -7,7 +7,7 @@
           <q-card-section class="text-center">
             <div class="text-h5 text-weight-bold text-primary q-mb-md">
               <q-icon name="check_circle" size="28px" color="positive" class="q-mr-sm" />
-              Thank You! Order Confirmed
+              Thank You!
             </div>
             <p class="thank-you-subtitle q-mb-md">
               We've received your order and will get started on your custom magnets
