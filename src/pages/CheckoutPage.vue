@@ -4721,4 +4721,8 @@ export default {
   border-top: 1px solid #e0e0e0;
   margin-top: 16px;
 }
+
+.q-field--with-bottom {
+  padding-bottom: 5px;
+}
 </style>
