@@ -51,7 +51,7 @@
             />
             Photo Upload Form
           </div>
-          
+
           <div class="text-body2 text-grey-6 text-center q-mb-md">
             <span v-if="isAtMarketEvent"
               >Create custom magnets for market event pickup</span
@@ -1962,24 +1962,24 @@ export default {
     margin-bottom: 0 !important;
     margin-top: 0 !important;
   }
-  
+
   :deep(.q-field) {
     margin-bottom: 0 !important;
     margin-top: 0 !important;
   }
-  
+
   :deep(.q-field__control) {
     margin-bottom: 0 !important;
   }
-  
+
   :deep(.col) {
     margin-bottom: 0 !important;
   }
-  
+
   :deep(.q-field--with-bottom) {
     padding-bottom: 5px !important;
   }
-  
+
   :deep(.q-field__bottom) {
     margin-top: 0 !important;
     padding-top: 0 !important;
