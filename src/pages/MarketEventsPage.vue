@@ -580,7 +580,7 @@ export default {
       try {
         // Load events from Firebase
         const firebaseEvents = await firebaseService.getMarketEvents();
-        
+
         // Convert Firebase timestamps to ISO strings for compatibility
         events.value = firebaseEvents.map(processEvent);
 
@@ -717,7 +717,7 @@ export default {
 
         // Create event in Firebase - real-time listener will update the list automatically
         await firebaseService.createMarketEvent(eventData);
-        
+
         // Refresh market event service cache (real-time listener will update events.value)
         await marketEventService.refreshCache();
 

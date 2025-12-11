@@ -229,16 +229,37 @@ export default {
       subtotal.value = Number(data.subtotal || 0);
       shippingCost.value = Number(data.shipping || 0);
       tax.value = Number(data.tax || 0);
-      totalAmount.value =
-        data.totalAmount !== undefined
-          ? Number(data.totalAmount)
-          : subtotal.value + shippingCost.value + tax.value;
       shippingOption.value = data.shippingOption || null;
       paymentOption.value = data.paymentOption || null;
       shippingTimeline.value =
         data.shippingOption?.estimatedTimeline || data.shippingTimeline || '';
       shippingAddress.value = data.shippingOption?.address || null;
       billingAddress.value = data.paymentOption?.billingAddress || null;
+
+      // Calculate total amount - prioritize stored values, then calculate
+      let calculatedTotal = subtotal.value + shippingCost.value + tax.value;
+      
+      // Priority order:
+      // 1. If totalAmount is provided and greater than 0, use it (most reliable)
+      if (data.totalAmount !== undefined && Number(data.totalAmount) > 0) {
+        totalAmount.value = Number(data.totalAmount);
+      }
+      // 2. Check paymentOption for stored amount (from Square or pay-at-tent)
+      else if (data.paymentOption?.amount !== undefined && Number(data.paymentOption.amount) > 0) {
+        totalAmount.value = Number(data.paymentOption.amount);
+      }
+      // 3. For pay-at-tent, use calculated total (what they should pay)
+      else if (data.paymentOption?.type === 'pay_at_event' && calculatedTotal > 0) {
+        totalAmount.value = calculatedTotal;
+      }
+      // 4. For Square payments that completed, use calculated total
+      else if (data.paymentOption?.status === 'COMPLETED' && calculatedTotal > 0) {
+        totalAmount.value = calculatedTotal;
+      }
+      // 5. Otherwise use calculated total (fallback)
+      else {
+        totalAmount.value = calculatedTotal > 0 ? calculatedTotal : 0;
+      }
     };
 
     const shippingMethodLabel = computed(() => {

@@ -1071,7 +1071,7 @@ class FirebaseService {
       // CRITICAL: Preserve totalCost, pricing, and totalPrice for proper order total calculation
       const sanitizedItems = cartItems.map((item) => {
         const sanitized = { ...item };
-        
+
         if (item.isCustomUpload && item.photos) {
           // Remove base64 previews, keep only Firebase Storage URLs
           const sanitizedPhotos = item.photos.map((photo) => ({
@@ -1085,28 +1085,28 @@ class FirebaseService {
           }));
           sanitized.photos = sanitizedPhotos;
         }
-        
+
         // Preserve totalCost for custom uploads (critical for order total)
         if (item.isCustomUpload && item.totalCost) {
           sanitized.totalCost = item.totalCost;
         }
-        
+
         // Preserve pricing for custom uploads (needed to recalculate if totalCost is missing)
         if (item.isCustomUpload && item.pricing) {
           sanitized.pricing = item.pricing;
         }
-        
+
         // Preserve totalPrice for regular products
         if (!item.isCustomUpload && item.totalPrice !== undefined) {
           sanitized.totalPrice = item.totalPrice;
         }
-        
+
         // Preserve pricePerUnit and productPricing for regular products
         if (!item.isCustomUpload) {
           if (item.pricePerUnit !== undefined) sanitized.pricePerUnit = item.pricePerUnit;
           if (item.productPricing) sanitized.productPricing = item.productPricing;
         }
-        
+
         return sanitized;
       });
 
