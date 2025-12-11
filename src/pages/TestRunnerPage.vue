@@ -295,7 +295,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
 import { testCatalog, getTestsBySuite, searchTests } from '../../tests/test-catalog';
