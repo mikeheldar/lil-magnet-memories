@@ -1,7 +1,7 @@
 /**
  * API endpoint to run Playwright tests
  * This endpoint executes the test suite and returns results
- * 
+ *
  * Works with both Express (local development) and Vercel serverless functions
  */
 
@@ -33,7 +33,7 @@ const handler = async (req, res) => {
 
   try {
     const { testSuite } = req.body || {};
-    
+
     // Determine which tests to run
     let testCommand = 'npx playwright test';
     if (testSuite && testSuite !== 'all') {
@@ -88,7 +88,9 @@ const handler = async (req, res) => {
             testResults.duration += test.results[0]?.duration || 0;
 
             // Find or create suite entry
-            let suiteEntry = testResults.suites.find((s) => s.name === suite.title);
+            let suiteEntry = testResults.suites.find(
+              (s) => s.name === suite.title
+            );
             if (!suiteEntry) {
               suiteEntry = {
                 name: suite.title,
@@ -122,7 +124,10 @@ const handler = async (req, res) => {
     if (!fs.existsSync(resultsDir)) {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
-    const resultsFile = path.join(resultsDir, `test-results-${Date.now()}.json`);
+    const resultsFile = path.join(
+      resultsDir,
+      `test-results-${Date.now()}.json`
+    );
     fs.writeFileSync(resultsFile, JSON.stringify(testResults, null, 2));
 
     return res.status(200).json(testResults);

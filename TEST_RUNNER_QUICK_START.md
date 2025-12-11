@@ -3,10 +3,13 @@
 ## Setup (One-time)
 
 1. **Install Playwright browsers:**
+
    ```bash
    npm run test:setup
    ```
+
    Or manually:
+
    ```bash
    npx playwright install --with-deps
    ```
@@ -22,15 +25,19 @@
 ### Option 1: Via Admin UI (Recommended)
 
 1. **Start the test API server** (in one terminal):
+
    ```bash
    npm run test:server
    ```
+
    This starts the server on `http://localhost:3000`
 
 2. **Start the Quasar dev server** (in another terminal):
+
    ```bash
    npm run dev
    ```
+
    This starts the app on `http://localhost:9000`
 
 3. **Access the Test Runner:**
@@ -60,14 +67,17 @@ npm run test:e2e:ui
 ## Troubleshooting
 
 **"Failed to run tests" error:**
+
 - Make sure the test server is running: `npm run test:server`
 - Check that Playwright browsers are installed: `npm run test:setup`
 - Verify the dev server is running on port 9000
 
 **"Cannot find module 'express'" error:**
+
 - Run: `npm install`
 
 **Tests timeout:**
+
 - Tests can take several minutes, especially with 15 photos
 - Check browser console for detailed errors
 
@@ -75,5 +85,5 @@ npm run test:e2e:ui
 
 - **All Tests**: Complete test suite
 - **Market Event Not Live**: Online ordering scenarios
-- **Market Event Live**: Market event scenarios  
+- **Market Event Live**: Market event scenarios
 - **Data Integrity**: Validation and button tests

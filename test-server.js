@@ -1,7 +1,7 @@
 /**
  * Local Test API Server
  * Run this server to enable test execution from the Test Runner page
- * 
+ *
  * Usage: node test-server.js
  * Then access the app at http://localhost:9000 and navigate to /test-runner
  */
@@ -32,8 +32,8 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`\n✅ Test API server running on http://localhost:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`\n💡 Make sure your Quasar dev server is running on port 9000`);
-  console.log(`💡 Then navigate to http://localhost:9000/test-runner\n`);
+  console.log('\n💡 Make sure your Quasar dev server is running on port 9000');
+  console.log('💡 Then navigate to http://localhost:9000/test-runner\n');
 });
 
 // Handle errors

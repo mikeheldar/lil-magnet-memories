@@ -10,47 +10,224 @@
       </div>
     </div>
 
-    <!-- Test Suite Selection -->
+    <!-- Filters and Search -->
     <q-card class="q-mb-md">
       <q-card-section>
-        <div class="text-h6 q-mb-md">
-          <q-icon name="play_arrow" class="q-mr-sm" />
-          Select Test Suite
-        </div>
-
-        <div class="row q-col-gutter-md">
-          <div class="col-12 col-md-6">
+        <div class="row q-col-gutter-md q-mb-md">
+          <div class="col-12 col-md-4">
             <q-select
               v-model="selectedSuite"
               :options="testSuites"
-              label="Test Suite"
+              label="Filter by Suite"
               filled
               emit-value
               map-options
+              clearable
             />
           </div>
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-4">
+            <q-select
+              v-model="selectedCategory"
+              :options="categories"
+              label="Filter by Category"
+              filled
+              emit-value
+              map-options
+              clearable
+            />
+          </div>
+          <div class="col-12 col-md-4">
+            <q-input
+              v-model="searchQuery"
+              label="Search Tests"
+              filled
+              clearable
+            >
+              <template v-slot:prepend>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+          </div>
+        </div>
+
+        <div class="row items-center justify-between">
+          <div class="col-auto">
             <q-btn
               color="primary"
               size="lg"
               icon="play_arrow"
-              label="Run Tests"
+              label="Run All Filtered Tests"
               :loading="running"
-              :disable="running"
+              :disable="running || filteredTests.length === 0"
               @click="runTests"
-              class="full-width"
+            />
+          </div>
+          <div class="col-auto">
+            <q-btn
+              flat
+              color="grey-7"
+              size="sm"
+              icon="refresh"
+              label="Clear History"
+              @click="clearHistory"
             />
           </div>
         </div>
       </q-card-section>
     </q-card>
 
-    <!-- Test Results -->
-    <q-card v-if="testResults" class="q-mb-md">
+    <!-- Test List -->
+    <q-card>
+      <q-card-section>
+        <div class="text-h6 q-mb-md">
+          <q-icon name="list" class="q-mr-sm" />
+          Test Cases
+          <q-chip color="grey-6" text-color="white" size="sm" class="q-ml-sm">
+            {{ filteredTests.length }} test{{ filteredTests.length !== 1 ? 's' : '' }}
+          </q-chip>
+        </div>
+
+        <!-- Test Table/List -->
+        <q-list bordered separator>
+          <q-item
+            v-for="testCase in filteredTests"
+            :key="testCase.id"
+            :class="getTestRowClass(testCase)"
+            class="test-row"
+          >
+            <q-item-section avatar>
+              <q-icon
+                :name="getTestStatusIcon(testCase)"
+                :color="getTestStatusColor(testCase)"
+                size="28px"
+              />
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label class="text-weight-medium">
+                {{ testCase.id }}: {{ testCase.name }}
+              </q-item-label>
+              <q-item-label caption class="text-grey-7">
+                {{ testCase.description }}
+              </q-item-label>
+              <q-item-label caption class="q-mt-xs">
+                <q-chip
+                  :color="getCategoryColor(testCase.category)"
+                  text-color="white"
+                  size="xs"
+                  class="q-mr-xs"
+                >
+                  {{ testCase.category }}
+                </q-chip>
+                <q-chip
+                  v-for="tag in testCase.tags.slice(0, 3)"
+                  :key="tag"
+                  color="grey-6"
+                  text-color="white"
+                  size="xs"
+                  class="q-mr-xs"
+                >
+                  {{ tag }}
+                </q-chip>
+              </q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+              <div class="column items-end q-gutter-xs">
+                <!-- Last Run Status -->
+                <div v-if="getLastRun(testCase.id)" class="text-right">
+                  <q-chip
+                    :color="getTestStatusColor(testCase)"
+                    text-color="white"
+                    size="sm"
+                    :icon="getTestStatusIcon(testCase)"
+                  >
+                    {{ getLastRunStatus(testCase.id) }}
+                  </q-chip>
+                  <div class="text-caption text-grey-7 q-mt-xs">
+                    {{ formatLastRunDate(testCase.id) }}
+                  </div>
+                </div>
+                <div v-else class="text-caption text-grey-5">
+                  Never run
+                </div>
+
+                <!-- Progress Bar (when running) -->
+                <div
+                  v-if="runningTests[testCase.id]"
+                  class="q-mt-sm"
+                  style="width: 200px"
+                >
+                  <q-linear-progress
+                    :value="runningTests[testCase.id].progress"
+                    :color="runningTests[testCase.id].status === 'failed' ? 'negative' : 'primary'"
+                    :indeterminate="runningTests[testCase.id].status === 'running'"
+                    size="8px"
+                    class="q-mb-xs"
+                  />
+                  <div class="text-caption text-center">
+                    <span
+                      v-if="runningTests[testCase.id].status === 'running'"
+                      class="text-primary"
+                    >
+                      Running...
+                    </span>
+                    <span
+                      v-else-if="runningTests[testCase.id].status === 'failed'"
+                      class="text-negative"
+                    >
+                      Failed
+                    </span>
+                    <span
+                      v-else-if="runningTests[testCase.id].status === 'passed'"
+                      class="text-positive"
+                    >
+                      Passed
+                    </span>
+                  </div>
+                  <div
+                    v-if="runningTests[testCase.id].error"
+                    class="text-caption text-negative q-mt-xs"
+                    style="max-width: 200px; word-wrap: break-word"
+                  >
+                    {{ runningTests[testCase.id].error }}
+                  </div>
+                </div>
+
+                <!-- Run Individual Test Button -->
+                <q-btn
+                  v-if="!runningTests[testCase.id]"
+                  flat
+                  dense
+                  size="sm"
+                  color="primary"
+                  icon="play_arrow"
+                  label="Run"
+                  @click="runSingleTest(testCase)"
+                  :disable="running"
+                />
+              </div>
+            </q-item-section>
+          </q-item>
+        </q-list>
+
+        <!-- Empty State -->
+        <div v-if="filteredTests.length === 0" class="text-center q-pa-xl">
+          <q-icon name="search_off" size="64px" color="grey-4" class="q-mb-md" />
+          <div class="text-h6 text-grey-6">No tests match your filters</div>
+          <div class="text-body2 text-grey-5 q-mt-sm">
+            Try adjusting your search or filter criteria
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+
+    <!-- Summary Results Card (after run) -->
+    <q-card v-if="testResults && !running" class="q-mt-md">
       <q-card-section>
         <div class="text-h6 q-mb-md">
           <q-icon name="assessment" class="q-mr-sm" />
-          Test Results
+          Last Run Summary
           <q-chip
             v-if="testResults.timestamp"
             color="grey-6"
@@ -62,8 +239,7 @@
           </q-chip>
         </div>
 
-        <!-- Summary Stats -->
-        <div class="row q-col-gutter-md q-mb-md">
+        <div class="row q-col-gutter-md">
           <div class="col-6 col-md-3">
             <q-card flat bordered class="text-center">
               <q-card-section>
@@ -105,126 +281,148 @@
             </q-card>
           </div>
         </div>
-
-        <!-- Duration -->
-        <div v-if="testResults.duration" class="text-center q-mb-md">
-          <div class="text-body2 text-grey-7">
-            Total Duration: {{ formatDuration(testResults.duration) }}
-          </div>
-        </div>
-
-        <!-- Test Suites -->
-        <div v-if="testResults.suites && testResults.suites.length > 0">
-          <q-expansion-item
-            v-for="(suite, index) in testResults.suites"
-            :key="index"
-            :label="suite.name"
-            :caption="`${suite.passed} passed, ${suite.failed} failed, ${suite.skipped} skipped`"
-            :default-opened="suite.failed > 0"
-            class="q-mb-sm"
-          >
-            <q-list>
-              <q-item
-                v-for="(test, testIndex) in suite.tests"
-                :key="testIndex"
-                :class="getTestItemClass(test.status)"
-              >
-                <q-item-section avatar>
-                  <q-icon
-                    :name="getTestIcon(test.status)"
-                    :color="getTestColor(test.status)"
-                    size="24px"
-                  />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ test.name }}</q-item-label>
-                  <q-item-label caption>
-                    Duration: {{ formatDuration(test.duration) }}
-                    <span v-if="test.error" class="text-negative q-ml-sm">
-                      - {{ test.error }}
-                    </span>
-                  </q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-chip
-                    :color="getTestColor(test.status)"
-                    text-color="white"
-                    size="sm"
-                  >
-                    {{ test.status.toUpperCase() }}
-                  </q-chip>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-expansion-item>
-        </div>
       </q-card-section>
     </q-card>
 
     <!-- Error Message -->
-    <q-banner
-      v-if="error"
-      class="bg-negative text-white q-mb-md"
-      rounded
-    >
+    <q-banner v-if="error" class="bg-negative text-white q-mb-md" rounded>
       <template v-slot:avatar>
         <q-icon name="error" />
       </template>
       {{ error }}
     </q-banner>
-
-    <!-- Loading State -->
-    <q-card v-if="running && !testResults" class="q-mb-md">
-      <q-card-section class="text-center q-pa-xl">
-        <q-spinner color="primary" size="48px" />
-        <div class="text-h6 q-mt-md">Running tests...</div>
-        <div class="text-body2 text-grey-7 q-mt-sm">
-          This may take a few minutes
-        </div>
-      </q-card-section>
-    </q-card>
   </q-page>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
+import { testCatalog, getTestsBySuite, searchTests } from '../../tests/test-catalog';
+import { testHistoryService } from '../services/testHistoryService';
 
 export default {
   name: 'TestRunnerPage',
   setup() {
     const $q = useQuasar();
-    const selectedSuite = ref('all');
+    const selectedSuite = ref(null);
+    const selectedCategory = ref(null);
+    const searchQuery = ref('');
     const running = ref(false);
     const testResults = ref(null);
     const error = ref(null);
+    const runningTests = ref({});
 
     const testSuites = [
-      { label: 'All Tests', value: 'all' },
+      { label: 'All Suites', value: null },
       { label: 'Market Event Not Live', value: 'market-event-not-live' },
       { label: 'Market Event Live', value: 'market-event-live' },
       { label: 'Data Integrity', value: 'data-integrity' },
+      { label: 'Authenticated Users', value: 'authenticated-users' },
+      { label: 'Edge Cases', value: 'edge-cases' },
     ];
 
+    const categories = computed(() => {
+      const cats = [...new Set(testCatalog.map((t) => t.category))];
+      return [{ label: 'All Categories', value: null }, ...cats.map((c) => ({ label: c, value: c }))];
+    });
+
+    // Filter tests based on suite, category, and search
+    const filteredTests = computed(() => {
+      let tests = testCatalog;
+
+      // Filter by suite
+      if (selectedSuite.value) {
+        tests = getTestsBySuite(selectedSuite.value);
+      }
+
+      // Filter by category
+      if (selectedCategory.value) {
+        tests = tests.filter((t) => t.category === selectedCategory.value);
+      }
+
+      // Filter by search query
+      if (searchQuery.value) {
+        tests = searchTests(searchQuery.value);
+        // Also apply suite and category filters to search results
+        if (selectedSuite.value) {
+          tests = tests.filter((t) => t.suiteFile === selectedSuite.value);
+        }
+        if (selectedCategory.value) {
+          tests = tests.filter((t) => t.category === selectedCategory.value);
+        }
+      }
+
+      return tests;
+    });
+
     const runTests = async () => {
+      if (filteredTests.value.length === 0) {
+        $q.notify({
+          type: 'warning',
+          message: 'No tests to run',
+          caption: 'Please adjust your filters to select tests',
+          position: 'top',
+        });
+        return;
+      }
+
       running.value = true;
       error.value = null;
       testResults.value = null;
+      runningTests.value = {};
+
+      // Initialize all filtered tests as running
+      filteredTests.value.forEach((testCase) => {
+        runningTests.value[testCase.id] = {
+          status: 'running',
+          progress: 0,
+          error: null,
+        };
+      });
 
       try {
-        // For local development, try localhost API first, fallback to relative path
-        const apiUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:3000/api/run-tests'
-          : '/api/run-tests';
-        
-        const response = await axios.post(apiUrl, {
-          testSuite: selectedSuite.value,
-        }, {
-          timeout: 300000, // 5 minute timeout for test execution
-        });
+        // Determine which suite file to run
+        const suiteFile = selectedSuite.value || 'all';
+
+        const apiUrl =
+          window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api/run-tests'
+            : '/api/run-tests';
+
+        const response = await axios.post(
+          apiUrl,
+          {
+            testSuite: suiteFile,
+          },
+          {
+            timeout: 300000, // 5 minute timeout
+          }
+        );
 
         testResults.value = response.data;
+
+        // Update running tests with results
+        if (testResults.value.suites) {
+          testResults.value.suites.forEach((suite) => {
+            suite.tests.forEach((test) => {
+              const match = test.name.match(/^(TC-[0-9]+\.[0-9]+)/);
+              if (match) {
+                const testId = match[1];
+                if (runningTests.value[testId]) {
+                  runningTests.value[testId] = {
+                    status: test.status,
+                    progress: test.status === 'passed' ? 1 : test.status === 'failed' ? 1 : 0,
+                    error: test.error || null,
+                  };
+                }
+              }
+            });
+          });
+        }
+
+        // Save results to history
+        testHistoryService.saveTestResults(testResults.value);
 
         $q.notify({
           type: testResults.value.failed === 0 ? 'positive' : 'warning',
@@ -241,6 +439,18 @@ export default {
           err.response?.data?.error ||
           err.message ||
           'Failed to run tests. Please check the server logs.';
+
+        // Mark all running tests as failed
+        Object.keys(runningTests.value).forEach((testId) => {
+          if (runningTests.value[testId].status === 'running') {
+            runningTests.value[testId] = {
+              status: 'failed',
+              progress: 1,
+              error: error.value,
+            };
+          }
+        });
+
         $q.notify({
           type: 'negative',
           message: 'Failed to run tests',
@@ -253,82 +463,161 @@ export default {
       }
     };
 
+    const runSingleTest = async (testCase) => {
+      // For single test, we'd need to modify the API to run specific tests
+      // For now, just run the suite that contains this test
+      selectedSuite.value = testCase.suiteFile;
+      await runTests();
+    };
+
+    const getLastRun = (testId) => {
+      return testHistoryService.getLastRun(testId);
+    };
+
+    const getLastRunStatus = (testId) => {
+      const lastRun = getLastRun(testId);
+      if (!lastRun) return 'Never run';
+      return lastRun.status === 'passed'
+        ? 'Passed'
+        : lastRun.status === 'failed'
+        ? 'Failed'
+        : 'Skipped';
+    };
+
+    const formatLastRunDate = (testId) => {
+      const lastRun = getLastRun(testId);
+      if (!lastRun) return '';
+      const date = new Date(lastRun.lastRun);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return date.toLocaleDateString();
+    };
+
+    const getTestStatusIcon = (testCase) => {
+      const lastRun = getLastRun(testCase.id);
+      if (runningTests.value[testCase.id]) {
+        const status = runningTests.value[testCase.id].status;
+        if (status === 'running') return 'hourglass_empty';
+        if (status === 'failed') return 'cancel';
+        if (status === 'passed') return 'check_circle';
+        return 'skip_next';
+      }
+      if (lastRun) {
+        if (lastRun.status === 'passed') return 'check_circle';
+        if (lastRun.status === 'failed') return 'cancel';
+        return 'skip_next';
+      }
+      return 'help_outline';
+    };
+
+    const getTestStatusColor = (testCase) => {
+      const lastRun = getLastRun(testCase.id);
+      if (runningTests.value[testCase.id]) {
+        const status = runningTests.value[testCase.id].status;
+        if (status === 'running') return 'primary';
+        if (status === 'failed') return 'negative';
+        if (status === 'passed') return 'positive';
+        return 'grey-7';
+      }
+      if (lastRun) {
+        if (lastRun.status === 'passed') return 'positive';
+        if (lastRun.status === 'failed') return 'negative';
+        return 'grey-7';
+      }
+      return 'grey-6';
+    };
+
+    const getTestRowClass = (testCase) => {
+      const lastRun = getLastRun(testCase.id);
+      if (runningTests.value[testCase.id]) {
+        const status = runningTests.value[testCase.id].status;
+        if (status === 'failed') return 'bg-negative-1';
+        if (status === 'passed') return 'bg-positive-1';
+        if (status === 'running') return 'bg-blue-1';
+      }
+      if (lastRun) {
+        if (lastRun.status === 'failed') return 'bg-negative-1';
+        if (lastRun.status === 'passed') return 'bg-positive-1';
+      }
+      return '';
+    };
+
+    const getCategoryColor = (category) => {
+      const colors = {
+        'Online Orders': 'blue',
+        'Market Events': 'green',
+        'Authentication': 'purple',
+        'Data Integrity': 'orange',
+        'Edge Cases': 'grey',
+      };
+      return colors[category] || 'grey-6';
+    };
+
     const formatTimestamp = (timestamp) => {
       if (!timestamp) return '';
       const date = new Date(timestamp);
       return date.toLocaleString();
     };
 
-    const formatDuration = (ms) => {
-      if (!ms) return '0s';
-      const seconds = Math.floor(ms / 1000);
-      const minutes = Math.floor(seconds / 60);
-      const hours = Math.floor(minutes / 60);
-
-      if (hours > 0) {
-        return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
-      } else if (minutes > 0) {
-        return `${minutes}m ${seconds % 60}s`;
-      } else {
-        return `${seconds}s`;
-      }
-    };
-
-    const getTestIcon = (status) => {
-      switch (status) {
-        case 'passed':
-          return 'check_circle';
-        case 'failed':
-          return 'cancel';
-        case 'skipped':
-          return 'skip_next';
-        default:
-          return 'help';
-      }
-    };
-
-    const getTestColor = (status) => {
-      switch (status) {
-        case 'passed':
-          return 'positive';
-        case 'failed':
-          return 'negative';
-        case 'skipped':
-          return 'grey-7';
-        default:
-          return 'grey-6';
-      }
-    };
-
-    const getTestItemClass = (status) => {
-      return {
-        'bg-positive-1': status === 'passed',
-        'bg-negative-1': status === 'failed',
-        'bg-grey-2': status === 'skipped',
-      };
+    const clearHistory = () => {
+      $q.dialog({
+        title: 'Clear Test History',
+        message: 'Are you sure you want to clear all test run history?',
+        cancel: true,
+        persistent: true,
+      }).onOk(() => {
+        testHistoryService.clearHistory();
+        $q.notify({
+          type: 'positive',
+          message: 'Test history cleared',
+          position: 'top',
+        });
+      });
     };
 
     return {
       selectedSuite,
+      selectedCategory,
+      searchQuery,
       running,
       testResults,
       error,
+      runningTests,
       testSuites,
+      categories,
+      filteredTests,
       runTests,
+      runSingleTest,
+      getLastRun,
+      getLastRunStatus,
+      formatLastRunDate,
+      getTestStatusIcon,
+      getTestStatusColor,
+      getTestRowClass,
+      getCategoryColor,
       formatTimestamp,
-      formatDuration,
-      getTestIcon,
-      getTestColor,
-      getTestItemClass,
+      clearHistory,
     };
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.q-item {
+.test-row {
   border-radius: 4px;
   margin-bottom: 4px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
 }
 </style>
-

@@ -41,11 +41,11 @@ test.describe('Edge Cases and Error Handling', () => {
     // Fill all required fields correctly
     const customer = TestDataFactory.createCustomer();
     await photoUploadPage.fillCustomerInfo(customer);
-    
+
     // Upload a photo and set quantity
-    const testImage = await import('../../utils/test-data/image-generator').then(m => 
-      m.generateTestImages(1)[0]
-    );
+    const testImage = await import(
+      '../../utils/test-data/image-generator'
+    ).then((m) => m.generateTestImages(1)[0]);
     await photoUploadPage.uploadPhotos([testImage]);
     await photoUploadPage.setPhotoQuantity(0, 1);
 
@@ -61,7 +61,9 @@ test.describe('Edge Cases and Error Handling', () => {
     expect(true).toBe(true); // Placeholder
   });
 
-  test('TC-7.3: Multiple Orders - Order Number Uniqueness', async ({ page }) => {
+  test('TC-7.3: Multiple Orders - Order Number Uniqueness', async ({
+    page,
+  }) => {
     // This test would create multiple orders and verify order numbers are unique
     // Implementation would require completing orders
     expect(true).toBe(true); // Placeholder
