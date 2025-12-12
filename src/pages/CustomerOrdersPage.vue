@@ -376,9 +376,9 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        // Sort by createdAt descending (newest first) on the server for better performance
-        // Client-side sort will handle any edge cases with missing or different date fields
-        const q = query(ordersRef, orderBy('createdAt', 'desc'));
+        // Sort by submissionDate descending (newest first) on the server for better performance
+        // Client-side sort will handle any edge cases with missing dates
+        const q = query(ordersRef, orderBy('submissionDate', 'desc'));
 
         unsubscribeOrders = onSnapshot(
           q,
@@ -399,17 +399,11 @@ export default {
               return matchesUserId || matchesEmail;
             });
 
-            // Sort by date (most recent first), handling missing/invalid dates
-            // Use createdAt first (matches server-side orderBy), then fall back to other date fields
+            // Sort by submissionDate (most recent first), handling missing/invalid dates
             userOrders.sort((a, b) => {
               const getDateValue = (order) => {
-                // Prefer createdAt (matches server-side sorting), then other date fields
-                const date =
-                  order.createdAt ||
-                  order.createdAtClient ||
-                  order.submissionDate ||
-                  order.submissionDateClient ||
-                  order.updatedAt;
+                // Use submissionDate as primary date for sorting
+                const date = order.submissionDate;
                 if (!date) {
                   // Return a very old date (0) so invalid dates sort to the bottom
                   return 0;
@@ -519,17 +513,11 @@ export default {
               return matchesUserId || matchesEmail;
             });
 
-            // Sort by date (most recent first), handling missing/invalid dates
-            // Use createdAt first (matches server-side orderBy), then fall back to other date fields
+            // Sort by submissionDate (most recent first), handling missing/invalid dates
             filteredOrders.sort((a, b) => {
               const getDateValue = (order) => {
-                // Prefer createdAt (matches server-side sorting), then other date fields
-                const date =
-                  order.createdAt ||
-                  order.createdAtClient ||
-                  order.submissionDate ||
-                  order.submissionDateClient ||
-                  order.updatedAt;
+                // Use submissionDate as primary date for sorting
+                const date = order.submissionDate;
                 if (!date) {
                   // Return a very old date (0) so invalid dates sort to the bottom
                   return 0;
