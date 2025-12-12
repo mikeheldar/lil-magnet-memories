@@ -569,39 +569,117 @@
             What Happens Next?
           </div>
           <q-list dense>
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="check_circle" color="positive" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  >We'll review your photos and contact you within 24
-                  hours</q-item-label
-                >
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="check_circle" color="positive" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  >We'll provide a quote and timeline for your custom
-                  magnets</q-item-label
-                >
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="check_circle" color="positive" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label
-                  >Once approved, we'll create your beautiful custom
-                  magnets!</q-item-label
-                >
-              </q-item-section>
-            </q-item>
+            <!-- Market Event Mode - Pay Online -->
+            <template v-if="isAtMarketEvent && paymentChoice === 'pay_online'">
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >We'll add this to cart and take you to the payment
+                    page</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >We'll send you an email notification about your magnets
+                    when your order is accepted, in progress, and
+                    ready!</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >Pickup your magnets at the tent</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+            </template>
+
+            <!-- Market Event Mode - Pay at Tent -->
+            <template v-else-if="isAtMarketEvent && paymentChoice === 'pay_at_tent'">
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >We'll confirm your order details and share with the Magnet
+                    Maker at the tent!</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >We'll send you an email notification about your magnets
+                    when your order is accepted, in progress, and
+                    ready!</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >Pay at the tent and pickup your magnets at the
+                    tent</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+            </template>
+
+            <!-- Online Mode (Default) -->
+            <template v-else>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >We'll process your payment and send you an order
+                    confirmation email</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >We'll create your custom magnets (typically 3-5 business
+                    days)</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="check_circle" color="positive" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    >Your magnets will be shipped to your address and you'll
+                    receive tracking information</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+            </template>
           </q-list>
         </q-card-section>
       </q-card>
