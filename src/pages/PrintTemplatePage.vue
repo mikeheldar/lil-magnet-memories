@@ -889,7 +889,7 @@ export default {
     height: var(--outer-square-size-secondary);
     opacity: 0.6;
     z-index: 0;
-    left: -2px;
+    left: -3.5px;
     top: -2px;
     right: -2px;
     bottom: -2px;
@@ -897,7 +897,7 @@ export default {
   }
 
   .outer-frame.primary {
-    left: 1px;
+    left: -0.5px;
     top: 0;
     right: auto;
     bottom: 0;
@@ -1119,7 +1119,7 @@ export default {
     height: var(--outer-square-size-secondary);
     opacity: 0.6;
     z-index: 0;
-    left: -2px;
+    left: -3.5px;
     top: -2px;
     right: -2px;
     bottom: -2px;
@@ -1127,7 +1127,7 @@ export default {
   }
 
   .outer-frame.primary {
-    left: 1px;
+    left: -0.5px;
     top: 0;
     right: auto;
     bottom: 0;
