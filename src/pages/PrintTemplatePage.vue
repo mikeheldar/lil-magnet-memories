@@ -887,6 +887,13 @@ export default {
     z-index: 0;
   }
 
+  .outer-frame.primary {
+    transform: translate(
+      calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / -2),
+      calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / -2)
+    );
+  }
+
   /* Corner triangles for cutting alignment - upper corners */
   .corner-triangle {
     position: absolute;
@@ -945,12 +952,11 @@ export default {
   }
 
   .border-text-top {
-    top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4 - 5px);
     left: 50%;
     transform: translate(-50%, -50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
-    line-height: 0.7;
   }
 
   .border-text-bottom {
@@ -1101,6 +1107,13 @@ export default {
     z-index: 0;
   }
 
+  .outer-frame.primary {
+    transform: translate(
+      calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / -2),
+      calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / -2)
+    );
+  }
+
   /* Corner triangles for cutting alignment - upper corners */
   .corner-triangle {
     position: absolute;
@@ -1159,12 +1172,11 @@ export default {
   }
 
   .border-text-top {
-    top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4 - 5px);
     left: 50%;
     transform: translate(-50%, -50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
-    line-height: 0.7;
   }
 
   .border-text-bottom {
