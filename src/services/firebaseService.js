@@ -525,6 +525,7 @@ class FirebaseService {
           photos: orderDoc.photos,
           quantities: orderDoc.quantities,
           totalMagnets: orderDoc.totalMagnets,
+          shippingOption: orderDoc.shippingOption || null,
         });
         console.log('Status update email sent successfully');
       } catch (statusEmailError) {
