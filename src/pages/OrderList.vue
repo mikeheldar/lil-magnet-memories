@@ -981,6 +981,8 @@ export default {
       switch (status) {
         case 'new':
           return 'orange';
+        case 'paid':
+          return 'blue';
         case 'in_progress':
           return 'blue';
         case 'completed':
