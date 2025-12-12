@@ -235,6 +235,17 @@
                     )
                   }}
                 </div>
+                <!-- Debug: Show all date fields -->
+                <div class="q-mt-sm q-pa-sm bg-grey-2 rounded-borders">
+                  <div class="text-caption text-weight-bold text-grey-8 q-mb-xs">Debug Dates:</div>
+                  <div class="text-caption text-grey-7">
+                    <div>createdAt: {{ formatDateForDebug(order.createdAt) }}</div>
+                    <div>createdAtClient: {{ formatDateForDebug(order.createdAtClient) }}</div>
+                    <div>submissionDate: {{ formatDateForDebug(order.submissionDate) }}</div>
+                    <div>submissionDateClient: {{ formatDateForDebug(order.submissionDateClient) }}</div>
+                    <div>updatedAt: {{ formatDateForDebug(order.updatedAt) }}</div>
+                  </div>
+                </div>
                 <div v-if="order.totalAmount">
                   <strong>Total Amount:</strong> ${{
                     order.totalAmount.toFixed(2)
@@ -947,11 +958,9 @@ export default {
     });
 
     const formatDate = (timestamp) => {
-      // This function should never be called with null/undefined for orders
-      // as we always set a client-side date fallback (submissionDateClient as timestamp number)
+      // Never use current date as fallback - show "N/A" or raw value instead
       if (timestamp === null || timestamp === undefined) {
-        console.warn('formatDate called with null/undefined timestamp');
-        return new Date().toLocaleString(); // Fallback to current date
+        return 'N/A';
       }
 
       try {
@@ -1298,6 +1307,7 @@ export default {
       completedOrders,
       loadOrders,
       formatDate,
+      formatDateForDebug,
       getStatusColor,
       getDisplayStatus,
       updateOrderStatus,
