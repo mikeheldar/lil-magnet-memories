@@ -868,7 +868,7 @@ export default {
     top: 0;
     right: 0;
     bottom: 0;
-    left: -4px;
+    left: 0;
     margin: auto;
   }
 
@@ -897,11 +897,11 @@ export default {
   }
 
   .outer-frame.primary {
-    left: 0;
+    left: 1px;
     top: 0;
-    right: 0;
+    right: auto;
     bottom: 0;
-    margin: auto;
+    margin: 0;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
@@ -1098,7 +1098,7 @@ export default {
     top: 0;
     right: 0;
     bottom: 0;
-    left: -4px;
+    left: 0;
     margin: auto;
   }
 
@@ -1127,11 +1127,11 @@ export default {
   }
 
   .outer-frame.primary {
-    left: 0;
+    left: 1px;
     top: 0;
-    right: 0;
+    right: auto;
     bottom: 0;
-    margin: auto;
+    margin: 0;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
