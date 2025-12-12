@@ -1423,16 +1423,6 @@ export default {
   hyphens: auto;
 }
 
-.hero-subtitle {
-  font-size: 1.3rem;
-  line-height: 1.6;
-  margin: 0 0 2.5rem 0;
-  opacity: 0.95;
-  font-weight: 300;
-  text-align: center;
-  width: 100%;
-  max-width: 100%;
-}
 
   .hero-actions {
     margin-bottom: 40px;
