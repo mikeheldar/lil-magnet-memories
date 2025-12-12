@@ -612,14 +612,14 @@ export default {
 
         // Check if date is valid
         if (isNaN(date.getTime())) {
-          console.warn('Invalid date detected, using current date as fallback');
-          return new Date().toLocaleString(); // Fallback to current date instead of N/A
+          // Return raw value or type info instead of current date
+          return `Invalid: ${JSON.stringify(timestamp)}`;
         }
 
         return date.toLocaleString();
       } catch (error) {
-        console.error('Error formatting date:', error, timestamp);
-        return new Date().toLocaleString(); // Fallback to current date
+        // Return error info instead of current date
+        return `Error: ${error.message} (${JSON.stringify(timestamp)})`;
       }
     };
 
