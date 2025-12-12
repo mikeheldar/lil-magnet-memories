@@ -597,9 +597,9 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        // Use a query that doesn't require submissionDate to exist (to catch all orders)
-        // We'll sort client-side to handle missing dates
-        const q = query(ordersRef);
+        // Sort by createdAt descending (newest first) on the server for better performance
+        // Client-side sort will handle any edge cases with missing or different date fields
+        const q = query(ordersRef, orderBy('createdAt', 'desc'));
 
         unsubscribeOrders = onSnapshot(
           q,
