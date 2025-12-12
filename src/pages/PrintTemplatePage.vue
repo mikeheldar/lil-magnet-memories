@@ -974,7 +974,7 @@ export default {
     transform: translateY(-50%) rotate(-90deg);
     transform-origin: left;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
-    text-align: center;
+    text-align: left;
   }
 
   .border-text-right {
@@ -983,7 +983,7 @@ export default {
     transform: translateY(-50%) rotate(90deg);
     transform-origin: right;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
-    text-align: center;
+    text-align: right;
   }
 
   .print-square {
@@ -1195,7 +1195,7 @@ export default {
     transform: translateY(-50%) rotate(-90deg);
     transform-origin: left;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
-    text-align: center;
+    text-align: left;
   }
 
   .border-text-right {
@@ -1204,7 +1204,7 @@ export default {
     transform: translateY(-50%) rotate(90deg);
     transform-origin: right;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
-    text-align: center;
+    text-align: right;
   }
 
   .print-square {
