@@ -559,8 +559,23 @@ class FirebaseService {
         orderDoc.shippingOption.type === 'shipping'
       ) {
         try {
-          // You can add email notification for shipping updates here if needed
-          console.log('Shipping status updated:', shippingStatus);
+          // Send shipping email when status is 'shipped'
+          if (shippingStatus === 'shipped') {
+            await this.sendStatusUpdateEmail({
+              firstName: orderDoc.customer.firstName,
+              lastName: orderDoc.customer.lastName,
+              email: orderDoc.customer.email,
+              orderNumber: orderDoc.orderNumber,
+              status: 'shipped',
+              photos: orderDoc.photos || [],
+              quantities: orderDoc.quantities || [],
+              totalMagnets: orderDoc.totalMagnets || 0,
+              shippingOption: orderDoc.shippingOption,
+            });
+            console.log('Shipping email sent successfully');
+          } else {
+            console.log('Shipping status updated:', shippingStatus);
+          }
         } catch (emailError) {
           console.error('Failed to send shipping status email:', emailError);
           // Don't throw error - status was updated successfully

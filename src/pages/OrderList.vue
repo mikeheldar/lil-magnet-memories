@@ -128,7 +128,7 @@
             <div class="col-auto">
               <q-btn-group>
                 <q-btn
-                  v-if="order.status === 'new'"
+                  v-if="order.status === 'new' || order.status === 'paid'"
                   icon="play_arrow"
                   color="blue"
                   size="sm"
@@ -205,10 +205,10 @@
                     >{{ order.customer.phone }}</a
                   >
                 </div>
-                <div v-if="order.specialInstructions">
+                <div v-if="order.specialInstructions || (order.customer && order.customer.specialInstructions) || (order.cartItems && order.cartItems.some(item => item.specialInstructions))">
                   <strong>Special Instructions:</strong>
                   <div class="text-grey-7 q-mt-xs">
-                    {{ order.specialInstructions }}
+                    {{ order.specialInstructions || (order.customer && order.customer.specialInstructions) || (order.cartItems && order.cartItems.find(item => item.specialInstructions)?.specialInstructions) || 'N/A' }}
                   </div>
                 </div>
               </div>
