@@ -880,6 +880,10 @@ export default {
     vector-effect: non-scaling-stroke;
   }
 
+  .outer-frame.secondary rect {
+    stroke-dasharray: none;
+  }
+
   .outer-frame.secondary {
     width: var(--outer-square-size-secondary);
     height: var(--outer-square-size-secondary);
@@ -1099,6 +1103,10 @@ export default {
     stroke-width: 1;
     stroke-dasharray: 4 4;
     vector-effect: non-scaling-stroke;
+  }
+
+  .outer-frame.secondary rect {
+    stroke-dasharray: none;
   }
 
   .outer-frame.secondary {
