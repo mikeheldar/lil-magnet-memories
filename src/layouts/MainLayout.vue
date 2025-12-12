@@ -855,6 +855,13 @@ export default {
   text-align: center;
 }
 
+// Keep logo large on medium screens
+@media (min-width: 601px) and (max-width: 1024px) {
+  .q-toolbar-title {
+    font-size: 1.5rem !important;
+  }
+}
+
 .logo-header {
   transition: transform 0.3s ease;
 
