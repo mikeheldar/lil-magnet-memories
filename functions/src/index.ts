@@ -736,7 +736,8 @@ async function sendLilMagnetStatusUpdateEmail(params: {
     case 'completed':
       // Customize message based on delivery method
       if (shippingOption?.type === 'shipping') {
-        statusMessage = 'Your custom magnets are completed and ready for shipment! 🎊';
+        const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+        statusMessage = `Your custom magnets are created and ready to be shipped/delivered via ${shippingMethod}! 🎊`;
       } else if (shippingOption?.type === 'pickup' || shippingOption?.type === 'arranged_pickup') {
         statusMessage = 'Your custom magnets are completed and ready for pickup! 🎊';
       } else {
@@ -814,7 +815,10 @@ async function sendLilMagnetStatusUpdateEmail(params: {
             ? "We're carefully crafting your magnets right now! You'll be notified when they're ready."
             : status === 'completed'
             ? shippingOption?.type === 'shipping'
-              ? 'Your magnets are ready! We\'ll ship them to you soon.'
+              ? (() => {
+                  const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+                  return `Your magnets are ready! We'll ship them to you via ${shippingMethod} soon.`;
+                })()
               : shippingOption?.type === 'pickup' || shippingOption?.type === 'arranged_pickup'
               ? 'Your magnets are ready! Please contact us to arrange pickup.'
               : 'Your magnets are ready!'
@@ -850,7 +854,10 @@ What's Next: ${
       ? "We're carefully crafting your magnets right now! You'll be notified when they're ready."
       : status === 'completed'
       ? shippingOption?.type === 'shipping'
-        ? 'Your magnets are ready! We\'ll ship them to you soon.'
+        ? (() => {
+            const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+            return `Your magnets are ready! We'll ship them to you via ${shippingMethod} soon.`;
+          })()
         : shippingOption?.type === 'pickup' || shippingOption?.type === 'arranged_pickup'
         ? 'Your magnets are ready! Please contact us to arrange pickup.'
         : 'Your magnets are ready!'
