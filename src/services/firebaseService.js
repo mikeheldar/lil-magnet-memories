@@ -300,75 +300,6 @@ class FirebaseService {
         `Photo uploads completed: ${uploadedPhotos.length} photos uploaded`
       );
 
-      // Prepare payment and shipping options for pay_at_tent orders
-      // ALL orders from MarketEventUploadPage should have these fields to appear in OrderList
-      let paymentOption = null;
-      let shippingOption = null;
-      
-      // If paymentChoice is 'pay_at_tent', this is definitely a market event order
-      // Also check if checkedInEvent exists (market event upload page always has this)
-      const hasPaymentChoice = orderData.paymentChoice === 'pay_at_tent';
-      const hasCheckedInEvent = !!orderData.checkedInEvent;
-      const isMarketEventOrder = hasPaymentChoice || hasCheckedInEvent;
-      
-      console.log('🔍 saveOrder - Market event order check:', {
-        paymentChoice: orderData.paymentChoice,
-        hasPaymentChoice,
-        hasCheckedInEvent,
-        checkedInEvent: orderData.checkedInEvent ? { id: orderData.checkedInEvent.id, name: orderData.checkedInEvent.name } : null,
-        isMarketEventOrder,
-      });
-      
-      if (isMarketEventOrder) {
-        // Set payment option for pay at tent orders
-        if (hasPaymentChoice) {
-          paymentOption = {
-            type: 'pay_at_event',
-            processor: 'in_person',
-            paymentId: null,
-            paidAt: null,
-            status: 'pending', // Payment will be collected at event
-            receiptUrl: null,
-            billingAddress: null,
-          };
-          console.log('✅ Added paymentOption for pay_at_tent order');
-        }
-        
-        // ALWAYS set shipping option for market event orders (pickup at event)
-        // This ensures orders appear in OrderList with type='pickup'
-        const eventId = orderData.checkedInEvent?.id || null;
-        shippingOption = {
-          value: 'collect_at_event',
-          label: 'Collect at Market Event',
-          description: 'Pick up your magnets at the market booth for free.',
-          cost: 0,
-          estimatedTimeline: 'Ready for pickup at the event',
-          type: 'pickup', // CRITICAL: This ensures order appears in OrderList
-          eventId: eventId,
-          address: null,
-        };
-        console.log('✅ Added shippingOption for market event order:', {
-          type: shippingOption.type,
-          eventId: shippingOption.eventId,
-        });
-      }
-      
-      // Fallback: If no shippingOption but this looks like a market event order (has photos/quantities but no cartItems)
-      // This handles legacy orders or edge cases where paymentChoice/checkedInEvent weren't passed
-      if (!shippingOption && orderData.photos && Array.isArray(orderData.photos) && orderData.photos.length > 0) {
-        console.log('⚠️ No shippingOption but has photos - adding default pickup option');
-        shippingOption = {
-          value: 'collect_at_event',
-          label: 'Collect at Market Event',
-          description: 'Pick up your magnets at the market booth for free.',
-          cost: 0,
-          estimatedTimeline: 'Ready for pickup at the event',
-          type: 'pickup',
-          eventId: null,
-          address: null,
-        };
-      }
-
       // Prepare order document
       const orderDoc = {
         orderNumber: orderData.orderNumber,
@@ -389,9 +320,6 @@ class FirebaseService {
         createdAt: serverTimestamp(),
         createdAtClient: Date.now(), // Client-side timestamp (milliseconds) - always available
         updatedAt: serverTimestamp(),
-        // Add payment and shipping options for pay_at_tent orders
-        ...(paymentOption && { paymentOption }),
-        ...(shippingOption && { shippingOption }),
       };
 
       // Ensure we have an auth context for Firestore rules (request.auth != null)
@@ -442,22 +370,11 @@ class FirebaseService {
       console.log('Saving order to Firestore...');
       console.log('Firestore database:', db.app.options.projectId);
       console.log('Current auth user:', auth?.currentUser?.uid || 'null');
-<<<<<<< HEAD
-      console.log('Order document to save:', { 
-        ...orderDoc, 
-        photos: `[${orderDoc.photos.length} photos]`,
-        paymentOption: orderDoc.paymentOption || 'null',
-        shippingOption: orderDoc.shippingOption || 'null',
-        status: orderDoc.status
-      });
-      
-=======
       console.log('Order document to save:', {
         ...orderDoc,
         photos: `[${orderDoc.photos.length} photos]`,
       });
 
->>>>>>> test-environment
       const savePromise = addDoc(collection(db, 'orders'), orderDoc)
         .then((docRef) => {
           completeOperation(logId, { data: { docId: docRef.id } });
