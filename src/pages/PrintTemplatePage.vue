@@ -969,19 +969,19 @@ export default {
   }
 
   .border-text-left {
-    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
-    top: 50%;
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
+    top: 70%;
     transform: translateY(-50%) rotate(-90deg);
-    transform-origin: center;
+    transform-origin: left;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
 
   .border-text-right {
-    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
-    top: 50%;
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
+    top: 70%;
     transform: translateY(-50%) rotate(90deg);
-    transform-origin: center;
+    transform-origin: right;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
@@ -1190,19 +1190,19 @@ export default {
   }
 
   .border-text-left {
-    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
-    top: 50%;
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
+    top: 70%;
     transform: translateY(-50%) rotate(-90deg);
-    transform-origin: center;
+    transform-origin: left;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
 
   .border-text-right {
-    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
-    top: 50%;
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
+    top: 70%;
     transform: translateY(-50%) rotate(90deg);
-    transform-origin: center;
+    transform-origin: right;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
