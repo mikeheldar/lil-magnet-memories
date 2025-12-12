@@ -948,12 +948,16 @@ export default {
     top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
     transform: translateX(-50%);
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
   }
 
   .border-text-bottom {
     bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
     transform: translateX(-50%);
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
   }
 
   .border-text-left {
@@ -961,6 +965,8 @@ export default {
     top: 50%;
     transform: translateY(-50%) rotate(-90deg);
     transform-origin: center;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
   }
 
   .border-text-right {
@@ -968,6 +974,8 @@ export default {
     top: 50%;
     transform: translateY(-50%) rotate(90deg);
     transform-origin: center;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
   }
 
   .print-square {
@@ -1153,12 +1161,16 @@ export default {
     top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
     transform: translateX(-50%);
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
   }
 
   .border-text-bottom {
     bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
     transform: translateX(-50%);
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
   }
 
   .border-text-left {
@@ -1166,6 +1178,8 @@ export default {
     top: 50%;
     transform: translateY(-50%) rotate(-90deg);
     transform-origin: center;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
   }
 
   .border-text-right {
@@ -1173,6 +1187,8 @@ export default {
     top: 50%;
     transform: translateY(-50%) rotate(90deg);
     transform-origin: center;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
   }
 
   .print-square {
