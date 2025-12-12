@@ -4455,13 +4455,31 @@ export default {
         clearCart();
 
         // Determine the actual amount charged/owed
-        // Always use orderTotal.value as it's the amount that was charged (Square) or should be paid (pay-at-tent)
-        // Make sure it's never 0 if there's an actual order
-        let displayTotalAmount = Number(orderTotal.value) || 0;
+        // Priority: 1) Actual charged amount from Square payment (most accurate)
+        //           2) Amount from paymentOptionPayload (if payment was processed)
+        //           3) orderTotal.value (fallback)
+        //           4) Calculate from subtotal + shipping + tax (last resort)
+        let displayTotalAmount = 0;
 
-        // If for some reason orderTotal is 0 but we have items, calculate it
+        // First, try to get the actual charged amount from squarePaymentDetails
+        if (squarePaymentDetails?.amountMoney?.amount) {
+          // Square returns amount in cents, convert to dollars
+          displayTotalAmount = Number(squarePaymentDetails.amountMoney.amount) / 100;
+          console.log('✅ Using actual charged amount from Square payment:', displayTotalAmount);
+        } else if (paymentOptionPayload?.amount) {
+          // Use amount from payment option payload
+          displayTotalAmount = Number(paymentOptionPayload.amount) || 0;
+          console.log('✅ Using amount from paymentOptionPayload:', displayTotalAmount);
+        } else {
+          // Fall back to orderTotal
+          displayTotalAmount = Number(orderTotal.value) || 0;
+          console.log('✅ Using orderTotal.value:', displayTotalAmount);
+        }
+
+        // If for some reason we still have 0 but we have items, calculate it
         if (displayTotalAmount === 0 && cartItems.value.length > 0) {
           displayTotalAmount = cartSubtotal.value + shippingCost.value + tax.value;
+          console.log('⚠️ Calculated displayTotalAmount from subtotal + shipping + tax:', displayTotalAmount);
         }
 
         localStorage.setItem(

@@ -1692,7 +1692,7 @@ export default {
         const productsData = await firebaseService.getProducts(isAdmin);
         products.value = productsData || [];
         console.log('🔄 [LOAD] Products loaded:', products.value.length, 'products');
-        
+
         // If no products and we haven't exceeded retries, retry
         if (products.value.length === 0 && retryCount < maxRetries) {
           console.log(`⏳ [LOAD] No products returned, retrying (${retryCount + 1}/${maxRetries})...`);
