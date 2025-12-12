@@ -226,7 +226,7 @@
                 </div>
                 <div>
                   <strong>Order Date:</strong>
-                  {{ formatDate(order.submissionDate) }}
+                  {{ formatDate(order.submissionDateClient) }}
                 </div>
                 <!-- Debug: Show all date fields -->
                 <div class="q-mt-sm q-pa-sm bg-grey-2 rounded-borders">
@@ -601,9 +601,9 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        // Sort by submissionDate descending (newest first) on the server for better performance
+        // Sort by submissionDateClient descending (newest first) on the server for better performance
         // Client-side sort will handle any edge cases with missing dates
-        const q = query(ordersRef, orderBy('submissionDate', 'desc'));
+        const q = query(ordersRef, orderBy('submissionDateClient', 'desc'));
 
         unsubscribeOrders = onSnapshot(
           q,
@@ -616,11 +616,11 @@ export default {
               });
             });
 
-            // Sort by submissionDate (most recent first), handling missing/invalid dates
+            // Sort by submissionDateClient (most recent first), handling missing/invalid dates
             ordersList.sort((a, b) => {
               const getDateValue = (order) => {
-                // Use submissionDate as primary date for sorting
-                const date = order.submissionDate;
+                // Use submissionDateClient as primary date for sorting
+                const date = order.submissionDateClient;
                 if (!date) {
                   // Return a very old date (0) so invalid dates sort to the bottom
                   return 0;
@@ -725,11 +725,11 @@ export default {
         });
       }
 
-      // Ensure filtered results are sorted by submissionDate (most recent first)
+      // Ensure filtered results are sorted by submissionDateClient (most recent first)
       filtered.sort((a, b) => {
         const getDateValue = (order) => {
-          // Use submissionDate as primary date for sorting
-          const date = order.submissionDate;
+          // Use submissionDateClient as primary date for sorting
+          const date = order.submissionDateClient;
           if (!date) {
             // Return a very old date (0) so invalid dates sort to the bottom
             return 0;
