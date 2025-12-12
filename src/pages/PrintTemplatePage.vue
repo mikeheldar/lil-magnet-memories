@@ -200,6 +200,12 @@
               <div class="corner-triangle corner-triangle-bottom-left"></div>
               <div class="corner-triangle corner-triangle-bottom-right"></div>
 
+              <!-- Border text labels -->
+              <div class="border-text border-text-top">Li'l Magnet Memories</div>
+              <div class="border-text border-text-bottom">Li'l Magnet Memories</div>
+              <div class="border-text border-text-left">lilmagnetmemories.com</div>
+              <div class="border-text border-text-right">lilmagnetmemories.com</div>
+
               <!-- Inner square frame for image -->
               <div
                 class="print-square"
@@ -874,11 +880,28 @@ export default {
     vector-effect: non-scaling-stroke;
   }
 
+  .outer-frame.secondary rect {
+    stroke-dasharray: none;
+  }
+
   .outer-frame.secondary {
     width: var(--outer-square-size-secondary);
     height: var(--outer-square-size-secondary);
     opacity: 0.6;
     z-index: 0;
+    left: -3.5px;
+    top: -2px;
+    right: -2px;
+    bottom: -2px;
+    margin: auto;
+  }
+
+  .outer-frame.primary {
+    left: -0.5px;
+    top: 0;
+    right: auto;
+    bottom: 0;
+    margin: 0;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
@@ -924,6 +947,52 @@ export default {
     border-right: var(--triangle-size) solid #333;
     border-left: var(--triangle-size) solid transparent;
     border-top: var(--triangle-size) solid transparent;
+  }
+
+  /* Border text labels */
+  .border-text {
+    position: absolute;
+    color: #333;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    z-index: 2;
+    white-space: nowrap;
+  }
+
+  .border-text-top {
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 5));
+    left: 50%;
+    transform: translate(-50%);
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
+  }
+
+  .border-text-bottom {
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 5);
+    left: 50%;
+    transform: translate(-50%);
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
+  }
+
+  .border-text-left {
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
+    top: 70%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: left;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: left;
+  }
+
+  .border-text-right {
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
+    top: 70%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: right;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: right;
   }
 
   .print-square {
@@ -1041,11 +1110,28 @@ export default {
     vector-effect: non-scaling-stroke;
   }
 
+  .outer-frame.secondary rect {
+    stroke-dasharray: none;
+  }
+
   .outer-frame.secondary {
     width: var(--outer-square-size-secondary);
     height: var(--outer-square-size-secondary);
     opacity: 0.6;
     z-index: 0;
+    left: -3.5px;
+    top: -2px;
+    right: -2px;
+    bottom: -2px;
+    margin: auto;
+  }
+
+  .outer-frame.primary {
+    left: -0.5px;
+    top: 0;
+    right: auto;
+    bottom: 0;
+    margin: 0;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
@@ -1091,6 +1177,52 @@ export default {
     border-right: var(--triangle-size) solid #333;
     border-left: var(--triangle-size) solid transparent;
     border-top: var(--triangle-size) solid transparent;
+  }
+
+  /* Border text labels */
+  .border-text {
+    position: absolute;
+    color: #333;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    z-index: 2;
+    white-space: nowrap;
+  }
+
+  .border-text-top {
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 5));
+    left: 50%;
+    transform: translate(-50%);
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
+  }
+
+  .border-text-bottom {
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 5);
+    left: 50%;
+    transform: translate(-50%);
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: center;
+  }
+
+  .border-text-left {
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
+    top: 70%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: left;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: left;
+  }
+
+  .border-text-right {
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
+    top: 70%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: right;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
+    text-align: right;
   }
 
   .print-square {

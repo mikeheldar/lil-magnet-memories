@@ -1312,6 +1312,7 @@ export default {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+  margin-bottom: 0;
 }
 
 .hero-logo {
@@ -1425,7 +1426,7 @@ export default {
 
 
   .hero-actions {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -1793,7 +1794,7 @@ export default {
 @media (max-width: 768px) {
   .hero-content {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 20px;
     text-align: center;
     padding: 0 15px;
     width: 100%;
@@ -1855,7 +1856,7 @@ export default {
   }
 
   .hero-actions {
-    margin-bottom: 60px;
+    margin-bottom: 10px;
     width: 100%;
   }
 
