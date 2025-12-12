@@ -1246,6 +1246,22 @@ export default {
 <style lang="scss" scoped>
 .landing-page {
   background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
+    ),
+    linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
   min-height: 100vh;
   width: 100%;
   max-width: 100vw;
@@ -1259,6 +1275,22 @@ export default {
   justify-content: center;
   padding: 40px 20px 100px 20px;
   background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
+    ),
+    linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
