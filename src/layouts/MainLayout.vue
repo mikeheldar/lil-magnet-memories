@@ -79,6 +79,18 @@
           <q-tooltip>Shopping Cart</q-tooltip>
         </q-btn>
 
+        <!-- Customer Mode Indicator (small, out of the way) -->
+        <q-chip
+          v-if="hasActiveEvent"
+          :color="isMarketCustomer ? 'green' : 'blue'"
+          text-color="white"
+          size="xs"
+          class="q-mr-sm customer-mode-chip"
+          :icon="isMarketCustomer ? 'store' : 'shopping_bag'"
+        >
+          <span class="gt-xs">{{ isMarketCustomer ? 'Market' : 'Online' }}</span>
+        </q-chip>
+
         <!-- User Profile Dropdown (only when authenticated) -->
         <template v-if="isAuthenticated">
           <q-btn-dropdown flat dense no-caps class="user-profile-dropdown">
@@ -789,6 +801,8 @@ export default {
       isTestEnvironment,
       isAtMarketEvent,
       activeMarketEvent,
+      hasActiveEvent,
+      isMarketCustomer,
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,
@@ -826,6 +840,13 @@ export default {
   .q-btn__content {
     padding: 0;
   }
+}
+
+.customer-mode-chip {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  height: 20px;
+  opacity: 0.9;
 }
 
 .user-avatar {

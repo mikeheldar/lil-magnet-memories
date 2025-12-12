@@ -833,8 +833,12 @@ export default {
     });
 
     // Check if user is at a market event
+    // This should respect the user's customer type preference, not just whether there's an active event
     const isAtMarketEvent = computed(() => {
-      return marketEventService.getCheckedInEvent() !== null;
+      const { isMarketCustomer } = useCustomerType();
+      const hasActiveEvent = marketEventService.getCheckedInEvent() !== null;
+      // Only treat as market event if there's an active event AND user is a market customer
+      return hasActiveEvent && isMarketCustomer.value;
     });
 
     // Function to check if event has ended and show dialog
@@ -1641,15 +1645,31 @@ export default {
         // Check for active event (sync version first for speed)
         const activeEvent = marketEventService.getActiveEventSync();
 
-        // If anonymous user and there's an active event, automatically set them as "at the event"
+        // Only auto-set to market customer if:
+        // 1. Anonymous user
+        // 2. There's an active event
+        // 3. User hasn't already set a preference (check localStorage)
         if (activeEvent && !isAuthenticated.value) {
-          // Set customer type to market_customer so they're treated as being at the event
-          const { setCustomerType } = useCustomerType();
-          setCustomerType(CUSTOMER_TYPES.MARKET);
-          console.log(
-            '✅ Anonymous user auto-checked in to active market event:',
-            activeEvent.name
-          );
+          const { isMarketCustomer, isOnlineCustomer } = useCustomerType();
+          // Only auto-set if user hasn't explicitly chosen a mode
+          // Check if there's a stored preference
+          const storedType = localStorage.getItem('lil-magnet-customer-type');
+          if (!storedType) {
+            // No preference set - auto-set to market for anonymous users at events
+            const { setCustomerType } = useCustomerType();
+            setCustomerType(CUSTOMER_TYPES.MARKET);
+            console.log(
+              '✅ Anonymous user auto-checked in to active market event:',
+              activeEvent.name
+            );
+          } else {
+            // User has a preference - respect it
+            console.log(
+              'ℹ️ User has existing customer type preference:',
+              storedType,
+              '- respecting it'
+            );
+          }
         }
 
         // Check for active checked-in event (async version)
