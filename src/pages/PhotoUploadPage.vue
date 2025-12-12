@@ -737,7 +737,24 @@ export default {
     const showEventEndedDialog = ref(false);
     const orderNumber = ref('');
     const products = ref([]);
-    const selectedProductId = ref(null);
+    // Initialize product selection from localStorage immediately (like customer type)
+    // This ensures it persists across page refreshes
+    const getStoredProductId = () => {
+      try {
+        const savedData = localStorage.getItem('guestFormData');
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          if (parsed.selectedProductId) {
+            console.log('📦 Initializing product ID from localStorage:', parsed.selectedProductId);
+            return parsed.selectedProductId;
+          }
+        }
+      } catch (error) {
+        console.error('Error reading stored product ID:', error);
+      }
+      return null;
+    };
+    const selectedProductId = ref(getStoredProductId());
     const loadingProducts = ref(false);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
 
@@ -1624,6 +1641,7 @@ export default {
             selectedProductId: selectedProductId.value,
           };
           localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
+          console.log('💾 Saved product selection to localStorage:', selectedProductId.value);
         } catch (error) {
           console.error('Error saving form data to localStorage:', error);
         }
@@ -1661,48 +1679,21 @@ export default {
         // Determine which product to select
         let productToSelect = null;
 
-        // Check if product is already selected (might have been restored by watch)
-        const alreadySelected = selectedProductId.value;
-
-        // For anonymous users, check localStorage first before setting defaults
-        if (!isAuthenticated.value) {
-          try {
-            const savedData = localStorage.getItem('guestFormData');
-            console.log('🔍 Checking localStorage for saved product:', savedData ? 'data found' : 'no data');
-            if (savedData) {
-              const parsed = JSON.parse(savedData);
-              console.log('🔍 Parsed localStorage data:', parsed);
-              if (parsed.selectedProductId) {
-                console.log('🔍 Looking for product ID:', parsed.selectedProductId, 'in', products.value.length, 'products');
-                const savedProduct = products.value.find(
-                  (p) => String(p.id) === String(parsed.selectedProductId)
-                );
-                if (savedProduct) {
-                  productToSelect = savedProduct;
-                  console.log(
-                    '✅ Restored product from localStorage in loadProducts:',
-                    savedProduct.description
-                  );
-                } else {
-                  console.log('⚠️ Saved product ID not found in products array:', parsed.selectedProductId);
-                }
-              } else {
-                console.log('⚠️ No selectedProductId in localStorage data');
-              }
-            }
-          } catch (error) {
-            console.error('Error restoring product from localStorage:', error);
-          }
-        }
-
-        // If product was already selected (by watch) and matches saved product, keep it
-        if (alreadySelected && !productToSelect) {
+        // If product ID is already set (from localStorage initialization), verify it exists
+        if (selectedProductId.value) {
           const existingProduct = products.value.find(
-            (p) => String(p.id) === String(alreadySelected)
+            (p) => String(p.id) === String(selectedProductId.value)
           );
           if (existingProduct) {
             productToSelect = existingProduct;
-            console.log('✅ Keeping already selected product:', existingProduct.description);
+            console.log(
+              '✅ Product already selected from localStorage, verified in products:',
+              existingProduct.description
+            );
+          } else {
+            console.log('⚠️ Selected product ID not found in products array, will reset:', selectedProductId.value);
+            // Product doesn't exist, clear the selection
+            selectedProductId.value = null;
           }
         }
 
@@ -1784,6 +1775,17 @@ export default {
     onMounted(async () => {
       // The route guard handles blocking access when there's no active event
       // This onMounted sets up the page and auto-checks in anonymous users
+      
+      // Restore product selection from localStorage immediately (before loading products)
+      // Only restore if not already set and user is not authenticated
+      if (!selectedProductId.value) {
+        const storedId = getStoredProductId();
+        if (storedId) {
+          selectedProductId.value = storedId;
+          console.log('✅ Restored product ID from localStorage on mount:', storedId);
+        }
+      }
+      
       try {
         // Wait a moment for market event service to fully load events
         await new Promise((resolve) => setTimeout(resolve, 500));
