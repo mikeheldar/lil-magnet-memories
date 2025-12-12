@@ -1976,7 +1976,25 @@ export default {
           console.log('🔄 [WATCH] productOptions changed, count:', newOptions.length);
           console.log('🔄 [WATCH] Current selectedProductId:', selectedProductId.value);
           if (newOptions.length > 0) {
-            // Try to restore from localStorage first (only if no product is selected)
+            // If we have a selectedProductId but products just loaded, verify it exists
+            if (selectedProductId.value) {
+              console.log('🔍 [WATCH] Verifying selectedProductId exists in options:', selectedProductId.value);
+              const existingProduct = newOptions.find(
+                (p) => String(p.id) === String(selectedProductId.value)
+              );
+              if (existingProduct) {
+                console.log('✅ [WATCH] Selected product verified in options:', existingProduct.description);
+                // Product exists, we're good - don't change anything
+                return;
+              } else {
+                console.log('⚠️ [WATCH] Selected product ID not found in options:', selectedProductId.value);
+                console.log('⚠️ [WATCH] Available product IDs:', newOptions.map(p => p.id));
+                // Product doesn't exist, clear it
+                selectedProductId.value = null;
+              }
+            }
+            
+            // Try to restore from localStorage (only if no product is selected)
             if (!selectedProductId.value && !isAuthenticated.value) {
               console.log('🔍 [WATCH] No product selected and not authenticated, checking localStorage');
               try {
@@ -2007,8 +2025,10 @@ export default {
               } catch (error) {
                 console.error('❌ [WATCH] Error restoring product from localStorage:', error);
               }
+            } else if (selectedProductId.value) {
+              console.log('✅ [WATCH] Product already selected, skipping localStorage restore');
             } else {
-              console.log('⚠️ [WATCH] Skipping localStorage restore - selectedProductId:', selectedProductId.value, 'isAuthenticated:', isAuthenticated.value);
+              console.log('⚠️ [WATCH] Skipping localStorage restore - isAuthenticated:', isAuthenticated.value);
             }
 
             // If product ID is set, verify it still exists in options
