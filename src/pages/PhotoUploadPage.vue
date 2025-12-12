@@ -245,122 +245,98 @@
               placeholder="Any special requests for your magnets? Size preferences, color adjustments, etc."
             />
 
-            <!-- Product Selection (moved here) -->
+            <!-- Product Selection -->
             <div class="q-mb-md">
-              <div v-if="selectedProductId && selectedProduct" class="q-mb-sm">
-                <div class="text-h6 text-weight-bold text-primary">
-                  <q-icon name="inventory_2" class="q-mr-sm" />
-                  Selected Product: {{ selectedProduct.description }}
-                  <q-chip
-                    v-if="selectedProduct.isDefault"
-                    color="green"
-                    text-color="white"
-                    size="sm"
-                    icon="star"
-                    class="q-ml-sm"
-                  >
-                    Default
-                  </q-chip>
-                </div>
-                <div
-                  class="text-caption text-grey-7 q-mt-xs"
-                  v-if="
-                    selectedProduct.pricing &&
-                    Object.keys(selectedProduct.pricing).length > 0
-                  "
-                >
-                  <div
-                    v-for="(price, qty) in selectedProduct.pricing"
-                    :key="String(qty)"
-                  >
-                    {{ qty }}x for ${{ Number(price).toFixed(2) }}
-                  </div>
-                </div>
+              <div class="text-subtitle2 q-mb-sm text-weight-medium">
+                Product <span class="text-negative">*</span>
               </div>
-              <div v-else-if="selectedProductId" class="text-body2 text-grey-6">
-                Loading product details...
-              </div>
-              <div v-else class="text-body2 text-grey-6">
-                No product selected
-              </div>
-
-              <!-- Collapsible Change Product Section -->
-              <q-expansion-item
-                icon="swap_horiz"
-                label="Change Product"
-                class="q-mt-sm"
-                header-class="text-caption"
+              <q-select
+                v-model="selectedProductId"
+                :options="productOptions"
+                option-label="description"
+                option-value="id"
+                emit-value
+                map-options
+                :label="selectedProduct ? selectedProduct.description : 'Select a product'"
+                filled
+                :rules="[(val) => !!val || 'Please select a product']"
+                :loading="loadingProducts"
+                @update:model-value="onProductChange"
+                :disable="
+                  loadingProducts ||
+                  !productOptions ||
+                  productOptions.length === 0
+                "
               >
-                <q-select
-                  v-model="selectedProductId"
-                  :options="productOptions"
-                  option-label="description"
-                  option-value="id"
-                  emit-value
-                  map-options
-                  :label="
-                    selectedProduct
-                      ? 'Choose a different product'
-                      : 'Select a product'
-                  "
-                  filled
-                  :rules="[(val) => !!val || 'Please select a product']"
-                  :loading="loadingProducts"
-                  @update:model-value="onProductChange"
-                  :disable="
-                    loadingProducts ||
-                    !productOptions ||
-                    productOptions.length === 0
-                  "
-                >
-                  <template v-slot:option="scope">
-                    <q-item
-                      v-bind="scope.itemProps"
-                      v-if="
-                        scope &&
-                        scope.opt &&
-                        scope.opt.id &&
-                        scope.opt.description
-                      "
+                <template v-slot:selected>
+                  <div v-if="selectedProduct" class="row items-center full-width">
+                    <q-icon name="inventory_2" class="q-mr-sm text-primary" />
+                    <span class="text-weight-medium">{{ selectedProduct.description }}</span>
+                    <q-chip
+                      v-if="selectedProduct.isDefault"
+                      color="green"
+                      text-color="white"
+                      size="sm"
+                      icon="star"
+                      class="q-ml-sm"
                     >
-                      <q-item-section>
-                        <q-item-label>{{ scope.opt.description }}</q-item-label>
-                        <q-item-label
-                          caption
-                          v-if="
-                            scope.opt.pricing &&
-                            typeof scope.opt.pricing === 'object'
-                          "
+                      Default
+                    </q-chip>
+                  </div>
+                </template>
+                <template v-slot:option="scope">
+                  <q-item
+                    v-bind="scope.itemProps"
+                    v-if="
+                      scope &&
+                      scope.opt &&
+                      scope.opt.id &&
+                      scope.opt.description
+                    "
+                  >
+                    <q-item-section>
+                      <q-item-label>{{ scope.opt.description }}</q-item-label>
+                      <q-item-label
+                        caption
+                        v-if="
+                          scope.opt.pricing &&
+                          typeof scope.opt.pricing === 'object'
+                        "
+                      >
+                        <div
+                          v-for="(price, qty) in scope.opt.pricing"
+                          :key="String(qty)"
+                          class="text-caption"
                         >
-                          <div
-                            v-for="(price, qty) in scope.opt.pricing"
-                            :key="String(qty)"
-                            class="text-caption"
-                          >
-                            {{ qty }}x for ${{ Number(price).toFixed(2) }}
-                          </div>
-                        </q-item-label>
-                      </q-item-section>
-                      <q-item-section side v-if="scope.opt.isDefault">
-                        <q-chip
-                          color="green"
-                          text-color="white"
-                          size="sm"
-                          icon="star"
-                        >
-                          Default
-                        </q-chip>
-                      </q-item-section>
-                    </q-item>
-                  </template>
-                  <template v-slot:selected>
-                    <span v-if="selectedProduct">{{
-                      selectedProduct.description
-                    }}</span>
-                    <span v-else>Select a product</span>
-                  </template>
-                </q-select>
-              </q-expansion-item>
+                          {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                        </div>
+                      </q-item-label>
+                    </q-item-section>
+                    <q-item-section side v-if="scope.opt.isDefault">
+                      <q-chip
+                        color="green"
+                        text-color="white"
+                        size="sm"
+                        icon="star"
+                      >
+                        Default
+                      </q-chip>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+              <!-- Show pricing info below the dropdown when product is selected -->
+              <div
+                v-if="selectedProduct && selectedProduct.pricing && Object.keys(selectedProduct.pricing).length > 0"
+                class="text-caption text-grey-7 q-mt-xs q-ml-sm"
+              >
+                <div
+                  v-for="(price, qty) in selectedProduct.pricing"
+                  :key="String(qty)"
+                >
+                  {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                </div>
+              </div>
             </div>
 
             <!-- Payment Options (only show if at market event) -->

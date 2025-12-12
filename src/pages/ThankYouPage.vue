@@ -2,17 +2,25 @@
   <q-page class="thank-you-page">
     <div class="thank-you-container">
       <div class="text-center">
+        <!-- Success Icon -->
+        <div class="success-icon-container">
+          <q-icon name="check_circle" size="80px" color="positive" />
+        </div>
+
+        <!-- Thank You Message -->
+        <h1 class="thank-you-title">Thank You!</h1>
+        <p class="thank-you-subtitle">
+          We've received your order and will get started on your custom magnets
+          right away.
+        </p>
+
         <!-- Order Details Card -->
         <q-card class="order-details-card">
           <q-card-section class="text-center">
             <div class="text-h5 text-weight-bold text-primary q-mb-md">
-              <q-icon name="check_circle" size="28px" color="positive" class="q-mr-sm" />
-              Thank You!
+              <q-icon name="receipt" size="28px" class="q-mr-sm" />
+              Order Confirmation
             </div>
-            <p class="thank-you-subtitle q-mb-md">
-              We've received your order and will get started on your custom magnets
-              right away.
-            </p>
 
             <div class="order-number-section">
               <div class="text-caption text-grey-6 q-mb-xs">
@@ -64,28 +72,24 @@
             <q-separator class="q-my-sm" />
 
             <div class="delivery-info q-mb-sm">
-              <div class="row justify-between items-center text-body1 text-weight-medium">
-                <div class="row items-center">
-                  <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
-                  <span>Delivery Option</span>
-                </div>
-                <div class="text-primary">
-                  {{ deliveryOptionLabel }}
-                </div>
+              <div class="text-subtitle1 text-weight-medium q-mb-sm">
+                <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
+                Delivery Option
+              </div>
+              <div class="text-body2 text-grey-7">
+                <strong>{{ deliveryOptionLabel }}</strong>
               </div>
             </div>
 
             <q-separator class="q-my-sm" />
 
             <div class="payment-info q-mb-sm">
-              <div class="row justify-between items-center text-body1 text-weight-medium">
-                <div class="row items-center">
-                  <q-icon name="credit_card" size="20px" class="q-mr-sm" />
-                  <span>Payment Method</span>
-                </div>
-                <div class="text-primary">
-                  {{ displayPaymentMethod }}
-                </div>
+              <div class="text-subtitle1 text-weight-medium q-mb-sm">
+                <q-icon name="credit_card" size="20px" class="q-mr-sm" />
+                Payment Method
+              </div>
+              <div class="text-body2 text-grey-7">
+                <strong>{{ displayPaymentMethod }}</strong>
               </div>
             </div>
           </q-card-section>
@@ -225,37 +229,16 @@ export default {
       subtotal.value = Number(data.subtotal || 0);
       shippingCost.value = Number(data.shipping || 0);
       tax.value = Number(data.tax || 0);
+      totalAmount.value =
+        data.totalAmount !== undefined
+          ? Number(data.totalAmount)
+          : subtotal.value + shippingCost.value + tax.value;
       shippingOption.value = data.shippingOption || null;
       paymentOption.value = data.paymentOption || null;
       shippingTimeline.value =
         data.shippingOption?.estimatedTimeline || data.shippingTimeline || '';
       shippingAddress.value = data.shippingOption?.address || null;
       billingAddress.value = data.paymentOption?.billingAddress || null;
-
-      // Calculate total amount - prioritize stored values, then calculate
-      let calculatedTotal = subtotal.value + shippingCost.value + tax.value;
-
-      // Priority order:
-      // 1. If totalAmount is provided and greater than 0, use it (most reliable)
-      if (data.totalAmount !== undefined && Number(data.totalAmount) > 0) {
-        totalAmount.value = Number(data.totalAmount);
-      }
-      // 2. Check paymentOption for stored amount (from Square or pay-at-tent)
-      else if (data.paymentOption?.amount !== undefined && Number(data.paymentOption.amount) > 0) {
-        totalAmount.value = Number(data.paymentOption.amount);
-      }
-      // 3. For pay-at-tent, use calculated total (what they should pay)
-      else if (data.paymentOption?.type === 'pay_at_event' && calculatedTotal > 0) {
-        totalAmount.value = calculatedTotal;
-      }
-      // 4. For Square payments that completed, use calculated total
-      else if (data.paymentOption?.status === 'COMPLETED' && calculatedTotal > 0) {
-        totalAmount.value = calculatedTotal;
-      }
-      // 5. Otherwise use calculated total (fallback)
-      else {
-        totalAmount.value = calculatedTotal > 0 ? calculatedTotal : 0;
-      }
     };
 
     const shippingMethodLabel = computed(() => {
@@ -326,10 +309,10 @@ export default {
     });
 
     const formattedOrderNumber = computed(() => {
-      // Make order number more readable by adding spacing, but remove LMM prefix
+      // Make order number more readable by adding spacing
       if (!orderNumber.value) return 'N/A';
-      // Format like: LMM-251116-1886 -> 251116 - 1886 (removed LMM -)
-      return orderNumber.value.replace(/([A-Z]+)-(\d+)-(\d+)/, '$2 - $3');
+      // Format like: LMM-251116-1886 -> LMM - 251116 - 1886
+      return orderNumber.value.replace(/([A-Z]+)-(\d+)-(\d+)/, '$1 - $2 - $3');
     });
 
     onMounted(() => {
@@ -407,10 +390,23 @@ export default {
   width: 100%;
 }
 
+.success-icon-container {
+  margin-bottom: 2rem;
+  animation: bounceIn 0.6s ease-out;
+}
+
+.thank-you-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #667eea;
+  margin: 0 0 1rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .thank-you-subtitle {
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: #6c757d;
-  margin: 0;
+  margin: 0 0 2rem 0;
   font-weight: 300;
 }
 
@@ -453,11 +449,6 @@ export default {
 .delivery-info,
 .payment-info {
   text-align: left;
-}
-
-.delivery-info .row,
-.payment-info .row {
-  margin: 0;
 }
 
 .next-steps {
@@ -516,8 +507,12 @@ export default {
 
 // Mobile responsive adjustments
 @media (max-width: 599px) {
+  .thank-you-title {
+    font-size: 2.2rem;
+  }
+
   .thank-you-subtitle {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .action-buttons {
