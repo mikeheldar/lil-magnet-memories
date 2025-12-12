@@ -123,14 +123,7 @@
                 </div>
                 <div>
                   <strong>Order Date:</strong>
-                  {{
-                    formatDate(
-                      order.submissionDate ||
-                        order.submissionDateClient ||
-                        order.createdAt ||
-                        order.createdAtClient
-                    )
-                  }}
+                  {{ formatDate(order.submissionDateClient) }}
                 </div>
               </div>
             </div>
