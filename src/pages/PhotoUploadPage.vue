@@ -1661,13 +1661,19 @@ export default {
         // Determine which product to select
         let productToSelect = null;
 
+        // Check if product is already selected (might have been restored by watch)
+        const alreadySelected = selectedProductId.value;
+
         // For anonymous users, check localStorage first before setting defaults
         if (!isAuthenticated.value) {
           try {
             const savedData = localStorage.getItem('guestFormData');
+            console.log('🔍 Checking localStorage for saved product:', savedData ? 'data found' : 'no data');
             if (savedData) {
               const parsed = JSON.parse(savedData);
+              console.log('🔍 Parsed localStorage data:', parsed);
               if (parsed.selectedProductId) {
+                console.log('🔍 Looking for product ID:', parsed.selectedProductId, 'in', products.value.length, 'products');
                 const savedProduct = products.value.find(
                   (p) => String(p.id) === String(parsed.selectedProductId)
                 );
@@ -1677,11 +1683,26 @@ export default {
                     '✅ Restored product from localStorage in loadProducts:',
                     savedProduct.description
                   );
+                } else {
+                  console.log('⚠️ Saved product ID not found in products array:', parsed.selectedProductId);
                 }
+              } else {
+                console.log('⚠️ No selectedProductId in localStorage data');
               }
             }
           } catch (error) {
             console.error('Error restoring product from localStorage:', error);
+          }
+        }
+
+        // If product was already selected (by watch) and matches saved product, keep it
+        if (alreadySelected && !productToSelect) {
+          const existingProduct = products.value.find(
+            (p) => String(p.id) === String(alreadySelected)
+          );
+          if (existingProduct) {
+            productToSelect = existingProduct;
+            console.log('✅ Keeping already selected product:', existingProduct.description);
           }
         }
 
