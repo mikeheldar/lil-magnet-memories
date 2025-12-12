@@ -4,25 +4,31 @@
     <div v-if="hasActiveEvent" class="market-event-banner bg-green-5">
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
-        <div class="text-body1 text-white flex items-center q-gutter-md banner-text">
-          <!-- Full text for larger screens -->
-          <div class="gt-xs">
-            <strong>Market Event Live!</strong> We're at
-            {{ activeMarketEventName }}.
-          </div>
-          <!-- Short text for mobile -->
-          <div class="lt-sm">
-            <strong>Market Event Live!</strong>
-          </div>
+        <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
+          <strong>Market Event Live!</strong>
+          <span class="gt-xs">We're at {{ activeMarketEventName }}.</span>
+          <a
+            v-if="activeMarketEventLink"
+            :href="activeMarketEventLink"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-white text-weight-medium banner-link gt-md"
+            style="text-decoration: underline; white-space: nowrap;"
+          >
+            Event Details
+            <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+          </a>
           <q-toggle
             v-model="isCustomerAtEvent"
             color="white"
             checked-icon="check_circle"
             unchecked-icon="radio_button_unchecked"
             @update:model-value="toggleCustomerAtEvent"
-            class="banner-toggle"
+            class="banner-toggle q-ml-sm"
           >
-            <span class="text-white text-body2 q-ml-sm gt-xs">I'm at the event</span>
+            <span class="text-white text-body2 q-ml-sm gt-xs"
+              >I'm at the event</span
+            >
             <span class="text-white text-body2 q-ml-sm lt-sm">At event</span>
           </q-toggle>
         </div>
@@ -43,12 +49,7 @@
             alt="Lil Magnet Memories"
             class="hero-logo hero-logo-small"
           />
-          <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets</h1>
-          <p class="hero-subtitle">
-            Create custom photo magnets from your favorite moments.
-            High-quality, personalized magnets for your fridge, office, or
-            anywhere you want to display your memories.
-          </p>
+          <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets!</h1>
 
           <div class="hero-actions">
             <q-btn
@@ -62,14 +63,20 @@
               Start Creating Magnets
             </q-btn>
 
-            <div class="text-caption text-grey-6 q-mt-md">
+            <div class="text-caption text-white q-mt-md">
               No sign-in required • Upload photos and specify quantities
             </div>
           </div>
         </div>
 
         <div class="hero-images">
-          <div class="easel-container">
+          <div
+            class="easel-container"
+            @click="nextImage"
+            @touchstart="handleTouchStart"
+            @touchmove="handleTouchMove"
+            @touchend="handleTouchEnd"
+          >
             <img
               :src="currentEaselImage"
               alt="Custom photo magnets on easel display"
@@ -85,7 +92,7 @@
                   'carousel-dot',
                   { 'dot-active': index === easelImageIndex },
                 ]"
-                @click="goToImage(index)"
+                @click.stop="goToImage(index)"
                 aria-label="Go to image"
               />
             </div>
@@ -97,9 +104,7 @@
     <div class="landing-container">
       <!-- How It Works Section -->
       <div class="how-it-works-section q-mb-xl">
-        <div class="text-h4 text-center q-mb-lg text-primary">
-          How It Works
-        </div>
+        <div class="text-h4 text-center q-mb-lg text-primary">How It Works</div>
         <div class="text-body1 text-center text-grey-7 q-mb-xl">
           Create personalized magnets in just a few simple steps
         </div>
@@ -186,10 +191,14 @@
           <!-- Multiple collections: show in collapsible groups -->
           <template v-if="Object.keys(customProductsByCollection).length > 1">
             <q-expansion-item
-              v-for="(productsInCollection, collectionName) in customProductsByCollection"
+              v-for="(
+                productsInCollection, collectionName
+              ) in customProductsByCollection"
               :key="collectionName"
               :label="collectionName"
-              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              :caption="`${productsInCollection.length} product${
+                productsInCollection.length !== 1 ? 's' : ''
+              }`"
               default-opened
               class="collection-group q-mb-md"
             >
@@ -261,10 +270,7 @@
             </q-expansion-item>
           </template>
           <!-- Single collection: show products directly -->
-          <div
-            v-else
-            class="q-col-gutter-md"
-          >
+          <div v-else class="q-col-gutter-md">
             <div
               v-for="product in customProducts"
               :key="product.id"
@@ -345,10 +351,14 @@
           <!-- Multiple collections: show in collapsible groups -->
           <template v-if="Object.keys(designerProductsByCollection).length > 1">
             <q-expansion-item
-              v-for="(productsInCollection, collectionName) in designerProductsByCollection"
+              v-for="(
+                productsInCollection, collectionName
+              ) in designerProductsByCollection"
               :key="collectionName"
               :label="collectionName"
-              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              :caption="`${productsInCollection.length} product${
+                productsInCollection.length !== 1 ? 's' : ''
+              }`"
               default-opened
               class="collection-group q-mb-md"
             >
@@ -358,65 +368,67 @@
                   :key="product.id"
                   class="col-12 col-md-6 col-lg-4"
                 >
-              <q-card class="product-card">
-                <q-card-section class="product-card-content text-center">
-                  <div v-if="product.imageUrl" class="product-image-wrapper">
-                    <img
-                      :src="product.imageUrl"
-                      :alt="product.description"
-                      class="product-image"
-                    />
-                  </div>
-                  <div v-else class="product-image-placeholder">
-                    <q-icon name="image" size="64px" color="grey-4" />
-                  </div>
-                  <div class="text-h6 q-mt-md q-mb-sm">
-                    {{ product.description }}
-                  </div>
-
-                  <div
-                    v-if="product.detailedDescription"
-                    class="product-description"
-                  >
-                    <div class="text-body2 text-grey-7">
-                      {{ product.detailedDescription }}
-                    </div>
-                  </div>
-
-                  <div class="product-pricing">
-                    <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                    <div
-                      v-for="(price, qty) in product.pricing"
-                      :key="qty"
-                      class="text-body2 q-mb-xs"
-                    >
-                      <strong>{{ qty }}x</strong> for
-                      <strong class="text-primary"
-                        >${{ price.toFixed(2) }}</strong
+                  <q-card class="product-card">
+                    <q-card-section class="product-card-content text-center">
+                      <div
+                        v-if="product.imageUrl"
+                        class="product-image-wrapper"
                       >
-                    </div>
-                  </div>
-                </q-card-section>
+                        <img
+                          :src="product.imageUrl"
+                          :alt="product.description"
+                          class="product-image"
+                        />
+                      </div>
+                      <div v-else class="product-image-placeholder">
+                        <q-icon name="image" size="64px" color="grey-4" />
+                      </div>
+                      <div class="text-h6 q-mt-md q-mb-sm">
+                        {{ product.description }}
+                      </div>
 
-                <q-card-actions class="product-card-actions q-pa-md">
-                  <q-btn
-                    color="secondary"
-                    label="Add to Cart"
-                    icon="add_shopping_cart"
-                    class="full-width"
-                    @click="addProductToCart(product)"
-                  />
-                </q-card-actions>
-              </q-card>
-            </div>
-            </div>
-          </q-expansion-item>
+                      <div
+                        v-if="product.detailedDescription"
+                        class="product-description"
+                      >
+                        <div class="text-body2 text-grey-7">
+                          {{ product.detailedDescription }}
+                        </div>
+                      </div>
+
+                      <div class="product-pricing">
+                        <div class="text-caption text-grey-8 q-mb-sm">
+                          Pricing:
+                        </div>
+                        <div
+                          v-for="(price, qty) in product.pricing"
+                          :key="qty"
+                          class="text-body2 q-mb-xs"
+                        >
+                          <strong>{{ qty }}x</strong> for
+                          <strong class="text-primary"
+                            >${{ price.toFixed(2) }}</strong
+                          >
+                        </div>
+                      </div>
+                    </q-card-section>
+
+                    <q-card-actions class="product-card-actions q-pa-md">
+                      <q-btn
+                        color="secondary"
+                        label="Add to Cart"
+                        icon="add_shopping_cart"
+                        class="full-width"
+                        @click="addProductToCart(product)"
+                      />
+                    </q-card-actions>
+                  </q-card>
+                </div>
+              </div>
+            </q-expansion-item>
           </template>
           <!-- Single collection: show products directly -->
-          <div
-            v-else
-            class="row q-col-gutter-md"
-          >
+          <div v-else class="row q-col-gutter-md">
             <div
               v-for="product in designerProducts"
               :key="product.id"
@@ -491,12 +503,18 @@
 
         <div v-if="specialtyProducts.length > 0" class="q-mb-xl">
           <!-- Multiple collections: show in collapsible groups -->
-          <template v-if="Object.keys(specialtyProductsByCollection).length > 1">
+          <template
+            v-if="Object.keys(specialtyProductsByCollection).length > 1"
+          >
             <q-expansion-item
-              v-for="(productsInCollection, collectionName) in specialtyProductsByCollection"
+              v-for="(
+                productsInCollection, collectionName
+              ) in specialtyProductsByCollection"
               :key="collectionName"
               :label="collectionName"
-              :caption="`${productsInCollection.length} product${productsInCollection.length !== 1 ? 's' : ''}`"
+              :caption="`${productsInCollection.length} product${
+                productsInCollection.length !== 1 ? 's' : ''
+              }`"
               default-opened
               class="collection-group q-mb-md"
             >
@@ -506,65 +524,67 @@
                   :key="product.id"
                   class="col-12 col-md-6 col-lg-4"
                 >
-              <q-card class="product-card">
-                <q-card-section class="text-center">
-                  <div v-if="product.imageUrl" class="product-image-wrapper">
-                    <img
-                      :src="product.imageUrl"
-                      :alt="product.description"
-                      class="product-image"
-                    />
-                  </div>
-                  <div v-else class="product-image-placeholder">
-                    <q-icon name="image" size="64px" color="grey-4" />
-                  </div>
-                  <div class="text-h6 q-mt-md q-mb-sm">
-                    {{ product.description }}
-                  </div>
-                </q-card-section>
+                  <q-card class="product-card">
+                    <q-card-section class="text-center">
+                      <div
+                        v-if="product.imageUrl"
+                        class="product-image-wrapper"
+                      >
+                        <img
+                          :src="product.imageUrl"
+                          :alt="product.description"
+                          class="product-image"
+                        />
+                      </div>
+                      <div v-else class="product-image-placeholder">
+                        <q-icon name="image" size="64px" color="grey-4" />
+                      </div>
+                      <div class="text-h6 q-mt-md q-mb-sm">
+                        {{ product.description }}
+                      </div>
+                    </q-card-section>
 
-                <q-card-section
-                  v-if="product.detailedDescription"
-                  class="product-description"
-                >
-                  <div class="text-body2 text-grey-7">
-                    {{ product.detailedDescription }}
-                  </div>
-                </q-card-section>
-
-                <q-card-section class="product-pricing">
-                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                  <div
-                    v-for="(price, qty) in product.pricing"
-                    :key="qty"
-                    class="text-body2 q-mb-xs"
-                  >
-                    <strong>{{ qty }}x</strong> for
-                    <strong class="text-primary"
-                      >${{ price.toFixed(2) }}</strong
+                    <q-card-section
+                      v-if="product.detailedDescription"
+                      class="product-description"
                     >
-                  </div>
-                </q-card-section>
+                      <div class="text-body2 text-grey-7">
+                        {{ product.detailedDescription }}
+                      </div>
+                    </q-card-section>
 
-                <q-card-actions class="q-pa-md">
-                  <q-btn
-                    color="primary"
-                    label="Add to Cart"
-                    icon="add_shopping_cart"
-                    class="full-width"
-                    @click="addProductToCart(product)"
-                  />
-                </q-card-actions>
-              </q-card>
-            </div>
-            </div>
-          </q-expansion-item>
+                    <q-card-section class="product-pricing">
+                      <div class="text-caption text-grey-8 q-mb-sm">
+                        Pricing:
+                      </div>
+                      <div
+                        v-for="(price, qty) in product.pricing"
+                        :key="qty"
+                        class="text-body2 q-mb-xs"
+                      >
+                        <strong>{{ qty }}x</strong> for
+                        <strong class="text-primary"
+                          >${{ price.toFixed(2) }}</strong
+                        >
+                      </div>
+                    </q-card-section>
+
+                    <q-card-actions class="q-pa-md">
+                      <q-btn
+                        color="primary"
+                        label="Add to Cart"
+                        icon="add_shopping_cart"
+                        class="full-width"
+                        @click="addProductToCart(product)"
+                      />
+                    </q-card-actions>
+                  </q-card>
+                </div>
+              </div>
+            </q-expansion-item>
           </template>
           <!-- Single collection: show products directly -->
-          <div
-            v-else
-            class="row q-col-gutter-md"
-          >
+          <div v-else class="row q-col-gutter-md">
             <div
               v-for="product in specialtyProducts"
               :key="product.id"
@@ -721,9 +741,58 @@ export default {
       () => easelImages[easelImageIndex.value]
     );
 
-    // Navigation function for carousel dots
+    // Navigation functions for easel gallery
     const goToImage = (index) => {
       easelImageIndex.value = index;
+    };
+
+    const nextImage = () => {
+      if (easelImages.length > 1) {
+        easelImageIndex.value =
+          (easelImageIndex.value + 1) % easelImages.length;
+      }
+    };
+
+    const previousImage = () => {
+      if (easelImages.length > 1) {
+        easelImageIndex.value =
+          easelImageIndex.value === 0
+            ? easelImages.length - 1
+            : easelImageIndex.value - 1;
+      }
+    };
+
+    // Touch/swipe handling for mobile
+    const touchStartX = ref(0);
+    const touchEndX = ref(0);
+    const minSwipeDistance = 50; // Minimum distance in pixels to trigger swipe
+
+    const handleTouchStart = (e) => {
+      touchStartX.value = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e) => {
+      touchEndX.value = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+      if (!touchStartX.value || !touchEndX.value) return;
+
+      const distance = touchStartX.value - touchEndX.value;
+
+      if (Math.abs(distance) > minSwipeDistance) {
+        if (distance > 0) {
+          // Swiped left - go to next image
+          nextImage();
+        } else {
+          // Swiped right - go to previous image
+          previousImage();
+        }
+      }
+
+      // Reset touch values
+      touchStartX.value = 0;
+      touchEndX.value = 0;
     };
 
     const handleGoogleSignIn = async () => {
@@ -831,29 +900,32 @@ export default {
     const goToUpload = (product = null) => {
       // Check if there's an active market event
       const activeEvent = marketEventService.getCheckedInEvent();
-      
+
       const queryParams = product?.id ? { productId: product.id } : {};
-      
+
       if (activeEvent) {
         // If user has toggled "I'm at the event", go directly to market upload
         if (isCustomerAtEvent.value) {
           setCustomerType('market_customer');
           router.push({
-            path: '/market-event-upload',
-            query: queryParams
+            path: '/photo-upload',
+            query: queryParams,
           });
         } else {
-          // Show popup to ask if they're at the event
-          activeMarketEvent.value = activeEvent;
-          pendingProduct.value = product;
-          showMarketEventDialog.value = true;
+          // User has explicitly toggled to say they're NOT at the event
+          // Respect their choice and go directly to online mode (no dialog)
+          setCustomerType('online_customer');
+          router.push({
+            path: '/photo-upload',
+            query: queryParams,
+          });
         }
       } else {
         // No active event - go to online order
         setCustomerType('online_customer');
         router.push({
-          path: '/online-order',
-          query: queryParams
+          path: '/photo-upload',
+          query: queryParams,
         });
       }
     };
@@ -863,10 +935,12 @@ export default {
       setCustomerType('market_customer');
       // Close dialog and navigate to market event upload
       showMarketEventDialog.value = false;
-      const queryParams = pendingProduct.value?.id ? { productId: pendingProduct.value.id } : {};
+      const queryParams = pendingProduct.value?.id
+        ? { productId: pendingProduct.value.id }
+        : {};
       router.push({
-        path: '/market-event-upload',
-        query: queryParams
+        path: '/photo-upload',
+        query: queryParams,
       });
       pendingProduct.value = null;
     };
@@ -875,10 +949,12 @@ export default {
       // User said they're not at the event - go to online ordering
       showMarketEventDialog.value = false;
       setCustomerType('online_customer');
-      const queryParams = pendingProduct.value?.id ? { productId: pendingProduct.value.id } : {};
+      const queryParams = pendingProduct.value?.id
+        ? { productId: pendingProduct.value.id }
+        : {};
       router.push({
         path: '/online-order',
-        query: queryParams
+        query: queryParams,
       });
       pendingProduct.value = null;
     };
@@ -901,15 +977,21 @@ export default {
         // Non-admins should not see testing products
         const isAdmin = authService.isAdmin();
         const productsData = await firebaseService.getProducts(isAdmin);
-        
+
         if (productsData && productsData.length > 0) {
           products.value = productsData;
           console.log(`✅ Loaded ${productsData.length} products`);
         } else {
           // If no products returned, retry if we haven't exceeded max retries
           if (retryCount < maxRetries) {
-            console.log(`⚠️ No products returned, retrying (${retryCount + 1}/${maxRetries})...`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+            console.log(
+              `⚠️ No products returned, retrying (${
+                retryCount + 1
+              }/${maxRetries})...`
+            );
+            await new Promise((resolve) =>
+              setTimeout(resolve, 1000 * (retryCount + 1))
+            );
             return loadProducts(retryCount + 1);
           } else {
             console.warn('⚠️ No products found after retries');
@@ -920,8 +1002,14 @@ export default {
         console.error('Error loading products:', error);
         // Retry on error if we haven't exceeded max retries
         if (retryCount < maxRetries) {
-          console.log(`⚠️ Error loading products, retrying (${retryCount + 1}/${maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+          console.log(
+            `⚠️ Error loading products, retrying (${
+              retryCount + 1
+            }/${maxRetries})...`
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * (retryCount + 1))
+          );
           return loadProducts(retryCount + 1);
         } else {
           console.error('❌ Failed to load products after retries');
@@ -934,7 +1022,7 @@ export default {
     const customProducts = computed(() => {
       return products.value.filter((p) => p.category === 'custom');
     });
-    
+
     const designerProducts = computed(() => {
       return products.value.filter((p) => p.category === 'designer');
     });
@@ -988,6 +1076,14 @@ export default {
       return event ? event.name : '';
     });
 
+    // Get the active market event link for display
+    const activeMarketEventLink = computed(() => {
+      // Trigger reactivity
+      marketEventCheckTrigger.value;
+      const event = marketEventService.getCheckedInEvent();
+      return event?.eventLink || null;
+    });
+
     // Safe notify wrapper
     const safeNotify = (options) => {
       try {
@@ -1024,7 +1120,6 @@ export default {
       }
     };
 
-
     // Check if user is already authenticated
     onMounted(async () => {
       // Set up real-time listener for immediate updates
@@ -1058,7 +1153,7 @@ export default {
       });
 
       // Load products with retry logic
-      loadProducts().catch(err => {
+      loadProducts().catch((err) => {
         console.error('Failed to load products:', err);
       });
 
@@ -1119,6 +1214,7 @@ export default {
       specialtyProductsByCollection,
       hasActiveEvent,
       activeMarketEventName,
+      activeMarketEventLink,
       isCustomerAtEvent,
       easelImages,
       currentEaselImage,
@@ -1133,7 +1229,12 @@ export default {
       confirmAtMarketEvent,
       goToOnlineOrder,
       goToImage,
+      nextImage,
+      previousImage,
       toggleCustomerAtEvent,
+      handleTouchStart,
+      handleTouchMove,
+      handleTouchEnd,
     };
   },
 };
@@ -1141,8 +1242,27 @@ export default {
 
 <style lang="scss" scoped>
 .landing-page {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
+    ),
+    linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .hero-section {
@@ -1150,24 +1270,48 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px 100px 20px;
+  background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
+    ),
+    linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .hero-content {
   max-width: 1200px;
   width: 100%;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
   align-items: center;
   z-index: 2;
+  box-sizing: border-box;
+  padding: 0 20px;
 }
 
 .hero-text {
   color: white;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .hero-logo {
@@ -1193,7 +1337,7 @@ export default {
   padding: 16px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
-  
+
   @media (max-width: 600px) {
     padding: 8px 12px;
   }
@@ -1205,10 +1349,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow: hidden;
+
   @media (max-width: 600px) {
-    gap: 8px;
+    gap: 4px;
+    flex-wrap: wrap;
   }
 }
 
@@ -1219,9 +1366,39 @@ export default {
 }
 
 .banner-text {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-width: 0; // Allow flex items to shrink
+
+  // Reduce font size on medium screens to fit everything on one line
+  @media (min-width: 601px) and (max-width: 959px) {
+    font-size: 0.85rem;
+    gap: 4px !important;
+  }
+
   @media (max-width: 600px) {
     font-size: 0.875rem;
-    gap: 8px !important;
+    gap: 4px !important;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+}
+
+.banner-link {
+  white-space: nowrap;
+  flex-shrink: 0; // Don't shrink the link
+}
+
+// Truncate event name on medium screens if it's too long
+.banner-text > span.gt-xs {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+
+  @media (min-width: 601px) and (max-width: 959px) {
+    // Limit width on medium screens to prevent wrapping
+    max-width: 250px;
   }
 }
 
@@ -1232,32 +1409,41 @@ export default {
 }
 
 .hero-title {
-  font-size: 3.5rem;
+  font-size: clamp(1.5rem, 4vw, 2.8rem);
   font-weight: 800;
   margin: 0 0 1.5rem 0;
-  line-height: 1.1;
+  line-height: 1.2;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  white-space: normal;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
-.hero-subtitle {
-  font-size: 1.3rem;
-  line-height: 1.6;
-  margin: 0 0 2.5rem 0;
-  opacity: 0.95;
-  font-weight: 300;
-}
 
-.hero-actions {
-  .cta-button {
-    font-size: 1.3rem;
-    font-weight: 600;
-    padding: 16px 32px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  .hero-actions {
+    margin-bottom: 40px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .cta-button {
+      font-size: 1.3rem;
+      font-weight: 600;
+      padding: 16px 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      border: 3px solid white;
+      color: white;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 12px 40px rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.9);
     }
   }
 }
@@ -1266,6 +1452,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .easel-container {
@@ -1276,9 +1465,12 @@ export default {
   justify-content: center;
   align-items: center;
   position: relative;
+  cursor: pointer;
+  user-select: none;
 
   img {
     display: block;
+    pointer-events: none; // Prevent image from blocking container clicks
   }
 }
 
@@ -1603,6 +1795,18 @@ export default {
     grid-template-columns: 1fr;
     gap: 40px;
     text-align: center;
+    padding: 0 15px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
   }
 
   .hero-logo {
@@ -1611,11 +1815,13 @@ export default {
   }
 
   .hero-title {
-    font-size: 2.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.1rem;
+    font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+    white-space: normal;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .easel-container {
@@ -1630,15 +1836,38 @@ export default {
 
 @media (max-width: 599px) {
   .hero-section {
-    padding: 20px 15px;
+    padding: 20px 15px 100px 15px;
+    overflow-x: hidden;
+  }
+
+  .hero-content {
+    padding: 0 10px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
+  }
+
+  .hero-text {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .hero-actions {
+    margin-bottom: 60px;
+    width: 100%;
   }
 
   .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
+    font-size: clamp(1.2rem, 5vw, 1.8rem);
+    white-space: normal;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .hero-logo-wide {

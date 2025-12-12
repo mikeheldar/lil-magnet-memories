@@ -2,25 +2,17 @@
   <q-page class="thank-you-page">
     <div class="thank-you-container">
       <div class="text-center">
-        <!-- Success Icon -->
-        <div class="success-icon-container">
-          <q-icon name="check_circle" size="80px" color="positive" />
-        </div>
-
-        <!-- Thank You Message -->
-        <h1 class="thank-you-title">Thank You!</h1>
-        <p class="thank-you-subtitle">
-          We've received your order and will get started on your custom magnets
-          right away.
-        </p>
-
         <!-- Order Details Card -->
         <q-card class="order-details-card">
           <q-card-section class="text-center">
             <div class="text-h5 text-weight-bold text-primary q-mb-md">
-              <q-icon name="receipt" size="28px" class="q-mr-sm" />
-              Order Confirmation
+              <q-icon name="check_circle" size="28px" color="positive" class="q-mr-sm" />
+              Thank You!
             </div>
+            <p class="thank-you-subtitle q-mb-md">
+              We've received your order and will get started on your custom magnets
+              right away.
+            </p>
 
             <div class="order-number-section">
               <div class="text-caption text-grey-6 q-mb-xs">
@@ -31,10 +23,10 @@
               </div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-sm" />
 
             <!-- Customer Info -->
-            <div class="customer-info q-mb-md">
+            <div class="customer-info q-mb-sm">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
                 Order Details:
               </div>
@@ -51,138 +43,60 @@
               </div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-sm" />
 
-            <div class="receipt-summary q-mb-md">
+            <div class="receipt-summary q-mb-sm">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">
                 Receipt Summary:
               </div>
-              <div class="row justify-between text-body2">
-                <div>Subtotal</div>
-                <div>{{ formatCurrency(subtotal) }}</div>
-              </div>
-              <div class="row justify-between text-body2">
-                <div>Shipping</div>
-                <div>{{ formatCurrency(shippingCost) }}</div>
-              </div>
-              <div class="row justify-between text-body2">
-                <div>Tax</div>
-                <div>{{ formatCurrency(tax) }}</div>
-              </div>
-              <q-separator class="q-my-sm" />
-              <div
-                class="row justify-between text-body1 text-weight-medium q-mt-sm"
-              >
-                <div>Total</div>
+              <div class="row justify-between text-body1 text-weight-medium">
+                <div>
+                  {{
+                    isPayAtTent ? 'Total to pay at tent' : 'Total Paid'
+                  }}
+                </div>
                 <div class="text-primary">
                   {{ formatCurrency(totalAmount) }}
                 </div>
               </div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-sm" />
 
-            <div class="shipping-info q-mb-md">
-              <div class="text-subtitle1 text-weight-medium q-mb-sm">
-                <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
-                Shipping
-              </div>
-              <div class="text-body2 text-grey-7">
-                <!-- Market Event Pickup -->
-                <div v-if="isPickupOrder">
-                  <strong>Pickup at Market Event Tent</strong>
-                  <span class="q-ml-sm">(Free)</span>
-                  <div class="q-mt-xs text-body2">
-                    You'll receive an email when your magnets are ready for pickup at the tent.
-                  </div>
+            <div class="delivery-info q-mb-sm">
+              <div class="row justify-between items-center text-body1 text-weight-medium">
+                <div class="row items-center">
+                  <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
+                  <span>Delivery Option</span>
                 </div>
-                <!-- Online Shipping -->
-                <div v-else>
-                  <div>
-                    <strong>{{ shippingMethodLabel }}</strong>
-                    <span class="q-ml-sm">
-                      ({{ formatCurrency(shippingCost) }})
-                    </span>
-                  </div>
-                  <div v-if="shippingTimeline" class="q-mt-xs">
-                    {{ shippingTimeline }}
-                  </div>
-                  <div v-if="shippingAddressLines.length" class="q-mt-sm">
-                    <div class="text-caption text-grey-6">Deliver to:</div>
-                    <div
-                      v-for="(line, index) in shippingAddressLines"
-                      :key="`ship-${index}`"
-                    >
-                      {{ line }}
-                    </div>
-                  </div>
+                <div class="text-primary">
+                  {{ deliveryOptionLabel }}
                 </div>
               </div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-sm" />
 
-            <div class="billing-info q-mb-md">
-              <div class="text-subtitle1 text-weight-medium q-mb-sm">
-                <q-icon name="credit_card" size="20px" class="q-mr-sm" />
-                Payment
-              </div>
-              <div class="text-body2 text-grey-7">
-                <div>
-                  Method:
-                  <strong>{{ displayPaymentMethod }}</strong>
+            <div class="payment-info q-mb-sm">
+              <div class="row justify-between items-center text-body1 text-weight-medium">
+                <div class="row items-center">
+                  <q-icon name="credit_card" size="20px" class="q-mr-sm" />
+                  <span>Payment Method</span>
                 </div>
-                <div v-if="billingAddressLines.length && !isPayAtTent" class="q-mt-sm">
-                  <div class="text-caption text-grey-6">Billing address:</div>
-                  <div
-                    v-for="(line, index) in billingAddressLines"
-                    :key="`bill-${index}`"
-                  >
-                    {{ line }}
-                  </div>
+                <div class="text-primary">
+                  {{ displayPaymentMethod }}
                 </div>
-              </div>
-            </div>
-
-            <!-- Next Steps (only for online orders) -->
-            <div v-if="!isPickupOrder" class="next-steps">
-              <div class="text-subtitle1 text-weight-medium q-mb-sm">
-                <q-icon name="email" size="20px" class="q-mr-sm" />
-                What's Next?
-              </div>
-              <div class="text-body2 text-grey-7">
-                <p class="q-mb-sm">
-                  • We'll review your photos and contact you within 24 hours
-                </p>
-                <p class="q-mb-sm">
-                  • You'll receive an email with pricing and timeline details
-                </p>
-                <p class="q-mb-sm">
-                  • We'll send another email when your magnets are ready!
-                </p>
               </div>
             </div>
           </q-card-section>
         </q-card>
 
         <!-- Action Buttons -->
-        <div class="action-buttons q-mt-xl">
-          <!-- Show "View My Orders" button first for authenticated users -->
-          <q-btn
-            v-if="isAuthenticated"
-            color="purple"
-            size="lg"
-            class="action-btn"
-            @click="viewMyOrders"
-          >
-            <q-icon name="list_alt" class="q-mr-sm" />
-            View My Orders
-          </q-btn>
-
+        <div class="action-buttons q-mt-lg">
           <q-btn
             color="primary"
             size="lg"
-            class="action-btn"
+            class="full-width q-mb-md"
             @click="submitAnotherOrder"
           >
             <q-icon name="camera_alt" class="q-mr-sm" />
@@ -190,10 +104,21 @@
           </q-btn>
 
           <q-btn
+            v-if="isAuthenticated"
+            color="purple"
+            size="lg"
+            class="full-width q-mb-md"
+            @click="viewMyOrders"
+          >
+            <q-icon name="list_alt" class="q-mr-sm" />
+            View My Orders
+          </q-btn>
+
+          <q-btn
             flat
             color="grey-7"
             size="lg"
-            class="action-btn"
+            class="full-width"
             @click="goHome"
           >
             <q-icon name="arrow_back" class="q-mr-sm" />
@@ -219,6 +144,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { authService } from '../services/authService';
+import { marketEventService } from '../services/marketEventService.js';
 
 export default {
   name: 'ThankYouPage',
@@ -242,7 +168,12 @@ export default {
     const isAuthenticated = ref(false);
 
     const submitAnotherOrder = () => {
-      router.push('/upload');
+      // Check if user is currently at a market event (checked in)
+      const checkedInEvent = marketEventService.getCheckedInEvent();
+      const isAtMarketEvent = checkedInEvent !== null;
+
+      // Route to photo upload form (unified page handles both market and online)
+      router.push('/photo-upload');
     };
 
     const goHome = () => {
@@ -294,10 +225,20 @@ export default {
       subtotal.value = Number(data.subtotal || 0);
       shippingCost.value = Number(data.shipping || 0);
       tax.value = Number(data.tax || 0);
-      totalAmount.value =
-        data.totalAmount !== undefined
-          ? Number(data.totalAmount)
-          : subtotal.value + shippingCost.value + tax.value;
+
+      // Determine total amount with priority:
+      // 1. Explicit totalAmount from data
+      // 2. Amount from paymentOption (for pay_at_event orders)
+      // 3. Calculate from subtotal + shipping + tax
+      if (data.totalAmount !== undefined && Number(data.totalAmount) > 0) {
+        totalAmount.value = Number(data.totalAmount);
+      } else if (data.paymentOption?.amount !== undefined && Number(data.paymentOption.amount) > 0) {
+        // For pay_at_event orders, use the amount from paymentOption
+        totalAmount.value = Number(data.paymentOption.amount);
+      } else {
+        // Fallback: calculate from components
+        totalAmount.value = subtotal.value + shippingCost.value + tax.value;
+      }
       shippingOption.value = data.shippingOption || null;
       paymentOption.value = data.paymentOption || null;
       shippingTimeline.value =
@@ -364,25 +305,29 @@ export default {
       return paymentMethodLabel.value;
     });
 
+    const deliveryOptionLabel = computed(() => {
+      // For pickup orders, show pickup label
+      if (isPickupOrder.value) {
+        return 'Pickup at Market Event';
+      }
+      // Otherwise use shipping method label
+      return shippingMethodLabel.value;
+    });
+
     const formattedOrderNumber = computed(() => {
-      // Make order number more readable by adding spacing
+      // Make order number more readable by adding spacing, but remove LMM prefix
       if (!orderNumber.value) return 'N/A';
-      // Format like: LMM-251116-1886 -> LMM - 251116 - 1886
-      return orderNumber.value.replace(/([A-Z]+)-(\d+)-(\d+)/, '$1 - $2 - $3');
+      // Format like: LMM-251116-1886 -> 251116 - 1886 (removed LMM -)
+      return orderNumber.value.replace(/([A-Z]+)-(\d+)-(\d+)/, '$2 - $3');
     });
 
     onMounted(() => {
-      const currentAuthUser = authService.getCurrentUser();
-      if (currentAuthUser) {
-        console.log(
-          'User already authenticated on thank you page:',
-          currentAuthUser
-        );
-        isAuthenticated.value = true;
-      }
+      // Check authentication status (excludes anonymous users)
+      isAuthenticated.value = authService.isAuthenticated();
 
       authService.onAuthStateChanged((user) => {
-        isAuthenticated.value = !!user;
+        // Only set authenticated if user exists and is not anonymous
+        isAuthenticated.value = authService.isAuthenticated();
       });
 
       if (route.query.orderNumber) {
@@ -423,6 +368,7 @@ export default {
       billingAddressLines,
       paymentMethodLabel,
       displayPaymentMethod,
+      deliveryOptionLabel,
       isPayAtTent,
       isPickupOrder,
       isAuthenticated,
@@ -450,23 +396,10 @@ export default {
   width: 100%;
 }
 
-.success-icon-container {
-  margin-bottom: 2rem;
-  animation: bounceIn 0.6s ease-out;
-}
-
-.thank-you-title {
-  font-size: 3rem;
-  font-weight: bold;
-  color: #667eea;
-  margin: 0 0 1rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .thank-you-subtitle {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: #6c757d;
-  margin: 0 0 2rem 0;
+  margin: 0;
   font-weight: 300;
 }
 
@@ -506,9 +439,9 @@ export default {
   margin: 4px 0;
 }
 
-.shipping-info,
-.billing-info {
-  text-align: left;
+.delivery-info .row,
+.payment-info .row {
+  margin: 0;
 }
 
 .next-steps {
@@ -523,15 +456,16 @@ export default {
 
 .action-buttons {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 0;
 }
 
 .action-btn {
-  min-width: 200px;
+  min-width: 280px;
   width: 100%;
-  max-width: 250px;
+  max-width: 350px;
 }
 
 .contact-info {
@@ -566,12 +500,8 @@ export default {
 
 // Mobile responsive adjustments
 @media (max-width: 599px) {
-  .thank-you-title {
-    font-size: 2.2rem;
-  }
-
   .thank-you-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .action-buttons {
@@ -584,7 +514,7 @@ export default {
       min-width: 200px;
     }
   }
-  
+
   .order-number-display {
     font-size: 1.5rem;
   }

@@ -120,7 +120,7 @@
           color="primary"
           unelevated
           label="Start Creating Magnets"
-          @click="$router.push('/market-event-upload')"
+          @click="$router.push('/photo-upload')"
           class="q-mb-md"
         />
       </section>
@@ -130,7 +130,8 @@
           Highlights & New Features
         </div>
         <div class="text-body2 text-grey-7 q-mb-lg">
-          We keep a running log of our favorite improvements. Newest updates are pinned to the top so you can see what’s fresh off the magnet press.
+          We keep a running log of our favorite improvements. Newest updates are
+          pinned to the top so you can see what’s fresh off the magnet press.
         </div>
 
         <q-timeline color="primary" layout="dense">
@@ -139,7 +140,8 @@
             color="primary"
             title="November 8, 2025 — About page debuts"
           >
-            Introduced this very page with our story, value pillars, and a living timeline so fans can follow Li'l Magnet Memories as it grows.
+            Introduced this very page with our story, value pillars, and a
+            living timeline so fans can follow Li'l Magnet Memories as it grows.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -147,7 +149,8 @@
             color="primary"
             title="November 8, 2025 — Online order flow polished"
           >
-            Smoothed the “Add to Cart” experience and improved button handling so customers jump straight to the cart with zero friction.
+            Smoothed the “Add to Cart” experience and improved button handling
+            so customers jump straight to the cart with zero friction.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -155,7 +158,8 @@
             color="primary"
             title="November 8, 2025 — Print template precision upgrade"
           >
-            Swapped in SVG guide frames, fine-tune controls, and scaling fixes to keep bottom-row cut lines perfectly aligned on every sheet.
+            Swapped in SVG guide frames, fine-tune controls, and scaling fixes
+            to keep bottom-row cut lines perfectly aligned on every sheet.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -163,7 +167,8 @@
             color="primary"
             title="November 6, 2025 — Market-aware navigation"
           >
-            Drawer navigation and quick links now switch between market pickup and online delivery automatically when Amy is live at an event.
+            Drawer navigation and quick links now switch between market pickup
+            and online delivery automatically when Amy is live at an event.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -171,7 +176,8 @@
             color="primary"
             title="November 3, 2025 — Magnet Studio controls"
           >
-            Added touch and mouse pan/zoom to the print template so every magnet crop can be dialed in with pixel-perfect placement.
+            Added touch and mouse pan/zoom to the print template so every magnet
+            crop can be dialed in with pixel-perfect placement.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -179,7 +185,8 @@
             color="primary"
             title="November 2, 2025 — Multi-quantity uploads"
           >
-            Online orders now expand photos by quantity, keeping market and cart workflows in sync.
+            Online orders now expand photos by quantity, keeping market and cart
+            workflows in sync.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -187,7 +194,8 @@
             color="primary"
             title="January 2025 — Li'l Magnet Memories launches"
           >
-            Amy Helman-Darley hosts the first pop-up, offering custom 2.6-inch magnets made with love, laughter, and a trusty photo printer.
+            Amy Helman-Darley hosts the first pop-up, offering custom 2.6-inch
+            magnets made with love, laughter, and a trusty photo printer.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -195,7 +203,9 @@
             color="primary"
             title="February 2025 — Online ordering arrives"
           >
-            Added the Online Order flow so you can upload photos, review pricing, and build a magnet cart from your couch. Apple Pay and Square checkout joined the fun shortly after.
+            Added the Online Order flow so you can upload photos, review
+            pricing, and build a magnet cart from your couch. Apple Pay and
+            Square checkout joined the fun shortly after.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -203,7 +213,9 @@
             color="primary"
             title="March 2025 — Print template 2.0"
           >
-            Rebuilt the print template with precise SVG guides, fine-tune controls, and better scaling so every magnet sheet matches the cut lines perfectly.
+            Rebuilt the print template with precise SVG guides, fine-tune
+            controls, and better scaling so every magnet sheet matches the cut
+            lines perfectly.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -211,7 +223,8 @@
             color="primary"
             title="April 2025 — Market-mode magic"
           >
-            Drawer navigation now detects when we’re live at a market, steering you to in-person pickup and highlighting local events.
+            Drawer navigation now detects when we’re live at a market, steering
+            you to in-person pickup and highlighting local events.
           </q-timeline-entry>
 
           <q-timeline-entry
@@ -219,17 +232,206 @@
             color="primary"
             title="Want to see your favorite feature here?"
           >
-            Drop us a note and we’ll keep this living timeline updated as Li'l Magnet Memories grows.
+            Drop us a note and we’ll keep this living timeline updated as Li'l
+            Magnet Memories grows.
           </q-timeline-entry>
         </q-timeline>
+      </section>
+
+      <section class="market-events-section q-pa-lg bg-white shadow-2 rounded-borders">
+        <div class="text-h5 text-primary text-weight-medium q-mb-md">
+          <q-icon name="event" class="q-mr-sm" />
+          Market Events
+        </div>
+        <div class="text-body2 text-grey-7 q-mb-lg">
+          Find us at local farmers markets and events. Click on any event for
+          more details!
+        </div>
+
+        <!-- Loading State -->
+        <div v-if="loadingEvents" class="text-center q-pa-lg">
+          <q-spinner-dots size="40px" color="primary" />
+          <div class="q-mt-md text-grey-6">Loading events...</div>
+        </div>
+
+        <!-- No Events -->
+        <div
+          v-else-if="displayEvents.length === 0"
+          class="text-center q-pa-lg text-grey-6"
+        >
+          <q-icon name="event_busy" size="48px" class="q-mb-sm" />
+          <div>No upcoming or recent events to display.</div>
+        </div>
+
+        <!-- Events List -->
+        <div v-else class="events-list">
+          <q-card
+            v-for="event in displayEvents"
+            :key="event.id"
+            flat
+            bordered
+            class="event-card q-mb-md"
+          >
+            <q-card-section>
+              <div class="row items-center">
+                <div class="col">
+                  <div class="text-h6 text-primary text-weight-medium q-mb-xs">
+                    {{ event.name }}
+                  </div>
+                  <div class="text-body2 text-grey-7 q-mb-xs">
+                    <q-icon name="place" size="16px" class="q-mr-xs" />
+                    {{ event.location }}
+                  </div>
+                  <div class="text-body2 text-grey-6">
+                    <q-icon name="schedule" size="16px" class="q-mr-xs" />
+                    {{ formatEventDate(event) }}
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <q-chip
+                    :color="getEventStatusColor(event)"
+                    text-color="white"
+                    size="sm"
+                    class="q-mb-xs"
+                  >
+                    {{ getEventStatusText(event) }}
+                  </q-chip>
+                  <div v-if="event.eventLink" class="q-mt-sm">
+                    <q-btn
+                      :href="event.eventLink"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      color="primary"
+                      size="sm"
+                      outline
+                      icon="link"
+                      label="Event Details"
+                    />
+                  </div>
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
       </section>
     </div>
   </q-page>
 </template>
 
 <script>
+import { ref, onMounted, computed } from 'vue';
+import { marketEventService } from '../services/marketEventService.js';
+
 export default {
   name: 'AboutPage',
+  setup() {
+    const events = ref([]);
+    const loadingEvents = ref(true);
+
+    // Get events to display (upcoming and recent past events)
+    const displayEvents = computed(() => {
+      const now = new Date();
+      const threeMonthsAgo = new Date(now);
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+      return events.value
+        .filter((event) => {
+          const endDate = new Date(event.endDateTime);
+          // Show events that are upcoming or ended within the last 3 months
+          return endDate >= threeMonthsAgo;
+        })
+        .sort((a, b) => {
+          // Sort by start date, upcoming first
+          const dateA = new Date(a.startDateTime);
+          const dateB = new Date(b.startDateTime);
+          return dateB - dateA; // Most recent/upcoming first
+        });
+    });
+
+    // Format event date for display
+    const formatEventDate = (event) => {
+      try {
+        const startDate = new Date(event.startDateTime);
+        const endDate = new Date(event.endDateTime);
+        const startStr = startDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        });
+        const endStr = endDate.toLocaleDateString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+        });
+        return `${startStr} - ${endStr}`;
+      } catch (error) {
+        return event.startDateTime;
+      }
+    };
+
+    // Get event status color
+    const getEventStatusColor = (event) => {
+      const now = new Date();
+      const startTime = new Date(event.startDateTime);
+      const endTime = new Date(event.endDateTime);
+
+      if (now < startTime) {
+        return 'blue';
+      } else if (now >= startTime && now <= endTime) {
+        return 'green';
+      } else {
+        return 'grey-6';
+      }
+    };
+
+    // Get event status text
+    const getEventStatusText = (event) => {
+      const now = new Date();
+      const startTime = new Date(event.startDateTime);
+      const endTime = new Date(event.endDateTime);
+
+      if (now < startTime) {
+        return 'Upcoming';
+      } else if (now >= startTime && now <= endTime) {
+        return 'Live Now';
+      } else {
+        return 'Past Event';
+      }
+    };
+
+    // Load events
+    const loadEvents = async () => {
+      loadingEvents.value = true;
+      try {
+        const allEvents = await marketEventService.getEvents();
+        events.value = allEvents;
+      } catch (error) {
+        console.error('Error loading events:', error);
+        events.value = [];
+      } finally {
+        loadingEvents.value = false;
+      }
+    };
+
+    // Set up listener for real-time updates
+    onMounted(() => {
+      loadEvents();
+      // Subscribe to real-time updates
+      marketEventService.addListener(() => {
+        loadEvents();
+      });
+    });
+
+    return {
+      events,
+      displayEvents,
+      loadingEvents,
+      formatEventDate,
+      getEventStatusColor,
+      getEventStatusText,
+    };
+  },
 };
 </script>
 
@@ -274,6 +476,27 @@ export default {
   margin: 0 auto 5rem;
 }
 
+.market-events-section {
+  max-width: 900px;
+  margin: 0 auto 5rem;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.event-card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .instagram-link {
   display: inline-flex;
   align-items: center;
@@ -294,7 +517,8 @@ export default {
 
   .story-section,
   .cta-section,
-  .timeline-section {
+  .timeline-section,
+  .market-events-section {
     margin-left: 1rem;
     margin-right: 1rem;
   }

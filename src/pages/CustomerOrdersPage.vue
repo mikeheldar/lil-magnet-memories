@@ -44,7 +44,7 @@
           color="primary"
           label="Place Your First Order"
           icon="camera_alt"
-          @click="$router.push('/upload')"
+          @click="$router.push('/photo-upload')"
           class="q-mt-md"
         />
       </q-card-section>
@@ -64,13 +64,13 @@
                   size="sm"
                   class="q-ml-sm"
                 >
-                  {{ order.status }}
+                  {{ getDisplayStatus(order.status) }}
                 </q-chip>
               </div>
             </div>
             <div class="col-auto">
               <div class="text-caption text-grey-6">
-                {{ formatDate(order.submissionDate) }}
+                {{ formatDate(order.submissionDateClient) }}
               </div>
             </div>
           </div>
@@ -115,14 +115,15 @@
               <div class="text-weight-medium text-primary">Order Summary</div>
               <div class="q-mt-xs">
                 <div>
-                  <strong>Total Photos:</strong> {{ order.photos?.length || order.cartItems?.length || 0 }}
+                  <strong>Total Photos:</strong>
+                  {{ order.photos?.length || order.cartItems?.length || 0 }}
                 </div>
                 <div>
                   <strong>Total Magnets:</strong> {{ getTotalMagnets(order) }}
                 </div>
                 <div>
                   <strong>Order Date:</strong>
-                  {{ formatDate(order.submissionDate || order.createdAt) }}
+                  {{ formatDate(order.submissionDateClient) }}
                 </div>
               </div>
             </div>
@@ -130,7 +131,9 @@
 
           <!-- Shipping Information (for online orders) -->
           <div
-            v-if="order.shippingOption && order.shippingOption.type === 'shipping'"
+            v-if="
+              order.shippingOption && order.shippingOption.type === 'shipping'
+            "
             class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
           >
             <div class="row items-center q-mb-sm">
@@ -153,25 +156,40 @@
             <div class="q-mt-xs">
               <div>
                 <strong>Delivery Method:</strong>
-                {{ order.shippingOption.label || order.shippingOption.description || order.shippingOption.value || 'Standard Shipping' }}
+                {{
+                  order.shippingOption.label ||
+                  order.shippingOption.description ||
+                  order.shippingOption.value ||
+                  'Standard Shipping'
+                }}
               </div>
               <div v-if="order.shippingOption.address">
                 <strong>Address:</strong>
                 {{ formatAddress(order.shippingOption.address) }}
               </div>
-              <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
+              <div
+                v-if="order.shippingOption.estimatedTimeline"
+                class="q-mt-xs"
+              >
                 <strong>Estimated Delivery:</strong>
                 {{ order.shippingOption.estimatedTimeline }}
               </div>
-              <div v-if="order.shippingOption.cost !== undefined" class="q-mt-xs">
-                <strong>Shipping Cost:</strong> ${{ order.shippingOption.cost.toFixed(2) }}
+              <div
+                v-if="order.shippingOption.cost !== undefined"
+                class="q-mt-xs"
+              >
+                <strong>Shipping Cost:</strong> ${{
+                  order.shippingOption.cost.toFixed(2)
+                }}
               </div>
             </div>
           </div>
 
           <!-- Pickup Information (for market event orders) -->
           <div
-            v-if="order.shippingOption && order.shippingOption.type === 'pickup'"
+            v-if="
+              order.shippingOption && order.shippingOption.type === 'pickup'
+            "
             class="q-mt-md q-pa-md bg-green-1 rounded-borders"
           >
             <div class="text-weight-medium text-primary q-mb-sm">
@@ -181,13 +199,28 @@
             <div class="q-mt-xs">
               <div>
                 <strong>Delivery Method:</strong>
-                {{ order.shippingOption.label || order.shippingOption.description || order.shippingOption.value || 'Pickup at Market Event' }}
+                {{
+                  order.shippingOption.label ||
+                  order.shippingOption.description ||
+                  order.shippingOption.value ||
+                  'Pickup at Market Event'
+                }}
               </div>
-              <div v-if="order.shippingOption.description && order.shippingOption.label !== order.shippingOption.description" class="q-mt-xs">
+              <div
+                v-if="
+                  order.shippingOption.description &&
+                  order.shippingOption.label !==
+                    order.shippingOption.description
+                "
+                class="q-mt-xs"
+              >
                 <strong>Pickup Location:</strong>
                 {{ order.shippingOption.description }}
               </div>
-              <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
+              <div
+                v-if="order.shippingOption.estimatedTimeline"
+                class="q-mt-xs"
+              >
                 <strong>Estimated Pickup:</strong>
                 {{ order.shippingOption.estimatedTimeline }}
               </div>
@@ -209,7 +242,24 @@
                 :key="index"
                 class="col-6 col-sm-4 col-md-3 col-lg-2"
               >
+<<<<<<< HEAD
                 <q-img :src="photo.url || photo" ratio="1" class="rounded-borders" />
+=======
+                <q-img
+                  :src="getPhotoUrl(photo)"
+                  ratio="1"
+                  class="rounded-borders"
+                  @error="handlePhotoError($event, photo)"
+                >
+                  <template v-slot:error>
+                    <div
+                      class="absolute-full flex flex-center bg-grey-3 text-grey-8"
+                    >
+                      <q-icon name="broken_image" size="24px" />
+                    </div>
+                  </template>
+                </q-img>
+>>>>>>> test-environment
                 <div class="text-caption text-center q-mt-xs">
                   {{ photo.name || `Photo ${index + 1}` }}
                 </div>
@@ -230,6 +280,7 @@
               v-else-if="order.cartItems && order.cartItems.length > 0"
               class="row q-col-gutter-sm"
             >
+<<<<<<< HEAD
               <template v-for="(item, itemIndex) in order.cartItems" :key="itemIndex">
                 <div
                   v-for="(photo, photoIndex) in (item.photos || [])"
@@ -263,6 +314,54 @@
                   </div>
                 </div>
               </template>
+=======
+              <div
+                v-for="(item, itemIndex) in order.cartItems"
+                :key="itemIndex"
+                class="col-12 q-mb-md"
+              >
+                <div class="text-subtitle2 q-mb-sm">{{ item.productName }}</div>
+                <div class="row q-col-gutter-sm">
+                  <div
+                    v-for="(photo, photoIndex) in item.photos || []"
+                    :key="photoIndex"
+                    class="col-6 col-sm-4 col-md-3 col-lg-2"
+                  >
+                    <q-img
+                      :src="getPhotoUrl(photo)"
+                      ratio="1"
+                      class="rounded-borders"
+                      @error="handlePhotoError($event, photo)"
+                    >
+                      <template v-slot:error>
+                        <div
+                          class="absolute-full flex flex-center bg-grey-3 text-grey-8"
+                        >
+                          <q-icon name="broken_image" size="24px" />
+                        </div>
+                      </template>
+                    </q-img>
+                    <div class="text-caption text-center q-mt-xs">
+                      {{ photo.name }}
+                    </div>
+                    <div class="text-center q-mt-xs">
+                      <q-chip
+                        color="primary"
+                        text-color="white"
+                        size="sm"
+                        icon="style"
+                      >
+                        {{
+                          item.photoQuantities?.[photoIndex] ||
+                          item.quantities?.[photoIndex] ||
+                          1
+                        }}
+                      </q-chip>
+                    </div>
+                  </div>
+                </div>
+              </div>
+>>>>>>> test-environment
             </div>
             <div v-else class="text-body2 text-grey-6 text-center q-pa-md">
               No photos available for this order
@@ -303,7 +402,9 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        const q = query(ordersRef, orderBy('submissionDate', 'desc'));
+        // Sort by submissionDateClient descending (newest first) on the server for better performance
+        // Client-side sort will handle any edge cases with missing dates
+        const q = query(ordersRef, orderBy('submissionDateClient', 'desc'));
 
         unsubscribeOrders = onSnapshot(
           q,
@@ -317,11 +418,56 @@ export default {
             });
 
             // Filter orders for current user
-            const userOrders = allOrders.filter((order) => {
+            let userOrders = allOrders.filter((order) => {
               const matchesUserId = order.userId === currentUser.value.uid;
               const matchesEmail =
                 order.customer?.email === currentUser.value.email;
               return matchesUserId || matchesEmail;
+            });
+
+            // Sort by submissionDateClient (most recent first), handling missing/invalid dates
+            userOrders.sort((a, b) => {
+              const getDateValue = (order) => {
+                // Use submissionDateClient as primary date for sorting
+                const date = order.submissionDateClient;
+                if (!date) {
+                  // Return a very old date (0) so invalid dates sort to the bottom
+                  return 0;
+                }
+                try {
+                  // Handle Firestore Timestamp
+                  if (date && typeof date.toDate === 'function') {
+                    return date.toDate().getTime();
+                  }
+                  // Handle number timestamps (milliseconds since epoch)
+                  if (typeof date === 'number') {
+                    return date;
+                  }
+                  // Handle Firestore timestamp object with seconds/nanoseconds
+                  if (date && typeof date === 'object' && 'seconds' in date) {
+                    return (
+                      date.seconds * 1000 + (date.nanoseconds || 0) / 1000000
+                    );
+                  }
+                  // Handle Date objects or string timestamps
+                  const parsed = new Date(date);
+                  const time = parsed.getTime();
+                  // If invalid date, return 0 (will sort to bottom)
+                  return isNaN(time) ? 0 : time;
+                } catch {
+                  // Return 0 for any parsing errors (will sort to bottom)
+                  return 0;
+                }
+              };
+              const dateA = getDateValue(a);
+              const dateB = getDateValue(b);
+              // If both dates are 0 (invalid), maintain original order
+              if (dateA === 0 && dateB === 0) return 0;
+              // If one is invalid (0), put it at the bottom
+              if (dateA === 0) return 1; // a goes after b
+              if (dateB === 0) return -1; // b goes after a
+              // Both valid: sort descending (newest first)
+              return dateB - dateA;
             });
 
             orders.value = userOrders;
@@ -386,12 +532,59 @@ export default {
             });
 
             // Filter by userId first, then by email as fallback
-            orders.value = allOrders.filter((order) => {
+            let filteredOrders = allOrders.filter((order) => {
               const matchesUserId = order.userId === currentUser.value.uid;
               const matchesEmail =
                 order.customer?.email === currentUser.value.email;
               return matchesUserId || matchesEmail;
             });
+
+            // Sort by submissionDateClient (most recent first), handling missing/invalid dates
+            filteredOrders.sort((a, b) => {
+              const getDateValue = (order) => {
+                // Use submissionDateClient as primary date for sorting
+                const date = order.submissionDateClient;
+                if (!date) {
+                  // Return a very old date (0) so invalid dates sort to the bottom
+                  return 0;
+                }
+                try {
+                  // Handle Firestore Timestamp
+                  if (date && typeof date.toDate === 'function') {
+                    return date.toDate().getTime();
+                  }
+                  // Handle number timestamps (milliseconds since epoch)
+                  if (typeof date === 'number') {
+                    return date;
+                  }
+                  // Handle Firestore timestamp object with seconds/nanoseconds
+                  if (date && typeof date === 'object' && 'seconds' in date) {
+                    return (
+                      date.seconds * 1000 + (date.nanoseconds || 0) / 1000000
+                    );
+                  }
+                  // Handle Date objects or string timestamps
+                  const parsed = new Date(date);
+                  const time = parsed.getTime();
+                  // If invalid date, return 0 (will sort to bottom)
+                  return isNaN(time) ? 0 : time;
+                } catch {
+                  // Return 0 for any parsing errors (will sort to bottom)
+                  return 0;
+                }
+              };
+              const dateA = getDateValue(a);
+              const dateB = getDateValue(b);
+              // If both dates are 0 (invalid), maintain original order
+              if (dateA === 0 && dateB === 0) return 0;
+              // If one is invalid (0), put it at the bottom
+              if (dateA === 0) return 1; // a goes after b
+              if (dateB === 0) return -1; // b goes after a
+              // Both valid: sort descending (newest first)
+              return dateB - dateA;
+            });
+
+            orders.value = filteredOrders;
             console.log('Filtered orders for user:', orders.value);
             console.log('Number of filtered orders:', orders.value.length);
           }
@@ -414,6 +607,7 @@ export default {
     });
 
     const formatDate = (timestamp) => {
+<<<<<<< HEAD
       if (!timestamp) return 'N/A';
       try {
         // Handle Firestore Timestamp
@@ -471,6 +665,55 @@ export default {
     // Handle photo loading errors
     const handlePhotoError = (event, photo) => {
       console.warn('Photo failed to load:', photo);
+=======
+      // Never use current date as fallback - show "N/A" or raw value instead
+      if (timestamp === null || timestamp === undefined) {
+        return 'N/A';
+      }
+
+      try {
+        let date;
+        // Handle Firestore Timestamp
+        if (timestamp && typeof timestamp.toDate === 'function') {
+          date = timestamp.toDate();
+        }
+        // Handle number timestamps (milliseconds since epoch - from Date.now() or submissionDateClient)
+        else if (typeof timestamp === 'number') {
+          date = new Date(timestamp);
+        }
+        // Handle string timestamps
+        else if (typeof timestamp === 'string') {
+          date = new Date(timestamp);
+        }
+        // Handle Date objects
+        else if (timestamp instanceof Date) {
+          date = timestamp;
+        }
+        // Try to convert if it's an object with seconds/nanoseconds (Firestore format)
+        else if (
+          timestamp &&
+          typeof timestamp === 'object' &&
+          'seconds' in timestamp
+        ) {
+          date = new Date(
+            timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
+          );
+        } else {
+          date = new Date(timestamp);
+        }
+
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          // Return raw value or type info instead of current date
+          return `Invalid: ${JSON.stringify(timestamp)}`;
+        }
+
+        return date.toLocaleString();
+      } catch (error) {
+        // Return error info instead of current date
+        return `Error: ${error.message} (${JSON.stringify(timestamp)})`;
+      }
+>>>>>>> test-environment
     };
 
     const getStatusColor = (status) => {
@@ -553,6 +796,81 @@ export default {
       }
     };
 
+    // Get photo URL, filtering out blob URLs (which don't persist)
+    const getPhotoUrl = (photo) => {
+      if (!photo) return '';
+
+      // Filter out blob URLs - they're temporary and won't work
+      if (photo.url && photo.url.startsWith('blob:')) {
+        console.warn('⚠️ Photo has blob URL (temporary, will not work):', {
+          name: photo.name,
+          blobUrl: photo.url,
+          hasPreview: !!photo.preview,
+        });
+        // Try preview if available
+        if (photo.preview && !photo.preview.startsWith('blob:')) {
+          return photo.preview;
+        }
+        // Return empty to trigger error handler
+        return '';
+      }
+
+      // Prefer Firebase Storage URL, fallback to preview
+      if (photo.url && photo.url.startsWith('http')) {
+        // Ensure URL is properly encoded (Firebase Storage URLs should already be encoded)
+        try {
+          const urlObj = new URL(photo.url);
+          return photo.url;
+        } catch (e) {
+          console.warn('⚠️ Invalid URL format:', photo.url, e);
+          // Try preview as fallback
+          if (photo.preview && !photo.preview.startsWith('blob:')) {
+            return photo.preview;
+          }
+          return '';
+        }
+      }
+      if (photo.preview && !photo.preview.startsWith('blob:')) {
+        return photo.preview;
+      }
+
+      return photo.url || photo.preview || '';
+    };
+
+    // Handle photo loading errors
+    const handlePhotoError = (event, photo) => {
+      const failedSrc = event.target.src;
+      const photoName = photo?.name || 'Unknown';
+
+      console.error('❌ Failed to load photo in CustomerOrdersPage:', {
+        name: photoName,
+        failedSource: failedSrc,
+        photo: photo,
+        isBlobUrl: failedSrc.startsWith('blob:'),
+        hasUrl: !!photo?.url,
+        url: photo?.url,
+        hasPreview: !!photo?.preview,
+      });
+
+      // Try fallback if available
+      if (
+        photo?.url &&
+        photo.url !== failedSrc &&
+        !photo.url.startsWith('blob:')
+      ) {
+        console.log('⚠️ Trying fallback URL for:', photoName);
+        event.target.src = photo.url;
+      } else if (
+        photo?.preview &&
+        photo.preview !== failedSrc &&
+        !photo.preview.startsWith('blob:')
+      ) {
+        console.log('⚠️ Trying fallback preview for:', photoName);
+        event.target.src = photo.preview;
+      }
+      // q-img error template will show broken_image icon
+    };
+
     onMounted(() => {
       // Check if user is already authenticated
       const currentAuthUser = authService.getCurrentUser();
@@ -620,6 +938,8 @@ export default {
       formatAddress,
       getShippingStatusColor,
       getShippingStatusLabel,
+      getPhotoUrl,
+      handlePhotoError,
     };
   },
 };

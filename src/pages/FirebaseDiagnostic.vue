@@ -16,37 +16,51 @@
           <q-item>
             <q-item-section>
               <q-item-label>Environment</q-item-label>
-              <q-item-label caption>{{ firebaseConfig.environment }}</q-item-label>
+              <q-item-label caption>{{
+                firebaseConfig.environment
+              }}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section>
               <q-item-label>Project ID</q-item-label>
-              <q-item-label caption>{{ firebaseConfig.projectId || 'Not configured' }}</q-item-label>
+              <q-item-label caption>{{
+                firebaseConfig.projectId || 'Not configured'
+              }}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section>
               <q-item-label>Auth Domain</q-item-label>
-              <q-item-label caption>{{ firebaseConfig.authDomain || 'Not configured' }}</q-item-label>
+              <q-item-label caption>{{
+                firebaseConfig.authDomain || 'Not configured'
+              }}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section>
               <q-item-label>Storage Bucket</q-item-label>
-              <q-item-label caption>{{ firebaseConfig.storageBucket || 'Not configured' }}</q-item-label>
+              <q-item-label caption>{{
+                firebaseConfig.storageBucket || 'Not configured'
+              }}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section>
               <q-item-label>API Key</q-item-label>
-              <q-item-label caption>{{ firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 10)}...` : 'Not configured' }}</q-item-label>
+              <q-item-label caption>{{
+                firebaseConfig.apiKey
+                  ? `${firebaseConfig.apiKey.substring(0, 10)}...`
+                  : 'Not configured'
+              }}</q-item-label>
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section>
               <q-item-label>App ID</q-item-label>
-              <q-item-label caption>{{ firebaseConfig.appId || 'Not configured' }}</q-item-label>
+              <q-item-label caption>{{
+                firebaseConfig.appId || 'Not configured'
+              }}</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>
@@ -118,7 +132,9 @@
           icon="info"
           class="q-mb-sm"
         >
-          <pre class="q-pa-md bg-grey-1 rounded-borders text-caption">{{ JSON.stringify(section, null, 2) }}</pre>
+          <pre class="q-pa-md bg-grey-1 rounded-borders text-caption">{{
+            JSON.stringify(section, null, 2)
+          }}</pre>
         </q-expansion-item>
       </q-card-section>
 
@@ -149,7 +165,9 @@
               <q-item-label caption>
                 {{ result.success ? 'Success' : 'Failed' }}:
                 {{ result.message }}
-                <span v-if="result.code" class="text-grey-6"> ({{ result.code }})</span>
+                <span v-if="result.code" class="text-grey-6">
+                  ({{ result.code }})</span
+                >
               </q-item-label>
               <q-expansion-item
                 v-if="result.details"
@@ -157,7 +175,9 @@
                 dense
                 class="q-mt-xs"
               >
-                <pre class="q-pa-sm bg-grey-1 rounded-borders text-caption">{{ JSON.stringify(result.details, null, 2) }}</pre>
+                <pre class="q-pa-sm bg-grey-1 rounded-borders text-caption">{{
+                  JSON.stringify(result.details, null, 2)
+                }}</pre>
               </q-expansion-item>
             </q-item-section>
           </q-item>
@@ -210,7 +230,7 @@
       <q-btn
         flat
         color="primary"
-        @click="$router.push('/upload')"
+        @click="$router.push('/photo-upload')"
         icon="arrow_back"
         label="Back to Upload"
       />
@@ -268,7 +288,10 @@ export default {
           result
         );
       } catch (error) {
-        addTestResult('Firebase Connection', false, error.message, { error: error.message, code: error.code });
+        addTestResult('Firebase Connection', false, error.message, {
+          error: error.message,
+          code: error.code,
+        });
       } finally {
         connectionTestLoading.value = false;
       }
@@ -285,7 +308,10 @@ export default {
           result
         );
       } catch (error) {
-        addTestResult('Basic Write Test', false, error.message, { error: error.message, code: error.code });
+        addTestResult('Basic Write Test', false, error.message, {
+          error: error.message,
+          code: error.code,
+        });
       } finally {
         basicWriteTestLoading.value = false;
       }
@@ -302,7 +328,10 @@ export default {
           result
         );
       } catch (error) {
-        addTestResult('Minimal Order Write', false, error.message, { error: error.message, code: error.code });
+        addTestResult('Minimal Order Write', false, error.message, {
+          error: error.message,
+          code: error.code,
+        });
       } finally {
         minimalOrderTestLoading.value = false;
       }
@@ -315,11 +344,16 @@ export default {
         addTestResult(
           'Retry Mechanism Test',
           result.success,
-          result.success ? `Document created with retry: ${result.docId}` : result.error,
+          result.success
+            ? `Document created with retry: ${result.docId}`
+            : result.error,
           result
         );
       } catch (error) {
-        addTestResult('Retry Mechanism Test', false, error.message, { error: error.message, code: error.code });
+        addTestResult('Retry Mechanism Test', false, error.message, {
+          error: error.message,
+          code: error.code,
+        });
       } finally {
         retryTestLoading.value = false;
       }
@@ -333,13 +367,15 @@ export default {
         addTestResult(
           'Full Diagnostic',
           info.errors.length === 0 && info.firestore.canRead,
-          info.errors.length === 0 
-            ? 'All checks passed' 
+          info.errors.length === 0
+            ? 'All checks passed'
             : `${info.errors.length} issue(s) found - see diagnostic info below`,
           info
         );
       } catch (error) {
-        addTestResult('Full Diagnostic', false, error.message, { error: error.message });
+        addTestResult('Full Diagnostic', false, error.message, {
+          error: error.message,
+        });
       } finally {
         diagnosticLoading.value = false;
       }
@@ -362,10 +398,17 @@ export default {
     const getSectionSummary = (section) => {
       if (typeof section === 'object' && section !== null) {
         if (section.online !== undefined) return `Online: ${section.online}`;
-        if (section.canRead !== undefined) return `Can Read: ${section.canRead}, Can Write: ${section.canWrite || 'unknown'}`;
-        if (section.hasUser !== undefined) return `User: ${section.hasUser ? (section.email || 'anonymous') : 'none'}`;
+        if (section.canRead !== undefined)
+          return `Can Read: ${section.canRead}, Can Write: ${
+            section.canWrite || 'unknown'
+          }`;
+        if (section.hasUser !== undefined)
+          return `User: ${
+            section.hasUser ? section.email || 'anonymous' : 'none'
+          }`;
         if (Array.isArray(section)) return `${section.length} items`;
-        if (section.available !== undefined) return `Available: ${section.available}`;
+        if (section.available !== undefined)
+          return `Available: ${section.available}`;
       }
       return '';
     };

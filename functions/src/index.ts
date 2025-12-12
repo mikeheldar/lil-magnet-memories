@@ -258,6 +258,7 @@ app.post('/send-status-update-email', async (req, res) => {
       photos,
       quantities,
       totalMagnets,
+      shippingOption,
     } = req.body;
 
     // Validate required fields
@@ -285,6 +286,7 @@ app.post('/send-status-update-email', async (req, res) => {
       photos: photos || [],
       quantities: quantities || [],
       totalMagnets: totalMagnets || 0,
+      shippingOption: shippingOption || null,
     });
 
     return res.json({ success: true, messageId: result });
@@ -669,6 +671,7 @@ async function sendLilMagnetStatusUpdateEmail(params: {
   photos: any[];
   quantities: number[];
   totalMagnets: number;
+  shippingOption?: any;
 }): Promise<string> {
   const {
     firstName,
@@ -679,6 +682,7 @@ async function sendLilMagnetStatusUpdateEmail(params: {
     photos,
     quantities,
     totalMagnets,
+    shippingOption,
   } = params;
 
   // Get email configuration from Firebase Functions config
@@ -730,7 +734,16 @@ async function sendLilMagnetStatusUpdateEmail(params: {
       excitementLevel = 'Great progress';
       break;
     case 'completed':
-      statusMessage = 'Your custom magnets are ready for pickup! 🎊';
+      // Customize message based on delivery method
+      if (shippingOption?.type === 'shipping') {
+        const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+        statusMessage = `Your custom magnets are created and ready to be shipped/delivered via ${shippingMethod}! 🎊`;
+      } else if (shippingOption?.type === 'pickup' || shippingOption?.type === 'arranged_pickup') {
+        statusMessage = 'Your custom magnets are completed and ready for pickup! 🎊';
+      } else {
+        // Default fallback
+        statusMessage = 'Your custom magnets are completed and ready! 🎊';
+      }
       statusEmoji = '🎯';
       excitementLevel = 'Amazing news';
       break;
@@ -801,7 +814,14 @@ async function sendLilMagnetStatusUpdateEmail(params: {
             : status === 'in_progress'
             ? "We're carefully crafting your magnets right now! You'll be notified when they're ready."
             : status === 'completed'
-            ? 'Your magnets are ready! Please contact us to arrange pickup or delivery.'
+            ? shippingOption?.type === 'shipping'
+              ? (() => {
+                  const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+                  return `Your magnets are ready! We'll ship them to you via ${shippingMethod} soon.`;
+                })()
+              : shippingOption?.type === 'pickup' || shippingOption?.type === 'arranged_pickup'
+              ? 'Your magnets are ready! Please contact us to arrange pickup.'
+              : 'Your magnets are ready!'
             : 'Thank you for your business!'
         }</p>
       </div>
@@ -833,7 +853,14 @@ What's Next: ${
       : status === 'in_progress'
       ? "We're carefully crafting your magnets right now! You'll be notified when they're ready."
       : status === 'completed'
-      ? 'Your magnets are ready! Please contact us to arrange pickup or delivery.'
+      ? shippingOption?.type === 'shipping'
+        ? (() => {
+            const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+            return `Your magnets are ready! We'll ship them to you via ${shippingMethod} soon.`;
+          })()
+        : shippingOption?.type === 'pickup' || shippingOption?.type === 'arranged_pickup'
+        ? 'Your magnets are ready! Please contact us to arrange pickup.'
+        : 'Your magnets are ready!'
       : 'Thank you for your business!'
   }
 

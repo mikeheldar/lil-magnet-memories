@@ -8,6 +8,22 @@
         View and manage all customer orders
       </div>
 
+      <!-- Search Bar -->
+      <div class="q-mt-md q-mb-md">
+        <q-input
+          v-model="searchQuery"
+          filled
+          placeholder="Search by name or email..."
+          clearable
+          class="max-width-600"
+          style="margin: 0 auto; max-width: 600px"
+        >
+          <template v-slot:prepend>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </div>
+
       <!-- Filter Toggles -->
       <div class="q-mt-md q-gutter-md">
         <div class="row items-center q-gutter-md justify-center">
@@ -80,7 +96,7 @@
               color="primary"
               icon="camera_alt"
               label="Upload Photos"
-              @click="$router.push('/upload')"
+              @click="$router.push('/photo-upload')"
             />
           </p>
         </div>
@@ -112,7 +128,7 @@
             <div class="col-auto">
               <q-btn-group>
                 <q-btn
-                  v-if="order.status === 'new'"
+                  v-if="order.status === 'new' || order.status === 'paid'"
                   icon="play_arrow"
                   color="blue"
                   size="sm"
@@ -189,10 +205,10 @@
                     >{{ order.customer.phone }}</a
                   >
                 </div>
-                <div v-if="order.specialInstructions">
+                <div v-if="getSpecialInstructions(order)">
                   <strong>Special Instructions:</strong>
                   <div class="text-grey-7 q-mt-xs">
-                    {{ order.specialInstructions }}
+                    {{ getSpecialInstructions(order) }}
                   </div>
                 </div>
               </div>
@@ -210,10 +226,12 @@
                 </div>
                 <div>
                   <strong>Order Date:</strong>
-                  {{ formatDate(order.submissionDate || order.createdAt) }}
+                  {{ formatDate(order.submissionDateClient) }}
                 </div>
                 <div v-if="order.totalAmount">
-                  <strong>Total Amount:</strong> ${{ order.totalAmount.toFixed(2) }}
+                  <strong>Total Amount:</strong> ${{
+                    order.totalAmount.toFixed(2)
+                  }}
                 </div>
                 <div v-if="order.shipping">
                   <strong>Shipping:</strong> ${{ order.shipping.toFixed(2) }}
@@ -224,7 +242,9 @@
 
           <!-- Shipping Information (for online orders) -->
           <div
-            v-if="order.shippingOption && order.shippingOption.type === 'shipping'"
+            v-if="
+              order.shippingOption && order.shippingOption.type === 'shipping'
+            "
             class="q-mt-md q-pa-md bg-blue-1 rounded-borders"
           >
             <div class="row items-center q-mb-sm">
@@ -247,25 +267,40 @@
             <div class="q-mt-xs">
               <div>
                 <strong>Delivery Method:</strong>
-                {{ order.shippingOption.label || order.shippingOption.description || order.shippingOption.value || 'Standard Shipping' }}
+                {{
+                  order.shippingOption.label ||
+                  order.shippingOption.description ||
+                  order.shippingOption.value ||
+                  'Standard Shipping'
+                }}
               </div>
               <div v-if="order.shippingOption.address">
                 <strong>Address:</strong>
                 {{ formatAddress(order.shippingOption.address) }}
               </div>
-              <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
+              <div
+                v-if="order.shippingOption.estimatedTimeline"
+                class="q-mt-xs"
+              >
                 <strong>Estimated Delivery:</strong>
                 {{ order.shippingOption.estimatedTimeline }}
               </div>
-              <div v-if="order.shippingOption.cost !== undefined" class="q-mt-xs">
-                <strong>Shipping Cost:</strong> ${{ order.shippingOption.cost.toFixed(2) }}
+              <div
+                v-if="order.shippingOption.cost !== undefined"
+                class="q-mt-xs"
+              >
+                <strong>Shipping Cost:</strong> ${{
+                  order.shippingOption.cost.toFixed(2)
+                }}
               </div>
             </div>
             <!-- Shipping Status Controls (Admin Only) -->
             <div class="q-mt-md">
               <q-btn-group>
                 <q-btn
-                  v-if="!order.shippingStatus || order.shippingStatus === 'pending'"
+                  v-if="
+                    !order.shippingStatus || order.shippingStatus === 'pending'
+                  "
                   icon="local_shipping"
                   color="blue"
                   size="sm"
@@ -285,7 +320,10 @@
                   <q-tooltip>Mark order as delivered</q-tooltip>
                 </q-btn>
                 <q-btn
-                  v-if="order.shippingStatus === 'shipped' || order.shippingStatus === 'delivered'"
+                  v-if="
+                    order.shippingStatus === 'shipped' ||
+                    order.shippingStatus === 'delivered'
+                  "
                   icon="undo"
                   color="orange"
                   size="sm"
@@ -299,7 +337,9 @@
 
           <!-- Pickup Information (for market event orders) -->
           <div
-            v-if="order.shippingOption && order.shippingOption.type === 'pickup'"
+            v-if="
+              order.shippingOption && order.shippingOption.type === 'pickup'
+            "
             class="q-mt-md q-pa-md bg-green-1 rounded-borders"
           >
             <div class="text-weight-medium text-primary q-mb-sm">
@@ -309,13 +349,28 @@
             <div class="q-mt-xs">
               <div>
                 <strong>Delivery Method:</strong>
-                {{ order.shippingOption.label || order.shippingOption.description || order.shippingOption.value || 'Pickup at Market Event' }}
+                {{
+                  order.shippingOption.label ||
+                  order.shippingOption.description ||
+                  order.shippingOption.value ||
+                  'Pickup at Market Event'
+                }}
               </div>
-              <div v-if="order.shippingOption.description && order.shippingOption.label !== order.shippingOption.description" class="q-mt-xs">
+              <div
+                v-if="
+                  order.shippingOption.description &&
+                  order.shippingOption.label !==
+                    order.shippingOption.description
+                "
+                class="q-mt-xs"
+              >
                 <strong>Pickup Location:</strong>
                 {{ order.shippingOption.description }}
               </div>
-              <div v-if="order.shippingOption.estimatedTimeline" class="q-mt-xs">
+              <div
+                v-if="order.shippingOption.estimatedTimeline"
+                class="q-mt-xs"
+              >
                 <strong>Estimated Pickup:</strong>
                 {{ order.shippingOption.estimatedTimeline }}
               </div>
@@ -323,7 +378,10 @@
           </div>
 
           <!-- Payment Information -->
-          <div v-if="order.paymentOption" class="q-mt-md q-pa-md bg-grey-1 rounded-borders">
+          <div
+            v-if="order.paymentOption"
+            class="q-mt-md q-pa-md bg-grey-1 rounded-borders"
+          >
             <div class="text-weight-medium text-primary q-mb-sm">
               <q-icon name="payment" class="q-mr-xs" />
               Payment Information
@@ -368,7 +426,9 @@
                   @error="handlePhotoError($event, photo)"
                 >
                   <template v-slot:error>
-                    <div class="absolute-full flex flex-center bg-grey-3 text-grey-8">
+                    <div
+                      class="absolute-full flex flex-center bg-grey-3 text-grey-8"
+                    >
                       <q-icon name="broken_image" size="24px" />
                     </div>
                   </template>
@@ -401,7 +461,7 @@
                 <div class="text-subtitle2 q-mb-sm">{{ item.productName }}</div>
                 <div class="row q-col-gutter-sm">
                   <div
-                    v-for="(photo, photoIndex) in (item.photos || [])"
+                    v-for="(photo, photoIndex) in item.photos || []"
                     :key="photoIndex"
                     class="col-6 col-sm-4 col-md-3 col-lg-2"
                   >
@@ -412,7 +472,9 @@
                       @error="handlePhotoError($event, photo)"
                     >
                       <template v-slot:error>
-                        <div class="absolute-full flex flex-center bg-grey-3 text-grey-8">
+                        <div
+                          class="absolute-full flex flex-center bg-grey-3 text-grey-8"
+                        >
                           <q-icon name="broken_image" size="24px" />
                         </div>
                       </template>
@@ -427,7 +489,11 @@
                         size="sm"
                         icon="style"
                       >
-                        {{ item.photoQuantities?.[photoIndex] || item.quantities?.[photoIndex] || 1 }}
+                        {{
+                          item.photoQuantities?.[photoIndex] ||
+                          item.quantities?.[photoIndex] ||
+                          1
+                        }}
                       </q-chip>
                     </div>
                   </div>
@@ -513,6 +579,7 @@ export default {
     const hideCompleted = ref(false);
     const showCompletedDialog = ref(false);
     const orderTypeFilter = ref('all'); // 'all', 'shipping', 'pickup'
+    const searchQuery = ref('');
     const $q = useQuasar();
     const router = useRouter();
     let unsubscribeOrders = null;
@@ -523,7 +590,9 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        const q = query(ordersRef, orderBy('submissionDate', 'desc'));
+        // Sort by submissionDateClient descending (newest first) on the server for better performance
+        // Client-side sort will handle any edge cases with missing dates
+        const q = query(ordersRef, orderBy('submissionDateClient', 'desc'));
 
         unsubscribeOrders = onSnapshot(
           q,
@@ -535,6 +604,53 @@ export default {
                 ...doc.data(),
               });
             });
+
+            // Sort by submissionDateClient (most recent first), handling missing/invalid dates
+            ordersList.sort((a, b) => {
+              const getDateValue = (order) => {
+                // Use submissionDateClient as primary date for sorting
+                const date = order.submissionDateClient;
+                if (!date) {
+                  // Return a very old date (0) so invalid dates sort to the bottom
+                  return 0;
+                }
+                try {
+                  // Handle Firestore Timestamp
+                  if (date && typeof date.toDate === 'function') {
+                    return date.toDate().getTime();
+                  }
+                  // Handle number timestamps (milliseconds since epoch)
+                  if (typeof date === 'number') {
+                    return date;
+                  }
+                  // Handle Firestore timestamp object with seconds/nanoseconds
+                  if (date && typeof date === 'object' && 'seconds' in date) {
+                    return (
+                      date.seconds * 1000 + (date.nanoseconds || 0) / 1000000
+                    );
+                  }
+                  // Handle Date objects or string timestamps
+                  const parsed = new Date(date);
+                  const time = parsed.getTime();
+                  // If invalid date, return 0 (will sort to bottom)
+                  return isNaN(time) ? 0 : time;
+                } catch {
+                  // Return 0 for any parsing errors (will sort to bottom)
+                  return 0;
+                }
+              };
+              const dateA = getDateValue(a);
+              const dateB = getDateValue(b);
+              // Sort descending (newest first): larger date (b) - smaller date (a) = positive, so b comes first
+              // If both dates are 0 (invalid), maintain original order
+              if (dateA === 0 && dateB === 0) return 0;
+              // If one is invalid (0), put it at the bottom
+              if (dateA === 0) return 1; // a goes after b
+              if (dateB === 0) return -1; // b goes after a
+              // Both valid: sort descending
+              return dateB - dateA;
+            });
+
             orders.value = ordersList;
             loading.value = false;
             console.log('Orders updated in real-time:', ordersList.length);
@@ -566,6 +682,25 @@ export default {
     const filteredOrders = computed(() => {
       let filtered = orders.value;
 
+      // Filter by search query (name or email)
+      if (searchQuery.value && searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase().trim();
+        filtered = filtered.filter((order) => {
+          const customer = order.customer || {};
+          const firstName = (customer.firstName || '').toLowerCase();
+          const lastName = (customer.lastName || '').toLowerCase();
+          const fullName = `${firstName} ${lastName}`.trim();
+          const email = (customer.email || '').toLowerCase();
+
+          return (
+            fullName.includes(query) ||
+            firstName.includes(query) ||
+            lastName.includes(query) ||
+            email.includes(query)
+          );
+        });
+      }
+
       // Filter by completion status
       if (hideCompleted.value) {
         filtered = filtered.filter((order) => order.status !== 'completed');
@@ -578,6 +713,49 @@ export default {
           return orderType === orderTypeFilter.value;
         });
       }
+
+      // Ensure filtered results are sorted by submissionDateClient (most recent first)
+      filtered.sort((a, b) => {
+        const getDateValue = (order) => {
+          // Use submissionDateClient as primary date for sorting
+          const date = order.submissionDateClient;
+          if (!date) {
+            // Return a very old date (0) so invalid dates sort to the bottom
+            return 0;
+          }
+          try {
+            // Handle Firestore Timestamp
+            if (date && typeof date.toDate === 'function') {
+              return date.toDate().getTime();
+            }
+            // Handle number timestamps (milliseconds since epoch)
+            if (typeof date === 'number') {
+              return date;
+            }
+            // Handle Firestore timestamp object with seconds/nanoseconds
+            if (date && typeof date === 'object' && 'seconds' in date) {
+              return date.seconds * 1000 + (date.nanoseconds || 0) / 1000000;
+            }
+            // Handle Date objects or string timestamps
+            const parsed = new Date(date);
+            const time = parsed.getTime();
+            // If invalid date, return 0 (will sort to bottom)
+            return isNaN(time) ? 0 : time;
+          } catch {
+            // Return 0 for any parsing errors (will sort to bottom)
+            return 0;
+          }
+        };
+        const dateA = getDateValue(a);
+        const dateB = getDateValue(b);
+        // If both dates are 0 (invalid), maintain original order
+        if (dateA === 0 && dateB === 0) return 0;
+        // If one is invalid (0), put it at the bottom
+        if (dateA === 0) return 1; // a goes after b
+        if (dateB === 0) return -1; // b goes after a
+        // Both valid: sort descending (newest first)
+        return dateB - dateA;
+      });
 
       return filtered;
     });
@@ -599,7 +777,10 @@ export default {
       if (order.cartItems && Array.isArray(order.cartItems)) {
         return order.cartItems.reduce((total, item) => {
           if (item.photoQuantities && Array.isArray(item.photoQuantities)) {
-            return total + item.photoQuantities.reduce((sum, qty) => sum + (qty || 0), 0);
+            return (
+              total +
+              item.photoQuantities.reduce((sum, qty) => sum + (qty || 0), 0)
+            );
           }
           return total + (item.quantity || 0);
         }, 0);
@@ -694,13 +875,14 @@ export default {
     const updateShippingStatus = async (orderId, status) => {
       try {
         await firebaseService.updateShippingStatus(orderId, status);
-        
+
         let notificationMessage = '';
         let notificationIcon = '';
 
         switch (status) {
           case 'shipped':
-            notificationMessage = '📦 Order marked as shipped! Customer will be notified.';
+            notificationMessage =
+              '📦 Order marked as shipped! Customer will be notified.';
             notificationIcon = 'local_shipping';
             break;
           case 'delivered':
@@ -746,15 +928,61 @@ export default {
     });
 
     const formatDate = (timestamp) => {
-      if (!timestamp) return 'Unknown';
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleString();
+      // Never use current date as fallback - show "N/A" or raw value instead
+      if (timestamp === null || timestamp === undefined) {
+        return 'N/A';
+      }
+
+      try {
+        let date;
+        // Handle Firestore Timestamp
+        if (timestamp && typeof timestamp.toDate === 'function') {
+          date = timestamp.toDate();
+        }
+        // Handle number timestamps (milliseconds since epoch - from Date.now() or submissionDateClient)
+        else if (typeof timestamp === 'number') {
+          date = new Date(timestamp);
+        }
+        // Handle string timestamps
+        else if (typeof timestamp === 'string') {
+          date = new Date(timestamp);
+        }
+        // Handle Date objects
+        else if (timestamp instanceof Date) {
+          date = timestamp;
+        }
+        // Try to convert if it's an object with seconds/nanoseconds (Firestore format)
+        else if (
+          timestamp &&
+          typeof timestamp === 'object' &&
+          'seconds' in timestamp
+        ) {
+          date = new Date(
+            timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
+          );
+        } else {
+          date = new Date(timestamp);
+        }
+
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          // Return raw value or type info instead of current date
+          return `Invalid: ${JSON.stringify(timestamp)}`;
+        }
+
+        return date.toLocaleString();
+      } catch (error) {
+        // Return error info instead of current date
+        return `Error: ${error.message} (${JSON.stringify(timestamp)})`;
+      }
     };
 
     const getStatusColor = (status) => {
       switch (status) {
         case 'new':
           return 'orange';
+        case 'paid':
+          return 'blue';
         case 'in_progress':
           return 'blue';
         case 'completed':
@@ -770,6 +998,8 @@ export default {
       switch (status) {
         case 'new':
           return 'new order submitted';
+        case 'paid':
+          return 'paid';
         case 'in_progress':
           return 'in progress';
         case 'completed':
@@ -779,6 +1009,38 @@ export default {
         default:
           return status;
       }
+    };
+
+    // Get special instructions from order (check all possible locations)
+    const getSpecialInstructions = (order) => {
+      // Check order-level specialInstructions first
+      if (order.specialInstructions) {
+        return order.specialInstructions;
+      }
+      // Check customer-level specialInstructions
+      if (order.customer && order.customer.specialInstructions) {
+        return order.customer.specialInstructions;
+      }
+      // Check cartItems for specialInstructions
+      if (order.cartItems && Array.isArray(order.cartItems)) {
+        const itemWithInstructions = order.cartItems.find(
+          (item) => item.specialInstructions
+        );
+        if (itemWithInstructions && itemWithInstructions.specialInstructions) {
+          return itemWithInstructions.specialInstructions;
+        }
+      }
+      // Check photos array (for photo upload orders)
+      if (order.photos && Array.isArray(order.photos)) {
+        // Photos might have specialInstructions in metadata
+        const photoWithInstructions = order.photos.find(
+          (photo) => photo.specialInstructions
+        );
+        if (photoWithInstructions && photoWithInstructions.specialInstructions) {
+          return photoWithInstructions.specialInstructions;
+        }
+      }
+      return null;
     };
 
     const updateOrderStatus = async (orderId, status) => {
@@ -895,12 +1157,14 @@ export default {
         quantities = order.quantities;
       } else if (order.cartItems && order.cartItems.length > 0) {
         // Cart-based orders - extract photos from custom upload items
-        const customUploadItems = order.cartItems.filter(item => item.isCustomUpload);
+        const customUploadItems = order.cartItems.filter(
+          (item) => item.isCustomUpload
+        );
         if (customUploadItems.length > 0) {
           // Extract all photos from custom upload items
-          customUploadItems.forEach(item => {
+          customUploadItems.forEach((item) => {
             if (item.photos && item.photos.length > 0) {
-              item.photos.forEach(photo => {
+              item.photos.forEach((photo) => {
                 photos.push(photo);
                 // Use the quantity from photoQuantities
                 quantities.push(photo.quantity || 1);
@@ -925,13 +1189,13 @@ export default {
     // Get photo URL, filtering out blob URLs (which don't persist)
     const getPhotoUrl = (photo) => {
       if (!photo) return '';
-      
+
       // Filter out blob URLs - they're temporary and won't work
       if (photo.url && photo.url.startsWith('blob:')) {
         console.warn('⚠️ Photo has blob URL (temporary, will not work):', {
           name: photo.name,
           blobUrl: photo.url,
-          hasPreview: !!photo.preview
+          hasPreview: !!photo.preview,
         });
         // Try preview if available
         if (photo.preview && !photo.preview.startsWith('blob:')) {
@@ -940,7 +1204,7 @@ export default {
         // Return empty to trigger error handler
         return '';
       }
-      
+
       // Prefer Firebase Storage URL, fallback to preview
       if (photo.url && photo.url.startsWith('http')) {
         // Ensure URL is properly encoded (Firebase Storage URLs should already be encoded)
@@ -963,7 +1227,7 @@ export default {
       if (photo.preview && !photo.preview.startsWith('blob:')) {
         return photo.preview;
       }
-      
+
       return photo.url || photo.preview || '';
     };
 
@@ -971,7 +1235,7 @@ export default {
     const handlePhotoError = (event, photo) => {
       const failedSrc = event.target.src;
       const photoName = photo?.name || 'Unknown';
-      
+
       // Extract full path from URL for debugging
       let fullPath = failedSrc;
       try {
@@ -980,7 +1244,7 @@ export default {
       } catch (e) {
         // Not a valid URL, use as-is
       }
-      
+
       console.error('❌ Failed to load photo in OrderList:', {
         name: photoName,
         failedSource: failedSrc,
@@ -991,25 +1255,35 @@ export default {
         url: photo?.url,
         urlLength: photo?.url?.length || 0,
         hasPreview: !!photo?.preview,
-        previewType: photo?.preview ? (photo.preview.substring(0, 50) + '...') : 'none',
-        fileName: photo?.fileName || 'unknown'
+        previewType: photo?.preview
+          ? photo.preview.substring(0, 50) + '...'
+          : 'none',
+        fileName: photo?.fileName || 'unknown',
       });
-      
+
       // Log the exact filename that's causing issues
       if (photoName.includes('78286856707') || photoName.includes('HEIC')) {
         console.error('🔍 DEBUGGING SPECIFIC FILE:', {
           originalName: photoName,
           storedUrl: photo?.url,
           storedFileName: photo?.fileName,
-          fullPhotoObject: JSON.stringify(photo, null, 2)
+          fullPhotoObject: JSON.stringify(photo, null, 2),
         });
       }
-      
+
       // Try fallback if available
-      if (photo?.url && photo.url !== failedSrc && !photo.url.startsWith('blob:')) {
+      if (
+        photo?.url &&
+        photo.url !== failedSrc &&
+        !photo.url.startsWith('blob:')
+      ) {
         console.log('⚠️ Trying fallback URL for:', photoName);
         event.target.src = photo.url;
-      } else if (photo?.preview && photo.preview !== failedSrc && !photo.preview.startsWith('blob:')) {
+      } else if (
+        photo?.preview &&
+        photo.preview !== failedSrc &&
+        !photo.preview.startsWith('blob:')
+      ) {
         console.log('⚠️ Trying fallback preview for:', photoName);
         event.target.src = photo.preview;
       }
@@ -1034,6 +1308,7 @@ export default {
       hideCompleted,
       showCompletedDialog,
       orderTypeFilter,
+      searchQuery,
       filteredOrders,
       completedOrders,
       loadOrders,
@@ -1054,6 +1329,7 @@ export default {
       updateShippingStatus,
       getPhotoUrl,
       handlePhotoError,
+      getSpecialInstructions,
     };
   },
 };

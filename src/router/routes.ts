@@ -6,10 +6,14 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/LandingPage.vue') },
-      // Always use market event upload form; keep legacy /upload for compatibility
-      { path: 'upload', redirect: '/market-event-upload' },
-      { path: 'market-event-upload', component: () => import('pages/MarketEventUploadPage.vue') },
-      { path: 'online-order', component: () => import('pages/OnlineOrderPage.vue') },
+      // Unified photo upload form - handles both market event and online orders
+      { path: 'upload', redirect: '/photo-upload' },
+      { path: 'market-event-upload', redirect: '/photo-upload' },
+      { path: 'online-order', redirect: '/photo-upload' },
+      {
+        path: 'photo-upload',
+        component: () => import('pages/PhotoUploadPage.vue'),
+      },
       { path: 'cart', component: () => import('pages/CartPage.vue') },
       { path: 'checkout', component: () => import('pages/CheckoutPage.vue') },
       { path: 'thank-you', component: () => import('pages/ThankYouPage.vue') },
@@ -86,6 +90,11 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'errored-transactions',
         component: () => import('pages/ErroredTransactionsPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
+        path: 'test-runner',
+        component: () => import('pages/TestRunnerPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },
       },
     ],

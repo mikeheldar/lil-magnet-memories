@@ -34,22 +34,22 @@
           <span class="gt-xs">TEST</span>
         </q-chip>
 
-        <!-- Market Event Indicator (always visible when an event is live) -->
-        <router-link
-          v-if="isAtMarketEvent"
-          to="/"
-          class="market-event-pill-link"
-        >
-          <q-chip
-            color="green"
+        <!-- Market Event Mode Toggle (only when event is live) -->
+        <div v-if="hasActiveEvent" class="q-mr-md">
+          <q-btn
+            flat
+            dense
+            :color="isMarketCustomer ? 'green' : 'blue'"
             text-color="white"
             size="sm"
-            class="q-mr-md market-event-chip"
-            icon="event"
+            :icon="isMarketCustomer ? 'store' : 'shopping_bag'"
+            @click="toggleCustomerMode"
+            class="customer-mode-toggle"
           >
-            <span class="gt-xs">MARKET EVENT</span>
-          </q-chip>
-        </router-link>
+            <span class="gt-xs q-ml-xs">{{ isMarketCustomer ? 'Market' : 'Online' }}</span>
+            <q-tooltip>{{ isMarketCustomer ? 'Switch to Online Mode' : 'Switch to Market Event Mode' }}</q-tooltip>
+          </q-btn>
+        </div>
 
         <!-- Page title in center -->
         <q-toolbar-title class="text-center">
@@ -75,13 +75,10 @@
           aria-label="Shopping Cart"
           class="q-mr-sm"
         >
-          <q-badge
-            color="orange"
-            :label="cartItemCount"
-            floating
-          />
+          <q-badge color="orange" :label="cartItemCount" floating />
           <q-tooltip>Shopping Cart</q-tooltip>
         </q-btn>
+
 
         <!-- User Profile Dropdown (only when authenticated) -->
         <template v-if="isAuthenticated">
@@ -179,7 +176,8 @@
 
         <q-card-section>
           <div class="text-body1 q-mb-md">
-            We're currently at <strong>{{ activeMarketEvent?.name }}</strong>!
+            We're currently at <strong>{{ activeMarketEvent?.name }}</strong
+            >!
           </div>
           <div class="text-body2 text-grey-7 q-mb-md">
             Are you at the market event?
@@ -328,11 +326,17 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Print Template</q-item-label>
-                  <q-item-label caption>Select photos for print template</q-item-label>
+                  <q-item-label caption
+                    >Select photos for print template</q-item-label
+                  >
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple @click="navigateTo('/photo-management')">
+              <q-item
+                clickable
+                v-ripple
+                @click="navigateTo('/photo-management')"
+              >
                 <q-item-section avatar>
                   <q-icon name="delete_sweep" color="red" />
                 </q-item-section>
@@ -358,7 +362,9 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Manage Products</q-item-label>
-                  <q-item-label caption>Manage products and pricing</q-item-label>
+                  <q-item-label caption
+                    >Manage products and pricing</q-item-label
+                  >
                 </q-item-section>
               </q-item>
             </q-expansion-item>
@@ -401,13 +407,29 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple @click="navigateTo('/errored-transactions')">
+              <q-item clickable v-ripple @click="navigateTo('/test-runner')">
+                <q-item-section avatar>
+                  <q-icon name="bug_report" color="purple" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Test Runner</q-item-label>
+                  <q-item-label caption>Run automated test suites</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                clickable
+                v-ripple
+                @click="navigateTo('/errored-transactions')"
+              >
                 <q-item-section avatar>
                   <q-icon name="error_outline" color="red" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Errored Transactions</q-item-label>
-                  <q-item-label caption>View failed payments and uploads</q-item-label>
+                  <q-item-label caption
+                    >View failed payments and uploads</q-item-label
+                  >
                 </q-item-section>
               </q-item>
             </q-expansion-item>
@@ -423,22 +445,21 @@
           default-opened
           header-class="text-grey-8"
         >
-
-        <!-- Sign In for non-authenticated users -->
-        <q-item
-          v-if="!isAuthenticated"
-          clickable
-          v-ripple
-          @click="handleSignIn"
-        >
-          <q-item-section avatar>
-            <q-icon name="login" color="positive" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Sign In</q-item-label>
-            <q-item-label caption>Log in to your account</q-item-label>
-          </q-item-section>
-        </q-item>
+          <!-- Sign In for non-authenticated users -->
+          <q-item
+            v-if="!isAuthenticated"
+            clickable
+            v-ripple
+            @click="handleSignIn"
+          >
+            <q-item-section avatar>
+              <q-icon name="login" color="positive" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Sign In</q-item-label>
+              <q-item-label caption>Log in to your account</q-item-label>
+            </q-item-section>
+          </q-item>
 
           <!-- Sign Out for authenticated users -->
           <q-item v-else clickable v-ripple @click="handleSignOut">
@@ -487,17 +508,17 @@ export default {
     });
 
     const { setCustomerType, isMarketCustomer } = useCustomerType();
-    
+
     // Create a ref that gets updated periodically to trigger reactivity
     const marketEventCheckTrigger = ref(0);
-    
+
     // Market event dialog state
     const showMarketEventDialog = ref(false);
 
     // Initialize market event cache immediately
     const marketEventCacheInitialized = ref(false);
     let marketEventUnsubscribe = null;
-    
+
     // Set up real-time listener for immediate updates
     marketEventUnsubscribe = marketEventService.addListener(() => {
       // Trigger reactivity when events change
@@ -505,7 +526,7 @@ export default {
       marketEventCacheInitialized.value = true;
       console.log('🔄 Market events updated in MainLayout');
     });
-    
+
     // Initial trigger to ensure UI reflects current state
     marketEventCheckTrigger.value++;
     marketEventCacheInitialized.value = true;
@@ -531,12 +552,12 @@ export default {
     const handleUploadClick = () => {
       // Check if there's an active market event
       const activeEvent = marketEventService.getCheckedInEvent();
-      
+
       if (activeEvent) {
         // If user has toggled "I'm at the event", go directly to market upload
         if (isMarketCustomer.value) {
           setCustomerType('market_customer');
-          router.push('/market-event-upload');
+          router.push('/photo-upload');
         } else {
           // Show popup to ask if they're at the event
           showMarketEventDialog.value = true;
@@ -544,26 +565,49 @@ export default {
       } else {
         // No active event - go to online order
         setCustomerType('online_customer');
-        router.push('/online-order');
+        router.push('/photo-upload');
       }
       leftDrawerOpen.value = false;
     };
-    
+
     const confirmAtMarketEvent = () => {
       // Set the toggle state (this persists via localStorage in customerType composable)
       setCustomerType('market_customer');
-      // Close dialog and navigate to market event upload
+      // Close dialog and navigate to photo upload form
       showMarketEventDialog.value = false;
-      router.push('/market-event-upload');
+      router.push('/photo-upload');
       leftDrawerOpen.value = false;
     };
 
     const goToOnlineOrder = () => {
-      // User said they're not at the event - go to online ordering
+      // User said they're not at the event - go to photo upload form (online mode)
       showMarketEventDialog.value = false;
       setCustomerType('online_customer');
-      router.push('/online-order');
+      router.push('/photo-upload');
       leftDrawerOpen.value = false;
+    };
+
+    const toggleCustomerMode = () => {
+      // Toggle between market and online mode
+      if (isMarketCustomer.value) {
+        setCustomerType('online_customer');
+        $q.notify({
+          type: 'info',
+          message: 'Switched to Online Mode',
+          caption: "You'll see shipping options for orders",
+          position: 'top',
+          timeout: 2000,
+        });
+      } else {
+        setCustomerType('market_customer');
+        $q.notify({
+          type: 'positive',
+          message: 'Switched to Market Event Mode',
+          caption: "You'll see pickup and local payment options",
+          position: 'top',
+          timeout: 2000,
+        });
+      }
     };
 
     const pageTitle = computed(() => {
@@ -585,6 +629,8 @@ export default {
             return 'Admin Settings';
           case '/email-test':
             return 'Admin - Email Test';
+          case '/test-runner':
+            return 'Admin - Test Runner';
           case '/errored-transactions':
             return 'Admin - Errored Transactions';
           case '/market-events':
@@ -664,7 +710,7 @@ export default {
         const { clearCart } = useCart();
         await clearCart();
         console.log('Cart cleared before sign out');
-        
+
         await authService.signOut();
         console.log('Sign out successful, showing notification...');
 
@@ -718,7 +764,7 @@ export default {
         // Anonymous users should see sign-in options, not be treated as signed in
         const isRealUser = user && !isAnonymousUser(user);
         isAuthenticated.value = isRealUser;
-        
+
         if (isRealUser) {
           userProfile.value = {
             displayName: user.displayName,
@@ -728,16 +774,19 @@ export default {
           // Check admin status immediately (sync check is fast and works offline)
           isAdmin.value = authService.isAdmin();
           console.log('Admin status updated (immediate):', isAdmin.value);
-          
+
           // Also check async in background for Firebase-based admins (non-blocking)
-          authService.isAdminAsync().then((adminStatus) => {
-            if (adminStatus !== isAdmin.value) {
-              isAdmin.value = adminStatus;
-              console.log('Admin status updated (async):', adminStatus);
-            }
-          }).catch(() => {
-            // Silently fail - sync check already handled it
-          });
+          authService
+            .isAdminAsync()
+            .then((adminStatus) => {
+              if (adminStatus !== isAdmin.value) {
+                isAdmin.value = adminStatus;
+                console.log('Admin status updated (async):', adminStatus);
+              }
+            })
+            .catch(() => {
+              // Silently fail - sync check already handled it
+            });
         } else {
           userProfile.value = {
             displayName: null,
@@ -764,6 +813,8 @@ export default {
       isTestEnvironment,
       isAtMarketEvent,
       activeMarketEvent,
+      hasActiveEvent,
+      isMarketCustomer,
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,
@@ -779,6 +830,7 @@ export default {
       showMarketEventDialog,
       confirmAtMarketEvent,
       goToOnlineOrder,
+      toggleCustomerMode,
     };
   },
 };
@@ -787,6 +839,20 @@ export default {
 <style lang="scss">
 .q-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+// Ensure toolbar title stays centered
+.q-toolbar {
+  position: relative;
+}
+
+.q-toolbar-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 50%;
+  text-align: center;
 }
 
 .logo-header {
@@ -800,6 +866,23 @@ export default {
 .user-profile-dropdown {
   .q-btn__content {
     padding: 0;
+  }
+}
+
+.customer-mode-toggle {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  min-height: 28px;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  @media (max-width: 600px) {
+    padding: 2px 6px;
+    min-height: 24px;
   }
 }
 
@@ -856,36 +939,50 @@ export default {
 .market-event-chip {
   cursor: pointer;
   transition: opacity 0.2s;
-  
+
   &:hover {
     opacity: 0.9;
   }
-  
+
   @media (max-width: 600px) {
-    min-width: 24px;
-    width: 24px;
-    height: 24px;
+    min-width: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
     padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    position: relative !important;
+
     :deep(.q-chip__content) {
       padding: 0 !important;
+      margin: 0 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
       width: 100% !important;
       height: 100% !important;
-      margin: 0 !important;
+      position: relative !important;
     }
-    
-    // Hide icons on small screens
+
+    // Center icons on small screens
     :deep(.q-chip__icon) {
-      display: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: 16px !important;
+      height: 16px !important;
+      font-size: 16px !important;
+      line-height: 1 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
-    
+
     // Hide text on small screens
     :deep(span) {
       display: none !important;
@@ -895,35 +992,56 @@ export default {
 
 .test-environment-chip {
   @media (max-width: 600px) {
-    min-width: 24px;
-    width: 24px;
-    height: 24px;
+    min-width: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
     padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    position: relative !important;
+
     :deep(.q-chip__content) {
       padding: 0 !important;
+      margin: 0 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
       width: 100% !important;
       height: 100% !important;
-      margin: 0 !important;
+      position: relative !important;
     }
-    
-    // Hide icons on small screens
+
+    // Center icons on small screens
     :deep(.q-chip__icon) {
-      display: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: 16px !important;
+      height: 16px !important;
+      font-size: 16px !important;
+      line-height: 1 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
-    
+
     // Hide text on small screens
     :deep(span) {
       display: none !important;
     }
   }
+}
+
+// Global chip icon styling
+:deep(.q-chip__icon) {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 1.5em !important;
+  margin: 0.27em !important;
 }
 
 // Mobile responsive adjustments
