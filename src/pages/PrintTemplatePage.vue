@@ -936,7 +936,7 @@ export default {
   .border-text {
     position: absolute;
     color: #333;
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.5px;
     pointer-events: none;
@@ -1141,7 +1141,7 @@ export default {
   .border-text {
     position: absolute;
     color: #333;
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.5px;
     pointer-events: none;
