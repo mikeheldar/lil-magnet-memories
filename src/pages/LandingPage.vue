@@ -1356,11 +1356,12 @@ export default {
 }
 
 .hero-title {
-  font-size: 3.5rem;
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800;
   margin: 0 0 1.5rem 0;
   line-height: 1.1;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
 }
 
 .hero-subtitle {
@@ -1743,7 +1744,8 @@ export default {
   }
 
   .hero-title {
-    font-size: 2.5rem;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    white-space: nowrap;
   }
 
   .hero-subtitle {
@@ -1770,7 +1772,8 @@ export default {
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    white-space: nowrap;
   }
 
   .hero-subtitle {
