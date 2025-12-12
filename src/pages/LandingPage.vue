@@ -49,7 +49,7 @@
             alt="Lil Magnet Memories"
             class="hero-logo hero-logo-small"
           />
-          <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets</h1>
+          <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets!</h1>
 
           <div class="hero-actions">
             <q-btn
