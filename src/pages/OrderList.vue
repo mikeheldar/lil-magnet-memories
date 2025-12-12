@@ -228,17 +228,6 @@
                   <strong>Order Date:</strong>
                   {{ formatDate(order.submissionDateClient) }}
                 </div>
-                <!-- Debug: Show all date fields -->
-                <div class="q-mt-sm q-pa-sm bg-grey-2 rounded-borders">
-                  <div class="text-caption text-weight-bold text-grey-8 q-mb-xs">Debug Dates:</div>
-                  <div class="text-caption text-grey-7">
-                    <div>createdAt: {{ formatDateForDebug(order.createdAt) }}</div>
-                    <div>createdAtClient: {{ formatDateForDebug(order.createdAtClient) }}</div>
-                    <div>submissionDate: {{ formatDateForDebug(order.submissionDate) }}</div>
-                    <div>submissionDateClient: {{ formatDateForDebug(order.submissionDateClient) }}</div>
-                    <div>updatedAt: {{ formatDateForDebug(order.updatedAt) }}</div>
-                  </div>
-                </div>
                 <div v-if="order.totalAmount">
                   <strong>Total Amount:</strong> ${{
                     order.totalAmount.toFixed(2)
@@ -988,53 +977,6 @@ export default {
       }
     };
 
-    // Debug function to show date values (even if invalid)
-    const formatDateForDebug = (timestamp) => {
-      if (timestamp === null) return 'null';
-      if (timestamp === undefined) return 'undefined';
-
-      try {
-        // Show the raw value and type
-        const type = typeof timestamp;
-        let display = `${type}: `;
-
-        if (timestamp && typeof timestamp.toDate === 'function') {
-          // Firestore Timestamp
-          const date = timestamp.toDate();
-          display += date.toLocaleString();
-          if (isNaN(date.getTime())) display += ' (INVALID)';
-        } else if (typeof timestamp === 'number') {
-          // Number timestamp
-          const date = new Date(timestamp);
-          display += timestamp + ' → ' + date.toLocaleString();
-          if (isNaN(date.getTime())) display += ' (INVALID)';
-        } else if (typeof timestamp === 'string') {
-          // String timestamp
-          const date = new Date(timestamp);
-          display += `"${timestamp}" → ` + date.toLocaleString();
-          if (isNaN(date.getTime())) display += ' (INVALID)';
-        } else if (timestamp instanceof Date) {
-          // Date object
-          display += timestamp.toLocaleString();
-          if (isNaN(timestamp.getTime())) display += ' (INVALID)';
-        } else if (timestamp && typeof timestamp === 'object' && 'seconds' in timestamp) {
-          // Firestore timestamp object
-          const date = new Date(
-            timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
-          );
-          display += JSON.stringify(timestamp) + ' → ' + date.toLocaleString();
-          if (isNaN(date.getTime())) display += ' (INVALID)';
-        } else {
-          // Unknown type
-          display += JSON.stringify(timestamp);
-        }
-
-        return display;
-      } catch (error) {
-        return `Error: ${error.message} (${JSON.stringify(timestamp)})`;
-      }
-    };
-
     const getStatusColor = (status) => {
       switch (status) {
         case 'new':
@@ -1335,7 +1277,6 @@ export default {
       completedOrders,
       loadOrders,
       formatDate,
-      formatDateForDebug,
       getStatusColor,
       getDisplayStatus,
       updateOrderStatus,
