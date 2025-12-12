@@ -1329,7 +1329,7 @@ export default {
   flex-wrap: nowrap;
   white-space: nowrap;
   min-width: 0; // Allow flex items to shrink
-  
+
   // Reduce font size on medium screens to fit everything on one line
   @media (min-width: 601px) and (max-width: 959px) {
     font-size: 0.85rem;
@@ -1355,7 +1355,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  
+
   @media (min-width: 601px) and (max-width: 959px) {
     // Limit width on medium screens to prevent wrapping
     max-width: 250px;

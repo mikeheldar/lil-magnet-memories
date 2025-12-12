@@ -34,22 +34,22 @@
           <span class="gt-xs">TEST</span>
         </q-chip>
 
-        <!-- Market Event Indicator (always visible when an event is live) -->
-        <router-link
-          v-if="isAtMarketEvent"
-          to="/"
-          class="market-event-pill-link"
-        >
-          <q-chip
-            color="green"
+        <!-- Market Event Mode Toggle (only when event is live) -->
+        <div v-if="hasActiveEvent" class="q-mr-md">
+          <q-btn
+            flat
+            dense
+            :color="isMarketCustomer ? 'green' : 'blue'"
             text-color="white"
             size="sm"
-            class="q-mr-md market-event-chip"
-            icon="event"
+            :icon="isMarketCustomer ? 'store' : 'shopping_bag'"
+            @click="toggleCustomerMode"
+            class="customer-mode-toggle"
           >
-            <span class="gt-xs">MARKET EVENT</span>
-          </q-chip>
-        </router-link>
+            <span class="gt-xs q-ml-xs">{{ isMarketCustomer ? 'Market' : 'Online' }}</span>
+            <q-tooltip>{{ isMarketCustomer ? 'Switch to Online Mode' : 'Switch to Market Event Mode' }}</q-tooltip>
+          </q-btn>
+        </div>
 
         <!-- Page title in center -->
         <q-toolbar-title class="text-center">
@@ -79,17 +79,6 @@
           <q-tooltip>Shopping Cart</q-tooltip>
         </q-btn>
 
-        <!-- Customer Mode Indicator (small, out of the way) -->
-        <q-chip
-          v-if="hasActiveEvent"
-          :color="isMarketCustomer ? 'green' : 'blue'"
-          text-color="white"
-          size="xs"
-          class="q-mr-sm customer-mode-chip"
-          :icon="isMarketCustomer ? 'store' : 'shopping_bag'"
-        >
-          <span class="gt-xs">{{ isMarketCustomer ? 'Market' : 'Online' }}</span>
-        </q-chip>
 
         <!-- User Profile Dropdown (only when authenticated) -->
         <template v-if="isAuthenticated">
@@ -598,6 +587,29 @@ export default {
       leftDrawerOpen.value = false;
     };
 
+    const toggleCustomerMode = () => {
+      // Toggle between market and online mode
+      if (isMarketCustomer.value) {
+        setCustomerType('online_customer');
+        $q.notify({
+          type: 'info',
+          message: 'Switched to Online Mode',
+          caption: "You'll see shipping options for orders",
+          position: 'top',
+          timeout: 2000,
+        });
+      } else {
+        setCustomerType('market_customer');
+        $q.notify({
+          type: 'positive',
+          message: 'Switched to Market Event Mode',
+          caption: "You'll see pickup and local payment options",
+          position: 'top',
+          timeout: 2000,
+        });
+      }
+    };
+
     const pageTitle = computed(() => {
       const baseTitle = (() => {
         switch (route.path) {
@@ -818,6 +830,7 @@ export default {
       showMarketEventDialog,
       confirmAtMarketEvent,
       goToOnlineOrder,
+      toggleCustomerMode,
     };
   },
 };
@@ -842,11 +855,21 @@ export default {
   }
 }
 
-.customer-mode-chip {
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  height: 20px;
+.customer-mode-toggle {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  min-height: 28px;
   opacity: 0.9;
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 1;
+  }
+  
+  @media (max-width: 600px) {
+    padding: 2px 6px;
+    min-height: 24px;
+  }
 }
 
 .user-avatar {
