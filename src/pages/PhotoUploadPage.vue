@@ -1680,8 +1680,9 @@ export default {
       }
     };
 
-    const loadProducts = async () => {
-      console.log('🔄 [LOAD] loadProducts called');
+    const loadProducts = async (retryCount = 0) => {
+      const maxRetries = 3;
+      console.log('🔄 [LOAD] loadProducts called, retry:', retryCount);
       console.log('🔄 [LOAD] Current selectedProductId:', selectedProductId.value);
       loadingProducts.value = true;
       try {
@@ -1691,6 +1692,14 @@ export default {
         const productsData = await firebaseService.getProducts(isAdmin);
         products.value = productsData || [];
         console.log('🔄 [LOAD] Products loaded:', products.value.length, 'products');
+        
+        // If no products and we haven't exceeded retries, retry
+        if (products.value.length === 0 && retryCount < maxRetries) {
+          console.log(`⏳ [LOAD] No products returned, retrying (${retryCount + 1}/${maxRetries})...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (retryCount + 1)));
+          loadingProducts.value = false;
+          return loadProducts(retryCount + 1);
+        }
 
         // Determine which product to select
         let productToSelect = null;
@@ -1976,7 +1985,7 @@ export default {
           console.log('🔄 [WATCH] productOptions changed, count:', newOptions.length);
           console.log('🔄 [WATCH] Current selectedProductId:', selectedProductId.value);
           if (newOptions.length > 0) {
-            // If we have a selectedProductId but products just loaded, verify it exists
+            // PRIORITY 1: If we have a selectedProductId, verify it exists in the newly loaded options
             if (selectedProductId.value) {
               console.log('🔍 [WATCH] Verifying selectedProductId exists in options:', selectedProductId.value);
               const existingProduct = newOptions.find(
@@ -1984,17 +1993,18 @@ export default {
               );
               if (existingProduct) {
                 console.log('✅ [WATCH] Selected product verified in options:', existingProduct.description);
-                // Product exists, we're good - don't change anything
+                // Product exists and is verified - we're done, don't change anything
                 return;
               } else {
                 console.log('⚠️ [WATCH] Selected product ID not found in options:', selectedProductId.value);
                 console.log('⚠️ [WATCH] Available product IDs:', newOptions.map(p => p.id));
-                // Product doesn't exist, clear it
+                // Product doesn't exist, clear it so we can try to restore from localStorage
                 selectedProductId.value = null;
+                console.log('⚠️ [WATCH] Cleared selectedProductId, will try to restore from localStorage');
               }
             }
-            
-            // Try to restore from localStorage (only if no product is selected)
+
+            // PRIORITY 2: If no product is selected, try to restore from localStorage
             if (!selectedProductId.value && !isAuthenticated.value) {
               console.log('🔍 [WATCH] No product selected and not authenticated, checking localStorage');
               try {
@@ -2004,7 +2014,7 @@ export default {
                   const parsed = JSON.parse(savedData);
                   console.log('🔍 [WATCH] Parsed data:', parsed);
                   if (parsed.selectedProductId) {
-                    console.log('🔍 [WATCH] Looking for product ID:', parsed.selectedProductId);
+                    console.log('🔍 [WATCH] Looking for product ID in options:', parsed.selectedProductId);
                     const savedProduct = newOptions.find(
                       (p) => String(p.id) === String(parsed.selectedProductId)
                     );
@@ -2014,9 +2024,12 @@ export default {
                         '✅ [WATCH] Restored product selection from localStorage:',
                         savedProduct.description
                       );
-                      return; // Exit early if we restored from localStorage
+                      // Save it back to ensure it's persisted
+                      saveFormDataToLocalStorage();
+                      return; // Exit early - we're done
                     } else {
                       console.log('⚠️ [WATCH] Saved product ID not found in options:', parsed.selectedProductId);
+                      console.log('⚠️ [WATCH] Available product IDs:', newOptions.map(p => p.id));
                     }
                   } else {
                     console.log('⚠️ [WATCH] No selectedProductId in localStorage data');
@@ -2029,22 +2042,6 @@ export default {
               console.log('✅ [WATCH] Product already selected, skipping localStorage restore');
             } else {
               console.log('⚠️ [WATCH] Skipping localStorage restore - isAuthenticated:', isAuthenticated.value);
-            }
-
-            // If product ID is set, verify it still exists in options
-            if (selectedProductId.value) {
-              console.log('🔍 [WATCH] Verifying selectedProductId exists in options:', selectedProductId.value);
-              const stillExists = newOptions.find(
-                (p) => String(p.id) === String(selectedProductId.value)
-              );
-              if (stillExists) {
-                console.log('✅ [WATCH] Selected product verified in options:', stillExists.description);
-              } else {
-                // Selected product no longer in options, reset
-                console.log('⚠️ [WATCH] Selected product no longer available, resetting');
-                console.log('⚠️ [WATCH] Available product IDs:', newOptions.map(p => p.id));
-                selectedProductId.value = null;
-              }
             }
 
             // If no product selected, try to set default
