@@ -841,6 +841,20 @@ export default {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
 }
 
+// Ensure toolbar title stays centered
+.q-toolbar {
+  position: relative;
+}
+
+.q-toolbar-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 50%;
+  text-align: center;
+}
+
 .logo-header {
   transition: transform 0.3s ease;
 
@@ -861,11 +875,11 @@ export default {
   min-height: 28px;
   opacity: 0.9;
   transition: opacity 0.2s;
-  
+
   &:hover {
     opacity: 1;
   }
-  
+
   @media (max-width: 600px) {
     padding: 2px 6px;
     min-height: 24px;
