@@ -888,10 +888,11 @@ export default {
   }
 
   .outer-frame.primary {
-    transform: translate(
-      calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / -2),
-      calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / -2)
-    );
+    left: calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / 2);
+    top: calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / 2);
+    right: auto;
+    bottom: auto;
+    margin: 0;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
@@ -952,17 +953,17 @@ export default {
   }
 
   .border-text-top {
-    top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4 - 5px);
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 5));
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
 
   .border-text-bottom {
-    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 5);
     left: 50%;
-    transform: translate(-50%, 50%);
+    transform: translate(-50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
@@ -1108,10 +1109,11 @@ export default {
   }
 
   .outer-frame.primary {
-    transform: translate(
-      calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / -2),
-      calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / -2)
-    );
+    left: calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / 2);
+    top: calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / 2);
+    right: auto;
+    bottom: auto;
+    margin: 0;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
@@ -1172,17 +1174,17 @@ export default {
   }
 
   .border-text-top {
-    top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4 - 5px);
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 5));
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
 
   .border-text-bottom {
-    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 5);
     left: 50%;
-    transform: translate(-50%, 50%);
+    transform: translate(-50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
