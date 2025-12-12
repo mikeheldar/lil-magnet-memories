@@ -947,7 +947,7 @@ export default {
   .border-text-top {
     top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
@@ -955,7 +955,7 @@ export default {
   .border-text-bottom {
     bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, 50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
@@ -1160,7 +1160,7 @@ export default {
   .border-text-top {
     top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
@@ -1168,7 +1168,7 @@ export default {
   .border-text-bottom {
     bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, 50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
