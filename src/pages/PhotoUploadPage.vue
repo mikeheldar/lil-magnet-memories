@@ -1204,11 +1204,24 @@ export default {
         }
 
         // Prepare order data for thank you page
+        const totalCostValue = totalCost.value;
         const orderData = {
           orderNumber: orderNumber.value,
           customerName: `${formData.value.firstName} ${formData.value.lastName}`,
           customerEmail: formData.value.email,
           totalMagnets: totalMagnets.value,
+          subtotal: totalCostValue.subtotal || 0,
+          shipping: 0, // Market event orders don't have shipping
+          tax: 0,
+          totalAmount: totalCostValue.total || 0,
+          // Include payment option for pay-at-tent orders
+          paymentOption: isAtMarketEvent.value && paymentChoice.value === 'pay_at_tent'
+            ? {
+                type: 'pay_at_event',
+                amount: totalCostValue.total || 0,
+              }
+            : null,
+          shippingOption: null, // Market event orders are pickup
         };
 
         // Store in localStorage as backup

@@ -225,7 +225,7 @@ export default {
       subtotal.value = Number(data.subtotal || 0);
       shippingCost.value = Number(data.shipping || 0);
       tax.value = Number(data.tax || 0);
-      
+
       // Determine total amount with priority:
       // 1. Explicit totalAmount from data
       // 2. Amount from paymentOption (for pay_at_event orders)
