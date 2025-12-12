@@ -70,14 +70,7 @@
             </div>
             <div class="col-auto">
               <div class="text-caption text-grey-6">
-                {{
-                  formatDate(
-                    order.submissionDate ||
-                      order.submissionDateClient ||
-                      order.createdAt ||
-                      order.createdAtClient
-                  )
-                }}
+                {{ formatDate(order.submissionDate) }}
               </div>
             </div>
           </div>
@@ -581,11 +574,9 @@ export default {
     });
 
     const formatDate = (timestamp) => {
-      // This function should never be called with null/undefined for orders
-      // as we always set a client-side date fallback (submissionDateClient as timestamp number)
+      // Never use current date as fallback - show "N/A" or raw value instead
       if (timestamp === null || timestamp === undefined) {
-        console.warn('formatDate called with null/undefined timestamp');
-        return new Date().toLocaleString(); // Fallback to current date
+        return 'N/A';
       }
 
       try {
