@@ -4462,12 +4462,17 @@ export default {
         let displayTotalAmount = 0;
 
         // First, try to get the actual charged amount from squarePaymentDetails
+        // Square returns amount in cents (as string after BigInt serialization), convert to dollars
         if (squarePaymentDetails?.amountMoney?.amount) {
-          // Square returns amount in cents, convert to dollars
-          displayTotalAmount = Number(squarePaymentDetails.amountMoney.amount) / 100;
-          console.log('✅ Using actual charged amount from Square payment:', displayTotalAmount);
+          const amountInCents = Number(squarePaymentDetails.amountMoney.amount);
+          displayTotalAmount = amountInCents / 100;
+          console.log('✅ Using actual charged amount from Square payment:', {
+            amountInCents,
+            displayTotalAmount,
+            rawAmount: squarePaymentDetails.amountMoney.amount,
+          });
         } else if (paymentOptionPayload?.amount) {
-          // Use amount from payment option payload
+          // Use amount from payment option payload (already in dollars)
           displayTotalAmount = Number(paymentOptionPayload.amount) || 0;
           console.log('✅ Using amount from paymentOptionPayload:', displayTotalAmount);
         } else {
