@@ -28,18 +28,6 @@
         </q-card>
       </div>
 
-      <!-- User Info Pre-fill Notice for Authenticated Users -->
-      <div v-if="isAuthenticated" class="q-mb-sm">
-        <q-card class="q-pa-xs bg-green-1">
-          <q-card-section class="q-pa-sm text-center">
-            <q-icon name="check_circle" color="positive" size="16px" class="q-mr-xs" />
-            <span class="text-caption text-positive text-weight-medium">
-              Signed in as {{ currentUser?.displayName || currentUser?.email }}
-            </span>
-          </q-card-section>
-        </q-card>
-      </div>
-
       <!-- Upload Form Card -->
       <q-card class="q-pa-lg">
         <q-card-section>

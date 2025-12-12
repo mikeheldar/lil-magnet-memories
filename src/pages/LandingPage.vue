@@ -1327,7 +1327,7 @@ export default {
 .banner-text {
   flex-wrap: nowrap;
   white-space: nowrap;
-  
+
   @media (max-width: 600px) {
     font-size: 0.875rem;
     gap: 4px !important;
