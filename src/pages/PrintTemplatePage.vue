@@ -950,6 +950,7 @@ export default {
     transform: translate(-50%, -50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
+    line-height: 0.7;
   }
 
   .border-text-bottom {
@@ -1163,6 +1164,7 @@ export default {
     transform: translate(-50%, -50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
+    line-height: 0.7;
   }
 
   .border-text-bottom {
