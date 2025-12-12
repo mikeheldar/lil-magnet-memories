@@ -205,10 +205,10 @@
                     >{{ order.customer.phone }}</a
                   >
                 </div>
-                <div v-if="order.specialInstructions || (order.customer && order.customer.specialInstructions) || (order.cartItems && order.cartItems.some(item => item.specialInstructions))">
+                <div v-if="getSpecialInstructions(order)">
                   <strong>Special Instructions:</strong>
                   <div class="text-grey-7 q-mt-xs">
-                    {{ order.specialInstructions || (order.customer && order.customer.specialInstructions) || (order.cartItems && order.cartItems.find(item => item.specialInstructions)?.specialInstructions) || 'N/A' }}
+                    {{ getSpecialInstructions(order) }}
                   </div>
                 </div>
               </div>
@@ -996,6 +996,8 @@ export default {
       switch (status) {
         case 'new':
           return 'new order submitted';
+        case 'paid':
+          return 'paid';
         case 'in_progress':
           return 'in progress';
         case 'completed':
@@ -1005,6 +1007,38 @@ export default {
         default:
           return status;
       }
+    };
+
+    // Get special instructions from order (check all possible locations)
+    const getSpecialInstructions = (order) => {
+      // Check order-level specialInstructions first
+      if (order.specialInstructions) {
+        return order.specialInstructions;
+      }
+      // Check customer-level specialInstructions
+      if (order.customer && order.customer.specialInstructions) {
+        return order.customer.specialInstructions;
+      }
+      // Check cartItems for specialInstructions
+      if (order.cartItems && Array.isArray(order.cartItems)) {
+        const itemWithInstructions = order.cartItems.find(
+          (item) => item.specialInstructions
+        );
+        if (itemWithInstructions && itemWithInstructions.specialInstructions) {
+          return itemWithInstructions.specialInstructions;
+        }
+      }
+      // Check photos array (for photo upload orders)
+      if (order.photos && Array.isArray(order.photos)) {
+        // Photos might have specialInstructions in metadata
+        const photoWithInstructions = order.photos.find(
+          (photo) => photo.specialInstructions
+        );
+        if (photoWithInstructions && photoWithInstructions.specialInstructions) {
+          return photoWithInstructions.specialInstructions;
+        }
+      }
+      return null;
     };
 
     const updateOrderStatus = async (orderId, status) => {
@@ -1293,6 +1327,7 @@ export default {
       updateShippingStatus,
       getPhotoUrl,
       handlePhotoError,
+      getSpecialInstructions,
     };
   },
 };
