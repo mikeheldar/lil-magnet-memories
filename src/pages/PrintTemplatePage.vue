@@ -200,6 +200,12 @@
               <div class="corner-triangle corner-triangle-bottom-left"></div>
               <div class="corner-triangle corner-triangle-bottom-right"></div>
 
+              <!-- Border text labels -->
+              <div class="border-text border-text-top">Li'l Magnet Memories</div>
+              <div class="border-text border-text-bottom">Li'l Magnet Memories</div>
+              <div class="border-text border-text-left">lilmagnetmemories.com</div>
+              <div class="border-text border-text-right">lilmagnetmemories.com</div>
+
               <!-- Inner square frame for image -->
               <div
                 class="print-square"
@@ -926,6 +932,44 @@ export default {
     border-top: var(--triangle-size) solid transparent;
   }
 
+  /* Border text labels */
+  .border-text {
+    position: absolute;
+    color: #333;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    z-index: 2;
+    white-space: nowrap;
+  }
+
+  .border-text-top {
+    top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .border-text-bottom {
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .border-text-left {
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center;
+  }
+
+  .border-text-right {
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: center;
+  }
+
   .print-square {
     width: var(--inner-square-size);
     height: var(--inner-square-size);
@@ -1091,6 +1135,44 @@ export default {
     border-right: var(--triangle-size) solid #333;
     border-left: var(--triangle-size) solid transparent;
     border-top: var(--triangle-size) solid transparent;
+  }
+
+  /* Border text labels */
+  .border-text {
+    position: absolute;
+    color: #333;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    z-index: 2;
+    white-space: nowrap;
+  }
+
+  .border-text-top {
+    top: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .border-text-bottom {
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .border-text-left {
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center;
+  }
+
+  .border-text-right {
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: center;
   }
 
   .print-square {
