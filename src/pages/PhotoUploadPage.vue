@@ -1661,8 +1661,32 @@ export default {
         // Determine which product to select
         let productToSelect = null;
 
-        // First, check if productId is in route query (from landing page)
-        if (route.query.productId) {
+        // For anonymous users, check localStorage first before setting defaults
+        if (!isAuthenticated.value) {
+          try {
+            const savedData = localStorage.getItem('guestFormData');
+            if (savedData) {
+              const parsed = JSON.parse(savedData);
+              if (parsed.selectedProductId) {
+                const savedProduct = products.value.find(
+                  (p) => String(p.id) === String(parsed.selectedProductId)
+                );
+                if (savedProduct) {
+                  productToSelect = savedProduct;
+                  console.log(
+                    '✅ Restored product from localStorage in loadProducts:',
+                    savedProduct.description
+                  );
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error restoring product from localStorage:', error);
+          }
+        }
+
+        // If no saved product, check route query (from landing page)
+        if (!productToSelect && route.query.productId) {
           productToSelect = products.value.find(
             (p) => p.id === route.query.productId
           );
