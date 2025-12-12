@@ -376,9 +376,9 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        // Use a query that doesn't require submissionDate to exist (to catch all orders)
-        // We'll sort client-side to handle missing dates
-        const q = query(ordersRef);
+        // Sort by createdAt descending (newest first) on the server for better performance
+        // Client-side sort will handle any edge cases with missing or different date fields
+        const q = query(ordersRef, orderBy('createdAt', 'desc'));
 
         unsubscribeOrders = onSnapshot(
           q,
@@ -399,17 +399,21 @@ export default {
               return matchesUserId || matchesEmail;
             });
 
-            // Sort by submissionDate (most recent first), handling missing/invalid dates
+            // Sort by date (most recent first), handling missing/invalid dates
+            // Use createdAt first (matches server-side orderBy), then fall back to other date fields
             userOrders.sort((a, b) => {
               const getDateValue = (order) => {
-                // Prefer server timestamp, fall back to client timestamp, then other dates
+                // Prefer createdAt (matches server-side sorting), then other date fields
                 const date =
-                  order.submissionDate ||
-                  order.submissionDateClient ||
                   order.createdAt ||
                   order.createdAtClient ||
+                  order.submissionDate ||
+                  order.submissionDateClient ||
                   order.updatedAt;
-                if (!date) return 0;
+                if (!date) {
+                  // Return a very old date (0) so invalid dates sort to the bottom
+                  return 0;
+                }
                 try {
                   // Handle Firestore Timestamp
                   if (date && typeof date.toDate === 'function') {
@@ -427,12 +431,23 @@ export default {
                   }
                   // Handle Date objects or string timestamps
                   const parsed = new Date(date);
-                  return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+                  const time = parsed.getTime();
+                  // If invalid date, return 0 (will sort to bottom)
+                  return isNaN(time) ? 0 : time;
                 } catch {
+                  // Return 0 for any parsing errors (will sort to bottom)
                   return 0;
                 }
               };
-              return getDateValue(b) - getDateValue(a);
+              const dateA = getDateValue(a);
+              const dateB = getDateValue(b);
+              // If both dates are 0 (invalid), maintain original order
+              if (dateA === 0 && dateB === 0) return 0;
+              // If one is invalid (0), put it at the bottom
+              if (dateA === 0) return 1; // a goes after b
+              if (dateB === 0) return -1; // b goes after a
+              // Both valid: sort descending (newest first)
+              return dateB - dateA;
             });
 
             orders.value = userOrders;
@@ -504,17 +519,21 @@ export default {
               return matchesUserId || matchesEmail;
             });
 
-            // Sort by submissionDate (most recent first), handling missing/invalid dates
+            // Sort by date (most recent first), handling missing/invalid dates
+            // Use createdAt first (matches server-side orderBy), then fall back to other date fields
             filteredOrders.sort((a, b) => {
               const getDateValue = (order) => {
-                // Prefer server timestamp, fall back to client timestamp, then other dates
+                // Prefer createdAt (matches server-side sorting), then other date fields
                 const date =
-                  order.submissionDate ||
-                  order.submissionDateClient ||
                   order.createdAt ||
                   order.createdAtClient ||
+                  order.submissionDate ||
+                  order.submissionDateClient ||
                   order.updatedAt;
-                if (!date) return 0;
+                if (!date) {
+                  // Return a very old date (0) so invalid dates sort to the bottom
+                  return 0;
+                }
                 try {
                   // Handle Firestore Timestamp
                   if (date && typeof date.toDate === 'function') {
@@ -532,12 +551,23 @@ export default {
                   }
                   // Handle Date objects or string timestamps
                   const parsed = new Date(date);
-                  return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+                  const time = parsed.getTime();
+                  // If invalid date, return 0 (will sort to bottom)
+                  return isNaN(time) ? 0 : time;
                 } catch {
+                  // Return 0 for any parsing errors (will sort to bottom)
                   return 0;
                 }
               };
-              return getDateValue(b) - getDateValue(a);
+              const dateA = getDateValue(a);
+              const dateB = getDateValue(b);
+              // If both dates are 0 (invalid), maintain original order
+              if (dateA === 0 && dateB === 0) return 0;
+              // If one is invalid (0), put it at the bottom
+              if (dateA === 0) return 1; // a goes after b
+              if (dateB === 0) return -1; // b goes after a
+              // Both valid: sort descending (newest first)
+              return dateB - dateA;
             });
 
             orders.value = filteredOrders;

@@ -612,17 +612,21 @@ export default {
               });
             });
 
-            // Sort by submissionDate (most recent first), handling missing/invalid dates
+            // Sort by date (most recent first), handling missing/invalid dates
+            // Use createdAt first (matches server-side orderBy), then fall back to other date fields
             ordersList.sort((a, b) => {
               const getDateValue = (order) => {
-                // Prefer server timestamp, fall back to client timestamp, then other dates
+                // Prefer createdAt (matches server-side sorting), then other date fields
                 const date =
-                  order.submissionDate ||
-                  order.submissionDateClient ||
                   order.createdAt ||
                   order.createdAtClient ||
+                  order.submissionDate ||
+                  order.submissionDateClient ||
                   order.updatedAt;
-                if (!date) return 0;
+                if (!date) {
+                  // Return a very old date (0) so invalid dates sort to the bottom
+                  return 0;
+                }
                 try {
                   // Handle Firestore Timestamp
                   if (date && typeof date.toDate === 'function') {
@@ -640,14 +644,23 @@ export default {
                   }
                   // Handle Date objects or string timestamps
                   const parsed = new Date(date);
-                  return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+                  const time = parsed.getTime();
+                  // If invalid date, return 0 (will sort to bottom)
+                  return isNaN(time) ? 0 : time;
                 } catch {
+                  // Return 0 for any parsing errors (will sort to bottom)
                   return 0;
                 }
               };
               const dateA = getDateValue(a);
               const dateB = getDateValue(b);
               // Sort descending (newest first): larger date (b) - smaller date (a) = positive, so b comes first
+              // If both dates are 0 (invalid), maintain original order
+              if (dateA === 0 && dateB === 0) return 0;
+              // If one is invalid (0), put it at the bottom
+              if (dateA === 0) return 1; // a goes after b
+              if (dateB === 0) return -1; // b goes after a
+              // Both valid: sort descending
               return dateB - dateA;
             });
 
@@ -715,16 +728,20 @@ export default {
       }
 
       // Ensure filtered results are sorted by date (most recent first)
+      // Use createdAt first (matches server-side orderBy), then fall back to other date fields
       filtered.sort((a, b) => {
         const getDateValue = (order) => {
-          // Prefer server timestamp, fall back to client timestamp, then other dates
+          // Prefer createdAt (matches server-side sorting), then other date fields
           const date =
-            order.submissionDate ||
-            order.submissionDateClient ||
             order.createdAt ||
             order.createdAtClient ||
+            order.submissionDate ||
+            order.submissionDateClient ||
             order.updatedAt;
-          if (!date) return 0;
+          if (!date) {
+            // Return a very old date (0) so invalid dates sort to the bottom
+            return 0;
+          }
           try {
             // Handle Firestore Timestamp
             if (date && typeof date.toDate === 'function') {
@@ -740,13 +757,23 @@ export default {
             }
             // Handle Date objects or string timestamps
             const parsed = new Date(date);
-            return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+            const time = parsed.getTime();
+            // If invalid date, return 0 (will sort to bottom)
+            return isNaN(time) ? 0 : time;
           } catch {
+            // Return 0 for any parsing errors (will sort to bottom)
             return 0;
           }
         };
-        // Sort descending (newest first): b - a
-        return getDateValue(b) - getDateValue(a);
+        const dateA = getDateValue(a);
+        const dateB = getDateValue(b);
+        // If both dates are 0 (invalid), maintain original order
+        if (dateA === 0 && dateB === 0) return 0;
+        // If one is invalid (0), put it at the bottom
+        if (dateA === 0) return 1; // a goes after b
+        if (dateB === 0) return -1; // b goes after a
+        // Both valid: sort descending (newest first)
+        return dateB - dateA;
       });
 
       return filtered;
