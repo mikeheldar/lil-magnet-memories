@@ -12,7 +12,7 @@
             :href="activeMarketEventLink"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-white text-weight-medium banner-link gt-sm"
+            class="text-white text-weight-medium banner-link gt-md"
             style="text-decoration: underline; white-space: nowrap;"
           >
             Event Details
@@ -1311,6 +1311,7 @@ export default {
   justify-content: center;
   flex-wrap: nowrap;
   gap: 8px;
+  overflow: hidden;
 
   @media (max-width: 600px) {
     gap: 4px;
@@ -1327,6 +1328,13 @@ export default {
 .banner-text {
   flex-wrap: nowrap;
   white-space: nowrap;
+  min-width: 0; // Allow flex items to shrink
+  
+  // Reduce font size on medium screens to fit everything on one line
+  @media (min-width: 601px) and (max-width: 959px) {
+    font-size: 0.85rem;
+    gap: 4px !important;
+  }
 
   @media (max-width: 600px) {
     font-size: 0.875rem;
@@ -1338,6 +1346,20 @@ export default {
 
 .banner-link {
   white-space: nowrap;
+  flex-shrink: 0; // Don't shrink the link
+}
+
+// Truncate event name on medium screens if it's too long
+.banner-text > span.gt-xs {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  
+  @media (min-width: 601px) and (max-width: 959px) {
+    // Limit width on medium screens to prevent wrapping
+    max-width: 250px;
+  }
 }
 
 .banner-toggle {
