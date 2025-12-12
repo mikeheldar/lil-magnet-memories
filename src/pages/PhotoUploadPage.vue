@@ -1621,6 +1621,7 @@ export default {
             lastName: formData.value.lastName,
             email: formData.value.email,
             phone: formData.value.phone,
+            selectedProductId: selectedProductId.value,
           };
           localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
         } catch (error) {
@@ -1640,6 +1641,8 @@ export default {
             if (parsed.lastName) formData.value.lastName = parsed.lastName;
             if (parsed.email) formData.value.email = parsed.email;
             if (parsed.phone) formData.value.phone = parsed.phone;
+            // Product selection will be restored by the productOptions watch
+            // which checks localStorage when products are loaded
           }
         } catch (error) {
           console.error('Error loading form data from localStorage:', error);
@@ -1818,6 +1821,8 @@ export default {
           // Force totalCost to recalculate by accessing it
           const _ = totalCost.value;
         }
+        // Save product selection to localStorage
+        saveFormDataToLocalStorage();
       };
 
       // Load products
@@ -1834,6 +1839,8 @@ export default {
               selectedProduct.value.description
             );
           }
+          // Save product selection to localStorage when it changes
+          saveFormDataToLocalStorage();
         }
       });
 
@@ -1842,6 +1849,31 @@ export default {
         productOptions,
         (newOptions) => {
           if (newOptions.length > 0) {
+            // Try to restore from localStorage first (only if no product is selected)
+            if (!selectedProductId.value && !isAuthenticated.value) {
+              try {
+                const savedData = localStorage.getItem('guestFormData');
+                if (savedData) {
+                  const parsed = JSON.parse(savedData);
+                  if (parsed.selectedProductId) {
+                    const savedProduct = newOptions.find(
+                      (p) => String(p.id) === String(parsed.selectedProductId)
+                    );
+                    if (savedProduct) {
+                      selectedProductId.value = parsed.selectedProductId;
+                      console.log(
+                        '✅ Restored product selection from localStorage:',
+                        savedProduct.description
+                      );
+                      return; // Exit early if we restored from localStorage
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error('Error restoring product from localStorage:', error);
+              }
+            }
+
             // If product ID is set, verify it still exists in options
             if (selectedProductId.value) {
               const stillExists = newOptions.find(
