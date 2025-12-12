@@ -49,7 +49,7 @@
 
           <q-form @submit="onSubmit" class="q-gutter-sm">
             <!-- Customer Information -->
-            <div class="text-h6 text-weight-medium q-mb-sm text-primary">
+            <div ref="personalInfoSection" class="text-h6 text-weight-medium q-mb-sm text-primary">
               <q-icon name="person" class="q-mr-sm" />
               Your Information
             </div>
@@ -103,7 +103,7 @@
             <!-- Photo Upload Section -->
             <q-separator class="q-my-md" />
 
-            <div class="photo-upload-section q-pa-md q-mt-md">
+            <div ref="photoUploadSection" class="photo-upload-section q-pa-md q-mt-md">
               <div class="text-h6 text-weight-medium q-mb-sm text-primary">
                 <q-icon name="photo_library" class="q-mr-sm" />
                 Your Photos
@@ -959,10 +959,12 @@ export default {
       );
     });
 
-    // Refs for input fields
+    // Refs for input fields and sections
     const firstNameInput = ref(null);
     const lastNameInput = ref(null);
     const emailInput = ref(null);
+    const photoUploadSection = ref(null);
+    const personalInfoSection = ref(null);
 
     // Handle submit button click - show validation errors if disabled
     const handleSubmitClick = (event) => {
@@ -970,50 +972,83 @@ export default {
         event.preventDefault();
         event.stopPropagation();
 
-        const missingFields = [];
-        if (!formData.value.firstName) missingFields.push('First Name');
-        if (!formData.value.lastName) missingFields.push('Last Name');
-        if (!formData.value.email) {
-          missingFields.push('Email');
-        } else if (!isValidEmail(formData.value.email)) {
-          missingFields.push('Valid Email');
-        }
+        // Check for photos first
+        const hasPhotos = selectedFiles.value && selectedFiles.value.length > 0;
+        
+        // Check for personal information
+        const hasPersonalInfo = 
+          formData.value.firstName &&
+          formData.value.lastName &&
+          formData.value.email &&
+          isValidEmail(formData.value.email);
 
-        if (missingFields.length > 0) {
-          const message = `Please fill in: ${missingFields.join(', ')}`;
+        // If no photos, show message and scroll to photo section
+        if (!hasPhotos) {
           safeNotify({
             type: 'warning',
-            message: 'Required fields missing',
-            caption: message,
+            message: 'Please add pictures',
+            caption: 'You need to upload at least one photo to continue.',
             position: 'top',
             timeout: 4000,
           });
 
-          // Scroll to first missing field
           setTimeout(() => {
+            if (photoUploadSection.value) {
+              photoUploadSection.value.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+              });
+            }
+          }, 100);
+          return;
+        }
+
+        // If photos exist but personal info is missing
+        if (!hasPersonalInfo) {
+          const missingFields = [];
+          if (!formData.value.firstName) missingFields.push('First Name');
+          if (!formData.value.lastName) missingFields.push('Last Name');
+          if (!formData.value.email) {
+            missingFields.push('Email');
+          } else if (!isValidEmail(formData.value.email)) {
+            missingFields.push('Valid Email');
+          }
+
+          safeNotify({
+            type: 'warning',
+            message: 'Please add your personal information',
+            caption: `Please fill in: ${missingFields.join(', ')}`,
+            position: 'top',
+            timeout: 4000,
+          });
+
+          // Scroll to personal info section
+          setTimeout(() => {
+            if (personalInfoSection.value) {
+              personalInfoSection.value.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+              });
+            }
+            // Also focus on first missing field
             if (!formData.value.firstName && firstNameInput.value) {
-              firstNameInput.value.$el.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-              });
-              firstNameInput.value.focus();
+              setTimeout(() => {
+                firstNameInput.value.focus();
+              }, 300);
             } else if (!formData.value.lastName && lastNameInput.value) {
-              lastNameInput.value.$el.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-              });
-              lastNameInput.value.focus();
+              setTimeout(() => {
+                lastNameInput.value.focus();
+              }, 300);
             } else if (
               (!formData.value.email || !isValidEmail(formData.value.email)) &&
               emailInput.value
             ) {
-              emailInput.value.$el.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-              });
-              emailInput.value.focus();
+              setTimeout(() => {
+                emailInput.value.focus();
+              }, 300);
             }
           }, 100);
+          return;
         }
       }
     };
@@ -1950,6 +1985,8 @@ export default {
       firstNameInput,
       lastNameInput,
       emailInput,
+      photoUploadSection,
+      personalInfoSection,
     };
   },
 };
