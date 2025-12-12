@@ -1696,23 +1696,33 @@ export default {
         let productToSelect = null;
 
         // If product ID is already set (from localStorage initialization), verify it exists
+        // BUT only if we have products loaded - don't clear if products array is empty yet
         if (selectedProductId.value) {
           console.log('🔍 [LOAD] Checking if selectedProductId exists in products:', selectedProductId.value);
-          const existingProduct = products.value.find(
-            (p) => String(p.id) === String(selectedProductId.value)
-          );
-          if (existingProduct) {
-            productToSelect = existingProduct;
-            console.log(
-              '✅ [LOAD] Product already selected from localStorage, verified in products:',
-              existingProduct.description
+          console.log('🔍 [LOAD] Products array length:', products.value.length);
+          
+          if (products.value.length > 0) {
+            // Products are loaded, verify the selection exists
+            const existingProduct = products.value.find(
+              (p) => String(p.id) === String(selectedProductId.value)
             );
+            if (existingProduct) {
+              productToSelect = existingProduct;
+              console.log(
+                '✅ [LOAD] Product already selected from localStorage, verified in products:',
+                existingProduct.description
+              );
+            } else {
+              console.log('⚠️ [LOAD] Selected product ID not found in products array:', selectedProductId.value);
+              console.log('⚠️ [LOAD] Available product IDs:', products.value.map(p => p.id));
+              // Product doesn't exist, clear the selection
+              selectedProductId.value = null;
+              console.log('⚠️ [LOAD] Cleared selectedProductId because product not found');
+            }
           } else {
-            console.log('⚠️ [LOAD] Selected product ID not found in products array:', selectedProductId.value);
-            console.log('⚠️ [LOAD] Available product IDs:', products.value.map(p => p.id));
-            // Product doesn't exist, clear the selection
-            selectedProductId.value = null;
-            console.log('⚠️ [LOAD] Cleared selectedProductId because product not found');
+            // Products not loaded yet, keep the selection and verify later
+            console.log('⏳ [LOAD] Products not loaded yet, keeping selectedProductId for later verification:', selectedProductId.value);
+            // Don't clear it - the watch will handle verification when products load
           }
         } else {
           console.log('⚠️ [LOAD] No selectedProductId set, will look for defaults');
@@ -1741,26 +1751,29 @@ export default {
           }
         }
 
-        // If not found in route, check for default product
-        if (!productToSelect) {
+        // Only set defaults if we have products loaded AND no product is already selected
+        if (!productToSelect && products.value.length > 0) {
+          // If not found in route, check for default product
           console.log('🔍 [LOAD] Looking for default product');
           productToSelect = products.value.find((p) => p.isDefault === true);
           if (productToSelect) {
             console.log('✅ [LOAD] Found default product:', productToSelect.description);
           }
-        }
 
-        // If still not found, use first custom product
-        if (!productToSelect) {
-          console.log('🔍 [LOAD] Looking for first custom product');
-          productToSelect = products.value.find(
-            (p) =>
-              p.category === 'custom' ||
-              (!p.category && (!p.productType || p.productType === 'custom'))
-          );
-          if (productToSelect) {
-            console.log('✅ [LOAD] Found first custom product:', productToSelect.description);
+          // If still not found, use first custom product
+          if (!productToSelect) {
+            console.log('🔍 [LOAD] Looking for first custom product');
+            productToSelect = products.value.find(
+              (p) =>
+                p.category === 'custom' ||
+                (!p.category && (!p.productType || p.productType === 'custom'))
+            );
+            if (productToSelect) {
+              console.log('✅ [LOAD] Found first custom product:', productToSelect.description);
+            }
           }
+        } else if (!productToSelect && products.value.length === 0) {
+          console.log('⏳ [LOAD] No products loaded yet, skipping default selection (will be handled by watch)');
         }
 
         // Set selected product after products are loaded
@@ -1996,15 +2009,17 @@ export default {
 
             // If product ID is set, verify it still exists in options
             if (selectedProductId.value) {
+              console.log('🔍 [WATCH] Verifying selectedProductId exists in options:', selectedProductId.value);
               const stillExists = newOptions.find(
                 (p) => String(p.id) === String(selectedProductId.value)
               );
-              if (!stillExists) {
+              if (stillExists) {
+                console.log('✅ [WATCH] Selected product verified in options:', stillExists.description);
+              } else {
                 // Selected product no longer in options, reset
+                console.log('⚠️ [WATCH] Selected product no longer available, resetting');
+                console.log('⚠️ [WATCH] Available product IDs:', newOptions.map(p => p.id));
                 selectedProductId.value = null;
-                console.log(
-                  '⚠️ Watched: Selected product no longer available, resetting'
-                );
               }
             }
 
