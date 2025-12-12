@@ -740,21 +740,28 @@ export default {
     // Initialize product selection from localStorage immediately (like customer type)
     // This ensures it persists across page refreshes
     const getStoredProductId = () => {
+      console.log('🔍 [INIT] getStoredProductId called');
       try {
         const savedData = localStorage.getItem('guestFormData');
+        console.log('🔍 [INIT] localStorage guestFormData:', savedData ? 'exists' : 'null');
         if (savedData) {
           const parsed = JSON.parse(savedData);
+          console.log('🔍 [INIT] Parsed data:', parsed);
           if (parsed.selectedProductId) {
-            console.log('📦 Initializing product ID from localStorage:', parsed.selectedProductId);
+            console.log('✅ [INIT] Found selectedProductId in localStorage:', parsed.selectedProductId);
             return parsed.selectedProductId;
+          } else {
+            console.log('⚠️ [INIT] No selectedProductId in parsed data');
           }
         }
       } catch (error) {
-        console.error('Error reading stored product ID:', error);
+        console.error('❌ [INIT] Error reading stored product ID:', error);
       }
+      console.log('⚠️ [INIT] Returning null - no product ID found');
       return null;
     };
     const selectedProductId = ref(getStoredProductId());
+    console.log('📦 [INIT] selectedProductId initialized to:', selectedProductId.value);
     const loadingProducts = ref(false);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
 
@@ -1641,10 +1648,15 @@ export default {
             selectedProductId: selectedProductId.value,
           };
           localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
-          console.log('💾 Saved product selection to localStorage:', selectedProductId.value);
+          console.log('💾 [SAVE] Saved to localStorage:', {
+            selectedProductId: selectedProductId.value,
+            fullData: dataToSave
+          });
         } catch (error) {
-          console.error('Error saving form data to localStorage:', error);
+          console.error('❌ [SAVE] Error saving form data to localStorage:', error);
         }
+      } else {
+        console.log('⚠️ [SAVE] Skipping save - user is authenticated');
       }
     };
 
@@ -1669,36 +1681,46 @@ export default {
     };
 
     const loadProducts = async () => {
+      console.log('🔄 [LOAD] loadProducts called');
+      console.log('🔄 [LOAD] Current selectedProductId:', selectedProductId.value);
       loadingProducts.value = true;
       try {
         // Non-admins should not see testing products
         const isAdmin = authService.isAdmin();
+        console.log('🔄 [LOAD] Fetching products, isAdmin:', isAdmin);
         const productsData = await firebaseService.getProducts(isAdmin);
         products.value = productsData || [];
+        console.log('🔄 [LOAD] Products loaded:', products.value.length, 'products');
 
         // Determine which product to select
         let productToSelect = null;
 
         // If product ID is already set (from localStorage initialization), verify it exists
         if (selectedProductId.value) {
+          console.log('🔍 [LOAD] Checking if selectedProductId exists in products:', selectedProductId.value);
           const existingProduct = products.value.find(
             (p) => String(p.id) === String(selectedProductId.value)
           );
           if (existingProduct) {
             productToSelect = existingProduct;
             console.log(
-              '✅ Product already selected from localStorage, verified in products:',
+              '✅ [LOAD] Product already selected from localStorage, verified in products:',
               existingProduct.description
             );
           } else {
-            console.log('⚠️ Selected product ID not found in products array, will reset:', selectedProductId.value);
+            console.log('⚠️ [LOAD] Selected product ID not found in products array:', selectedProductId.value);
+            console.log('⚠️ [LOAD] Available product IDs:', products.value.map(p => p.id));
             // Product doesn't exist, clear the selection
             selectedProductId.value = null;
+            console.log('⚠️ [LOAD] Cleared selectedProductId because product not found');
           }
+        } else {
+          console.log('⚠️ [LOAD] No selectedProductId set, will look for defaults');
         }
 
         // If no saved product, check route query (from landing page)
         if (!productToSelect && route.query.productId) {
+          console.log('🔍 [LOAD] Checking route query for productId:', route.query.productId);
           productToSelect = products.value.find(
             (p) => p.id === route.query.productId
           );
@@ -1710,27 +1732,35 @@ export default {
               dataToSave.selectedProductId = productToSelect.id;
               localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
               console.log(
-                '✅ Saved route product to localStorage:',
+                '✅ [LOAD] Saved route product to localStorage:',
                 productToSelect.description
               );
             } catch (error) {
-              console.error('Error saving route product to localStorage:', error);
+              console.error('❌ [LOAD] Error saving route product to localStorage:', error);
             }
           }
         }
 
         // If not found in route, check for default product
         if (!productToSelect) {
+          console.log('🔍 [LOAD] Looking for default product');
           productToSelect = products.value.find((p) => p.isDefault === true);
+          if (productToSelect) {
+            console.log('✅ [LOAD] Found default product:', productToSelect.description);
+          }
         }
 
         // If still not found, use first custom product
         if (!productToSelect) {
+          console.log('🔍 [LOAD] Looking for first custom product');
           productToSelect = products.value.find(
             (p) =>
               p.category === 'custom' ||
               (!p.category && (!p.productType || p.productType === 'custom'))
           );
+          if (productToSelect) {
+            console.log('✅ [LOAD] Found first custom product:', productToSelect.description);
+          }
         }
 
         // Set selected product after products are loaded
@@ -1742,22 +1772,24 @@ export default {
           // Set the product ID (q-select will handle the rest)
           // Use nextTick to ensure the select component is ready
           await nextTick();
+          console.log('🔄 [LOAD] Setting selectedProductId to:', productToSelect.id, productToSelect.description);
           selectedProductId.value = productToSelect.id;
           console.log(
-            '✅ Selected product ID:',
+            '✅ [LOAD] Selected product ID set:',
             productToSelect.id,
             productToSelect.description,
             productToSelect.isDefault ? '(default)' : ''
           );
           // Save to localStorage for anonymous users (if not already saved above)
           if (!isAuthenticated.value) {
+            console.log('💾 [LOAD] Saving to localStorage');
             saveFormDataToLocalStorage();
           }
           // Force a small delay to ensure reactive updates
           await new Promise((resolve) => setTimeout(resolve, 50));
         } else {
           console.warn(
-            '⚠️ No product to select - no default product found and no route query productId'
+            '⚠️ [LOAD] No product to select - no default product found and no route query productId'
           );
         }
       } catch (error) {
@@ -1778,12 +1810,18 @@ export default {
 
       // Restore product selection from localStorage immediately (before loading products)
       // Only restore if not already set and user is not authenticated
+      console.log('🔄 [MOUNT] onMounted called, current selectedProductId:', selectedProductId.value);
       if (!selectedProductId.value) {
+        console.log('🔍 [MOUNT] No product selected, checking localStorage');
         const storedId = getStoredProductId();
         if (storedId) {
           selectedProductId.value = storedId;
-          console.log('✅ Restored product ID from localStorage on mount:', storedId);
+          console.log('✅ [MOUNT] Restored product ID from localStorage on mount:', storedId);
+        } else {
+          console.log('⚠️ [MOUNT] No product ID found in localStorage');
         }
+      } else {
+        console.log('✅ [MOUNT] Product already selected, skipping localStorage check');
       }
 
       try {
@@ -1896,17 +1934,21 @@ export default {
 
       // Watch selectedProductId to ensure totalCost updates when product changes
       watch(selectedProductId, (newId, oldId) => {
+        console.log('🔄 [WATCH-ID] selectedProductId changed from', oldId, 'to', newId);
         if (newId !== oldId && newId) {
-          console.log('🔄 Product ID changed from', oldId, 'to', newId);
+          console.log('🔄 [WATCH-ID] Product ID changed from', oldId, 'to', newId);
           // Force reactivity update - totalCost computed should automatically recalculate
           if (selectedProduct.value) {
             console.log(
-              '✅ Product changed, totalCost will recalculate for:',
+              '✅ [WATCH-ID] Product changed, totalCost will recalculate for:',
               selectedProduct.value.description
             );
           }
           // Save product selection to localStorage when it changes
+          console.log('💾 [WATCH-ID] Saving product selection to localStorage');
           saveFormDataToLocalStorage();
+        } else if (newId === null && oldId !== null) {
+          console.log('⚠️ [WATCH-ID] Product ID was cleared (set to null)');
         }
       });
 
@@ -1914,30 +1956,42 @@ export default {
       watch(
         productOptions,
         (newOptions) => {
+          console.log('🔄 [WATCH] productOptions changed, count:', newOptions.length);
+          console.log('🔄 [WATCH] Current selectedProductId:', selectedProductId.value);
           if (newOptions.length > 0) {
             // Try to restore from localStorage first (only if no product is selected)
             if (!selectedProductId.value && !isAuthenticated.value) {
+              console.log('🔍 [WATCH] No product selected and not authenticated, checking localStorage');
               try {
                 const savedData = localStorage.getItem('guestFormData');
+                console.log('🔍 [WATCH] localStorage data:', savedData ? 'exists' : 'null');
                 if (savedData) {
                   const parsed = JSON.parse(savedData);
+                  console.log('🔍 [WATCH] Parsed data:', parsed);
                   if (parsed.selectedProductId) {
+                    console.log('🔍 [WATCH] Looking for product ID:', parsed.selectedProductId);
                     const savedProduct = newOptions.find(
                       (p) => String(p.id) === String(parsed.selectedProductId)
                     );
                     if (savedProduct) {
                       selectedProductId.value = parsed.selectedProductId;
                       console.log(
-                        '✅ Restored product selection from localStorage:',
+                        '✅ [WATCH] Restored product selection from localStorage:',
                         savedProduct.description
                       );
                       return; // Exit early if we restored from localStorage
+                    } else {
+                      console.log('⚠️ [WATCH] Saved product ID not found in options:', parsed.selectedProductId);
                     }
+                  } else {
+                    console.log('⚠️ [WATCH] No selectedProductId in localStorage data');
                   }
                 }
               } catch (error) {
-                console.error('Error restoring product from localStorage:', error);
+                console.error('❌ [WATCH] Error restoring product from localStorage:', error);
               }
+            } else {
+              console.log('⚠️ [WATCH] Skipping localStorage restore - selectedProductId:', selectedProductId.value, 'isAuthenticated:', isAuthenticated.value);
             }
 
             // If product ID is set, verify it still exists in options
