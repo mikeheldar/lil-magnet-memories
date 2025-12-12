@@ -370,11 +370,10 @@
             <!-- Submit Button -->
             <div class="q-mt-lg">
               <q-btn
-                type="submit"
                 color="primary"
                 size="lg"
                 :loading="submitting"
-                :disable="!canSubmit"
+                type="button"
                 class="full-width"
                 @click="handleSubmitClick"
               >
@@ -966,90 +965,93 @@ export default {
     const photoUploadSection = ref(null);
     const personalInfoSection = ref(null);
 
-    // Handle submit button click - show validation errors if disabled
+    // Handle submit button click - show validation errors if validation fails
     const handleSubmitClick = (event) => {
-      if (!canSubmit.value) {
-        event.preventDefault();
-        event.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
 
-        // Check for photos first
-        const hasPhotos = selectedFiles.value && selectedFiles.value.length > 0;
-        
-        // Check for personal information
-        const hasPersonalInfo = 
-          formData.value.firstName &&
-          formData.value.lastName &&
-          formData.value.email &&
-          isValidEmail(formData.value.email);
+      // Check for photos first
+      const hasPhotos = selectedFiles.value && selectedFiles.value.length > 0;
 
-        // If no photos, show message and scroll to photo section
-        if (!hasPhotos) {
-          safeNotify({
-            type: 'warning',
-            message: 'Please add pictures',
-            caption: 'You need to upload at least one photo to continue.',
-            position: 'top',
-            timeout: 4000,
-          });
+      // Check for personal information
+      const hasPersonalInfo =
+        formData.value.firstName &&
+        formData.value.lastName &&
+        formData.value.email &&
+        isValidEmail(formData.value.email);
 
-          setTimeout(() => {
-            if (photoUploadSection.value) {
-              photoUploadSection.value.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-              });
-            }
-          }, 100);
-          return;
-        }
+      // If no photos, show message and scroll to photo section
+      if (!hasPhotos) {
+        safeNotify({
+          type: 'warning',
+          message: 'Please add pictures',
+          caption: 'You need to upload at least one photo to continue.',
+          position: 'top',
+          timeout: 4000,
+        });
 
-        // If photos exist but personal info is missing
-        if (!hasPersonalInfo) {
-          const missingFields = [];
-          if (!formData.value.firstName) missingFields.push('First Name');
-          if (!formData.value.lastName) missingFields.push('Last Name');
-          if (!formData.value.email) {
-            missingFields.push('Email');
-          } else if (!isValidEmail(formData.value.email)) {
-            missingFields.push('Valid Email');
+        setTimeout(() => {
+          if (photoUploadSection.value) {
+            photoUploadSection.value.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+            });
           }
+        }, 100);
+        return;
+      }
 
-          safeNotify({
-            type: 'warning',
-            message: 'Please add your personal information',
-            caption: `Please fill in: ${missingFields.join(', ')}`,
-            position: 'top',
-            timeout: 4000,
-          });
-
-          // Scroll to personal info section
-          setTimeout(() => {
-            if (personalInfoSection.value) {
-              personalInfoSection.value.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-              });
-            }
-            // Also focus on first missing field
-            if (!formData.value.firstName && firstNameInput.value) {
-              setTimeout(() => {
-                firstNameInput.value.focus();
-              }, 300);
-            } else if (!formData.value.lastName && lastNameInput.value) {
-              setTimeout(() => {
-                lastNameInput.value.focus();
-              }, 300);
-            } else if (
-              (!formData.value.email || !isValidEmail(formData.value.email)) &&
-              emailInput.value
-            ) {
-              setTimeout(() => {
-                emailInput.value.focus();
-              }, 300);
-            }
-          }, 100);
-          return;
+      // If photos exist but personal info is missing
+      if (!hasPersonalInfo) {
+        const missingFields = [];
+        if (!formData.value.firstName) missingFields.push('First Name');
+        if (!formData.value.lastName) missingFields.push('Last Name');
+        if (!formData.value.email) {
+          missingFields.push('Email');
+        } else if (!isValidEmail(formData.value.email)) {
+          missingFields.push('Valid Email');
         }
+
+        safeNotify({
+          type: 'warning',
+          message: 'Please add your personal information',
+          caption: `Please fill in: ${missingFields.join(', ')}`,
+          position: 'top',
+          timeout: 4000,
+        });
+
+        // Scroll to personal info section
+        setTimeout(() => {
+          if (personalInfoSection.value) {
+            personalInfoSection.value.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+            });
+          }
+          // Also focus on first missing field
+          if (!formData.value.firstName && firstNameInput.value) {
+            setTimeout(() => {
+              firstNameInput.value.focus();
+            }, 300);
+          } else if (!formData.value.lastName && lastNameInput.value) {
+            setTimeout(() => {
+              lastNameInput.value.focus();
+            }, 300);
+          } else if (
+            (!formData.value.email || !isValidEmail(formData.value.email)) &&
+            emailInput.value
+          ) {
+            setTimeout(() => {
+              emailInput.value.focus();
+            }, 300);
+          }
+        }, 100);
+        return;
+      }
+
+      // If all validation passes, proceed with submission
+      if (canSubmit.value) {
+        onSubmit();
       }
     };
 
