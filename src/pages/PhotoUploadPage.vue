@@ -1775,7 +1775,7 @@ export default {
     onMounted(async () => {
       // The route guard handles blocking access when there's no active event
       // This onMounted sets up the page and auto-checks in anonymous users
-      
+
       // Restore product selection from localStorage immediately (before loading products)
       // Only restore if not already set and user is not authenticated
       if (!selectedProductId.value) {
@@ -1785,7 +1785,7 @@ export default {
           console.log('✅ Restored product ID from localStorage on mount:', storedId);
         }
       }
-      
+
       try {
         // Wait a moment for market event service to fully load events
         await new Promise((resolve) => setTimeout(resolve, 500));
