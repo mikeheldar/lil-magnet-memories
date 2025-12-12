@@ -2,25 +2,17 @@
   <q-page class="thank-you-page">
     <div class="thank-you-container">
       <div class="text-center">
-        <!-- Success Icon -->
-        <div class="success-icon-container">
-          <q-icon name="check_circle" size="80px" color="positive" />
-        </div>
-
-        <!-- Thank You Message -->
-        <h1 class="thank-you-title">Thank You!</h1>
-        <p class="thank-you-subtitle">
-          We've received your order and will get started on your custom magnets
-          right away.
-        </p>
-
         <!-- Order Details Card -->
         <q-card class="order-details-card">
           <q-card-section class="text-center">
             <div class="text-h5 text-weight-bold text-primary q-mb-md">
-              <q-icon name="receipt" size="28px" class="q-mr-sm" />
-              Order Confirmation
+              <q-icon name="check_circle" size="28px" color="positive" class="q-mr-sm" />
+              Thank You!
             </div>
+            <p class="thank-you-subtitle q-mb-md">
+              We've received your order and will get started on your custom magnets
+              right away.
+            </p>
 
             <div class="order-number-section">
               <div class="text-caption text-grey-6 q-mb-xs">
@@ -72,24 +64,28 @@
             <q-separator class="q-my-sm" />
 
             <div class="delivery-info q-mb-sm">
-              <div class="text-subtitle1 text-weight-medium q-mb-sm">
-                <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
-                Delivery Option
-              </div>
-              <div class="text-body2 text-grey-7">
-                <strong>{{ deliveryOptionLabel }}</strong>
+              <div class="row justify-between items-center text-body1 text-weight-medium">
+                <div class="row items-center">
+                  <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
+                  <span>Delivery Option</span>
+                </div>
+                <div class="text-primary">
+                  {{ deliveryOptionLabel }}
+                </div>
               </div>
             </div>
 
             <q-separator class="q-my-sm" />
 
             <div class="payment-info q-mb-sm">
-              <div class="text-subtitle1 text-weight-medium q-mb-sm">
-                <q-icon name="credit_card" size="20px" class="q-mr-sm" />
-                Payment Method
-              </div>
-              <div class="text-body2 text-grey-7">
-                <strong>{{ displayPaymentMethod }}</strong>
+              <div class="row justify-between items-center text-body1 text-weight-medium">
+                <div class="row items-center">
+                  <q-icon name="credit_card" size="20px" class="q-mr-sm" />
+                  <span>Payment Method</span>
+                </div>
+                <div class="text-primary">
+                  {{ displayPaymentMethod }}
+                </div>
               </div>
             </div>
           </q-card-section>
@@ -309,10 +305,10 @@ export default {
     });
 
     const formattedOrderNumber = computed(() => {
-      // Make order number more readable by adding spacing
+      // Make order number more readable by adding spacing, but remove LMM prefix
       if (!orderNumber.value) return 'N/A';
-      // Format like: LMM-251116-1886 -> LMM - 251116 - 1886
-      return orderNumber.value.replace(/([A-Z]+)-(\d+)-(\d+)/, '$1 - $2 - $3');
+      // Format like: LMM-251116-1886 -> 251116 - 1886 (removed LMM -)
+      return orderNumber.value.replace(/([A-Z]+)-(\d+)-(\d+)/, '$2 - $3');
     });
 
     onMounted(() => {
@@ -390,23 +386,10 @@ export default {
   width: 100%;
 }
 
-.success-icon-container {
-  margin-bottom: 2rem;
-  animation: bounceIn 0.6s ease-out;
-}
-
-.thank-you-title {
-  font-size: 3rem;
-  font-weight: bold;
-  color: #667eea;
-  margin: 0 0 1rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .thank-you-subtitle {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: #6c757d;
-  margin: 0 0 2rem 0;
+  margin: 0;
   font-weight: 300;
 }
 
@@ -446,9 +429,9 @@ export default {
   margin: 4px 0;
 }
 
-.delivery-info,
-.payment-info {
-  text-align: left;
+.delivery-info .row,
+.payment-info .row {
+  margin: 0;
 }
 
 .next-steps {
@@ -507,12 +490,8 @@ export default {
 
 // Mobile responsive adjustments
 @media (max-width: 599px) {
-  .thank-you-title {
-    font-size: 2.2rem;
-  }
-
   .thank-you-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .action-buttons {
