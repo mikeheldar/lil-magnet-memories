@@ -4,47 +4,27 @@
     <div v-if="hasActiveEvent" class="market-event-banner bg-green-5">
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
-        <div
-          class="text-body1 text-white flex items-center q-gutter-md banner-text"
-        >
-          <!-- Full text for larger screens -->
-          <div class="gt-xs">
-            <strong>Market Event Live!</strong> We're at
-            {{ activeMarketEventName }}.
-            <a
-              v-if="activeMarketEventLink"
-              :href="activeMarketEventLink"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-white text-weight-medium banner-link"
-              style="text-decoration: underline; margin-left: 8px;"
-            >
-              Event Details
-              <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
-            </a>
-          </div>
-          <!-- Short text for mobile -->
-          <div class="lt-sm">
-            <strong>Market Event Live!</strong>
-            <a
-              v-if="activeMarketEventLink"
-              :href="activeMarketEventLink"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-white text-weight-medium banner-link"
-              style="text-decoration: underline; margin-left: 4px;"
-            >
-              Details
-              <q-icon name="open_in_new" size="12px" class="q-ml-xs" />
-            </a>
-          </div>
+        <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
+          <strong>Market Event Live!</strong>
+          <span class="gt-xs">We're at {{ activeMarketEventName }}.</span>
+          <a
+            v-if="activeMarketEventLink"
+            :href="activeMarketEventLink"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-white text-weight-medium banner-link gt-sm"
+            style="text-decoration: underline; white-space: nowrap;"
+          >
+            Event Details
+            <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+          </a>
           <q-toggle
             v-model="isCustomerAtEvent"
             color="white"
             checked-icon="check_circle"
             unchecked-icon="radio_button_unchecked"
             @update:model-value="toggleCustomerAtEvent"
-            class="banner-toggle"
+            class="banner-toggle q-ml-sm"
           >
             <span class="text-white text-body2 q-ml-sm gt-xs"
               >I'm at the event</span
@@ -1329,10 +1309,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
+  flex-wrap: nowrap;
+  gap: 8px;
 
   @media (max-width: 600px) {
-    gap: 8px;
+    gap: 4px;
+    flex-wrap: wrap;
   }
 }
 
@@ -1343,10 +1325,19 @@ export default {
 }
 
 .banner-text {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  
   @media (max-width: 600px) {
     font-size: 0.875rem;
-    gap: 8px !important;
+    gap: 4px !important;
+    flex-wrap: wrap;
+    white-space: normal;
   }
+}
+
+.banner-link {
+  white-space: nowrap;
 }
 
 .banner-toggle {
