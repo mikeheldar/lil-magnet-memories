@@ -709,6 +709,9 @@ export default {
     const router = useRouter();
     const route = useRoute();
 
+    // Get customer type composable once at setup (for reactivity)
+    const { isMarketCustomer, setCustomerType } = useCustomerType();
+
     // Safe notify wrapper
     const safeNotify = (options) => {
       try {
@@ -897,11 +900,22 @@ export default {
       return fileQuantities.value.reduce((sum, qty) => sum + qty, 0);
     });
 
+    // Track checked-in event reactively so computed property updates when events change
+    const checkedInEvent = ref(marketEventService.getCheckedInEvent());
+    
+    // Subscribe to market event changes to update checkedInEvent ref
+    const unsubscribeMarketEvents = marketEventService.addListener(() => {
+      const currentEvent = marketEventService.getCheckedInEvent();
+      checkedInEvent.value = currentEvent;
+      console.log('🔄 Market event changed, updated checkedInEvent:', currentEvent?.name || 'none');
+    });
+
     // Check if user is at a market event
     // This should respect the user's customer type preference, not just whether there's an active event
+    // Use the isMarketCustomer from useCustomerType() called at setup for proper reactivity
+    // Use the reactive checkedInEvent ref so it updates when events change
     const isAtMarketEvent = computed(() => {
-      const { isMarketCustomer } = useCustomerType();
-      const hasActiveEvent = marketEventService.getCheckedInEvent() !== null;
+      const hasActiveEvent = checkedInEvent.value !== null;
       // Only treat as market event if there's an active event AND user is a market customer
       return hasActiveEvent && isMarketCustomer.value;
     });
@@ -1862,13 +1876,11 @@ export default {
         // 2. There's an active event
         // 3. User hasn't already set a preference (check localStorage)
         if (activeEvent && !isAuthenticated.value) {
-          const { isMarketCustomer, isOnlineCustomer } = useCustomerType();
           // Only auto-set if user hasn't explicitly chosen a mode
           // Check if there's a stored preference
           const storedType = localStorage.getItem('lil-magnet-customer-type');
           if (!storedType) {
             // No preference set - auto-set to market for anonymous users at events
-            const { setCustomerType } = useCustomerType();
             setCustomerType(CUSTOMER_TYPES.MARKET);
             console.log(
               '✅ Anonymous user auto-checked in to active market event:',
@@ -2127,6 +2139,10 @@ export default {
       if (marketEventUnsubscribe) {
         marketEventUnsubscribe();
         marketEventUnsubscribe = null;
+      }
+      // Clean up market event listener
+      if (unsubscribeMarketEvents) {
+        unsubscribeMarketEvents();
       }
       if (eventCheckInterval) {
         clearInterval(eventCheckInterval);
