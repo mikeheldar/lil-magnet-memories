@@ -1045,7 +1045,7 @@ export default {
 }
 
 // Mobile responsive adjustments
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .q-toolbar-title {
     font-size: 1.1rem !important;
   }
