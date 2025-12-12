@@ -1700,7 +1700,7 @@ export default {
         if (selectedProductId.value) {
           console.log('🔍 [LOAD] Checking if selectedProductId exists in products:', selectedProductId.value);
           console.log('🔍 [LOAD] Products array length:', products.value.length);
-          
+
           if (products.value.length > 0) {
             // Products are loaded, verify the selection exists
             const existingProduct = products.value.find(
@@ -1720,9 +1720,13 @@ export default {
               console.log('⚠️ [LOAD] Cleared selectedProductId because product not found');
             }
           } else {
-            // Products not loaded yet, keep the selection and verify later
+            // Products not loaded yet, keep the selection and verify later via watch
             console.log('⏳ [LOAD] Products not loaded yet, keeping selectedProductId for later verification:', selectedProductId.value);
             // Don't clear it - the watch will handle verification when products load
+            // Don't set productToSelect either - we'll verify in the watch
+            // Exit early and let the watch handle restoration when products are ready
+            loadingProducts.value = false;
+            return;
           }
         } else {
           console.log('⚠️ [LOAD] No selectedProductId set, will look for defaults');
