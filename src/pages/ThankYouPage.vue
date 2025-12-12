@@ -52,7 +52,7 @@
               <div class="row justify-between text-body1 text-weight-medium">
                 <div>
                   {{
-                    isPayAtTent ? 'Total for Collection at Tent' : 'Total Paid'
+                    isPayAtTent ? 'Total to pay at tent' : 'Total Paid'
                   }}
                 </div>
                 <div class="text-primary">
@@ -225,10 +225,20 @@ export default {
       subtotal.value = Number(data.subtotal || 0);
       shippingCost.value = Number(data.shipping || 0);
       tax.value = Number(data.tax || 0);
-      totalAmount.value =
-        data.totalAmount !== undefined
-          ? Number(data.totalAmount)
-          : subtotal.value + shippingCost.value + tax.value;
+      
+      // Determine total amount with priority:
+      // 1. Explicit totalAmount from data
+      // 2. Amount from paymentOption (for pay_at_event orders)
+      // 3. Calculate from subtotal + shipping + tax
+      if (data.totalAmount !== undefined && Number(data.totalAmount) > 0) {
+        totalAmount.value = Number(data.totalAmount);
+      } else if (data.paymentOption?.amount !== undefined && Number(data.paymentOption.amount) > 0) {
+        // For pay_at_event orders, use the amount from paymentOption
+        totalAmount.value = Number(data.paymentOption.amount);
+      } else {
+        // Fallback: calculate from components
+        totalAmount.value = subtotal.value + shippingCost.value + tax.value;
+      }
       shippingOption.value = data.shippingOption || null;
       paymentOption.value = data.paymentOption || null;
       shippingTimeline.value =

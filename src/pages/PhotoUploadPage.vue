@@ -902,7 +902,7 @@ export default {
 
     // Track checked-in event reactively so computed property updates when events change
     const checkedInEvent = ref(marketEventService.getCheckedInEvent());
-    
+
     // Subscribe to market event changes to update checkedInEvent ref
     const unsubscribeMarketEvents = marketEventService.addListener(() => {
       const currentEvent = marketEventService.getCheckedInEvent();
