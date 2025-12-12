@@ -1247,6 +1247,9 @@ export default {
 .landing-page {
   background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .hero-section {
@@ -1257,21 +1260,29 @@ export default {
   padding: 40px 20px 100px 20px;
   background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .hero-content {
   max-width: 1200px;
   width: 100%;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
   align-items: center;
   z-index: 2;
+  box-sizing: border-box;
+  padding: 0 20px;
 }
 
 .hero-text {
   color: white;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .hero-logo {
@@ -1375,6 +1386,10 @@ export default {
   line-height: 1.1;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hero-subtitle {
@@ -1383,19 +1398,26 @@ export default {
   margin: 0 0 2.5rem 0;
   opacity: 0.95;
   font-weight: 300;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
 }
 
-.hero-actions {
-  margin-bottom: 40px;
+  .hero-actions {
+    margin-bottom: 40px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-  .cta-button {
-    font-size: 1.3rem;
-    font-weight: 600;
-    padding: 16px 32px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-    border: 3px solid white;
-    color: white;
+    .cta-button {
+      font-size: 1.3rem;
+      font-weight: 600;
+      padding: 16px 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      border: 3px solid white;
+      color: white;
 
     &:hover {
       transform: translateY(-2px);
@@ -1409,6 +1431,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .easel-container {
@@ -1749,6 +1774,18 @@ export default {
     grid-template-columns: 1fr;
     gap: 40px;
     text-align: center;
+    padding: 0 15px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
   }
 
   .hero-logo {
@@ -1759,6 +1796,9 @@ export default {
   .hero-title {
     font-size: clamp(1.8rem, 4vw, 2.5rem);
     white-space: nowrap;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
   }
 
   .hero-subtitle {
@@ -1778,15 +1818,35 @@ export default {
 @media (max-width: 599px) {
   .hero-section {
     padding: 20px 15px 100px 15px;
+    overflow-x: hidden;
+  }
+
+  .hero-content {
+    padding: 0 10px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
+  }
+
+  .hero-text {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
   }
 
   .hero-actions {
     margin-bottom: 60px;
+    width: 100%;
   }
 
   .hero-title {
     font-size: clamp(1.5rem, 6vw, 2rem);
     white-space: nowrap;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 10px;
   }
 
   .hero-subtitle {
