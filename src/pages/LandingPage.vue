@@ -50,9 +50,6 @@
             class="hero-logo hero-logo-small"
           />
           <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets</h1>
-          <p class="hero-subtitle">
-            Create custom photo magnets from your favorite moments.
-          </p>
 
           <div class="hero-actions">
             <q-btn
@@ -1246,7 +1243,7 @@ export default {
 <style lang="scss" scoped>
 .landing-page {
   background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
-  background-image: 
+  background-image:
     repeating-linear-gradient(
       45deg,
       transparent,
@@ -1275,7 +1272,7 @@ export default {
   justify-content: center;
   padding: 40px 20px 100px 20px;
   background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%);
-  background-image: 
+  background-image:
     repeating-linear-gradient(
       45deg,
       transparent,
@@ -1412,16 +1409,18 @@ export default {
 }
 
 .hero-title {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(1.5rem, 4vw, 2.8rem);
   font-weight: 800;
   margin: 0 0 1.5rem 0;
-  line-height: 1.1;
+  line-height: 1.2;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  white-space: nowrap;
+  white-space: normal;
   text-align: center;
   width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .hero-subtitle {
@@ -1826,15 +1825,13 @@ export default {
   }
 
   .hero-title {
-    font-size: clamp(1.8rem, 4vw, 2.5rem);
-    white-space: nowrap;
+    font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+    white-space: normal;
     text-align: center;
     width: 100%;
     max-width: 100%;
-  }
-
-  .hero-subtitle {
-    font-size: 1.1rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .easel-container {
@@ -1873,16 +1870,14 @@ export default {
   }
 
   .hero-title {
-    font-size: clamp(1.5rem, 6vw, 2rem);
-    white-space: nowrap;
+    font-size: clamp(1.2rem, 5vw, 1.8rem);
+    white-space: normal;
     text-align: center;
     width: 100%;
     max-width: 100%;
     padding: 0 10px;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .hero-logo-wide {
