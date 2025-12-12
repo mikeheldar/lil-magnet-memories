@@ -889,14 +889,19 @@ export default {
     height: var(--outer-square-size-secondary);
     opacity: 0.6;
     z-index: 0;
+    left: -2px;
+    top: -2px;
+    right: -2px;
+    bottom: -2px;
+    margin: auto;
   }
 
   .outer-frame.primary {
-    left: calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / 2);
-    top: calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / 2);
-    right: auto;
-    bottom: auto;
-    margin: 0;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
@@ -1114,14 +1119,19 @@ export default {
     height: var(--outer-square-size-secondary);
     opacity: 0.6;
     z-index: 0;
+    left: -2px;
+    top: -2px;
+    right: -2px;
+    bottom: -2px;
+    margin: auto;
   }
 
   .outer-frame.primary {
-    left: calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / 2);
-    top: calc((var(--outer-square-size-secondary) - var(--outer-square-size)) / 2);
-    right: auto;
-    bottom: auto;
-    margin: 0;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
   }
 
   /* Corner triangles for cutting alignment - upper corners */
