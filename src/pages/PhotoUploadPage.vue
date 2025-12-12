@@ -1690,6 +1690,21 @@ export default {
           productToSelect = products.value.find(
             (p) => p.id === route.query.productId
           );
+          // If product found from route, save it to localStorage for anonymous users
+          if (productToSelect && !isAuthenticated.value) {
+            try {
+              const savedData = localStorage.getItem('guestFormData');
+              const dataToSave = savedData ? JSON.parse(savedData) : {};
+              dataToSave.selectedProductId = productToSelect.id;
+              localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
+              console.log(
+                '✅ Saved route product to localStorage:',
+                productToSelect.description
+              );
+            } catch (error) {
+              console.error('Error saving route product to localStorage:', error);
+            }
+          }
         }
 
         // If not found in route, check for default product
@@ -1722,6 +1737,10 @@ export default {
             productToSelect.description,
             productToSelect.isDefault ? '(default)' : ''
           );
+          // Save to localStorage for anonymous users (if not already saved above)
+          if (!isAuthenticated.value) {
+            saveFormDataToLocalStorage();
+          }
           // Force a small delay to ensure reactive updates
           await new Promise((resolve) => setTimeout(resolve, 50));
         } else {
