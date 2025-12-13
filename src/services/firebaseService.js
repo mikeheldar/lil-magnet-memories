@@ -68,11 +68,44 @@ class FirebaseService {
   // Convert WebP image to JPG (test environment only)
   async convertWebPToJPG(file) {
     return new Promise((resolve, reject) => {
+      // Validate file
+      if (!file || !(file instanceof File || file instanceof Blob)) {
+        reject(new Error('Invalid file provided for conversion'));
+        return;
+      }
+
+      // Check file size
+      if (file.size === 0) {
+        reject(new Error('File is empty'));
+        return;
+      }
+
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
-      
+      let resolved = false;
+
+      // Set timeout to prevent hanging
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('Image conversion timeout - image took too long to load'));
+        }
+      }, 30000); // 30 second timeout
+
       img.onload = () => {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(timeout);
+
         try {
+          // Validate image dimensions
+          if (img.width === 0 || img.height === 0) {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Invalid image dimensions'));
+            return;
+          }
+
           const canvas = document.createElement('canvas');
           canvas.width = img.width;
           canvas.height = img.height;
@@ -103,12 +136,18 @@ class FirebaseService {
           reject(new Error(`Failed to convert WebP to JPG: ${error.message}`));
         }
       };
-      
+
       img.onerror = (error) => {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(timeout);
         URL.revokeObjectURL(objectUrl);
-        reject(new Error(`Failed to load image for conversion: ${error.message || 'Unknown error'}`));
+        
+        // Try to get more specific error info
+        const errorMsg = error?.message || error?.type || 'Unknown error';
+        reject(new Error(`Failed to load image for conversion: ${errorMsg}. File size: ${file.size} bytes, type: ${file.type || 'unknown'}`));
       };
-      
+
       // Set source after setting up handlers
       img.src = objectUrl;
     });
@@ -370,20 +409,32 @@ class FirebaseService {
         mode: 'cors',
         credentials: 'omit',
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
       }
-      
+
       const blob = await response.blob();
-      
+
+      // Verify blob is valid
+      if (!blob || blob.size === 0) {
+        console.error('Invalid blob received from fetch');
+        return null;
+      }
+
       // Verify it's actually a WebP image
-      if (!blob.type.includes('webp') && !photo.url.includes('.webp')) {
+      const isWebPType = blob.type.includes('webp') || photo.url.includes('.webp') || photo.type === 'image/webp';
+      if (!isWebPType) {
         console.log('Image is not WebP, skipping conversion');
         return null;
       }
+
+      // Ensure proper MIME type
+      const webpFile = new File([blob], photo.name || `photo_${photoIndex}.webp`, { 
+        type: blob.type || 'image/webp' 
+      });
       
-      const webpFile = new File([blob], photo.name || `photo_${photoIndex}.webp`, { type: 'image/webp' });
+      console.log(`Converting WebP file: ${webpFile.name}, size: ${webpFile.size} bytes, type: ${webpFile.type}`);
 
       // Convert to JPG
       const jpgFile = await this.convertWebPToJPG(webpFile);

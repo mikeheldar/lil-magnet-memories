@@ -1196,7 +1196,7 @@ export default {
         // Only convert once - check if already converting
         if (photo._converting) return;
         photo._converting = true;
-        
+
         try {
           await firebaseService.convertWebPPhotoInOrder(order.id, photoIndex, photo);
           // Reload orders to get updated photo URLs
