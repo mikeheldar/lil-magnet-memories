@@ -491,7 +491,7 @@ class FirebaseService {
         // Return null instead of throwing - conversion is optional
         return null;
       }
-      
+
       if (!jpgFile) {
         console.warn(`Conversion returned null for photo ${photoIndex} in order ${orderId}`);
         return null;

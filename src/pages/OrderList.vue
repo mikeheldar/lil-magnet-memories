@@ -1188,32 +1188,32 @@ export default {
     };
 
     // Check and convert WebP photos in orders (test environment only)
+    // NOTE: Disabled automatic conversion for existing orders due to browser compatibility issues
+    // Conversion still works for new uploads. For existing orders, conversion would need
+    // to be done server-side or with a different approach.
     const checkAndConvertWebP = async (order, photoIndex, photo) => {
-      if (!config.isTest) return;
-
-      const isWebP = photo.url && (photo.url.includes('.webp') || photo.type === 'image/webp');
-      if (isWebP && !photo.convertedFromWebP) {
-        // Only convert once - check if already converting
-        if (photo._converting) return;
-        photo._converting = true;
-
-        try {
-          const result = await firebaseService.convertWebPPhotoInOrder(order.id, photoIndex, photo);
-          if (result) {
-            console.log(`Successfully converted WebP photo ${photoIndex} in order ${order.id}`);
-            // Reload orders to get updated photo URLs
-            // The real-time listener will update automatically
-          } else {
-            console.log(`Conversion skipped or failed for photo ${photoIndex} in order ${order.id}`);
-          }
-        } catch (error) {
-          console.warn('Failed to convert WebP photo (non-critical):', error);
-          // Don't remove flag - conversion failed, don't retry
-        } finally {
-          // Always remove flag after attempt
-          photo._converting = false;
-        }
-      }
+      // Disabled - browser can't decode WebP from blob URLs reliably
+      // Conversion still happens on upload, which works fine
+      return;
+      
+      // Original code kept for reference:
+      // if (!config.isTest) return;
+      // const isWebP = photo.url && (photo.url.includes('.webp') || photo.type === 'image/webp');
+      // if (isWebP && !photo.convertedFromWebP) {
+      //   // Only convert once - check if already converting
+      //   if (photo._converting) return;
+      //   photo._converting = true;
+      //   try {
+      //     const result = await firebaseService.convertWebPPhotoInOrder(order.id, photoIndex, photo);
+      //     if (result) {
+      //       console.log(`Successfully converted WebP photo ${photoIndex} in order ${order.id}`);
+      //     }
+      //   } catch (error) {
+      //     console.warn('Failed to convert WebP photo (non-critical):', error);
+      //   } finally {
+      //     photo._converting = false;
+      //   }
+      // }
     };
 
     // Get photo URL, filtering out blob URLs (which don't persist)
