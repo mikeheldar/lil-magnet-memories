@@ -360,12 +360,12 @@ export default {
       const containerSize = INNER_SQUARE_SIZE_PX;
       const imgWidth = dimensions.width;
       const imgHeight = dimensions.height;
-      
+
       // Calculate what the displayed size would be with object-fit: contain
       // (image is 100% width/height of container, scaled to fit)
       const aspectRatio = imgWidth / imgHeight;
       let displayedWidth, displayedHeight;
-      
+
       if (aspectRatio > 1) {
         // Landscape: width fills container
         displayedWidth = containerSize;
@@ -375,7 +375,7 @@ export default {
         displayedWidth = containerSize * aspectRatio;
         displayedHeight = containerSize;
       }
-      
+
       // Calculate scale needed to make displayed image fill the square (cover behavior)
       const scaleX = containerSize / displayedWidth;
       const scaleY = containerSize / displayedHeight;
