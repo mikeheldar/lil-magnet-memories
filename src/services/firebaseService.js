@@ -69,7 +69,7 @@ class FirebaseService {
   async convertWebPToJPG(file) {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous'; // Handle CORS
+      const objectUrl = URL.createObjectURL(file);
       
       img.onload = () => {
         try {
@@ -78,6 +78,9 @@ class FirebaseService {
           canvas.height = img.height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0);
+
+          // Clean up object URL
+          URL.revokeObjectURL(objectUrl);
 
           canvas.toBlob(
             (blob) => {
@@ -96,20 +99,18 @@ class FirebaseService {
             0.92 // Quality: 0.92 for good balance
           );
         } catch (error) {
+          URL.revokeObjectURL(objectUrl);
           reject(new Error(`Failed to convert WebP to JPG: ${error.message}`));
         }
       };
       
       img.onerror = (error) => {
+        URL.revokeObjectURL(objectUrl);
         reject(new Error(`Failed to load image for conversion: ${error.message || 'Unknown error'}`));
       };
       
-      // Create object URL or use file directly
-      if (file instanceof File || file instanceof Blob) {
-        img.src = URL.createObjectURL(file);
-      } else {
-        reject(new Error('Invalid file type for conversion'));
-      }
+      // Set source after setting up handlers
+      img.src = objectUrl;
     });
   }
 
