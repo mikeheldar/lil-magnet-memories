@@ -274,27 +274,29 @@ export default {
       return photo.url || photo.name || 'unknown';
     };
 
-    // Calculate initial scale to fill container (cover behavior)
+    // Calculate initial scale to fill container by scaling on short dimension
     const calculateInitialScale = (imgWidth, imgHeight) => {
       // Container is square with size INNER_SQUARE_SIZE_PX
       const containerSize = INNER_SQUARE_SIZE_PX;
-      // Calculate scale to cover (fill without whitespace)
+      // Calculate scale for each dimension
       const scaleX = containerSize / imgWidth;
       const scaleY = containerSize / imgHeight;
-      // Use the larger scale to ensure no whitespace
-      return Math.max(scaleX, scaleY);
+      // Scale based on short dimension to fill the square
+      // For portrait (width < height): scale to fill width
+      // For landscape (height < width): scale to fill height
+      return imgWidth < imgHeight ? scaleX : scaleY;
     };
 
     // Handle image load to set initial scale
     const handleImageLoad = (event, photo) => {
       const img = event.target;
       const key = getPhotoKey(photo);
-      
+
       // Only set initial scale if transform doesn't exist yet (first load)
       if (!photoTransforms.value[key]) {
         const naturalWidth = img.naturalWidth;
         const naturalHeight = img.naturalHeight;
-        
+
         if (naturalWidth > 0 && naturalHeight > 0) {
           const initialScale = calculateInitialScale(naturalWidth, naturalHeight);
           photoTransforms.value[key] = {
