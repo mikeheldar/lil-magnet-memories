@@ -420,7 +420,7 @@
                 class="col-6 col-sm-4 col-md-3 col-lg-2"
               >
                 <q-img
-                  :src="getPhotoUrl(photo)"
+                  :src="getPhotoUrl(photo, order, index)"
                   ratio="1"
                   class="rounded-borders"
                   @error="handlePhotoError($event, photo)"
@@ -466,7 +466,7 @@
                     class="col-6 col-sm-4 col-md-3 col-lg-2"
                   >
                     <q-img
-                      :src="getPhotoUrl(photo)"
+                      :src="getPhotoUrl(photo, order, photoIndex)"
                       ratio="1"
                       class="rounded-borders"
                       @error="handlePhotoError($event, photo)"
@@ -569,6 +569,7 @@ import { firebaseService } from '../services/firebaseService.js';
 import { useQuasar } from 'quasar';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import { config } from '../config/environment.js';
 
 export default {
   name: 'OrderList',
@@ -1186,9 +1187,30 @@ export default {
       });
     };
 
+    // Check and convert WebP photos in orders (test environment only)
+    const checkAndConvertWebP = async (order, photoIndex, photo) => {
+      if (!config.isTest) return;
+      
+      const isWebP = photo.url && (photo.url.includes('.webp') || photo.type === 'image/webp');
+      if (isWebP && !photo.convertedFromWebP) {
+        try {
+          await firebaseService.convertWebPPhotoInOrder(order.id, photoIndex, photo);
+          // Reload orders to get updated photo URLs
+          // The real-time listener will update automatically
+        } catch (error) {
+          console.error('Failed to convert WebP photo:', error);
+        }
+      }
+    };
+
     // Get photo URL, filtering out blob URLs (which don't persist)
-    const getPhotoUrl = (photo) => {
+    const getPhotoUrl = (photo, order = null, photoIndex = null) => {
       if (!photo) return '';
+
+      // Check and convert WebP in test environment
+      if (config.isTest && order && photoIndex !== null) {
+        checkAndConvertWebP(order, photoIndex, photo);
+      }
 
       // Filter out blob URLs - they're temporary and won't work
       if (photo.url && photo.url.startsWith('blob:')) {

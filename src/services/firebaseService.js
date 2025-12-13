@@ -21,6 +21,7 @@ import {
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 import { db, storage } from '../firebase/config.js';
+import { config } from '../config/environment.js';
 
 export const DEFAULT_SHIPPING_OPTIONS = [
   {
@@ -64,6 +65,39 @@ let authStateWaitCompleted = false;
 const AUTH_STATE_WAIT_TIME = 100; // ms to wait for Firebase to restore auth state (reduced from 500ms for faster uploads)
 
 class FirebaseService {
+  // Convert WebP image to JPG (test environment only)
+  async convertWebPToJPG(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to convert WebP to JPG'));
+              return;
+            }
+            const jpgFile = new File(
+              [blob],
+              file.name.replace(/\.webp$/i, '.jpg'),
+              { type: 'image/jpeg' }
+            );
+            resolve(jpgFile);
+          },
+          'image/jpeg',
+          0.92 // Quality: 0.92 for good balance
+        );
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   // Upload photos to Firebase Storage with progress tracking
   async uploadPhotos(photos, onProgress = null) {
     // Ensure we have an auth context for Storage rules (request.auth != null)
@@ -135,9 +169,22 @@ class FirebaseService {
 
     // Upload all photos in parallel for much faster uploads
     const uploadPromises = photos.map(async (photo, i) => {
+      // Convert WebP to JPG in test environment
+      let fileToUpload = photo;
+      if (config.isTest && photo.type === 'image/webp') {
+        console.log(`Converting WebP to JPG: ${photo.name}`);
+        try {
+          fileToUpload = await this.convertWebPToJPG(photo);
+          console.log(`Converted ${photo.name} to ${fileToUpload.name}`);
+        } catch (error) {
+          console.error('Failed to convert WebP to JPG, using original:', error);
+          // Continue with original file if conversion fails
+        }
+      }
+
       // Sanitize filename to avoid issues with special characters
       // Replace problematic characters but keep the original name for display
-      const sanitizedName = photo.name
+      const sanitizedName = fileToUpload.name
         .replace(/[#\[\]()]/g, '_') // Replace special chars that can cause issues
         .replace(/\s+/g, '_'); // Replace spaces with underscores
       const fileName = `orders/${timestamp}_${i}_${sanitizedName}`;
@@ -155,16 +202,16 @@ class FirebaseService {
 
         // Provide metadata to avoid multipart quirks and ensure proper Content-Type
         const metadata = {
-          contentType: photo.type || 'image/jpeg',
+          contentType: fileToUpload.type || 'image/jpeg',
           cacheControl: 'public,max-age=3600',
         };
 
-        const uploadTask = uploadBytesResumable(storageRef, photo, metadata);
+        const uploadTask = uploadBytesResumable(storageRef, fileToUpload, metadata);
 
         // Initialize progress tracking for this photo
         progressMap.set(i, {
           uploaded: 0,
-          total: photo.size || 0,
+          total: fileToUpload.size || 0,
           completed: false,
         });
         let lastProgressUpdate = Date.now();
@@ -202,7 +249,7 @@ class FirebaseService {
 
                   console.log(
                     `📤 Photo ${i + 1}/${photos.length} (${
-                      photo.name
+                      fileToUpload.name
                     }): ${totalMB.toFixed(
                       2
                     )} MB uploaded in ${elapsedSeconds.toFixed(
@@ -223,7 +270,7 @@ class FirebaseService {
               // Mark as completed
               const uploadEndTime = Date.now();
               const uploadDuration = (uploadEndTime - uploadStartTime) / 1000;
-              const totalMB = (photo.size || 0) / 1024 / 1024;
+              const totalMB = (fileToUpload.size || 0) / 1024 / 1024;
               const avgSpeedMBps = totalMB / uploadDuration;
 
               const photoProgress = progressMap.get(i);
@@ -235,7 +282,7 @@ class FirebaseService {
 
               console.log(
                 `✅ Photo ${i + 1}/${photos.length} (${
-                  photo.name
+                  fileToUpload.name
                 }) completed: ${totalMB.toFixed(
                   2
                 )} MB in ${uploadDuration.toFixed(
@@ -251,11 +298,11 @@ class FirebaseService {
         console.log(`Photo ${i + 1} uploaded successfully`);
 
         return {
-          name: photo.name,
+          name: fileToUpload.name,
           url: downloadURL,
           fileName: fileName,
-          size: photo.size,
-          type: photo.type,
+          size: fileToUpload.size,
+          type: fileToUpload.type,
         };
       } catch (error) {
         console.error(`Error uploading photo ${i + 1}:`, error);
@@ -285,6 +332,84 @@ class FirebaseService {
     }
 
     return uploadedPhotos;
+  }
+
+  // Convert existing WebP image to JPG and update order (test environment only)
+  async convertWebPPhotoInOrder(orderId, photoIndex, photo) {
+    if (!config.isTest) {
+      return null; // Only in test environment
+    }
+
+    // Check if photo is WebP
+    const isWebP = photo.url && (photo.url.includes('.webp') || photo.type === 'image/webp');
+    if (!isWebP) {
+      return null; // Not a WebP image
+    }
+
+    try {
+      console.log(`Converting WebP photo in order ${orderId}: ${photo.name || photoIndex}`);
+      
+      // Fetch the WebP image
+      const response = await fetch(photo.url);
+      const blob = await response.blob();
+      const webpFile = new File([blob], photo.name || `photo_${photoIndex}.webp`, { type: 'image/webp' });
+      
+      // Convert to JPG
+      const jpgFile = await this.convertWebPToJPG(webpFile);
+      
+      // Upload JPG to Firebase Storage
+      const timestamp = Date.now();
+      const sanitizedName = jpgFile.name.replace(/[#\[\]()]/g, '_').replace(/\s+/g, '_');
+      const fileName = `orders/${timestamp}_${photoIndex}_${sanitizedName}`;
+      const storageRef = ref(storage, fileName);
+      
+      const metadata = {
+        contentType: 'image/jpeg',
+        cacheControl: 'public,max-age=3600',
+      };
+      
+      await uploadBytes(storageRef, jpgFile, metadata);
+      const downloadURL = await getDownloadURL(storageRef);
+      
+      // Update order in Firestore
+      const orderRef = doc(db, 'orders', orderId);
+      const orderDoc = await getDoc(orderRef);
+      
+      if (orderDoc.exists()) {
+        const orderData = orderDoc.data();
+        const updatedPhotos = [...(orderData.photos || [])];
+        
+        // Update the photo at the specified index
+        if (updatedPhotos[photoIndex]) {
+          updatedPhotos[photoIndex] = {
+            ...updatedPhotos[photoIndex],
+            url: downloadURL,
+            fileName: fileName,
+            name: jpgFile.name,
+            type: 'image/jpeg',
+            size: jpgFile.size,
+            convertedFromWebP: true,
+          };
+          
+          await updateDoc(orderRef, {
+            photos: updatedPhotos,
+          });
+          
+          console.log(`✅ Converted and updated photo ${photoIndex} in order ${orderId}`);
+          return {
+            url: downloadURL,
+            fileName: fileName,
+            name: jpgFile.name,
+            type: 'image/jpeg',
+          };
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error(`Failed to convert WebP photo in order ${orderId}:`, error);
+      return null;
+    }
   }
 
   // Save order to Firestore
