@@ -357,8 +357,29 @@ export default {
         return; // Can't zoom if dimensions not available
       }
 
-      // Calculate scale so image touches all four sides of the blue inner square
-      const newScale = calculateAutoScale(dimensions.width, dimensions.height);
+      const containerSize = INNER_SQUARE_SIZE_PX;
+      const imgWidth = dimensions.width;
+      const imgHeight = dimensions.height;
+      
+      // Calculate what the displayed size would be with object-fit: contain
+      // (image is 100% width/height of container, scaled to fit)
+      const aspectRatio = imgWidth / imgHeight;
+      let displayedWidth, displayedHeight;
+      
+      if (aspectRatio > 1) {
+        // Landscape: width fills container
+        displayedWidth = containerSize;
+        displayedHeight = containerSize / aspectRatio;
+      } else {
+        // Portrait: height fills container
+        displayedWidth = containerSize * aspectRatio;
+        displayedHeight = containerSize;
+      }
+      
+      // Calculate scale needed to make displayed image fill the square (cover behavior)
+      const scaleX = containerSize / displayedWidth;
+      const scaleY = containerSize / displayedHeight;
+      const newScale = Math.max(scaleX, scaleY);
 
       // Update transform with new scale, reset position to center
       updateTransformByKey(key, {
