@@ -846,6 +846,8 @@ export default {
       resetColorSettings,
       handlePrint,
       handleImageLoad,
+      getAutoScaleMode,
+      toggleAutoScale,
     };
   },
 };
