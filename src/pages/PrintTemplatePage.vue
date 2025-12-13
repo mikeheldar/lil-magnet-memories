@@ -344,7 +344,7 @@ export default {
       }
     };
 
-    // Auto zoom to fill square (no whitespace)
+    // Auto zoom to fill square - zooms until image touches all four blue sides (no whitespace)
     const autoZoom = () => {
       if (!selectedPhotoKey.value) {
         return;
@@ -357,10 +357,10 @@ export default {
         return; // Can't zoom if dimensions not available
       }
 
-      // Calculate scale to fill square (cover behavior - no whitespace)
+      // Calculate scale so image touches all four sides of the blue inner square
       const newScale = calculateAutoScale(dimensions.width, dimensions.height);
 
-      // Update transform with new scale, reset position
+      // Update transform with new scale, reset position to center
       updateTransformByKey(key, {
         scale: newScale,
         x: 0,
