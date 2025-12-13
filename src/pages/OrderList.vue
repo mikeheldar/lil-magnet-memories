@@ -1198,12 +1198,19 @@ export default {
         photo._converting = true;
 
         try {
-          await firebaseService.convertWebPPhotoInOrder(order.id, photoIndex, photo);
-          // Reload orders to get updated photo URLs
-          // The real-time listener will update automatically
+          const result = await firebaseService.convertWebPPhotoInOrder(order.id, photoIndex, photo);
+          if (result) {
+            console.log(`Successfully converted WebP photo ${photoIndex} in order ${order.id}`);
+            // Reload orders to get updated photo URLs
+            // The real-time listener will update automatically
+          } else {
+            console.log(`Conversion skipped or failed for photo ${photoIndex} in order ${order.id}`);
+          }
         } catch (error) {
-          console.error('Failed to convert WebP photo:', error);
-          // Remove flag on error so we can retry later if needed
+          console.warn('Failed to convert WebP photo (non-critical):', error);
+          // Don't remove flag - conversion failed, don't retry
+        } finally {
+          // Always remove flag after attempt
           photo._converting = false;
         }
       }

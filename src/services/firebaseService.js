@@ -142,7 +142,7 @@ class FirebaseService {
         resolved = true;
         clearTimeout(timeout);
         URL.revokeObjectURL(objectUrl);
-        
+
         // Try to get more specific error info
         const errorMsg = error?.message || error?.type || 'Unknown error';
         const errorDetails = {
@@ -151,9 +151,9 @@ class FirebaseService {
           fileType: file.type || 'unknown',
           fileName: file.name || 'unknown',
         };
-        
+
         console.error('Image load error details:', errorDetails);
-        
+
         // Check if file might be corrupted or invalid
         if (file.size === 0) {
           reject(new Error('File is empty'));
@@ -455,21 +455,33 @@ class FirebaseService {
           mimeType = 'image/webp'; // Default assumption for conversion
         }
       }
-      
-      const webpFile = new File([blob], photo.name || `photo_${photoIndex}.webp`, { 
+
+      const webpFile = new File([blob], photo.name || `photo_${photoIndex}.webp`, {
         type: mimeType
       });
-      
+
       console.log(`Converting WebP file: ${webpFile.name}, size: ${webpFile.size} bytes, type: ${webpFile.type}, original blob type: ${blob.type}`);
-      
+
       // Verify the blob has actual data
       if (webpFile.size < 100) {
         console.error('File too small, might be corrupted');
         return null;
       }
 
-      // Convert to JPG
-      const jpgFile = await this.convertWebPToJPG(webpFile);
+      // Convert to JPG - if conversion fails, return null (don't throw)
+      let jpgFile;
+      try {
+        jpgFile = await this.convertWebPToJPG(webpFile);
+      } catch (conversionError) {
+        console.warn(`Failed to convert WebP to JPG for photo ${photoIndex} in order ${orderId}:`, conversionError);
+        // Return null instead of throwing - conversion is optional
+        return null;
+      }
+      
+      if (!jpgFile) {
+        console.warn(`Conversion returned null for photo ${photoIndex} in order ${orderId}`);
+        return null;
+      }
 
       // Upload JPG to Firebase Storage
       const timestamp = Date.now();
