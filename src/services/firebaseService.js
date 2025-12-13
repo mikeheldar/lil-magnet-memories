@@ -153,6 +153,13 @@ class FirebaseService {
         };
 
         console.error('Image load error details:', errorDetails);
+        console.error('Object URL:', objectUrl);
+        console.error('File details:', {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: file.lastModified,
+        });
 
         // Check if file might be corrupted or invalid
         if (file.size === 0) {
@@ -160,12 +167,19 @@ class FirebaseService {
         } else if (!file.type || (!file.type.includes('image') && !file.type.includes('webp'))) {
           reject(new Error(`Invalid file type: ${file.type}. File might not be a valid image.`));
         } else {
-          reject(new Error(`Failed to load image for conversion: ${errorMsg}. File size: ${file.size} bytes, type: ${file.type || 'unknown'}`));
+          // The blob might be corrupted or the browser can't decode WebP from blob URL
+          // This is a known issue with some WebP files
+          reject(new Error(`Browser cannot decode WebP image. This may be a browser compatibility issue or corrupted file. File size: ${file.size} bytes, type: ${file.type || 'unknown'}`));
         }
       };
 
       // Set source after setting up handlers
-      img.src = objectUrl;
+      // Add a small delay to ensure blob URL is ready
+      setTimeout(() => {
+        if (!resolved) {
+          img.src = objectUrl;
+        }
+      }, 10);
     });
   }
 
