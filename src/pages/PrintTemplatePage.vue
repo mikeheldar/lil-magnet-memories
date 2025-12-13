@@ -269,41 +269,62 @@ export default {
     // Color settings for photos
     const photoColorSettings = ref({}); // key -> { brightness, contrast, saturation }
 
+    // Image dimensions storage: key -> { width, height }
+    const photoDimensions = ref({});
+
+    // Auto-scale mode tracking: key -> boolean (true = auto-scale/cover, false = normal/contain)
+    const photoAutoScaleMode = ref({});
+
     // Get unique photo identifier
     const getPhotoKey = (photo) => {
       return photo.url || photo.name || 'unknown';
     };
 
-    // Calculate initial scale to fill container by scaling on short dimension
-    const calculateInitialScale = (imgWidth, imgHeight) => {
-      // Container is square with size INNER_SQUARE_SIZE_PX
+    // Calculate scale for normal mode (contain - fits long dimension, whitespace on short)
+    const calculateNormalScale = (imgWidth, imgHeight) => {
       const containerSize = INNER_SQUARE_SIZE_PX;
-      // Calculate scale for each dimension
       const scaleX = containerSize / imgWidth;
       const scaleY = containerSize / imgHeight;
-      // Scale based on short dimension to fill the square
-      // For portrait (width < height): scale to fill width
-      // For landscape (height < width): scale to fill height
-      return imgWidth < imgHeight ? scaleX : scaleY;
+      // Use smaller scale to fit entire image (contain behavior)
+      return Math.min(scaleX, scaleY);
     };
 
-    // Handle image load to set initial scale
+    // Calculate scale for auto-scale mode (cover - fills short dimension, crops long)
+    const calculateAutoScale = (imgWidth, imgHeight) => {
+      const containerSize = INNER_SQUARE_SIZE_PX;
+      const scaleX = containerSize / imgWidth;
+      const scaleY = containerSize / imgHeight;
+      // Use larger scale to fill container (cover behavior)
+      return Math.max(scaleX, scaleY);
+    };
+
+    // Handle image load to set initial scale and store dimensions
     const handleImageLoad = (event, photo) => {
       const img = event.target;
       const key = getPhotoKey(photo);
+      const naturalWidth = img.naturalWidth;
+      const naturalHeight = img.naturalHeight;
+
+      // Store dimensions for later use
+      if (naturalWidth > 0 && naturalHeight > 0) {
+        photoDimensions.value[key] = {
+          width: naturalWidth,
+          height: naturalHeight,
+        };
+      }
 
       // Only set initial scale if transform doesn't exist yet (first load)
       if (!photoTransforms.value[key]) {
-        const naturalWidth = img.naturalWidth;
-        const naturalHeight = img.naturalHeight;
-
         if (naturalWidth > 0 && naturalHeight > 0) {
-          const initialScale = calculateInitialScale(naturalWidth, naturalHeight);
+          // Default to normal mode (contain)
+          const initialScale = calculateNormalScale(naturalWidth, naturalHeight);
           photoTransforms.value[key] = {
             scale: initialScale,
             x: 0,
             y: 0,
           };
+          // Default to normal mode (false = normal/contain)
+          photoAutoScaleMode.value[key] = false;
         } else {
           // Fallback if dimensions not available
           photoTransforms.value[key] = {
@@ -311,8 +332,48 @@ export default {
             x: 0,
             y: 0,
           };
+          photoAutoScaleMode.value[key] = false;
         }
       }
+    };
+
+    // Get auto-scale mode for selected photo
+    const getAutoScaleMode = () => {
+      if (!selectedPhotoKey.value) {
+        return false;
+      }
+      return photoAutoScaleMode.value[selectedPhotoKey.value] || false;
+    };
+
+    // Toggle auto-scale mode for selected photo
+    const toggleAutoScale = () => {
+      if (!selectedPhotoKey.value) {
+        return;
+      }
+
+      const key = selectedPhotoKey.value;
+      const dimensions = photoDimensions.value[key];
+
+      if (!dimensions) {
+        return; // Can't toggle if dimensions not available
+      }
+
+      // Toggle the mode
+      const currentMode = photoAutoScaleMode.value[key] || false;
+      const newMode = !currentMode;
+      photoAutoScaleMode.value[key] = newMode;
+
+      // Recalculate scale based on new mode
+      const newScale = newMode
+        ? calculateAutoScale(dimensions.width, dimensions.height)
+        : calculateNormalScale(dimensions.width, dimensions.height);
+
+      // Update transform with new scale, reset position
+      updateTransformByKey(key, {
+        scale: newScale,
+        x: 0,
+        y: 0,
+      });
     };
 
     // Initialize transform for a photo if not exists
