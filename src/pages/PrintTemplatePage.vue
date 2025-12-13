@@ -1059,15 +1059,15 @@ export default {
   }
 
   .border-text-top {
-    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 5));
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 3.8));
     left: 50%;
-    transform: translate(-50%);
+    transform: translate(-50%) rotate(180deg);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
 
   .border-text-bottom {
-    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 5);
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
     transform: translate(-50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
@@ -1075,18 +1075,18 @@ export default {
   }
 
   .border-text-left {
-    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
-    top: 70%;
-    transform: translateY(-50%) rotate(-90deg);
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
+    top: 30%;
+    transform: translateY(-50%) rotate(90deg);
     transform-origin: left;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: left;
   }
 
   .border-text-right {
-    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
-    top: 70%;
-    transform: translateY(-50%) rotate(90deg);
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
+    top: 30%;
+    transform: translateY(-50%) rotate(-90deg);
     transform-origin: right;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: right;
@@ -1289,15 +1289,15 @@ export default {
   }
 
   .border-text-top {
-    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 5));
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 3.8));
     left: 50%;
-    transform: translate(-50%);
+    transform: translate(-50%) rotate(180deg);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
 
   .border-text-bottom {
-    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 5);
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
     transform: translate(-50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
@@ -1305,18 +1305,18 @@ export default {
   }
 
   .border-text-left {
-    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
-    top: 70%;
-    transform: translateY(-50%) rotate(-90deg);
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
+    top: 30%;
+    transform: translateY(-50%) rotate(90deg);
     transform-origin: left;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: left;
   }
 
   .border-text-right {
-    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
-    top: 70%;
-    transform: translateY(-50%) rotate(90deg);
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
+    top: 30%;
+    transform: translateY(-50%) rotate(-90deg);
     transform-origin: right;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: right;
