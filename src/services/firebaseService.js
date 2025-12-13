@@ -69,32 +69,47 @@ class FirebaseService {
   async convertWebPToJPG(file) {
     return new Promise((resolve, reject) => {
       const img = new Image();
+      img.crossOrigin = 'anonymous'; // Handle CORS
+      
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Failed to convert WebP to JPG'));
-              return;
-            }
-            const jpgFile = new File(
-              [blob],
-              file.name.replace(/\.webp$/i, '.jpg'),
-              { type: 'image/jpeg' }
-            );
-            resolve(jpgFile);
-          },
-          'image/jpeg',
-          0.92 // Quality: 0.92 for good balance
-        );
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Failed to convert WebP to JPG - canvas conversion failed'));
+                return;
+              }
+              const jpgFile = new File(
+                [blob],
+                file.name.replace(/\.webp$/i, '.jpg'),
+                { type: 'image/jpeg' }
+              );
+              resolve(jpgFile);
+            },
+            'image/jpeg',
+            0.92 // Quality: 0.92 for good balance
+          );
+        } catch (error) {
+          reject(new Error(`Failed to convert WebP to JPG: ${error.message}`));
+        }
       };
-      img.onerror = reject;
-      img.src = URL.createObjectURL(file);
+      
+      img.onerror = (error) => {
+        reject(new Error(`Failed to load image for conversion: ${error.message || 'Unknown error'}`));
+      };
+      
+      // Create object URL or use file directly
+      if (file instanceof File || file instanceof Blob) {
+        img.src = URL.createObjectURL(file);
+      } else {
+        reject(new Error('Invalid file type for conversion'));
+      }
     });
   }
 
@@ -348,37 +363,52 @@ class FirebaseService {
 
     try {
       console.log(`Converting WebP photo in order ${orderId}: ${photo.name || photoIndex}`);
+
+      // Fetch the WebP image with CORS handling
+      const response = await fetch(photo.url, {
+        mode: 'cors',
+        credentials: 'omit',
+      });
       
-      // Fetch the WebP image
-      const response = await fetch(photo.url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
-      const webpFile = new File([blob], photo.name || `photo_${photoIndex}.webp`, { type: 'image/webp' });
       
+      // Verify it's actually a WebP image
+      if (!blob.type.includes('webp') && !photo.url.includes('.webp')) {
+        console.log('Image is not WebP, skipping conversion');
+        return null;
+      }
+      
+      const webpFile = new File([blob], photo.name || `photo_${photoIndex}.webp`, { type: 'image/webp' });
+
       // Convert to JPG
       const jpgFile = await this.convertWebPToJPG(webpFile);
-      
+
       // Upload JPG to Firebase Storage
       const timestamp = Date.now();
       const sanitizedName = jpgFile.name.replace(/[#\[\]()]/g, '_').replace(/\s+/g, '_');
       const fileName = `orders/${timestamp}_${photoIndex}_${sanitizedName}`;
       const storageRef = ref(storage, fileName);
-      
+
       const metadata = {
         contentType: 'image/jpeg',
         cacheControl: 'public,max-age=3600',
       };
-      
+
       await uploadBytes(storageRef, jpgFile, metadata);
       const downloadURL = await getDownloadURL(storageRef);
-      
+
       // Update order in Firestore
       const orderRef = doc(db, 'orders', orderId);
       const orderDoc = await getDoc(orderRef);
-      
+
       if (orderDoc.exists()) {
         const orderData = orderDoc.data();
         const updatedPhotos = [...(orderData.photos || [])];
-        
+
         // Update the photo at the specified index
         if (updatedPhotos[photoIndex]) {
           updatedPhotos[photoIndex] = {
@@ -390,11 +420,11 @@ class FirebaseService {
             size: jpgFile.size,
             convertedFromWebP: true,
           };
-          
+
           await updateDoc(orderRef, {
             photos: updatedPhotos,
           });
-          
+
           console.log(`✅ Converted and updated photo ${photoIndex} in order ${orderId}`);
           return {
             url: downloadURL,
@@ -404,7 +434,7 @@ class FirebaseService {
           };
         }
       }
-      
+
       return null;
     } catch (error) {
       console.error(`Failed to convert WebP photo in order ${orderId}:`, error);
