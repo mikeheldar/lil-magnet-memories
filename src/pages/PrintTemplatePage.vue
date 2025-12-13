@@ -296,12 +296,12 @@ export default {
       return Math.min(scaleX, scaleY);
     };
 
-    // Calculate scale for auto-scale mode (cover - fills short dimension, crops long)
+    // Calculate scale to fill square completely (touches all four sides, no whitespace)
     const calculateAutoScale = (imgWidth, imgHeight) => {
       const containerSize = INNER_SQUARE_SIZE_PX;
       const scaleX = containerSize / imgWidth;
       const scaleY = containerSize / imgHeight;
-      // Use larger scale to fill container (cover behavior)
+      // Use larger scale to ensure image touches all four sides of the blue inner square
       return Math.max(scaleX, scaleY);
     };
 
@@ -344,16 +344,8 @@ export default {
       }
     };
 
-    // Get auto-scale mode for selected photo
-    const getAutoScaleMode = () => {
-      if (!selectedPhotoKey.value) {
-        return false;
-      }
-      return photoAutoScaleMode.value[selectedPhotoKey.value] || false;
-    };
-
-    // Toggle auto-scale mode for selected photo
-    const toggleAutoScale = () => {
+    // Auto zoom to fill square (no whitespace)
+    const autoZoom = () => {
       if (!selectedPhotoKey.value) {
         return;
       }
@@ -362,18 +354,11 @@ export default {
       const dimensions = photoDimensions.value[key];
 
       if (!dimensions) {
-        return; // Can't toggle if dimensions not available
+        return; // Can't zoom if dimensions not available
       }
 
-      // Toggle the mode
-      const currentMode = photoAutoScaleMode.value[key] || false;
-      const newMode = !currentMode;
-      photoAutoScaleMode.value[key] = newMode;
-
-      // Recalculate scale based on new mode
-      const newScale = newMode
-        ? calculateAutoScale(dimensions.width, dimensions.height)
-        : calculateNormalScale(dimensions.width, dimensions.height);
+      // Calculate scale to fill square (cover behavior - no whitespace)
+      const newScale = calculateAutoScale(dimensions.width, dimensions.height);
 
       // Update transform with new scale, reset position
       updateTransformByKey(key, {
@@ -853,8 +838,7 @@ export default {
       resetColorSettings,
       handlePrint,
       handleImageLoad,
-      getAutoScaleMode,
-      toggleAutoScale,
+      autoZoom,
     };
   },
 };
