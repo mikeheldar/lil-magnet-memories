@@ -145,7 +145,23 @@ class FirebaseService {
         
         // Try to get more specific error info
         const errorMsg = error?.message || error?.type || 'Unknown error';
-        reject(new Error(`Failed to load image for conversion: ${errorMsg}. File size: ${file.size} bytes, type: ${file.type || 'unknown'}`));
+        const errorDetails = {
+          message: errorMsg,
+          fileSize: file.size,
+          fileType: file.type || 'unknown',
+          fileName: file.name || 'unknown',
+        };
+        
+        console.error('Image load error details:', errorDetails);
+        
+        // Check if file might be corrupted or invalid
+        if (file.size === 0) {
+          reject(new Error('File is empty'));
+        } else if (!file.type || (!file.type.includes('image') && !file.type.includes('webp'))) {
+          reject(new Error(`Invalid file type: ${file.type}. File might not be a valid image.`));
+        } else {
+          reject(new Error(`Failed to load image for conversion: ${errorMsg}. File size: ${file.size} bytes, type: ${file.type || 'unknown'}`));
+        }
       };
 
       // Set source after setting up handlers
@@ -429,12 +445,28 @@ class FirebaseService {
         return null;
       }
 
-      // Ensure proper MIME type
+      // Ensure proper MIME type - sometimes Firebase Storage doesn't set the correct type
+      let mimeType = blob.type;
+      if (!mimeType || (!mimeType.includes('webp') && !mimeType.includes('image'))) {
+        // Try to detect from URL or default to webp
+        if (photo.url.includes('.webp')) {
+          mimeType = 'image/webp';
+        } else {
+          mimeType = 'image/webp'; // Default assumption for conversion
+        }
+      }
+      
       const webpFile = new File([blob], photo.name || `photo_${photoIndex}.webp`, { 
-        type: blob.type || 'image/webp' 
+        type: mimeType
       });
       
-      console.log(`Converting WebP file: ${webpFile.name}, size: ${webpFile.size} bytes, type: ${webpFile.type}`);
+      console.log(`Converting WebP file: ${webpFile.name}, size: ${webpFile.size} bytes, type: ${webpFile.type}, original blob type: ${blob.type}`);
+      
+      // Verify the blob has actual data
+      if (webpFile.size < 100) {
+        console.error('File too small, might be corrupted');
+        return null;
+      }
 
       // Convert to JPG
       const jpgFile = await this.convertWebPToJPG(webpFile);
