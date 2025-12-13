@@ -225,6 +225,7 @@
                     :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
                     class="print-image"
                     draggable="false"
+                    @load="handleImageLoad($event, page[gridIndex])"
                   />
                 </div>
               </div>
@@ -742,6 +743,7 @@ export default {
       updateColorSettings,
       resetColorSettings,
       handlePrint,
+      handleImageLoad,
     };
   },
 };
