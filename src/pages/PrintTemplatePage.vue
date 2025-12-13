@@ -114,9 +114,9 @@
               <q-btn
                 dense
                 color="primary"
-                :icon="getAutoScaleMode() ? 'fit_screen' : 'crop_free'"
-                :label="getAutoScaleMode() ? 'Auto Scale (Cover)' : 'Normal (Contain)'"
-                @click="toggleAutoScale"
+                icon="zoom_in"
+                label="Auto Zoom"
+                @click="autoZoom"
                 :disable="!selectedPhotoKey"
               />
             </div>
@@ -281,9 +281,6 @@ export default {
 
     // Image dimensions storage: key -> { width, height }
     const photoDimensions = ref({});
-
-    // Auto-scale mode tracking: key -> boolean (true = auto-scale/cover, false = normal/contain)
-    const photoAutoScaleMode = ref({});
 
     // Get unique photo identifier
     const getPhotoKey = (photo) => {
