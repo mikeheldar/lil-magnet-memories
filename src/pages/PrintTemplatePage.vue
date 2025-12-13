@@ -110,6 +110,16 @@
                 :disable="!selectedPhotoKey"
               />
             </div>
+            <div class="controls-row q-mt-sm">
+              <q-btn
+                dense
+                color="primary"
+                icon="zoom_in"
+                label="Auto Zoom"
+                @click="autoZoom"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
           </div>
           <!-- Color Controls -->
           <div class="controls-group q-mt-md" style="border-top: 1px solid #d0d0d0; padding-top: 0.75rem;">
@@ -225,6 +235,7 @@
                     :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
                     class="print-image"
                     draggable="false"
+                    @load="handleImageLoad($event, page[gridIndex])"
                   />
                 </div>
               </div>
@@ -268,9 +279,114 @@ export default {
     // Color settings for photos
     const photoColorSettings = ref({}); // key -> { brightness, contrast, saturation }
 
+    // Image dimensions storage: key -> { width, height }
+    const photoDimensions = ref({});
+
     // Get unique photo identifier
     const getPhotoKey = (photo) => {
       return photo.url || photo.name || 'unknown';
+    };
+
+    // Calculate scale for normal mode (contain - fits long dimension, whitespace on short)
+    const calculateNormalScale = (imgWidth, imgHeight) => {
+      const containerSize = INNER_SQUARE_SIZE_PX;
+      const scaleX = containerSize / imgWidth;
+      const scaleY = containerSize / imgHeight;
+      // Use smaller scale to fit entire image (contain behavior)
+      return Math.min(scaleX, scaleY);
+    };
+
+    // Calculate scale to fill square completely (touches all four sides, no whitespace)
+    const calculateAutoScale = (imgWidth, imgHeight) => {
+      const containerSize = INNER_SQUARE_SIZE_PX;
+      const scaleX = containerSize / imgWidth;
+      const scaleY = containerSize / imgHeight;
+      // Use larger scale to ensure image touches all four sides of the blue inner square
+      return Math.max(scaleX, scaleY);
+    };
+
+    // Handle image load to set initial scale and store dimensions
+    const handleImageLoad = (event, photo) => {
+      const img = event.target;
+      const key = getPhotoKey(photo);
+      const naturalWidth = img.naturalWidth;
+      const naturalHeight = img.naturalHeight;
+
+      // Store dimensions for later use
+      if (naturalWidth > 0 && naturalHeight > 0) {
+        photoDimensions.value[key] = {
+          width: naturalWidth,
+          height: naturalHeight,
+        };
+      }
+
+      // Only set initial scale if transform doesn't exist yet (first load)
+      if (!photoTransforms.value[key]) {
+        if (naturalWidth > 0 && naturalHeight > 0) {
+          // Default to normal mode (contain)
+          const initialScale = calculateNormalScale(naturalWidth, naturalHeight);
+          photoTransforms.value[key] = {
+            scale: initialScale,
+            x: 0,
+            y: 0,
+          };
+          // Default to normal mode (false = normal/contain)
+          photoAutoScaleMode.value[key] = false;
+        } else {
+          // Fallback if dimensions not available
+          photoTransforms.value[key] = {
+            scale: 1,
+            x: 0,
+            y: 0,
+          };
+          photoAutoScaleMode.value[key] = false;
+        }
+      }
+    };
+
+    // Auto zoom to fill square - zooms until image touches all four blue sides (no whitespace)
+    const autoZoom = () => {
+      if (!selectedPhotoKey.value) {
+        return;
+      }
+
+      const key = selectedPhotoKey.value;
+      const dimensions = photoDimensions.value[key];
+
+      if (!dimensions) {
+        return; // Can't zoom if dimensions not available
+      }
+
+      const containerSize = INNER_SQUARE_SIZE_PX;
+      const imgWidth = dimensions.width;
+      const imgHeight = dimensions.height;
+
+      // Calculate what the displayed size would be with object-fit: contain
+      // (image is 100% width/height of container, scaled to fit)
+      const aspectRatio = imgWidth / imgHeight;
+      let displayedWidth, displayedHeight;
+
+      if (aspectRatio > 1) {
+        // Landscape: width fills container
+        displayedWidth = containerSize;
+        displayedHeight = containerSize / aspectRatio;
+      } else {
+        // Portrait: height fills container
+        displayedWidth = containerSize * aspectRatio;
+        displayedHeight = containerSize;
+      }
+
+      // Calculate scale needed to make displayed image fill the square (cover behavior)
+      const scaleX = containerSize / displayedWidth;
+      const scaleY = containerSize / displayedHeight;
+      const newScale = Math.max(scaleX, scaleY);
+
+      // Update transform with new scale, reset position to center
+      updateTransformByKey(key, {
+        scale: newScale,
+        x: 0,
+        y: 0,
+      });
     };
 
     // Initialize transform for a photo if not exists
@@ -742,6 +858,8 @@ export default {
       updateColorSettings,
       resetColorSettings,
       handlePrint,
+      handleImageLoad,
+      autoZoom,
     };
   },
 };
@@ -962,15 +1080,15 @@ export default {
   }
 
   .border-text-top {
-    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 5));
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 3.8));
     left: 50%;
-    transform: translate(-50%);
+    transform: translate(-50%) rotate(180deg);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
 
   .border-text-bottom {
-    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 5);
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
     transform: translate(-50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
@@ -978,18 +1096,18 @@ export default {
   }
 
   .border-text-left {
-    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
-    top: 70%;
-    transform: translateY(-50%) rotate(-90deg);
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
+    top: 30%;
+    transform: translateY(-50%) rotate(90deg);
     transform-origin: left;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: left;
   }
 
   .border-text-right {
-    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
-    top: 70%;
-    transform: translateY(-50%) rotate(90deg);
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
+    top: 30%;
+    transform: translateY(-50%) rotate(-90deg);
     transform-origin: right;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: right;
@@ -1192,15 +1310,15 @@ export default {
   }
 
   .border-text-top {
-    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 5));
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 3.8));
     left: 50%;
-    transform: translate(-50%);
+    transform: translate(-50%) rotate(180deg);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: center;
   }
 
   .border-text-bottom {
-    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 5);
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
     left: 50%;
     transform: translate(-50%);
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
@@ -1208,18 +1326,18 @@ export default {
   }
 
   .border-text-left {
-    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
-    top: 70%;
-    transform: translateY(-50%) rotate(-90deg);
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
+    top: 30%;
+    transform: translateY(-50%) rotate(90deg);
     transform-origin: left;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: left;
   }
 
   .border-text-right {
-    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 3);
-    top: 70%;
-    transform: translateY(-50%) rotate(90deg);
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
+    top: 30%;
+    transform: translateY(-50%) rotate(-90deg);
     transform-origin: right;
     width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
     text-align: right;

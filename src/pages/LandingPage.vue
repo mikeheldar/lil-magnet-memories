@@ -1481,7 +1481,7 @@ export default {
   height: auto;
   object-fit: contain;
   border-radius: 20px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 60px rgba(0, 0, 0, 0.15);
   transition: opacity 0.5s ease;
   position: absolute;
   top: 50%;
