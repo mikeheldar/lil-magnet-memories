@@ -110,6 +110,16 @@
                 :disable="!selectedPhotoKey"
               />
             </div>
+            <div class="controls-row q-mt-sm">
+              <q-btn
+                dense
+                color="primary"
+                :icon="getAutoScaleMode() ? 'fit_screen' : 'crop_free'"
+                :label="getAutoScaleMode() ? 'Auto Scale (Cover)' : 'Normal (Contain)'"
+                @click="toggleAutoScale"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
           </div>
           <!-- Color Controls -->
           <div class="controls-group q-mt-md" style="border-top: 1px solid #d0d0d0; padding-top: 0.75rem;">
