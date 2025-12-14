@@ -1436,19 +1436,19 @@ export default {
 .hero-title {
   font-size: clamp(1.2rem, 3vw, 2rem); // Smaller and less prominent
   font-weight: 500; // Lighter weight
-  font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Comic Sans MS', cursive; // Cursive/curved font
-  font-style: italic; // Make text italic
+  font-family: 'Georgia', 'Times New Roman', serif; // Less italic, more elegant
+  font-style: italic; // Keep italic but less pronounced with this font
+  transform: skew(-2deg); // Slight skew for subtle italic effect instead of full italic
   margin: 0 0 1.5rem 0;
   line-height: 1.3;
   color: #2c3e50; // Dark grey-blue for better readability
   // Silver border/outline around the text itself
-  -webkit-text-stroke: 1px rgba(192, 192, 192, 0.6);
-  text-stroke: 1px rgba(192, 192, 192, 0.6);
-  // Light from upper left casting shadow on text
+  -webkit-text-stroke: 1px rgba(192, 192, 192, 0.5);
+  text-stroke: 1px rgba(192, 192, 192, 0.5);
+  // Reduced shadow/blur - lighter and less prominent
   text-shadow:
-    -2px -2px 4px rgba(0, 0, 0, 0.15),
     -1px -1px 2px rgba(0, 0, 0, 0.1),
-    0 2px 4px rgba(255, 255, 255, 0.8);
+    0 1px 2px rgba(255, 255, 255, 0.5);
   white-space: normal;
   text-align: center;
   width: 100%;
