@@ -247,6 +247,13 @@
                       :loading="checkingIn === event.id"
                     />
                     <q-btn
+                      color="primary"
+                      icon="edit"
+                      label="Edit"
+                      size="sm"
+                      @click="openEditEventDialog(event)"
+                    />
+                    <q-btn
                       color="negative"
                       icon="delete"
                       label="Delete"
@@ -335,6 +342,79 @@
       </q-card>
     </q-dialog>
 
+    <!-- Edit Event Dialog -->
+    <q-dialog v-model="showEditEventDialog" persistent>
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">Edit Market Event</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="updateEvent" class="q-gutter-md">
+            <q-input
+              v-model="editingEvent.name"
+              label="Event Name"
+              :rules="[(val) => !!val || 'Event name is required']"
+              filled
+            />
+
+            <q-input
+              v-model="editingEvent.location"
+              label="Location/Place"
+              :rules="[(val) => !!val || 'Location is required']"
+              filled
+            />
+
+            <div class="row q-gutter-md">
+              <div class="col">
+                <q-input
+                  v-model="editingEvent.startDateTime"
+                  type="datetime-local"
+                  label="Event Start Date & Time"
+                  :rules="[(val) => !!val || 'Start date and time is required']"
+                  filled
+                />
+              </div>
+              <div class="col">
+                <q-input
+                  v-model="editingEvent.endDateTime"
+                  type="datetime-local"
+                  label="Event End Date & Time"
+                  :rules="[(val) => !!val || 'End date and time is required']"
+                  filled
+                />
+              </div>
+            </div>
+
+            <q-input
+              v-model="editingEvent.eventLink"
+              label="Event Details Link (Optional)"
+              hint="Add a link to event details, social media post, or website"
+              type="url"
+              filled
+            />
+
+            <q-toggle
+              v-model="editingEvent.isTesting"
+              label="Testing Only (visible to admins only)"
+              color="orange"
+            />
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" @click="cancelEditEvent" />
+          <q-btn
+            type="submit"
+            color="primary"
+            label="Update Event"
+            :loading="creatingEvent"
+            @click.prevent="updateEvent"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <!-- Delete Confirmation Dialog -->
     <q-dialog v-model="showDeleteDialog" persistent>
       <q-card>
@@ -401,13 +481,17 @@ export default {
 
     // Dialog states
     const showCreateEventDialog = ref(false);
+    const showEditEventDialog = ref(false);
     const showDeleteDialog = ref(false);
     const eventToDelete = ref(null);
+    const editingEvent = ref(null);
 
-    // Helper function to get next whole hour
-    const getNextWholeHour = () => {
+    // Helper function to get 15 min increment before current time
+    const getPrevious15MinIncrement = () => {
       const now = new Date();
-      now.setHours(now.getHours() + 1, 0, 0, 0); // Next hour, 00 minutes
+      const minutes = now.getMinutes();
+      const roundedMinutes = Math.floor(minutes / 15) * 15; // Round down to nearest 15 min
+      now.setMinutes(roundedMinutes, 0, 0); // Set to rounded minutes, 0 seconds
       return now;
     };
 
@@ -423,7 +507,7 @@ export default {
 
     // Initialize new event with default date/time
     const initializeNewEvent = () => {
-      const startTime = getNextWholeHour();
+      const startTime = getPrevious15MinIncrement();
       const endTime = new Date(startTime);
       endTime.setHours(endTime.getHours() + 3); // Default 3 hour event
 
@@ -617,7 +701,10 @@ export default {
         const filteredOrders = allOrders.value.filter((order) => {
           // Handle Firebase Timestamp objects
           let orderDate;
-          if (order.submissionDate) {
+          if (order.submissionDateClient) {
+            // Prefer submissionDateClient if available
+            orderDate = new Date(order.submissionDateClient);
+          } else if (order.submissionDate) {
             orderDate = order.submissionDate.toDate
               ? order.submissionDate.toDate()
               : new Date(order.submissionDate);
@@ -628,6 +715,12 @@ export default {
           } else {
             console.log('Order without valid timestamp:', order);
             return false; // Skip orders without valid timestamps
+          }
+
+          // Check if date is valid
+          if (isNaN(orderDate.getTime())) {
+            console.log('Invalid date for order:', order.orderNumber);
+            return false;
           }
 
           const isInRange = orderDate >= eventStart && orderDate <= eventEnd;
@@ -654,7 +747,18 @@ export default {
     const getEventTotalMagnets = (eventId) => {
       const eventOrders = getEventOrders(eventId);
       return eventOrders.reduce((total, order) => {
-        return total + (order.photos?.length || 0);
+        // Handle different order structures
+        if (order.totalMagnets) {
+          return total + order.totalMagnets;
+        } else if (order.photos?.length) {
+          return total + order.photos.length;
+        } else if (order.cartItems) {
+          // Calculate from cart items
+          return order.cartItems.reduce((itemTotal, item) => {
+            return itemTotal + (item.totalMagnets || item.photos?.length || 0);
+          }, 0);
+        }
+        return total;
       }, 0);
     };
 
@@ -760,6 +864,110 @@ export default {
     const cancelCreateEvent = () => {
       showCreateEventDialog.value = false;
       newEvent.value = initializeNewEvent();
+    };
+
+    // Open edit event dialog
+    const openEditEventDialog = (event) => {
+      editingEvent.value = {
+        id: event.id,
+        name: event.name,
+        location: event.location,
+        startDateTime: formatDateTimeLocal(new Date(event.startDateTime)),
+        endDateTime: formatDateTimeLocal(new Date(event.endDateTime)),
+        eventLink: event.eventLink || '',
+        isTesting: event.isTesting || false,
+      };
+      showEditEventDialog.value = true;
+    };
+
+    // Cancel edit event
+    const cancelEditEvent = () => {
+      showEditEventDialog.value = false;
+      editingEvent.value = null;
+    };
+
+    // Update event
+    const updateEvent = async () => {
+      if (
+        !editingEvent.value.name ||
+        !editingEvent.value.location ||
+        !editingEvent.value.startDateTime ||
+        !editingEvent.value.endDateTime
+      ) {
+        try {
+          $q.notify({
+            type: 'negative',
+            message: 'Please fill in all fields',
+            position: 'top',
+          });
+        } catch (error) {
+          console.error('Notification error:', error);
+        }
+        return;
+      }
+
+      // Validate that end time is after start time
+      if (
+        new Date(editingEvent.value.endDateTime) <=
+        new Date(editingEvent.value.startDateTime)
+      ) {
+        try {
+          $q.notify({
+            type: 'negative',
+            message: 'End time must be after start time',
+            position: 'top',
+          });
+        } catch (error) {
+          console.error('Notification error:', error);
+        }
+        return;
+      }
+
+      creatingEvent.value = true;
+      try {
+        // Update event in Firebase
+        const eventData = {
+          name: editingEvent.value.name,
+          location: editingEvent.value.location,
+          startDateTime: editingEvent.value.startDateTime,
+          endDateTime: editingEvent.value.endDateTime,
+          eventLink: editingEvent.value.eventLink || null,
+          isTesting: editingEvent.value.isTesting || false,
+        };
+
+        // Update event in Firebase - real-time listener will update the list automatically
+        await firebaseService.updateMarketEvent(editingEvent.value.id, eventData);
+
+        // Refresh market event service cache
+        await marketEventService.refreshCache();
+
+        try {
+          $q.notify({
+            type: 'positive',
+            message: 'Event updated successfully!',
+            caption: eventData.name,
+            position: 'top',
+          });
+        } catch (error) {
+          console.error('Notification error:', error);
+        }
+
+        cancelEditEvent();
+      } catch (error) {
+        console.error('Error updating event:', error);
+        try {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to update event',
+            caption: error.message || 'An error occurred',
+            position: 'top',
+          });
+        } catch (notifyError) {
+          console.error('Notification error:', notifyError);
+        }
+      } finally {
+        creatingEvent.value = false;
+      }
     };
 
     // Check in to event
@@ -945,8 +1153,10 @@ export default {
       checkingIn,
       deletingEvent,
       showCreateEventDialog,
+      showEditEventDialog,
       showDeleteDialog,
       eventToDelete,
+      editingEvent,
       newEvent,
 
       // Methods
@@ -960,6 +1170,9 @@ export default {
       openCreateEventDialog,
       createEvent,
       cancelCreateEvent,
+      openEditEventDialog,
+      updateEvent,
+      cancelEditEvent,
       checkInToEvent,
       checkOutOfEvent,
       undoCheckOut,

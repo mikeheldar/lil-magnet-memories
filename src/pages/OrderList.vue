@@ -1195,7 +1195,7 @@ export default {
       // Disabled - browser can't decode WebP from blob URLs reliably
       // Conversion still happens on upload, which works fine
       return;
-      
+
       // Original code kept for reference:
       // if (!config.isTest) return;
       // const isWebP = photo.url && (photo.url.includes('.webp') || photo.type === 'image/webp');
