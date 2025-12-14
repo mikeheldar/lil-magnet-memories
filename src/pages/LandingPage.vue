@@ -1242,10 +1242,32 @@ export default {
 
 <style lang="scss" scoped>
 .landing-page {
-  background: #fafafa; // Much whiter
+  background: #ffffff; // Bright white
   background-image:
-    radial-gradient(circle, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-  background-size: 20px 20px;
+    // Plaid pattern - vertical stripes
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 19px,
+      rgba(192, 192, 192, 0.15) 19px,
+      rgba(192, 192, 192, 0.15) 20px
+    ),
+    // Plaid pattern - horizontal stripes
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 19px,
+      rgba(192, 192, 192, 0.15) 19px,
+      rgba(192, 192, 192, 0.15) 20px
+    ),
+    // Plaid pattern - diagonal accent
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 38px,
+      rgba(200, 200, 200, 0.08) 38px,
+      rgba(200, 200, 200, 0.08) 40px
+    );
   min-height: 100vh;
   width: 100%;
   max-width: 100vw;
@@ -1258,10 +1280,32 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 40px 20px 100px 20px;
-  background: #fafafa; // Much whiter
+  background: #ffffff; // Bright white
   background-image:
-    radial-gradient(circle, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-  background-size: 20px 20px;
+    // Plaid pattern - vertical stripes
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 19px,
+      rgba(192, 192, 192, 0.15) 19px,
+      rgba(192, 192, 192, 0.15) 20px
+    ),
+    // Plaid pattern - horizontal stripes
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 19px,
+      rgba(192, 192, 192, 0.15) 19px,
+      rgba(192, 192, 192, 0.15) 20px
+    ),
+    // Plaid pattern - diagonal accent
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 38px,
+      rgba(200, 200, 200, 0.08) 38px,
+      rgba(200, 200, 200, 0.08) 40px
+    );
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
