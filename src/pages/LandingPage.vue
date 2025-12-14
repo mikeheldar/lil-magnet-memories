@@ -1279,7 +1279,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px 100px 20px;
+  padding: 20px 10px 80px 10px; // Reduced padding to bring content closer to edges
   background: #ffffff; // Bright white
   background-image:
     // Light source from upper left
@@ -1340,16 +1340,18 @@ export default {
 }
 
 .hero-logo {
-  max-width: 300px;
-  width: 100%;
+  max-width: 90%; // Bigger, closer to edges
+  width: 90%; // Bigger, closer to edges
   height: auto;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem; // Reduced margin
+  margin-left: auto;
+  margin-right: auto;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 .hero-logo-wide {
-  max-width: 500px;
-  width: 100%;
+  max-width: 90%; // Bigger, closer to edges
+  width: 90%; // Bigger, closer to edges
   display: block;
 }
 
@@ -1482,7 +1484,8 @@ export default {
       filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
               drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
               drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
-      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      // Match header purple gradient
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
       border: 3px solid white;
       color: white;
       overflow: visible; // Ensure button doesn't clip its own shadows
@@ -1510,9 +1513,9 @@ export default {
 }
 
 .easel-container {
-  max-width: 600px; // Increased from 500px
+  max-width: 700px; // Further increased
   width: 100%;
-  height: 700px; // Increased from 600px
+  height: 800px; // Further increased
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1529,7 +1532,7 @@ export default {
 
 .easel-image {
   width: calc(100% - 6px); // Account for border width
-  max-height: calc(700px - 6px); // Increased to match container
+  max-height: calc(800px - 6px); // Increased to match container
   height: auto;
   object-fit: contain;
   border-radius: 17px; // Slightly smaller to account for border
@@ -1580,9 +1583,9 @@ export default {
   }
 
   &.dot-active {
-    background: #667eea; // Use primary color for active dot
-    border-color: #667eea;
-    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+    background: #764ba2; // Use darker purple from header gradient
+    border-color: #764ba2;
+    box-shadow: 0 0 8px rgba(118, 75, 162, 0.6);
   }
 }
 
