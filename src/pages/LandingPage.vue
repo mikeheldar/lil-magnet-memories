@@ -1431,19 +1431,29 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow: visible; // Allow shadows to extend beyond container
 
     .cta-button {
       font-size: 1.3rem;
       font-weight: 600;
       padding: 16px 32px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      // Use filter drop-shadow for natural, unclipped shadows
+      filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25)) 
+              drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
+              drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
       background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
       border: 3px solid white;
       color: white;
+      overflow: visible; // Ensure button doesn't clip its own shadows
+      position: relative; // Allow shadows to extend
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(255, 255, 255, 0.5);
+      // More diffuse, natural shadows on hover
+      filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3)) 
+              drop-shadow(0 12px 50px rgba(0, 0, 0, 0.2))
+              drop-shadow(0 4px 15px rgba(255, 255, 255, 0.15))
+              drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1));
       border-color: rgba(255, 255, 255, 0.9);
     }
   }
