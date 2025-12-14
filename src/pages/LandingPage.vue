@@ -1492,6 +1492,8 @@ export default {
   height: auto;
   object-fit: contain;
   border-radius: 20px;
+  // Add silver border around images
+  border: 3px solid rgba(192, 192, 192, 0.8);
   // Use filter drop-shadow for natural, unclipped shadows that fade smoothly
   filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.12))
           drop-shadow(0 8px 50px rgba(0, 0, 0, 0.08))
