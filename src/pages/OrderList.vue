@@ -1169,7 +1169,7 @@ export default {
                 photos.push(photo);
                 // Use the quantity from photoQuantities array (indexed by photoIndex)
                 // Fallback to photo.quantity, then item.quantities, then 1
-                const quantity = 
+                const quantity =
                   item.photoQuantities?.[photoIndex] ||
                   photo.quantity ||
                   item.quantities?.[photoIndex] ||
