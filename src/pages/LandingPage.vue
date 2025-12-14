@@ -1311,7 +1311,7 @@ export default {
   text-align: center;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible; // Allow shadows from button to extend
   margin-bottom: 0;
 }
 
