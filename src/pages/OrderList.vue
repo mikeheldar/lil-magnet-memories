@@ -1165,10 +1165,16 @@ export default {
           // Extract all photos from custom upload items
           customUploadItems.forEach((item) => {
             if (item.photos && item.photos.length > 0) {
-              item.photos.forEach((photo) => {
+              item.photos.forEach((photo, photoIndex) => {
                 photos.push(photo);
-                // Use the quantity from photoQuantities
-                quantities.push(photo.quantity || 1);
+                // Use the quantity from photoQuantities array (indexed by photoIndex)
+                // Fallback to photo.quantity, then item.quantities, then 1
+                const quantity = 
+                  item.photoQuantities?.[photoIndex] ||
+                  photo.quantity ||
+                  item.quantities?.[photoIndex] ||
+                  1;
+                quantities.push(quantity);
               });
             }
           });
