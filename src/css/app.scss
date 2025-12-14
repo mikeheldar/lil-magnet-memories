@@ -12,25 +12,34 @@
   }
 }
 
-// Layout background - white/cream with same texture pattern
+// Layout background - bright white with silver plaid texture (extends to all pages)
 .q-page-container {
-  background: #faf9f6; // Slight cream color
+  background: #ffffff; // Bright white
   background-image:
+    // Plaid pattern - vertical stripes
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 19px,
+      rgba(192, 192, 192, 0.15) 19px,
+      rgba(192, 192, 192, 0.15) 20px
+    ),
+    // Plaid pattern - horizontal stripes
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 19px,
+      rgba(192, 192, 192, 0.15) 19px,
+      rgba(192, 192, 192, 0.15) 20px
+    ),
+    // Plaid pattern - diagonal accent
     repeating-linear-gradient(
       45deg,
       transparent,
-      transparent 10px,
-      rgba(255, 255, 255, 0.6) 10px,
-      rgba(255, 255, 255, 0.6) 20px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 10px,
-      rgba(0, 0, 0, 0.015) 10px,
-      rgba(0, 0, 0, 0.015) 20px
-    ),
-    #faf9f6; // Slight cream color
+      transparent 38px,
+      rgba(200, 200, 200, 0.08) 38px,
+      rgba(200, 200, 200, 0.08) 40px
+    );
 }
 
 // Mobile-responsive styles
