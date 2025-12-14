@@ -1438,7 +1438,7 @@ export default {
       font-weight: 600;
       padding: 16px 32px;
       // Use filter drop-shadow for natural, unclipped shadows
-      filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25)) 
+      filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
               drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
               drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
       background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
@@ -1450,7 +1450,7 @@ export default {
     &:hover {
       transform: translateY(-2px);
       // More diffuse, natural shadows on hover
-      filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3)) 
+      filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
               drop-shadow(0 12px 50px rgba(0, 0, 0, 0.2))
               drop-shadow(0 4px 15px rgba(255, 255, 255, 0.15))
               drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1));
@@ -1465,7 +1465,7 @@ export default {
   align-items: center;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible; // Allow shadows from easel images to extend
 }
 
 .easel-container {
@@ -1478,6 +1478,7 @@ export default {
   position: relative;
   cursor: pointer;
   user-select: none;
+  overflow: visible; // Allow shadows to extend beyond container
 
   img {
     display: block;
@@ -1491,12 +1492,16 @@ export default {
   height: auto;
   object-fit: contain;
   border-radius: 20px;
-  box-shadow: 0 8px 60px rgba(0, 0, 0, 0.15);
+  // Use filter drop-shadow for natural, unclipped shadows that fade smoothly
+  filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.12))
+          drop-shadow(0 8px 50px rgba(0, 0, 0, 0.08))
+          drop-shadow(0 2px 15px rgba(0, 0, 0, 0.1));
   transition: opacity 0.5s ease;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  overflow: visible; // Ensure shadows can extend
 }
 
 // Carousel dots
