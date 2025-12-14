@@ -23,6 +23,22 @@
   }
 }
 
+// Style q-file upload buttons to match purple gradient
+.q-file {
+  .q-field__control {
+    .q-btn {
+      &[color='primary']:not(.q-btn--flat):not(.q-btn--outline) {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+
+        &:hover {
+          background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+        }
+      }
+    }
+  }
+}
+
 // Layout background - bright white with silver plaid texture (extends to all pages)
 .q-page-container {
   background: #ffffff; // Bright white
