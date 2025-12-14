@@ -1259,8 +1259,7 @@ export default {
       transparent 10px,
       rgba(0, 0, 0, 0.02) 10px,
       rgba(0, 0, 0, 0.02) 20px
-    ),
-    #ffffff; // Bright white base
+    );
   min-height: 100vh;
   width: 100%;
   max-width: 100vw;
@@ -1296,8 +1295,7 @@ export default {
       transparent 10px,
       rgba(0, 0, 0, 0.02) 10px,
       rgba(0, 0, 0, 0.02) 20px
-    ),
-    #ffffff; // Bright white base
+    );
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;

@@ -889,7 +889,7 @@ export default {
   .print-template-page {
     margin: 0 !important;
     padding: 0 !important;
-    background: white !important; // Keep white for print view
+    background: white !important; /* Keep white for print view */
   }
 
   .q-header,
