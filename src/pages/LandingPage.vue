@@ -1487,13 +1487,15 @@ export default {
 }
 
 .easel-image {
-  width: 100%;
-  max-height: 600px;
+  width: calc(100% - 6px); // Account for border width
+  max-height: calc(600px - 6px); // Account for border width
   height: auto;
   object-fit: contain;
-  border-radius: 20px;
-  // Add silver border around images
+  border-radius: 17px; // Slightly smaller to account for border
+  // Add silver border around images with padding to keep image inside
   border: 3px solid rgba(192, 192, 192, 0.8);
+  padding: 2px; // Small padding to ensure image corners stay inside border
+  box-sizing: border-box;
   // Use filter drop-shadow for natural, unclipped shadows that fade smoothly
   filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.12))
           drop-shadow(0 8px 50px rgba(0, 0, 0, 0.08))
@@ -1503,7 +1505,8 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  overflow: visible; // Ensure shadows can extend
+  overflow: hidden; // Clip image to border radius
+  background: white; // Background to show border clearly
 }
 
 // Carousel dots
