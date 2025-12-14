@@ -12,25 +12,25 @@
   }
 }
 
-// Layout background - same texture pattern but lighter white
+// Layout background - white/cream with same texture pattern
 .q-page-container {
-  background: #f8f9fa;
+  background: #faf9f6; // Slight cream color
   background-image:
     repeating-linear-gradient(
       45deg,
       transparent,
       transparent 10px,
-      rgba(255, 255, 255, 0.5) 10px,
-      rgba(255, 255, 255, 0.5) 20px
+      rgba(255, 255, 255, 0.6) 10px,
+      rgba(255, 255, 255, 0.6) 20px
     ),
     repeating-linear-gradient(
       -45deg,
       transparent,
       transparent 10px,
-      rgba(0, 0, 0, 0.01) 10px,
-      rgba(0, 0, 0, 0.01) 20px
+      rgba(0, 0, 0, 0.015) 10px,
+      rgba(0, 0, 0, 0.015) 20px
     ),
-    #f8f9fa;
+    #faf9f6; // Slight cream color
 }
 
 // Mobile-responsive styles
