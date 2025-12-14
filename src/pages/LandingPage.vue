@@ -1434,18 +1434,16 @@ export default {
 }
 
 .hero-title {
-  font-size: clamp(1.5rem, 4vw, 2.8rem);
-  font-weight: 600; // Lighter weight for smoother look
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; // Smoother, rounded system fonts
+  font-size: clamp(1.2rem, 3vw, 2rem); // Smaller and less prominent
+  font-weight: 500; // Lighter weight
+  font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Comic Sans MS', cursive; // Cursive/curved font
   font-style: italic; // Make text italic
   margin: 0 0 1.5rem 0;
-  line-height: 1.2;
+  line-height: 1.3;
   color: #2c3e50; // Dark grey-blue for better readability
-  // Silver border around text
-  border: 2px solid rgba(192, 192, 192, 0.6);
-  border-radius: 20px; // Rounder border
-  padding: 20px 30px; // Padding inside border
-  display: inline-block; // Allow border to wrap text
+  // Silver border/outline around the text itself
+  -webkit-text-stroke: 1px rgba(192, 192, 192, 0.6);
+  text-stroke: 1px rgba(192, 192, 192, 0.6);
   // Light from upper left casting shadow on text
   text-shadow:
     -2px -2px 4px rgba(0, 0, 0, 0.15),
@@ -1453,8 +1451,8 @@ export default {
     0 2px 4px rgba(255, 255, 255, 0.8);
   white-space: normal;
   text-align: center;
-  width: auto;
-  max-width: 90%;
+  width: 100%;
+  max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
