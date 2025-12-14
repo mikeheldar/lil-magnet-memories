@@ -1432,7 +1432,8 @@ export default {
   font-weight: 800;
   margin: 0 0 1.5rem 0;
   line-height: 1.2;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  color: #2c3e50; // Dark grey-blue for better readability
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8); // Light shadow for depth
   white-space: normal;
   text-align: center;
   width: 100%;
@@ -1544,22 +1545,22 @@ export default {
   min-width: 12px;
   min-height: 12px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: rgba(100, 100, 100, 0.6); // Darker grey for visibility
+  border: 2px solid rgba(80, 80, 80, 0.8); // Darker border
   transition: all 0.3s ease;
   cursor: pointer;
   padding: 0;
   margin: 0;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(80, 80, 80, 0.8);
     transform: scale(1.1);
   }
 
   &.dot-active {
-    background: white;
-    border-color: white;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+    background: #667eea; // Use primary color for active dot
+    border-color: #667eea;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
   }
 }
 
