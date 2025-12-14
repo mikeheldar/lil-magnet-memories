@@ -63,7 +63,7 @@
               Start Creating Magnets
             </q-btn>
 
-            <div class="text-caption text-white q-mt-md">
+            <div class="text-caption text-silver-dark q-mt-md">
               No sign-in required • Upload photos and specify quantities
             </div>
           </div>
@@ -1323,7 +1323,7 @@ export default {
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 60px;
+  gap: 30px; // Reduced from 60px to make space smaller
   align-items: center;
   z-index: 2;
   box-sizing: border-box;
@@ -1437,18 +1437,24 @@ export default {
   font-size: clamp(1.5rem, 4vw, 2.8rem);
   font-weight: 600; // Lighter weight for smoother look
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; // Smoother, rounded system fonts
+  font-style: italic; // Make text italic
   margin: 0 0 1.5rem 0;
   line-height: 1.2;
   color: #2c3e50; // Dark grey-blue for better readability
+  // Silver border around text
+  border: 2px solid rgba(192, 192, 192, 0.6);
+  border-radius: 20px; // Rounder border
+  padding: 20px 30px; // Padding inside border
+  display: inline-block; // Allow border to wrap text
   // Light from upper left casting shadow on text
-  text-shadow: 
+  text-shadow:
     -2px -2px 4px rgba(0, 0, 0, 0.15),
     -1px -1px 2px rgba(0, 0, 0, 0.1),
     0 2px 4px rgba(255, 255, 255, 0.8);
   white-space: normal;
   text-align: center;
-  width: 100%;
-  max-width: 100%;
+  width: auto;
+  max-width: 90%;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
@@ -1463,6 +1469,12 @@ export default {
     flex-direction: column;
     align-items: center;
     overflow: visible; // Allow shadows to extend beyond container
+
+    // Dark silver text for caption
+    .text-caption.text-silver-dark {
+      color: #6b6b6b !important; // Dark silver color
+      font-weight: 500;
+    }
 
     .cta-button {
       font-size: 1.3rem;
@@ -1500,9 +1512,9 @@ export default {
 }
 
 .easel-container {
-  max-width: 500px;
+  max-width: 600px; // Increased from 500px
   width: 100%;
-  height: 600px;
+  height: 700px; // Increased from 600px
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1519,7 +1531,7 @@ export default {
 
 .easel-image {
   width: calc(100% - 6px); // Account for border width
-  max-height: calc(600px - 6px); // Account for border width
+  max-height: calc(700px - 6px); // Increased to match container
   height: auto;
   object-fit: contain;
   border-radius: 17px; // Slightly smaller to account for border
@@ -1877,12 +1889,12 @@ export default {
   }
 
   .easel-container {
-    max-width: 350px;
-    height: 400px;
+    max-width: 450px; // Increased from 350px
+    height: 500px; // Increased from 400px
   }
 
   .easel-image {
-    max-height: 400px;
+    max-height: 500px; // Increased from 400px
   }
 }
 
