@@ -48,25 +48,25 @@
   }
 }
 
-// Layout background - bright white with original criss-cross texture (extends to all pages)
+// Layout background - bright white with criss-cross X pattern texture (extends to all pages)
 .q-page-container {
   background: #ffffff; // Bright white
   background-image:
-    // Criss-cross pattern - diagonal lines at 45deg
+    // Criss-cross pattern - diagonal lines going right (45deg)
     repeating-linear-gradient(
       45deg,
       transparent,
-      transparent 10px,
-      rgba(255, 255, 255, 0.03) 10px,
-      rgba(255, 255, 255, 0.03) 20px
+      transparent 9px,
+      rgba(0, 0, 0, 0.02) 9px,
+      rgba(0, 0, 0, 0.02) 10px
     ),
-    // Criss-cross pattern - diagonal lines at -45deg
+    // Criss-cross pattern - diagonal lines going left (-45deg) to create X pattern
     repeating-linear-gradient(
       -45deg,
       transparent,
-      transparent 10px,
-      rgba(0, 0, 0, 0.02) 10px,
-      rgba(0, 0, 0, 0.02) 20px
+      transparent 9px,
+      rgba(0, 0, 0, 0.02) 9px,
+      rgba(0, 0, 0, 0.02) 10px
     );
 }
 

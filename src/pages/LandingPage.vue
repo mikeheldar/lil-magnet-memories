@@ -1244,21 +1244,21 @@ export default {
 .landing-page {
   background: #ffffff; // Bright white
   background-image:
-    // Criss-cross pattern - diagonal lines at 45deg
+    // Criss-cross pattern - diagonal lines going right (45deg)
     repeating-linear-gradient(
       45deg,
       transparent,
-      transparent 10px,
-      rgba(255, 255, 255, 0.03) 10px,
-      rgba(255, 255, 255, 0.03) 20px
+      transparent 9px,
+      rgba(0, 0, 0, 0.02) 9px,
+      rgba(0, 0, 0, 0.02) 10px
     ),
-    // Criss-cross pattern - diagonal lines at -45deg
+    // Criss-cross pattern - diagonal lines going left (-45deg) to create X pattern
     repeating-linear-gradient(
       -45deg,
       transparent,
-      transparent 10px,
-      rgba(0, 0, 0, 0.02) 10px,
-      rgba(0, 0, 0, 0.02) 20px
+      transparent 9px,
+      rgba(0, 0, 0, 0.02) 9px,
+      rgba(0, 0, 0, 0.02) 10px
     );
   min-height: 100vh;
   width: 100%;
@@ -1280,21 +1280,21 @@ export default {
       rgba(255, 255, 255, 0.4) 0%,
       transparent 50%
     ),
-    // Criss-cross pattern - diagonal lines at 45deg
+    // Criss-cross pattern - diagonal lines going right (45deg)
     repeating-linear-gradient(
       45deg,
       transparent,
-      transparent 10px,
-      rgba(255, 255, 255, 0.03) 10px,
-      rgba(255, 255, 255, 0.03) 20px
+      transparent 9px,
+      rgba(0, 0, 0, 0.02) 9px,
+      rgba(0, 0, 0, 0.02) 10px
     ),
-    // Criss-cross pattern - diagonal lines at -45deg
+    // Criss-cross pattern - diagonal lines going left (-45deg) to create X pattern
     repeating-linear-gradient(
       -45deg,
       transparent,
-      transparent 10px,
-      rgba(0, 0, 0, 0.02) 10px,
-      rgba(0, 0, 0, 0.02) 20px
+      transparent 9px,
+      rgba(0, 0, 0, 0.02) 9px,
+      rgba(0, 0, 0, 0.02) 10px
     );
   position: relative;
   overflow-x: hidden;
