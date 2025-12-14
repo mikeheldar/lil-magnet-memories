@@ -1506,7 +1506,7 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   overflow: hidden; // Clip image to border radius
-  background: white; // Background to show border clearly
+  // No background color - let the image show through naturally
 }
 
 // Carousel dots
