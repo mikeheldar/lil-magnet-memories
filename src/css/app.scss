@@ -27,14 +27,23 @@
 .q-file {
   .q-field__control {
     .q-btn {
-      &[color='primary']:not(.q-btn--flat):not(.q-btn--outline) {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
+      // Style the upload button inside q-file
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      color: white !important;
 
-        &:hover {
-          background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
-        }
+      &:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
       }
+    }
+  }
+  
+  // Also target primary colored buttons in file inputs
+  .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+
+    &:hover {
+      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
     }
   }
 }
