@@ -1242,23 +1242,23 @@ export default {
 
 <style lang="scss" scoped>
 .landing-page {
-  background: #faf9f6; // White/cream color
+  background: linear-gradient(135deg, #e8e5f1 0%, #f0eef8 100%);
   background-image:
     repeating-linear-gradient(
       45deg,
       transparent,
       transparent 10px,
-      rgba(255, 255, 255, 0.6) 10px,
-      rgba(255, 255, 255, 0.6) 20px
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
     ),
     repeating-linear-gradient(
       -45deg,
       transparent,
       transparent 10px,
-      rgba(0, 0, 0, 0.015) 10px,
-      rgba(0, 0, 0, 0.015) 20px
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
     ),
-    #faf9f6; // White/cream color
+    linear-gradient(135deg, #e8e5f1 0%, #f0eef8 100%);
   min-height: 100vh;
   width: 100%;
   max-width: 100vw;
@@ -1271,23 +1271,23 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 40px 20px 100px 20px;
-  background: #faf9f6; // White/cream color
+  background: linear-gradient(135deg, #e8e5f1 0%, #f0eef8 100%);
   background-image:
     repeating-linear-gradient(
       45deg,
       transparent,
       transparent 10px,
-      rgba(255, 255, 255, 0.6) 10px,
-      rgba(255, 255, 255, 0.6) 20px
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
     ),
     repeating-linear-gradient(
       -45deg,
       transparent,
       transparent 10px,
-      rgba(0, 0, 0, 0.015) 10px,
-      rgba(0, 0, 0, 0.015) 20px
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
     ),
-    #faf9f6; // White/cream color
+    linear-gradient(135deg, #e8e5f1 0%, #f0eef8 100%);
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
