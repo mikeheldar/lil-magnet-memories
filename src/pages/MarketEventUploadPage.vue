@@ -289,7 +289,7 @@
               <div v-else class="text-body2 text-grey-6">
                 No product selected
               </div>
-              
+
               <!-- Collapsible Change Product Section -->
               <q-expansion-item
                 icon="swap_horiz"
@@ -312,8 +312,8 @@
                   :disable="loadingProducts || !productOptions || productOptions.length === 0"
                 >
                   <template v-slot:option="scope">
-                    <q-item 
-                      v-bind="scope.itemProps" 
+                    <q-item
+                      v-bind="scope.itemProps"
                       v-if="scope && scope.opt && scope.opt.id && scope.opt.description"
                     >
                       <q-item-section>
@@ -604,7 +604,7 @@ export default {
     const quasar = $q; // Capture in local variable for safe access
     const router = useRouter();
     const route = useRoute();
-    
+
     // Safe notify wrapper
     const safeNotify = (options) => {
       try {
@@ -636,7 +636,7 @@ export default {
     const selectedProductId = ref(null);
     const loadingProducts = ref(false);
     const paymentChoice = ref('pay_at_tent'); // Default to pay at tent
-    
+
     // Upload progress tracking
     const uploadProgress = ref({
       overall: 0,
@@ -646,7 +646,7 @@ export default {
       totalSize: 0,
     });
     const showUploadProgress = ref(false);
-    
+
     // Product options for dropdown - ensure it's always an array with valid structure
     const productOptions = computed(() => {
       if (!products.value || !Array.isArray(products.value)) {
@@ -655,9 +655,9 @@ export default {
       return products.value
         .filter(p => {
           // Only include products that have all required fields
-          return p && 
-                 p.id && 
-                 p.description && 
+          return p &&
+                 p.id &&
+                 p.description &&
                  (p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom')));
         })
         .map(p => {
@@ -673,14 +673,14 @@ export default {
         })
         .filter(p => p.id && p.description); // Final safety check
     });
-    
+
     // Get selected product object from ID
     const selectedProduct = computed(() => {
       if (!selectedProductId.value) {
         console.log('🔍 selectedProduct: No selectedProductId');
         return null;
       }
-      
+
       // Try to find in productOptions first
       const foundInOptions = productOptions.value.find(p => {
         const match = String(p.id) === String(selectedProductId.value);
@@ -689,12 +689,12 @@ export default {
         }
         return match;
       });
-      
+
       if (foundInOptions) {
         console.log('✅ selectedProduct: Found in productOptions:', foundInOptions.description);
         return foundInOptions;
       }
-      
+
       // Fallback: try to find in original products array
       const foundInProducts = products.value.find(p => String(p.id) === String(selectedProductId.value));
       if (foundInProducts) {
@@ -709,7 +709,7 @@ export default {
           productType: foundInProducts.productType || null
         };
       }
-      
+
       console.log('⚠️ selectedProduct: Not found! ID:', selectedProductId.value, 'Options count:', productOptions.value.length);
       return null;
     });
@@ -748,7 +748,7 @@ export default {
     // Function to check if event has ended and show dialog
     const checkEventStatus = () => {
       const checkedInEvent = marketEventService.getCheckedInEvent();
-      
+
       // If there's no checked-in event AND we had an event when page loaded, show dialog
       // This prevents showing dialog on initial load when there's no event (route guard handles that)
       if (!checkedInEvent && hadEventOnLoad.value) {
@@ -831,7 +831,7 @@ export default {
       if (!canSubmit.value) {
         event.preventDefault();
         event.stopPropagation();
-        
+
         const missingFields = [];
         if (!formData.value.firstName) missingFields.push('First Name');
         if (!formData.value.lastName) missingFields.push('Last Name');
@@ -840,7 +840,7 @@ export default {
         } else if (!isValidEmail(formData.value.email)) {
           missingFields.push('Valid Email');
         }
-        
+
         if (missingFields.length > 0) {
           const message = `Please fill in: ${missingFields.join(', ')}`;
           safeNotify({
@@ -850,7 +850,7 @@ export default {
             position: 'top',
             timeout: 4000,
           });
-          
+
           // Scroll to first missing field
           setTimeout(() => {
             if (!formData.value.firstName && firstNameInput.value) {
@@ -1039,15 +1039,15 @@ export default {
     const onSubmit = async () => {
       // Save form data to localStorage for non-authenticated users
       saveFormDataToLocalStorage();
-      
+
       // If at market event and user chose to pay online, route to checkout
       if (isAtMarketEvent.value && paymentChoice.value === 'pay_online') {
         // Generate order number
         orderNumber.value = generateOrderNumber();
-        
+
         // Calculate total cost
         const total = totalCost.value.total;
-        
+
         // Upload photos to Firebase Storage first to get persistent URLs
         submitting.value = true;
         showUploadProgress.value = true;
@@ -1067,7 +1067,7 @@ export default {
             }
           );
           console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
-          
+
           // Prepare photos with download URLs and quantities for cart
           // Convert files to base64 for persistence across devices
           const photosForCart = await Promise.all(
@@ -1097,7 +1097,7 @@ export default {
               };
             })
           );
-          
+
           // Add order to cart with persistent photo URLs and market event context
           addCustomUploadToCart({
             productName: selectedProduct.value?.description || 'Custom Photo Magnets',
@@ -1117,17 +1117,17 @@ export default {
               specialInstructions: formData.value.specialInstructions,
             },
           });
-          
+
           submitting.value = false;
           showUploadProgress.value = false;
-          
+
           // Show success notification
           safeNotify({
             type: 'positive',
             message: 'Photos added to cart!',
             position: 'top',
           });
-          
+
           // Route directly to checkout with skipShipping and customTotal
           router.push({
             path: '/checkout',
@@ -1155,7 +1155,7 @@ export default {
           });
         }
       }
-      
+
       // Otherwise, show order summary dialog (default behavior)
       orderNumber.value = generateOrderNumber();
       showOrderSummary.value = true;
@@ -1340,32 +1340,32 @@ export default {
         const isAdmin = authService.isAdmin();
         const productsData = await firebaseService.getProducts(isAdmin);
         products.value = productsData || [];
-        
+
         // Determine which product to select
         let productToSelect = null;
-        
+
         // First, check if productId is in route query (from landing page)
         if (route.query.productId) {
           productToSelect = products.value.find(p => p.id === route.query.productId);
         }
-        
+
         // If not found in route, check for default product
         if (!productToSelect) {
           productToSelect = products.value.find(p => p.isDefault === true);
         }
-        
+
         // If still not found, use first custom product
         if (!productToSelect) {
           productToSelect = products.value.find(
             (p) => p.category === 'custom' || (!p.category && (!p.productType || p.productType === 'custom'))
           );
         }
-        
+
         // Set selected product after products are loaded
         // Use a small delay to ensure productOptions computed has updated
         await nextTick();
         await new Promise(resolve => setTimeout(resolve, 100));
-        
+
         if (productToSelect) {
           // Set the product ID (q-select will handle the rest)
           // Use nextTick to ensure the select component is ready
@@ -1395,10 +1395,10 @@ export default {
       try {
         // Wait a moment for market event service to fully load events
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         // Check for active event (sync version first for speed)
         const activeEvent = marketEventService.getActiveEventSync();
-        
+
         // If anonymous user and there's an active event, automatically set them as "at the event"
         if (activeEvent && !isAuthenticated.value) {
           // Set customer type to market_customer so they're treated as being at the event
@@ -1406,10 +1406,10 @@ export default {
           setCustomerType(CUSTOMER_TYPES.MARKET);
           console.log('✅ Anonymous user auto-checked in to active market event:', activeEvent.name);
         }
-        
+
         // Check for active checked-in event (async version)
         const checkedInEvent = await marketEventService.getCheckedInEventAsync();
-        
+
         if (checkedInEvent) {
           console.log('✅ Active checked-in market event found:', checkedInEvent.name);
           // Mark that we had an event when page loaded
@@ -1468,10 +1468,10 @@ export default {
           const _ = totalCost.value;
         }
       };
-      
+
       // Load products
       loadProducts();
-      
+
       // Watch selectedProductId to ensure totalCost updates when product changes
       watch(selectedProductId, (newId, oldId) => {
         if (newId !== oldId && newId) {
@@ -1482,7 +1482,7 @@ export default {
           }
         }
       });
-      
+
       // Watch productOptions to sync selectedProductId when options change
       watch(productOptions, (newOptions) => {
         if (newOptions.length > 0) {
@@ -1495,7 +1495,7 @@ export default {
               console.log('⚠️ Watched: Selected product no longer available, resetting');
             }
           }
-          
+
           // If no product selected, try to set default
           if (!selectedProductId.value) {
             const defaultProduct = newOptions.find(p => p.isDefault === true);
@@ -1515,7 +1515,7 @@ export default {
           }
         }
       }, { immediate: true });
-      
+
       // Watch selectedProductId to ensure totalCost updates when product changes
       watch(selectedProductId, (newId, oldId) => {
         if (newId !== oldId && newId) {
