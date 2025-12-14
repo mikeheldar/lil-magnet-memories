@@ -1275,11 +1275,11 @@ export default {
 }
 
 .hero-section {
-  min-height: 100vh;
+  min-height: auto; // Remove min-height to allow content to determine height
   display: flex;
-  align-items: center;
+  align-items: flex-start; // Align to top instead of center
   justify-content: center;
-  padding: 20px 10px 80px 10px; // Reduced padding to bring content closer to edges
+  padding: 10px 10px 40px 10px; // Much reduced padding, especially top
   background: #ffffff; // Bright white
   background-image:
     // Light source from upper left
@@ -1337,21 +1337,24 @@ export default {
   max-width: 100%;
   overflow: visible; // Allow shadows from button to extend
   margin-bottom: 0;
+  margin-top: 0; // No top margin to move content up
+  padding-top: 0; // No padding at top
 }
 
 .hero-logo {
-  max-width: 90%; // Bigger, closer to edges
-  width: 90%; // Bigger, closer to edges
+  max-width: 95%; // Even bigger and wider
+  width: 95%; // Even bigger and wider
   height: auto;
-  margin-bottom: 1rem; // Reduced margin
+  margin-bottom: 0.5rem; // Minimal margin to move up
+  margin-top: 0; // No top margin
   margin-left: auto;
   margin-right: auto;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 .hero-logo-wide {
-  max-width: 90%; // Bigger, closer to edges
-  width: 90%; // Bigger, closer to edges
+  max-width: 95%; // Even bigger and wider
+  width: 95%; // Even bigger and wider
   display: block;
 }
 
@@ -1441,7 +1444,7 @@ export default {
   font-family: 'Georgia', 'Times New Roman', serif; // Less italic, more elegant
   font-style: italic; // Keep italic but less pronounced with this font
   transform: skew(-2deg); // Slight skew for subtle italic effect instead of full italic
-  margin: 0 0 1.5rem 0;
+  margin: 0.5rem 0 1rem 0; // Reduced margins to move up
   line-height: 1.3;
   color: #2c3e50; // Dark grey-blue for better readability
   // Silver border/outline around the text itself
@@ -1463,7 +1466,8 @@ export default {
 
 
   .hero-actions {
-    margin-bottom: 20px;
+    margin-bottom: 10px; // Reduced margin
+    margin-top: 0; // No top margin
     width: 100%;
     display: flex;
     flex-direction: column;
