@@ -1282,6 +1282,12 @@ export default {
   padding: 40px 20px 100px 20px;
   background: #ffffff; // Bright white
   background-image:
+    // Light source from upper left
+    radial-gradient(
+      ellipse 800px 600px at 0% 0%,
+      rgba(255, 255, 255, 0.4) 0%,
+      transparent 50%
+    ),
     // Plaid pattern - vertical stripes
     repeating-linear-gradient(
       90deg,
@@ -1429,11 +1435,16 @@ export default {
 
 .hero-title {
   font-size: clamp(1.5rem, 4vw, 2.8rem);
-  font-weight: 800;
+  font-weight: 600; // Lighter weight for smoother look
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; // Smoother, rounded system fonts
   margin: 0 0 1.5rem 0;
   line-height: 1.2;
   color: #2c3e50; // Dark grey-blue for better readability
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8); // Light shadow for depth
+  // Light from upper left casting shadow on text
+  text-shadow: 
+    -2px -2px 4px rgba(0, 0, 0, 0.15),
+    -1px -1px 2px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(255, 255, 255, 0.8);
   white-space: normal;
   text-align: center;
   width: 100%;
@@ -1441,6 +1452,7 @@ export default {
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
+  position: relative;
 }
 
 
