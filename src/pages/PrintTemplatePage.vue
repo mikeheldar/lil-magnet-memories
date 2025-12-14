@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md bg-grey-2 print-template-page">
+  <q-page class="q-pa-md print-template-page">
     <div class="text-center q-mb-lg">
       <div class="text-h4 text-weight-bold text-primary">
         Print Template - Order #{{ orderNumber }}
@@ -889,7 +889,7 @@ export default {
   .print-template-page {
     margin: 0 !important;
     padding: 0 !important;
-    background: white !important;
+    background: white !important; // Keep white for print view
   }
 
   .q-header,

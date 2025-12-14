@@ -2213,7 +2213,8 @@ export default {
 
 <style lang="scss" scoped>
 .q-page {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  // Use same plaid background as main page - inherited from .q-page-container
+  background: transparent;
   min-height: 100vh;
 }
 
