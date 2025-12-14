@@ -1258,6 +1258,20 @@ export default {
       rgba(0, 0, 0, 0.02) 10px,
       rgba(0, 0, 0, 0.02) 20px
     ),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
+    ),
     linear-gradient(135deg, #e8e5f1 0%, #f0eef8 100%);
   min-height: 100vh;
   width: 100%;
@@ -1273,6 +1287,20 @@ export default {
   padding: 40px 20px 100px 20px;
   background: linear-gradient(135deg, #e8e5f1 0%, #f0eef8 100%);
   background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
+    ),
     repeating-linear-gradient(
       45deg,
       transparent,
