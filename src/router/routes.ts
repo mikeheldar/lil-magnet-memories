@@ -63,6 +63,11 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
+        path: 'look-and-feel',
+        component: () => import('pages/LookAndFeelPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
         path: 'email-test',
         component: () => import('pages/EmailTestPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },

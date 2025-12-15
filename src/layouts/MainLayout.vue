@@ -397,6 +397,16 @@
                 </q-item-section>
               </q-item>
 
+              <q-item clickable v-ripple @click="navigateTo('/look-and-feel')">
+                <q-item-section avatar>
+                  <q-icon name="palette" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Look and Feel</q-item-label>
+                  <q-item-label caption>Manage site themes</q-item-label>
+                </q-item-section>
+              </q-item>
+
               <q-item clickable v-ripple @click="navigateTo('/email-test')">
                 <q-item-section avatar>
                   <q-icon name="email" color="purple" />

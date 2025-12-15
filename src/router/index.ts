@@ -9,6 +9,7 @@ import {
 import routes from './routes';
 import { authService } from '../services/authService';
 import { marketEventService } from '../services/marketEventService';
+import { themeService, initializeDefaultThemes } from '../services/themeService';
 
 /*
  * If not building with SSR mode, you can
@@ -38,6 +39,11 @@ export default route(function (/* { store, ssrContext } */) {
 
   // Initialize auth service
   authService.init();
+
+  // Initialize themes
+  initializeDefaultThemes().then(() => {
+    themeService.initializeTheme();
+  });
 
   // Add authentication and admin guards
   Router.beforeEach(async (to, from, next) => {
