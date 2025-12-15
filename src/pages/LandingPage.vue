@@ -1307,7 +1307,7 @@ export default {
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px; // Reduced from 60px to make space smaller
+  gap: 60px; // Increased spacing between text and images when there's space
   align-items: center;
   z-index: 2;
   box-sizing: border-box;
@@ -1323,6 +1323,9 @@ export default {
   margin-bottom: 0;
   margin-top: 0; // No top margin to move content up
   padding-top: 0; // No padding at top
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; // Add spacing between logo, title, and actions when there's space
 }
 
 .hero-logo {
@@ -1428,7 +1431,7 @@ export default {
   font-family: 'Georgia', 'Times New Roman', serif; // Less italic, more elegant
   font-style: italic; // Keep italic but less pronounced with this font
   transform: skew(-2deg); // Slight skew for subtle italic effect instead of full italic
-  margin: 0.5rem 0 1rem 0; // Reduced margins to move up
+  margin: 0; // Remove margins, let flex gap handle spacing
   line-height: 1.3;
   color: #2c3e50; // Dark grey-blue for better readability
   // Silver border/outline around the text itself
@@ -1846,7 +1849,7 @@ export default {
 @media (max-width: 768px) {
   .hero-content {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 40px; // Increased spacing between stacked elements on medium screens
     text-align: center;
     padding: 0 15px;
     width: 100%;
@@ -1858,6 +1861,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 1.5rem; // Add spacing between elements on medium screens
     width: 100%;
     max-width: 100%;
   }
