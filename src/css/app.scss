@@ -1,17 +1,19 @@
 // app global css in SCSS form
 
 // Global button styling - use header bar color for button backgrounds
+// Target all buttons with primary/secondary colors, including those using bg-primary/bg-secondary classes
 .q-btn {
-  // Primary buttons
-  &[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+  // Primary buttons - target by color attribute AND bg-primary class
+  &[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button),
+  &.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: white !important;
     // Use filter drop-shadow for natural, unclipped shadows (matching "Start Creating Magnets" button)
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
-            drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
-    overflow: visible; // Ensure button doesn't clip its own shadows
-    position: relative; // Allow shadows to extend
+            drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
+    overflow: visible !important; // Ensure button doesn't clip its own shadows
+    position: relative !important; // Allow shadows to extend
 
     &:hover {
       background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
@@ -20,20 +22,21 @@
       filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
               drop-shadow(0 12px 50px rgba(0, 0, 0, 0.2))
               drop-shadow(0 4px 15px rgba(255, 255, 255, 0.15))
-              drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1));
+              drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1)) !important;
     }
   }
 
-  // Secondary buttons - also use purple gradient
-  &[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+  // Secondary buttons - also use purple gradient, target by color attribute AND bg-secondary class
+  &[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button),
+  &.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: white !important;
     // Use filter drop-shadow for natural, unclipped shadows (matching "Start Creating Magnets" button)
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
-            drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
-    overflow: visible; // Ensure button doesn't clip its own shadows
-    position: relative; // Allow shadows to extend
+            drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
+    overflow: visible !important; // Ensure button doesn't clip its own shadows
+    position: relative !important; // Allow shadows to extend
 
     &:hover {
       background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
@@ -42,8 +45,49 @@
       filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
               drop-shadow(0 12px 50px rgba(0, 0, 0, 0.2))
               drop-shadow(0 4px 15px rgba(255, 255, 255, 0.15))
-              drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1));
+              drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1)) !important;
     }
+  }
+}
+
+// Also target buttons using Quasar's internal color classes
+.q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button),
+.q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
+          drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
+          drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
+  overflow: visible !important;
+  position: relative !important;
+
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+    transform: translateY(-2px);
+    filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
+            drop-shadow(0 12px 50px rgba(0, 0, 0, 0.2))
+            drop-shadow(0 4px 15px rgba(255, 255, 255, 0.15))
+            drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1)) !important;
+  }
+}
+
+.q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button),
+.q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
+          drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
+          drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
+  overflow: visible !important;
+  position: relative !important;
+
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+    transform: translateY(-2px);
+    filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
+            drop-shadow(0 12px 50px rgba(0, 0, 0, 0.2))
+            drop-shadow(0 4px 15px rgba(255, 255, 255, 0.15))
+            drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1)) !important;
   }
 }
 
