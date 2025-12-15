@@ -279,7 +279,7 @@ export const initializeDefaultThemes = async () => {
           .q-page-container,
           .landing-page,
           .hero-section {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+            background: linear-gradient(135deg, #d4d8e8 0%, #b8bdd4 100%) !important;
             background-image:
               repeating-linear-gradient(
                 45deg,
