@@ -1558,21 +1558,21 @@ export default {
   min-width: 12px;
   min-height: 12px;
   border-radius: 50%;
-  background: rgba(100, 100, 100, 0.6); // Darker grey for visibility
-  border: 2px solid rgba(80, 80, 80, 0.8); // Darker border
+  background: transparent; // No fill for inactive dots
+  border: 2px solid rgba(128, 128, 128, 0.6); // Grey border for inactive dots
   transition: all 0.3s ease;
   cursor: pointer;
   padding: 0;
   margin: 0;
 
   &:hover {
-    background: rgba(80, 80, 80, 0.8);
+    border-color: rgba(128, 128, 128, 0.9); // Slightly darker grey on hover
     transform: scale(1.1);
   }
 
   &.dot-active {
-    background: #764ba2; // Use darker purple from header gradient
-    border-color: #764ba2;
+    background: #764ba2; // Purple fill for active dot
+    border-color: #764ba2; // Purple border for active dot
     box-shadow: 0 0 8px rgba(118, 75, 162, 0.6);
   }
 }
@@ -1878,12 +1878,15 @@ export default {
   }
 
   .easel-container {
-    max-width: 450px; // Increased from 350px
-    height: 500px; // Increased from 400px
+    max-width: 400px; // Set to 400px max width
+    max-height: 500px; // Set to 500px max height
+    height: 100%;
+    aspect-ratio: 4/5; // Maintain 400:500 ratio
   }
 
   .easel-image {
-    max-height: 500px; // Increased from 400px
+    max-width: calc(100% - 6px); // Scale to fit
+    max-height: calc(100% - 6px); // Scale to fit
   }
 }
 
@@ -1969,11 +1972,15 @@ export default {
   }
 
   .easel-container {
-    max-width: 300px;
+    max-width: 300px; // Smaller on mobile
+    max-height: 375px; // Maintain 4:5 aspect ratio (300:375)
+    height: 100%;
+    aspect-ratio: 4/5;
   }
 
   .easel-image {
-    max-height: 300px;
+    max-width: calc(100% - 6px); // Scale to fit
+    max-height: calc(100% - 6px); // Scale to fit
   }
 }
 </style>
