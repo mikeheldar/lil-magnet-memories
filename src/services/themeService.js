@@ -28,7 +28,7 @@ export const themeService = {
       const themesRef = collection(db, THEMES_COLLECTION);
       const q = query(themesRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      
+
       return querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -46,7 +46,7 @@ export const themeService = {
     try {
       const themeRef = doc(db, THEMES_COLLECTION, themeId);
       const themeSnap = await getDoc(themeRef);
-      
+
       if (themeSnap.exists()) {
         return {
           id: themeSnap.id,
@@ -67,7 +67,7 @@ export const themeService = {
     try {
       const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
       const activeThemeSnap = await getDoc(activeThemeRef);
-      
+
       if (activeThemeSnap.exists()) {
         const activeThemeId = activeThemeSnap.data().themeId;
         if (activeThemeId) {
@@ -92,7 +92,7 @@ export const themeService = {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
-      
+
       const docRef = await setDoc(doc(themesRef), newTheme);
       return docRef;
     } catch (error) {
@@ -209,10 +209,21 @@ export const themeService = {
 export const initializeDefaultThemes = async () => {
   try {
     const existingThemes = await themeService.getAllThemes();
-    
-    // Only create default themes if none exist
-    if (existingThemes.length === 0) {
-      // White Lattus theme (current white background with criss-cross)
+
+    // Check if each theme exists by name, create if missing
+    const whiteLattusExists = existingThemes.some(
+      (theme) => theme.name === 'White Lattus'
+    );
+    const silverCrisCrossExists = existingThemes.some(
+      (theme) => theme.name === 'Silver Cris-Cross'
+    );
+
+    const themesRef = collection(db, THEMES_COLLECTION);
+    let whiteLattusDocRef = null;
+    let silverCrisCrossDocRef = null;
+
+    // Create White Lattus theme if it doesn't exist
+    if (!whiteLattusExists) {
       const whiteLattusTheme = {
         name: 'White Lattus',
         description: 'Clean white background with subtle criss-cross pattern',
@@ -243,7 +254,24 @@ export const initializeDefaultThemes = async () => {
         `,
       };
 
-      // Silver Cris-Cross theme (old grey/pink background with white text)
+      whiteLattusDocRef = await addDoc(themesRef, {
+        ...whiteLattusTheme,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      console.log('White Lattus theme created');
+    } else {
+      // Find existing White Lattus theme
+      const existing = existingThemes.find(
+        (theme) => theme.name === 'White Lattus'
+      );
+      if (existing) {
+        whiteLattusDocRef = { id: existing.id };
+      }
+    }
+
+    // Create Silver Cris-Cross theme if it doesn't exist
+    if (!silverCrisCrossExists) {
       const silverCrisCrossTheme = {
         name: 'Silver Cris-Cross',
         description: 'Classic grey-purple background with white text',
@@ -275,33 +303,29 @@ export const initializeDefaultThemes = async () => {
         `,
       };
 
-      // Create themes in Firebase
-      const themesRef = collection(db, THEMES_COLLECTION);
-      
-      const whiteLattusDocRef = await addDoc(themesRef, {
-        ...whiteLattusTheme,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      const silverCrisCrossDocRef = await addDoc(themesRef, {
+      silverCrisCrossDocRef = await addDoc(themesRef, {
         ...silverCrisCrossTheme,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+      console.log('Silver Cris-Cross theme created');
+    }
 
-      // Set White Lattus as default active theme
-      const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
-      await setDoc(
-        activeThemeRef,
-        {
-          themeId: whiteLattusDocRef.id,
-          activatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-
-      console.log('Default themes created successfully');
+    // Set White Lattus as default active theme if no active theme exists
+    if (whiteLattusDocRef) {
+      const activeTheme = await themeService.getActiveTheme();
+      if (!activeTheme && whiteLattusDocRef.id) {
+        const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
+        await setDoc(
+          activeThemeRef,
+          {
+            themeId: whiteLattusDocRef.id,
+            activatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+        console.log('White Lattus set as default active theme');
+      }
     }
   } catch (error) {
     console.error('Error initializing default themes:', error);
