@@ -279,7 +279,7 @@ export const initializeDefaultThemes = async () => {
           .q-page-container,
           .landing-page,
           .hero-section {
-            background: linear-gradient(135deg, #d4d8e8 0%, #b8bdd4 100%) !important;
+            background: linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%) !important;
             background-image:
               repeating-linear-gradient(
                 45deg,
@@ -294,7 +294,8 @@ export const initializeDefaultThemes = async () => {
                 transparent 10px,
                 rgba(0, 0, 0, 0.02) 10px,
                 rgba(0, 0, 0, 0.02) 20px
-              ) !important;
+              ),
+              linear-gradient(135deg, #a8b5d1 0%, #b8a8c8 100%) !important;
           }
           .hero-title {
             color: #ffffff !important;
