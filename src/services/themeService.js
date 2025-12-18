@@ -263,35 +263,86 @@ export const themeService = {
   },
 
   /**
-   * Initialize theme on page load
+   * Get default fallback theme styles (for offline/error cases)
+   */
+  getDefaultFallbackTheme() {
+    // Default to "LineA Modern White Header" style with cursive font
+    return {
+      id: 'fallback',
+      name: 'Default (Fallback)',
+      description: 'Default theme applied when Firebase is unavailable',
+      styles: `
+        /* Header font - cursive for title, black text (default for white header) */
+        body .q-header .q-toolbar-title,
+        body .q-header .q-toolbar-title span,
+        body .q-header .q-toolbar-title .text-h5,
+        body .q-header .q-toolbar-title .text-weight-bold,
+        .q-layout .q-header .q-toolbar-title,
+        .q-layout .q-header .q-toolbar-title span,
+        .q-header .q-toolbar-title,
+        .q-header .q-toolbar-title span,
+        .q-header .q-toolbar-title .text-h5,
+        .q-header .q-toolbar-title .text-weight-bold {
+          font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          font-weight: 400 !important;
+          font-style: normal !important;
+          letter-spacing: 0.05em !important;
+          text-transform: none !important;
+          color: #1a1a1a !important;
+        }
+      `,
+    };
+  },
+
+  /**
+   * Initialize theme on page load with robust fallback
    */
   async initializeTheme() {
+    // First, try to apply from localStorage immediately (fastest, works offline)
+    const storedTheme = localStorage.getItem('activeTheme');
+    if (storedTheme) {
+      try {
+        const theme = JSON.parse(storedTheme);
+        if (theme && theme.styles) {
+          console.log('Applying cached theme immediately');
+          this.applyTheme(theme);
+          // Still try to update from Firebase in background
+          this.getActiveTheme().then((firebaseTheme) => {
+            if (firebaseTheme && firebaseTheme.id !== theme.id) {
+              console.log('Updating theme from Firebase');
+              this.applyTheme(firebaseTheme);
+            } else if (firebaseTheme && firebaseTheme.styles !== theme.styles) {
+              // Theme updated, apply new styles
+              console.log('Theme styles updated from Firebase');
+              this.applyTheme(firebaseTheme);
+            }
+          }).catch((error) => {
+            console.warn('Background Firebase theme fetch failed, using cached theme:', error);
+          });
+          return theme;
+        }
+      } catch (parseError) {
+        console.error('Error parsing cached theme:', parseError);
+        localStorage.removeItem('activeTheme');
+      }
+    }
+
+    // Try to get active theme from Firebase
     try {
-      // Try to get active theme from Firebase
       const activeTheme = await this.getActiveTheme();
-      if (activeTheme) {
+      if (activeTheme && activeTheme.styles) {
         this.applyTheme(activeTheme);
         return activeTheme;
       }
-
-      // Fallback to localStorage if Firebase fails
-      const storedTheme = localStorage.getItem('activeTheme');
-      if (storedTheme) {
-        const theme = JSON.parse(storedTheme);
-        this.applyTheme(theme);
-        return theme;
-      }
     } catch (error) {
-      console.error('Error initializing theme:', error);
-      // Fallback to localStorage
-      const storedTheme = localStorage.getItem('activeTheme');
-      if (storedTheme) {
-        const theme = JSON.parse(storedTheme);
-        this.applyTheme(theme);
-        return theme;
-      }
+      console.error('Error initializing theme from Firebase:', error);
     }
-    return null;
+
+    // Final fallback: apply default theme with cursive font
+    console.log('Applying default fallback theme');
+    const fallbackTheme = this.getDefaultFallbackTheme();
+    this.applyTheme(fallbackTheme);
+    return fallbackTheme;
   },
 };
 
@@ -449,7 +500,7 @@ export const initializeDefaultThemes = async () => {
     const oldLineAModernThemes = existingThemes.filter(
       (theme) => theme.name === 'LineA Modern'
     );
-    
+
     // Also update existing "LineA Modern Black Header" and "LineA Modern White Header" themes with latest styles
     const existingBlackHeader = existingThemes.find(
       (theme) => theme.name === 'LineA Modern Black Header'
@@ -803,7 +854,7 @@ export const initializeDefaultThemes = async () => {
       const lineAModernWhiteExists = updatedThemes.some(
         (theme) => theme.name === 'LineA Modern White Header'
       );
-      
+
       // Update existing themes with latest styles if they exist
       const updatedBlackHeader = updatedThemes.find(
         (theme) => theme.name === 'LineA Modern Black Header'
@@ -811,7 +862,7 @@ export const initializeDefaultThemes = async () => {
       const updatedWhiteHeader = updatedThemes.find(
         (theme) => theme.name === 'LineA Modern White Header'
       );
-      
+
       if (updatedBlackHeader) {
         // Update with latest black header styles (cursive font)
         const blackHeaderStyles = `
@@ -976,7 +1027,7 @@ export const initializeDefaultThemes = async () => {
         await themeService.updateThemeStyles(updatedBlackHeader.id, blackHeaderStyles);
         console.log('Updated LineA Modern Black Header theme with latest styles');
       }
-      
+
       if (updatedWhiteHeader) {
         // Update with latest white header styles (cursive font, black text)
         const whiteHeaderStyles = `
