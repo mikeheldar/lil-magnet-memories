@@ -49,13 +49,36 @@ export const themeService = {
       const themeSnap = await getDoc(themeRef);
 
       if (themeSnap.exists()) {
-        return {
+        const theme = {
           id: themeSnap.id,
           ...themeSnap.data(),
         };
+        // Cache the theme for offline use
+        if (theme.styles) {
+          localStorage.setItem(`theme_${themeId}`, JSON.stringify(theme));
+        }
+        return theme;
       }
       return null;
     } catch (error) {
+      // Check if it's an offline error
+      const isOfflineError = error?.code === 'unavailable' || 
+                            error?.message?.includes('offline') ||
+                            error?.message?.includes('Failed to get document');
+      
+      if (isOfflineError) {
+        // Try to get from cache
+        const cachedTheme = localStorage.getItem(`theme_${themeId}`);
+        if (cachedTheme) {
+          try {
+            const theme = JSON.parse(cachedTheme);
+            console.log(`Using cached theme ${themeId} due to offline status`);
+            return theme;
+          } catch (parseError) {
+            console.error('Error parsing cached theme:', parseError);
+          }
+        }
+      }
       console.error('Error getting theme:', error);
       throw error;
     }
@@ -72,13 +95,46 @@ export const themeService = {
       if (activeThemeSnap.exists()) {
         const activeThemeId = activeThemeSnap.data().themeId;
         if (activeThemeId) {
-          return await this.getTheme(activeThemeId);
+          try {
+            return await this.getTheme(activeThemeId);
+          } catch (themeError) {
+            // If we can't get the theme but have it cached, use cache
+            console.warn('Error fetching theme from Firebase, trying cache:', themeError);
+            const storedTheme = localStorage.getItem('activeTheme');
+            if (storedTheme) {
+              const theme = JSON.parse(storedTheme);
+              if (theme.id === activeThemeId) {
+                console.log('Using cached theme due to Firebase error');
+                return theme;
+              }
+            }
+            throw themeError;
+          }
         }
       }
       return null;
     } catch (error) {
-      console.error('Error getting active theme:', error);
-      throw error;
+      // Check if it's an offline error
+      const isOfflineError = error?.code === 'unavailable' || 
+                            error?.message?.includes('offline') ||
+                            error?.message?.includes('Failed to get document');
+      
+      if (isOfflineError) {
+        console.warn('Firebase appears offline, using cached theme if available');
+        const storedTheme = localStorage.getItem('activeTheme');
+        if (storedTheme) {
+          try {
+            const theme = JSON.parse(storedTheme);
+            console.log('Using cached theme due to offline status');
+            return theme;
+          } catch (parseError) {
+            console.error('Error parsing cached theme:', parseError);
+          }
+        }
+      } else {
+        console.error('Error getting active theme:', error);
+      }
+      return null;
     }
   },
 
