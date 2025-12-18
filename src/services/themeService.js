@@ -179,11 +179,15 @@ export const themeService = {
       existingStyle.remove();
     }
 
-    // Create new style element
+    // Create new style element and append at the end of head for maximum specificity
     const style = document.createElement('style');
     style.id = 'dynamic-theme-styles';
     style.textContent = theme.styles;
+    // Append at the end of head to ensure it overrides other styles
     document.head.appendChild(style);
+
+    // Force reflow to ensure styles are applied
+    void document.body.offsetHeight;
 
     // Store theme in localStorage for quick access
     localStorage.setItem('activeTheme', JSON.stringify(theme));
