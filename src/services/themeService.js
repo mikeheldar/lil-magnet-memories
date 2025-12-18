@@ -504,6 +504,20 @@ export const initializeDefaultThemes = async () => {
             border-color: #1a1a1a !important;
             box-shadow: none !important;
           }
+
+          /* Change header from purple to neutral black */
+          .q-header,
+          .q-header.bg-primary {
+            background: #1a1a1a !important;
+            background-image: none !important;
+          }
+
+          /* Ensure header text stays white */
+          .q-header .q-toolbar-title,
+          .q-header .q-btn,
+          .q-header .q-chip {
+            color: #ffffff !important;
+          }
         `,
       };
 
