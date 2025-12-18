@@ -28,7 +28,7 @@ export const themeService = {
     try {
       // Ensure Firestore network is ready before attempting to read
       await ensureNetworkReady();
-      
+
       const themesRef = collection(db, THEMES_COLLECTION);
       const q = query(themesRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -50,7 +50,7 @@ export const themeService = {
     try {
       // Ensure Firestore network is ready before attempting to read
       await ensureNetworkReady();
-      
+
       console.log(`[ThemeService] Fetching theme ${themeId} from Firestore`);
       const themeRef = doc(db, THEMES_COLLECTION, themeId);
       const themeSnap = await getDoc(themeRef);
@@ -112,7 +112,7 @@ export const themeService = {
     try {
       // Ensure Firestore network is ready before attempting to read
       await ensureNetworkReady();
-      
+
       console.log(`[ThemeService] Attempting to get active theme from Firestore: ${THEMES_COLLECTION}/${ACTIVE_THEME_DOC}`);
       const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
 
@@ -312,9 +312,11 @@ export const themeService = {
    */
   applyTheme(theme) {
     if (!theme || !theme.styles) {
-      console.warn('Theme or theme.styles is missing');
+      console.warn('[ThemeService] Theme or theme.styles is missing');
       return;
     }
+
+    console.log(`[ThemeService] Applying theme: ${theme.name}`);
 
     // Remove existing theme styles
     const existingStyle = document.getElementById('dynamic-theme-styles');
@@ -332,8 +334,15 @@ export const themeService = {
     // Force reflow to ensure styles are applied
     void document.body.offsetHeight;
 
-    // Store theme in localStorage for quick access
+    // Store theme in localStorage for quick access (this also clears old cache)
     localStorage.setItem('activeTheme', JSON.stringify(theme));
+    
+    // Also cache individual theme for offline use
+    if (theme.id) {
+      localStorage.setItem(`theme_${theme.id}`, JSON.stringify(theme));
+    }
+
+    console.log(`[ThemeService] Theme applied successfully: ${theme.name}`);
   },
 
   /**
@@ -1188,6 +1197,16 @@ export const initializeDefaultThemes = async () => {
         `;
         await themeService.updateThemeStyles(updatedBlackHeader.id, blackHeaderStyles);
         console.log('Updated LineA Modern Black Header theme with latest styles');
+        
+        // If this is the active theme, reapply it
+        const activeTheme = await themeService.getActiveTheme();
+        if (activeTheme && activeTheme.id === updatedBlackHeader.id) {
+          console.log('Reapplying updated LineA Modern Black Header theme');
+          const updatedTheme = await themeService.getTheme(updatedBlackHeader.id);
+          if (updatedTheme) {
+            themeService.applyTheme(updatedTheme);
+          }
+        }
       }
 
       if (updatedWhiteHeader) {
@@ -1353,6 +1372,16 @@ export const initializeDefaultThemes = async () => {
         `;
         await themeService.updateThemeStyles(updatedWhiteHeader.id, whiteHeaderStyles);
         console.log('Updated LineA Modern White Header theme with latest styles');
+        
+        // If this is the active theme, reapply it
+        const activeTheme = await themeService.getActiveTheme();
+        if (activeTheme && activeTheme.id === updatedWhiteHeader.id) {
+          console.log('Reapplying updated LineA Modern White Header theme');
+          const updatedTheme = await themeService.getTheme(updatedWhiteHeader.id);
+          if (updatedTheme) {
+            themeService.applyTheme(updatedTheme);
+          }
+        }
       }
 
       // If we still need to create them (e.g., only had one old theme)
@@ -2120,3 +2149,4 @@ export const initializeDefaultThemes = async () => {
     isInitializing = false;
   }
 };
+
