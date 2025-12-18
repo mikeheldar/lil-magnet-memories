@@ -275,7 +275,7 @@ export const initializeDefaultThemes = async () => {
     return;
   }
 
-  // If we've already initialized and both themes exist, skip
+  // If we've already initialized and all default themes exist, skip
   if (hasInitialized) {
     try {
       const existingThemes = await themeService.getAllThemes();
@@ -285,8 +285,11 @@ export const initializeDefaultThemes = async () => {
       const silverCrisCrossExists = existingThemes.some(
         (theme) => theme.name === 'Silver Cris-Cross'
       );
-      if (whiteLattusExists && silverCrisCrossExists) {
-        console.log('Both default themes already exist, skipping initialization');
+      const lineAModernExists = existingThemes.some(
+        (theme) => theme.name === 'LineA Modern'
+      );
+      if (whiteLattusExists && silverCrisCrossExists && lineAModernExists) {
+        console.log('All default themes already exist, skipping initialization');
         return;
       }
     } catch (error) {
@@ -298,7 +301,7 @@ export const initializeDefaultThemes = async () => {
   try {
     // First, clean up any duplicate themes
     await themeService.cleanupDuplicateThemes();
-    
+
     const existingThemes = await themeService.getAllThemes();
 
     // Check if each theme exists by name, create if missing
@@ -361,6 +364,11 @@ export const initializeDefaultThemes = async () => {
       }
     }
 
+    // Check if LineA Modern theme exists
+    const lineAModernExists = existingThemes.some(
+      (theme) => theme.name === 'LineA Modern'
+    );
+
     // Create Silver Cris-Cross theme if it doesn't exist
     if (!silverCrisCrossExists) {
       const silverCrisCrossTheme = {
@@ -401,6 +409,110 @@ export const initializeDefaultThemes = async () => {
         updatedAt: serverTimestamp(),
       });
       console.log('Silver Cris-Cross theme created');
+    }
+
+    // Create LineA Modern theme if it doesn't exist
+    if (!lineAModernExists) {
+      const lineAModernTheme = {
+        name: 'LineA Modern',
+        description: 'Clean, elegant modern design with white background and minimalist styling',
+        styles: `
+          /* Clean white background - no patterns */
+          .q-page-container,
+          .landing-page,
+          .hero-section {
+            background: #ffffff !important;
+            background-image: none !important;
+          }
+
+          /* Modern, clean hero title - elegant typography */
+          .hero-title {
+            color: #1a1a1a !important;
+            font-weight: 300 !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-style: normal !important;
+            text-shadow: none !important;
+            -webkit-text-stroke: none !important;
+            text-stroke: none !important;
+            transform: none !important;
+            letter-spacing: -0.02em !important;
+          }
+
+          /* Clean, elegant buttons - neutral colors, no purple */
+          body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1a1a !important;
+            border-radius: 4px !important;
+            filter: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.2s ease !important;
+          }
+
+          body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover {
+            background: #2a2a2a !important;
+            border-color: #2a2a2a !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+          }
+
+          /* Clean q-file buttons */
+          .q-file .q-field__control .q-btn,
+          .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1a1a !important;
+            border-radius: 4px !important;
+            filter: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+          }
+
+          .q-file .q-field__control .q-btn:hover,
+          .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):hover {
+            background: #2a2a2a !important;
+            border-color: #2a2a2a !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+          }
+
+          /* Remove shadows from easel images for cleaner look */
+          .easel-image {
+            filter: none !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+          }
+
+          /* Clean carousel dots */
+          .carousel-dot {
+            background: transparent !important;
+            border: 1.5px solid rgba(0, 0, 0, 0.3) !important;
+          }
+
+          .carousel-dot.dot-active {
+            background: #1a1a1a !important;
+            border-color: #1a1a1a !important;
+            box-shadow: none !important;
+          }
+        `,
+      };
+
+      await addDoc(themesRef, {
+        ...lineAModernTheme,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      console.log('LineA Modern theme created');
     }
 
     // Set White Lattus as default active theme if no active theme exists
