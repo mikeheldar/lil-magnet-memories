@@ -342,7 +342,20 @@ export const themeService = {
       localStorage.setItem(`theme_${theme.id}`, JSON.stringify(theme));
     }
 
-    console.log(`[ThemeService] Theme applied successfully: ${theme.name}`);
+    // Verify styles were injected
+    const injectedStyle = document.getElementById('dynamic-theme-styles');
+    if (injectedStyle) {
+      console.log(`[ThemeService] Theme applied successfully: ${theme.name}`);
+      console.log(`[ThemeService] Injected styles length: ${injectedStyle.textContent.length} characters`);
+      // Check if cursive font is in the styles
+      if (injectedStyle.textContent.includes('Brush Script MT') || injectedStyle.textContent.includes('cursive')) {
+        console.log('[ThemeService] ✓ Cursive font styles found in injected theme');
+      } else {
+        console.warn('[ThemeService] ⚠ Cursive font styles NOT found in injected theme');
+      }
+    } else {
+      console.error('[ThemeService] ✗ Failed to inject theme styles - style element not found');
+    }
   },
 
   /**
