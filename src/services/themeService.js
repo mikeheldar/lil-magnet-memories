@@ -211,8 +211,20 @@ export const themeService = {
             `Found ${themes.length} themes named "${themeName}", keeping most recent (${toKeep.id}), deleting ${toDelete.length} duplicates`
           );
 
+          // Check if the theme we're keeping is the active one
+          const activeTheme = await this.getActiveTheme();
+          const isActiveTheme = activeTheme && activeTheme.id === toKeep.id;
+
           for (const duplicate of toDelete) {
             try {
+              // If we're deleting the active theme, switch to the one we're keeping
+              if (activeTheme && activeTheme.id === duplicate.id) {
+                console.log(
+                  `Active theme is a duplicate, switching to ${toKeep.id}`
+                );
+                await this.activateTheme(toKeep.id);
+              }
+
               const themeRef = doc(db, THEMES_COLLECTION, duplicate.id);
               await deleteDoc(themeRef);
               console.log(`Deleted duplicate theme: ${duplicate.id}`);
@@ -510,6 +522,15 @@ export const initializeDefaultThemes = async () => {
           .q-header.bg-primary {
             background: #1a1a1a !important;
             background-image: none !important;
+          }
+
+          /* Cursive, clean header font */
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', cursive !important;
+            font-weight: 400 !important;
+            font-style: normal !important;
+            letter-spacing: 0.02em !important;
           }
 
           /* Ensure header text stays white */
