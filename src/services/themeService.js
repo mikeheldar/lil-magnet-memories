@@ -45,41 +45,56 @@ export const themeService = {
    */
   async getTheme(themeId) {
     try {
+      console.log(`[ThemeService] Fetching theme ${themeId} from Firestore`);
       const themeRef = doc(db, THEMES_COLLECTION, themeId);
       const themeSnap = await getDoc(themeRef);
+
+      console.log(`[ThemeService] Theme ${themeId} exists: ${themeSnap.exists()}`);
 
       if (themeSnap.exists()) {
         const theme = {
           id: themeSnap.id,
           ...themeSnap.data(),
         };
+        console.log(`[ThemeService] Theme ${themeId} loaded: ${theme.name}, has styles: ${!!theme.styles}`);
         // Cache the theme for offline use
         if (theme.styles) {
           localStorage.setItem(`theme_${themeId}`, JSON.stringify(theme));
         }
         return theme;
       }
+      console.warn(`[ThemeService] Theme ${themeId} does not exist in Firestore`);
       return null;
     } catch (error) {
+      // Enhanced error logging
+      console.error(`[ThemeService] Error getting theme ${themeId}:`, {
+        code: error?.code,
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name
+      });
+      
       // Check if it's an offline error
-      const isOfflineError = error?.code === 'unavailable' || 
+      const isOfflineError = error?.code === 'unavailable' ||
+                            error?.code === 'failed-precondition' ||
                             error?.message?.includes('offline') ||
                             error?.message?.includes('Failed to get document');
-      
+
       if (isOfflineError) {
         // Try to get from cache
         const cachedTheme = localStorage.getItem(`theme_${themeId}`);
         if (cachedTheme) {
           try {
             const theme = JSON.parse(cachedTheme);
-            console.log(`Using cached theme ${themeId} due to offline status`);
+            console.log(`[ThemeService] Using cached theme ${themeId} due to offline status`);
             return theme;
           } catch (parseError) {
-            console.error('Error parsing cached theme:', parseError);
+            console.error('[ThemeService] Error parsing cached theme:', parseError);
           }
         }
+      } else if (error?.code === 'permission-denied') {
+        console.error(`[ThemeService] Permission denied for theme ${themeId} - check Firestore rules`);
       }
-      console.error('Error getting theme:', error);
       throw error;
     }
   },
@@ -89,50 +104,79 @@ export const themeService = {
    */
   async getActiveTheme() {
     try {
+      console.log(`[ThemeService] Attempting to get active theme from Firestore: ${THEMES_COLLECTION}/${ACTIVE_THEME_DOC}`);
       const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
       const activeThemeSnap = await getDoc(activeThemeRef);
 
+      console.log(`[ThemeService] Active theme document exists: ${activeThemeSnap.exists()}`);
+
       if (activeThemeSnap.exists()) {
-        const activeThemeId = activeThemeSnap.data().themeId;
+        const data = activeThemeSnap.data();
+        console.log(`[ThemeService] Active theme data:`, data);
+        const activeThemeId = data?.themeId;
         if (activeThemeId) {
+          console.log(`[ThemeService] Fetching theme with ID: ${activeThemeId}`);
           try {
-            return await this.getTheme(activeThemeId);
+            const theme = await this.getTheme(activeThemeId);
+            console.log(`[ThemeService] Successfully fetched theme: ${theme?.name}`);
+            return theme;
           } catch (themeError) {
             // If we can't get the theme but have it cached, use cache
-            console.warn('Error fetching theme from Firebase, trying cache:', themeError);
+            console.warn('[ThemeService] Error fetching theme from Firebase, trying cache:', themeError);
+            console.warn('[ThemeService] Error details:', {
+              code: themeError?.code,
+              message: themeError?.message,
+              stack: themeError?.stack
+            });
             const storedTheme = localStorage.getItem('activeTheme');
             if (storedTheme) {
               const theme = JSON.parse(storedTheme);
               if (theme.id === activeThemeId) {
-                console.log('Using cached theme due to Firebase error');
+                console.log('[ThemeService] Using cached theme due to Firebase error');
                 return theme;
               }
             }
             throw themeError;
           }
+        } else {
+          console.warn('[ThemeService] Active theme document exists but has no themeId');
         }
+      } else {
+        console.warn(`[ThemeService] Active theme document does not exist. Collection: ${THEMES_COLLECTION}, Doc: ${ACTIVE_THEME_DOC}`);
       }
       return null;
     } catch (error) {
+      // Enhanced error logging
+      console.error('[ThemeService] Error getting active theme:', {
+        code: error?.code,
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name
+      });
+      
       // Check if it's an offline error
-      const isOfflineError = error?.code === 'unavailable' || 
+      const isOfflineError = error?.code === 'unavailable' ||
+                            error?.code === 'failed-precondition' ||
                             error?.message?.includes('offline') ||
                             error?.message?.includes('Failed to get document');
-      
+
       if (isOfflineError) {
-        console.warn('Firebase appears offline, using cached theme if available');
+        console.warn('[ThemeService] Firebase appears offline, using cached theme if available');
         const storedTheme = localStorage.getItem('activeTheme');
         if (storedTheme) {
           try {
             const theme = JSON.parse(storedTheme);
-            console.log('Using cached theme due to offline status');
+            console.log('[ThemeService] Using cached theme due to offline status');
             return theme;
           } catch (parseError) {
-            console.error('Error parsing cached theme:', parseError);
+            console.error('[ThemeService] Error parsing cached theme:', parseError);
           }
         }
       } else {
-        console.error('Error getting active theme:', error);
+        // Check if it's a permissions error
+        if (error?.code === 'permission-denied') {
+          console.error('[ThemeService] Permission denied - check Firestore rules for themes collection');
+        }
       }
       return null;
     }
@@ -214,7 +258,7 @@ export const themeService = {
         );
       } catch (firebaseError) {
         // If Firebase fails, still apply the theme locally
-        const isOfflineError = firebaseError?.code === 'unavailable' || 
+        const isOfflineError = firebaseError?.code === 'unavailable' ||
                               firebaseError?.message?.includes('offline') ||
                               firebaseError?.message?.includes('Failed to get document');
         if (isOfflineError) {
