@@ -6,6 +6,7 @@ import {
   setDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
@@ -173,6 +174,63 @@ export const themeService = {
   },
 
   /**
+   * Clean up duplicate themes - keep only the most recent one of each name
+   */
+  async cleanupDuplicateThemes() {
+    try {
+      const allThemes = await this.getAllThemes();
+      const themesByName = {};
+
+      // Group themes by name
+      allThemes.forEach((theme) => {
+        if (!themesByName[theme.name]) {
+          themesByName[theme.name] = [];
+        }
+        themesByName[theme.name].push(theme);
+      });
+
+      // For each theme name, if there are duplicates, keep the most recent and delete others
+      for (const [themeName, themes] of Object.entries(themesByName)) {
+        if (themes.length > 1) {
+          // Sort by createdAt (most recent first)
+          themes.sort((a, b) => {
+            const dateA = a.createdAt?.toDate
+              ? a.createdAt.toDate()
+              : new Date(a.createdAt || 0);
+            const dateB = b.createdAt?.toDate
+              ? b.createdAt.toDate()
+              : new Date(b.createdAt || 0);
+            return dateB - dateA;
+          });
+
+          // Keep the first (most recent), delete the rest
+          const toKeep = themes[0];
+          const toDelete = themes.slice(1);
+
+          console.log(
+            `Found ${themes.length} themes named "${themeName}", keeping most recent (${toKeep.id}), deleting ${toDelete.length} duplicates`
+          );
+
+          for (const duplicate of toDelete) {
+            try {
+              const themeRef = doc(db, THEMES_COLLECTION, duplicate.id);
+              await deleteDoc(themeRef);
+              console.log(`Deleted duplicate theme: ${duplicate.id}`);
+            } catch (error) {
+              console.error(
+                `Error deleting duplicate theme ${duplicate.id}:`,
+                error
+              );
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error cleaning up duplicate themes:', error);
+    }
+  },
+
+  /**
    * Initialize theme on page load
    */
   async initializeTheme() {
@@ -205,9 +263,42 @@ export const themeService = {
   },
 };
 
+// Flag to prevent multiple simultaneous initializations
+let isInitializing = false;
+let hasInitialized = false;
+
 // Initialize default themes on first load
 export const initializeDefaultThemes = async () => {
+  // Prevent multiple simultaneous calls
+  if (isInitializing) {
+    console.log('Theme initialization already in progress, skipping...');
+    return;
+  }
+
+  // If we've already initialized and both themes exist, skip
+  if (hasInitialized) {
+    try {
+      const existingThemes = await themeService.getAllThemes();
+      const whiteLattusExists = existingThemes.some(
+        (theme) => theme.name === 'White Lattus'
+      );
+      const silverCrisCrossExists = existingThemes.some(
+        (theme) => theme.name === 'Silver Cris-Cross'
+      );
+      if (whiteLattusExists && silverCrisCrossExists) {
+        console.log('Both default themes already exist, skipping initialization');
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking existing themes:', error);
+    }
+  }
+
+  isInitializing = true;
   try {
+    // First, clean up any duplicate themes
+    await themeService.cleanupDuplicateThemes();
+    
     const existingThemes = await themeService.getAllThemes();
 
     // Check if each theme exists by name, create if missing
@@ -328,7 +419,12 @@ export const initializeDefaultThemes = async () => {
         console.log('White Lattus set as default active theme');
       }
     }
+
+    hasInitialized = true;
+    console.log('Theme initialization completed');
   } catch (error) {
     console.error('Error initializing default themes:', error);
+  } finally {
+    isInitializing = false;
   }
 };
