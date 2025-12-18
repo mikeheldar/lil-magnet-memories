@@ -119,6 +119,22 @@ export const themeService = {
   },
 
   /**
+   * Update theme styles
+   */
+  async updateThemeStyles(themeId, newStyles) {
+    try {
+      const themeRef = doc(db, THEMES_COLLECTION, themeId);
+      await updateDoc(themeRef, {
+        styles: newStyles,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error updating theme styles:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Activate a theme
    */
   async activateTheme(themeId) {
@@ -427,7 +443,7 @@ export const initializeDefaultThemes = async () => {
       console.log('Silver Cris-Cross theme created');
     }
 
-    // Create LineA Modern theme if it doesn't exist
+    // Create or update LineA Modern theme
     if (!lineAModernExists) {
       const lineAModernTheme = {
         name: 'LineA Modern',
@@ -575,6 +591,152 @@ export const initializeDefaultThemes = async () => {
         updatedAt: serverTimestamp(),
       });
       console.log('LineA Modern theme created');
+    } else {
+      // Update existing LineA Modern theme with latest styles
+      const existingLineA = existingThemes.find(
+        (theme) => theme.name === 'LineA Modern'
+      );
+      if (existingLineA) {
+        const updatedLineAModernStyles = `
+          /* Clean white background - no patterns */
+          .q-page-container,
+          .landing-page,
+          .hero-section {
+            background: #ffffff !important;
+            background-image: none !important;
+          }
+
+          /* Modern, clean hero title - elegant typography */
+          .hero-title {
+            color: #1a1a1a !important;
+            font-weight: 300 !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-style: normal !important;
+            text-shadow: none !important;
+            -webkit-text-stroke: none !important;
+            text-stroke: none !important;
+            transform: none !important;
+            letter-spacing: -0.02em !important;
+          }
+
+          /* Clean, elegant buttons - neutral colors, no purple */
+          body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1a1a !important;
+            border-radius: 4px !important;
+            filter: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.2s ease !important;
+          }
+
+          body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover {
+            background: #2a2a2a !important;
+            border-color: #2a2a2a !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+          }
+
+          /* Clean q-file buttons */
+          .q-file .q-field__control .q-btn,
+          .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1a1a !important;
+            border-radius: 4px !important;
+            filter: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+          }
+
+          .q-file .q-field__control .q-btn:hover,
+          .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):hover {
+            background: #2a2a2a !important;
+            border-color: #2a2a2a !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+          }
+
+          /* Remove shadows from easel images for cleaner look */
+          .easel-image {
+            filter: none !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+          }
+
+          /* Clean carousel dots */
+          .carousel-dot {
+            background: transparent !important;
+            border: 1.5px solid rgba(0, 0, 0, 0.3) !important;
+          }
+
+          .carousel-dot.dot-active {
+            background: #1a1a1a !important;
+            border-color: #1a1a1a !important;
+            box-shadow: none !important;
+          }
+
+          /* Change header from purple to dark grey/black gradient - use maximum specificity */
+          body .q-layout .q-header,
+          body .q-layout .q-header.bg-primary,
+          body .q-layout .q-header.elevated,
+          body .q-header.bg-primary,
+          body .q-header.elevated,
+          .q-layout .q-header.bg-primary {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
+            background-image: none !important;
+          }
+
+          /* Ensure toolbar and all header children don't override */
+          .q-header .q-toolbar,
+          body .q-header .q-toolbar {
+            background: transparent !important;
+          }
+
+          /* Cursive, clean header font */
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title span,
+          .q-header .q-toolbar-title .text-h5,
+          .q-header .q-toolbar-title .text-weight-bold {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+            font-weight: 400 !important;
+            font-style: normal !important;
+            letter-spacing: 0.05em !important;
+            text-transform: none !important;
+            color: #ffffff !important;
+          }
+
+          /* Ensure all header text stays white */
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title *,
+          .q-header .q-btn,
+          .q-header .q-chip,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+
+          /* Ensure header buttons and icons are visible */
+          .q-header .q-btn {
+            color: #ffffff !important;
+          }
+
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+        `;
+        await this.updateThemeStyles(existingLineA.id, updatedLineAModernStyles);
+        console.log('LineA Modern theme updated with latest styles');
+      }
     }
 
     // Set White Lattus as default active theme if no active theme exists
