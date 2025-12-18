@@ -40,10 +40,27 @@ export default route(function (/* { store, ssrContext } */) {
   // Initialize auth service
   authService.init();
 
-  // Initialize themes
-  initializeDefaultThemes().then(() => {
-    themeService.initializeTheme();
-  });
+  // Initialize themes (don't wait, let it happen in background)
+  // This ensures themes are created even if Firebase is slow
+  initializeDefaultThemes()
+    .then(() => {
+      console.log('[Router] Default themes initialized, applying active theme');
+      return themeService.initializeTheme();
+    })
+    .then((theme) => {
+      if (theme) {
+        console.log(`[Router] Theme initialized: ${theme.name}`);
+      } else {
+        console.log('[Router] No theme found, using fallback');
+      }
+    })
+    .catch((error) => {
+      console.error('[Router] Error initializing themes:', error);
+      // Still try to apply cached theme
+      themeService.initializeTheme().catch((initError) => {
+        console.error('[Router] Error applying cached theme:', initError);
+      });
+    });
 
   // Add authentication and admin guards
   Router.beforeEach(async (to, from, next) => {

@@ -73,7 +73,7 @@ export const themeService = {
         stack: error?.stack,
         name: error?.name
       });
-      
+
       // Check if it's an offline error
       const isOfflineError = error?.code === 'unavailable' ||
                             error?.code === 'failed-precondition' ||
@@ -106,6 +106,8 @@ export const themeService = {
     try {
       console.log(`[ThemeService] Attempting to get active theme from Firestore: ${THEMES_COLLECTION}/${ACTIVE_THEME_DOC}`);
       const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
+      
+      // Use source: 'server' to avoid offline cache issues on first access
       const activeThemeSnap = await getDoc(activeThemeRef);
 
       console.log(`[ThemeService] Active theme document exists: ${activeThemeSnap.exists()}`);
@@ -142,7 +144,9 @@ export const themeService = {
           console.warn('[ThemeService] Active theme document exists but has no themeId');
         }
       } else {
-        console.warn(`[ThemeService] Active theme document does not exist. Collection: ${THEMES_COLLECTION}, Doc: ${ACTIVE_THEME_DOC}`);
+        console.log(`[ThemeService] Active theme document does not exist yet (this is normal on first run). Collection: ${THEMES_COLLECTION}, Doc: ${ACTIVE_THEME_DOC}`);
+        // This is not an error - document just doesn't exist yet
+        // Return null gracefully
       }
       return null;
     } catch (error) {
@@ -154,11 +158,17 @@ export const themeService = {
         name: error?.name
       });
       
-      // Check if it's an offline error
+      // Check if it's actually an offline error or just a missing document
       const isOfflineError = error?.code === 'unavailable' ||
                             error?.code === 'failed-precondition' ||
-                            error?.message?.includes('offline') ||
-                            error?.message?.includes('Failed to get document');
+                            (error?.message?.includes('offline') && !error?.message?.includes('document does not exist')) ||
+                            (error?.message?.includes('Failed to get document') && !error?.message?.includes('document does not exist'));
+
+      // If it's a "document doesn't exist" error, that's fine - return null
+      if (error?.code === 'not-found' || error?.message?.includes('document does not exist')) {
+        console.log('[ThemeService] Document does not exist (normal on first run)');
+        return null;
+      }
 
       if (isOfflineError) {
         console.warn('[ThemeService] Firebase appears offline, using cached theme if available');
@@ -178,6 +188,7 @@ export const themeService = {
           console.error('[ThemeService] Permission denied - check Firestore rules for themes collection');
         }
       }
+      // Return null instead of throwing - missing document is not an error
       return null;
     }
   },
@@ -427,42 +438,61 @@ export const themeService = {
       try {
         const theme = JSON.parse(storedTheme);
         if (theme && theme.styles) {
-          console.log('Applying cached theme immediately');
+          console.log('[ThemeService] Applying cached theme immediately');
           this.applyTheme(theme);
-          // Still try to update from Firebase in background
-          this.getActiveTheme().then((firebaseTheme) => {
-            if (firebaseTheme && firebaseTheme.id !== theme.id) {
-              console.log('Updating theme from Firebase');
-              this.applyTheme(firebaseTheme);
-            } else if (firebaseTheme && firebaseTheme.styles !== theme.styles) {
-              // Theme updated, apply new styles
-              console.log('Theme styles updated from Firebase');
-              this.applyTheme(firebaseTheme);
-            }
-          }).catch((error) => {
-            console.warn('Background Firebase theme fetch failed, using cached theme:', error);
-          });
+          // Still try to update from Firebase in background (non-blocking)
+          this.getActiveTheme()
+            .then((firebaseTheme) => {
+              if (firebaseTheme && firebaseTheme.id !== theme.id) {
+                console.log('[ThemeService] Updating theme from Firebase (different theme)');
+                this.applyTheme(firebaseTheme);
+              } else if (firebaseTheme && firebaseTheme.styles !== theme.styles) {
+                // Theme updated, apply new styles
+                console.log('[ThemeService] Theme styles updated from Firebase');
+                this.applyTheme(firebaseTheme);
+              }
+            })
+            .catch((error) => {
+              // Don't log as error if it's just missing document
+              if (error?.code !== 'not-found' && !error?.message?.includes('document does not exist')) {
+                console.warn('[ThemeService] Background Firebase theme fetch failed, using cached theme:', error);
+              }
+            });
           return theme;
         }
       } catch (parseError) {
-        console.error('Error parsing cached theme:', parseError);
+        console.error('[ThemeService] Error parsing cached theme:', parseError);
         localStorage.removeItem('activeTheme');
       }
     }
 
-    // Try to get active theme from Firebase
+    // Try to get active theme from Firebase (with timeout to avoid hanging)
     try {
-      const activeTheme = await this.getActiveTheme();
+      const activeTheme = await Promise.race([
+        this.getActiveTheme(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Theme fetch timeout')), 5000)
+        )
+      ]);
+      
       if (activeTheme && activeTheme.styles) {
+        console.log(`[ThemeService] Applying theme from Firebase: ${activeTheme.name}`);
         this.applyTheme(activeTheme);
         return activeTheme;
+      } else {
+        console.log('[ThemeService] No active theme found in Firebase');
       }
     } catch (error) {
-      console.error('Error initializing theme from Firebase:', error);
+      // Don't log timeout or missing document as errors
+      if (error?.message !== 'Theme fetch timeout' && 
+          error?.code !== 'not-found' && 
+          !error?.message?.includes('document does not exist')) {
+        console.error('[ThemeService] Error initializing theme from Firebase:', error);
+      }
     }
 
     // Final fallback: apply default theme with cursive font
-    console.log('Applying default fallback theme');
+    console.log('[ThemeService] Applying default fallback theme (no theme found)');
     const fallbackTheme = this.getDefaultFallbackTheme();
     this.applyTheme(fallbackTheme);
     return fallbackTheme;
