@@ -287,6 +287,13 @@ export const initializeDefaultThemes = async () => {
     return;
   }
 
+  // Always run cleanup first to remove duplicates
+  try {
+    await themeService.cleanupDuplicateThemes();
+  } catch (error) {
+    console.error('Error in initial cleanup:', error);
+  }
+
   // If we've already initialized and all default themes exist, skip
   if (hasInitialized) {
     try {
@@ -311,7 +318,7 @@ export const initializeDefaultThemes = async () => {
 
   isInitializing = true;
   try {
-    // First, clean up any duplicate themes
+    // Cleanup was already done above, but do it again here to be safe
     await themeService.cleanupDuplicateThemes();
 
     const existingThemes = await themeService.getAllThemes();
@@ -517,30 +524,49 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header from purple to black fade to dark grey gradient */
-          .q-header,
-          .q-header.bg-primary {
-            background: linear-gradient(135deg, #000000 0%, #2a2a2a 100%) !important;
+          /* Change header from purple to dark grey/black gradient - use high specificity */
+          body .q-header,
+          body .q-header.bg-primary,
+          body .q-header.elevated,
+          .q-layout .q-header,
+          .q-layout .q-header.bg-primary {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
             background-image: none !important;
+          }
+
+          /* Ensure toolbar and all header children don't override */
+          .q-header .q-toolbar {
+            background: transparent !important;
           }
 
           /* Cursive, clean header font */
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title span,
-          .q-header .q-toolbar-title .text-h5 {
+          .q-header .q-toolbar-title .text-h5,
+          .q-header .q-toolbar-title .text-weight-bold {
             font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
+            color: #ffffff !important;
           }
 
-          /* Ensure header text stays white */
+          /* Ensure all header text stays white */
           .q-header .q-toolbar-title,
-          .q-header .q-toolbar-title span,
-          .q-header .q-toolbar-title .text-h5,
+          .q-header .q-toolbar-title *,
           .q-header .q-btn,
-          .q-header .q-chip {
+          .q-header .q-chip,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+
+          /* Ensure header buttons and icons are visible */
+          .q-header .q-btn {
+            color: #ffffff !important;
+          }
+
+          .q-header .q-btn .q-icon {
             color: #ffffff !important;
           }
         `,
