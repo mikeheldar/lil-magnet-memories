@@ -318,9 +318,6 @@ export const initializeDefaultThemes = async () => {
 
   isInitializing = true;
   try {
-    // Cleanup was already done above, but do it again here to be safe
-    await themeService.cleanupDuplicateThemes();
-
     const existingThemes = await themeService.getAllThemes();
 
     // Check if each theme exists by name, create if missing
