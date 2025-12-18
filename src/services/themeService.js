@@ -541,22 +541,35 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header from purple to dark grey/black gradient - use high specificity */
-          body .q-header,
+          /* Change header from purple to black - use maximum specificity to override MainLayout */
+          body .q-layout .q-header,
+          body .q-layout .q-header.bg-primary,
+          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
           body .q-header.elevated,
-          .q-layout .q-header,
-          .q-layout .q-header.bg-primary {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
+          .q-layout .q-header.bg-primary,
+          .q-header.bg-primary,
+          .q-header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
+            background-color: #000000 !important;
             background-image: none !important;
           }
 
           /* Ensure toolbar and all header children don't override */
-          .q-header .q-toolbar {
+          .q-header .q-toolbar,
+          body .q-header .q-toolbar,
+          .q-header .q-toolbar.bg-primary {
             background: transparent !important;
+            background-color: transparent !important;
           }
 
-          /* Cursive, clean header font */
+          /* Cursive, clean header font - maximum specificity */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar-title .text-h5,
+          body .q-header .q-toolbar-title .text-weight-bold,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title .text-h5,
@@ -569,9 +582,18 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* Ensure all header text stays white */
+          /* Ensure all header text stays white - maximum specificity */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title *,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-btn,
+          body .q-header .q-chip,
+          body .q-header .q-btn .q-icon,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title span,
           .q-header .q-btn,
           .q-header .q-chip,
           .q-header .q-btn .q-icon {
@@ -579,11 +601,19 @@ export const initializeDefaultThemes = async () => {
           }
 
           /* Ensure header buttons and icons are visible */
+          body .q-header .q-btn,
           .q-header .q-btn {
             color: #ffffff !important;
           }
 
+          body .q-header .q-btn .q-icon,
           .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+
+          /* Ensure logo text is white and readable */
+          body .q-header .q-toolbar-title,
+          body .q-header * {
             color: #ffffff !important;
           }
         `,
@@ -712,7 +742,13 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Cursive, clean header font */
+          /* Cursive, clean header font - maximum specificity */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar-title .text-h5,
+          body .q-header .q-toolbar-title .text-weight-bold,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title .text-h5,
@@ -725,9 +761,18 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* Ensure all header text stays white */
+          /* Ensure all header text stays white - maximum specificity */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title *,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-btn,
+          body .q-header .q-chip,
+          body .q-header .q-btn .q-icon,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title span,
           .q-header .q-btn,
           .q-header .q-chip,
           .q-header .q-btn .q-icon {
@@ -735,11 +780,19 @@ export const initializeDefaultThemes = async () => {
           }
 
           /* Ensure header buttons and icons are visible */
+          body .q-header .q-btn,
           .q-header .q-btn {
             color: #ffffff !important;
           }
 
+          body .q-header .q-btn .q-icon,
           .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+
+          /* Ensure logo text is white and readable */
+          body .q-header .q-toolbar-title,
+          body .q-header * {
             color: #ffffff !important;
           }
         `;
