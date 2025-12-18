@@ -449,15 +449,15 @@ export const initializeDefaultThemes = async () => {
     const oldLineAModernThemes = existingThemes.filter(
       (theme) => theme.name === 'LineA Modern'
     );
-    
+
     // If we have old themes, convert the first one to "LineA Modern Black Header" and second to "LineA Modern White Header"
     if (oldLineAModernThemes.length > 0) {
       const activeTheme = await themeService.getActiveTheme();
       const isFirstActive = activeTheme && activeTheme.id === oldLineAModernThemes[0].id;
-      
+
       // Rename first to "LineA Modern Black Header"
       await themeService.updateThemeName(oldLineAModernThemes[0].id, 'LineA Modern Black Header');
-      
+
       // Update first theme with black header, white non-cursive text
       const blackHeaderStyles = `
           /* Clean white background - no patterns */
@@ -570,7 +570,7 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - non-cursive, white text */
+          /* Header font - cursive for title, white text */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title span,
           body .q-header .q-toolbar-title .text-h5,
@@ -581,10 +581,10 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title .text-h5,
           .q-header .q-toolbar-title .text-weight-bold {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
-            letter-spacing: normal !important;
+            letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
           }
@@ -619,11 +619,11 @@ export const initializeDefaultThemes = async () => {
           }
         `;
       await themeService.updateThemeStyles(oldLineAModernThemes[0].id, blackHeaderStyles);
-      
+
       if (oldLineAModernThemes.length > 1) {
         // Rename second to "LineA Modern White Header"
         await themeService.updateThemeName(oldLineAModernThemes[1].id, 'LineA Modern White Header');
-        
+
         // Update second theme with white header, black non-cursive text
         const whiteHeaderStyles = `
           /* Clean white background - no patterns */
@@ -736,7 +736,7 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - non-cursive, black text */
+          /* Header font - cursive for title, black text */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title span,
           body .q-header .q-toolbar-title .text-h5,
@@ -747,10 +747,10 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title .text-h5,
           .q-header .q-toolbar-title .text-weight-bold {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
-            letter-spacing: normal !important;
+            letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
           }
@@ -786,7 +786,7 @@ export const initializeDefaultThemes = async () => {
         `;
         await themeService.updateThemeStyles(oldLineAModernThemes[1].id, whiteHeaderStyles);
       }
-      
+
       // Re-fetch themes after update
       const updatedThemes = await themeService.getAllThemes();
       const lineAModernBlackExists = updatedThemes.some(
@@ -795,7 +795,7 @@ export const initializeDefaultThemes = async () => {
       const lineAModernWhiteExists = updatedThemes.some(
         (theme) => theme.name === 'LineA Modern White Header'
       );
-      
+
       // If we still need to create them (e.g., only had one old theme)
       if (!lineAModernBlackExists) {
         // Create LineA Modern Black Header theme
@@ -811,7 +811,7 @@ export const initializeDefaultThemes = async () => {
         });
         console.log('LineA Modern Black Header theme created');
       }
-      
+
       if (!lineAModernWhiteExists) {
         // Create LineA Modern White Header theme
         const lineAModernWhiteTheme = {
@@ -834,7 +834,7 @@ export const initializeDefaultThemes = async () => {
       const lineAModernWhiteExists = existingThemes.some(
         (theme) => theme.name === 'LineA Modern White Header'
       );
-      
+
       if (!lineAModernBlackExists) {
         // Create LineA Modern Black Header theme
         const lineAModernBlackTheme = {
@@ -951,7 +951,7 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - non-cursive, white text */
+          /* Header font - cursive for title, white text */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title span,
           body .q-header .q-toolbar-title .text-h5,
@@ -962,10 +962,10 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title .text-h5,
           .q-header .q-toolbar-title .text-weight-bold {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
-            letter-spacing: normal !important;
+            letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
           }
@@ -1007,7 +1007,7 @@ export const initializeDefaultThemes = async () => {
         });
         console.log('LineA Modern Black Header theme created');
       }
-      
+
       if (!lineAModernWhiteExists) {
         // Create LineA Modern White Header theme
         const lineAModernWhiteTheme = {
@@ -1124,7 +1124,7 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - non-cursive, black text */
+          /* Header font - cursive for title, black text */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title span,
           body .q-header .q-toolbar-title .text-h5,
@@ -1135,10 +1135,10 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title .text-h5,
           .q-header .q-toolbar-title .text-weight-bold {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
-            letter-spacing: normal !important;
+            letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
           }
@@ -1181,7 +1181,7 @@ export const initializeDefaultThemes = async () => {
         console.log('LineA Modern White Header theme created');
       }
     }
-    
+
     // Old LineA Modern theme creation code - disabled, replaced by two separate themes above
     if (false) {
       const lineAModernTheme = {
