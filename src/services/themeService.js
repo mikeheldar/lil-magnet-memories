@@ -449,6 +449,14 @@ export const initializeDefaultThemes = async () => {
     const oldLineAModernThemes = existingThemes.filter(
       (theme) => theme.name === 'LineA Modern'
     );
+    
+    // Also update existing "LineA Modern Black Header" and "LineA Modern White Header" themes with latest styles
+    const existingBlackHeader = existingThemes.find(
+      (theme) => theme.name === 'LineA Modern Black Header'
+    );
+    const existingWhiteHeader = existingThemes.find(
+      (theme) => theme.name === 'LineA Modern White Header'
+    );
 
     // If we have old themes, convert the first one to "LineA Modern Black Header" and second to "LineA Modern White Header"
     if (oldLineAModernThemes.length > 0) {
@@ -795,6 +803,344 @@ export const initializeDefaultThemes = async () => {
       const lineAModernWhiteExists = updatedThemes.some(
         (theme) => theme.name === 'LineA Modern White Header'
       );
+      
+      // Update existing themes with latest styles if they exist
+      const updatedBlackHeader = updatedThemes.find(
+        (theme) => theme.name === 'LineA Modern Black Header'
+      );
+      const updatedWhiteHeader = updatedThemes.find(
+        (theme) => theme.name === 'LineA Modern White Header'
+      );
+      
+      if (updatedBlackHeader) {
+        // Update with latest black header styles (cursive font)
+        const blackHeaderStyles = `
+          /* Clean white background - no patterns */
+          .q-page-container,
+          .landing-page,
+          .hero-section {
+            background: #ffffff !important;
+            background-image: none !important;
+          }
+
+          /* Modern, clean hero title - elegant typography */
+          .hero-title {
+            color: #1a1a1a !important;
+            font-weight: 300 !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-style: normal !important;
+            text-shadow: none !important;
+            -webkit-text-stroke: none !important;
+            text-stroke: none !important;
+            transform: none !important;
+            letter-spacing: -0.02em !important;
+          }
+
+          /* Clean, elegant buttons - neutral colors, no purple */
+          body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1a1a !important;
+            border-radius: 4px !important;
+            filter: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.2s ease !important;
+          }
+
+          body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover {
+            background: #2a2a2a !important;
+            border-color: #2a2a2a !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+          }
+
+          /* Clean q-file buttons */
+          .q-file .q-field__control .q-btn,
+          .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1a1a !important;
+            border-radius: 4px !important;
+            filter: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+          }
+
+          .q-file .q-field__control .q-btn:hover,
+          .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):hover {
+            background: #2a2a2a !important;
+            border-color: #2a2a2a !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+          }
+
+          /* Remove shadows from easel images for cleaner look */
+          .easel-image {
+            filter: none !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+          }
+
+          /* Clean carousel dots */
+          .carousel-dot {
+            background: transparent !important;
+            border: 1.5px solid rgba(0, 0, 0, 0.3) !important;
+          }
+
+          .carousel-dot.dot-active {
+            background: #1a1a1a !important;
+            border-color: #1a1a1a !important;
+            box-shadow: none !important;
+          }
+
+          /* Change header to black - use maximum specificity to override MainLayout */
+          body .q-layout .q-header,
+          body .q-layout .q-header.bg-primary,
+          body .q-layout .q-header.elevated,
+          body .q-header.bg-primary,
+          body .q-header.elevated,
+          .q-layout .q-header.bg-primary,
+          .q-header.bg-primary,
+          .q-header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
+            background-color: #000000 !important;
+            background-image: none !important;
+          }
+
+          /* Ensure toolbar and all header children don't override */
+          .q-header .q-toolbar,
+          body .q-header .q-toolbar,
+          .q-header .q-toolbar.bg-primary {
+            background: transparent !important;
+            background-color: transparent !important;
+          }
+
+          /* Header font - cursive for title, white text */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar-title .text-h5,
+          body .q-header .q-toolbar-title .text-weight-bold,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title span,
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title span,
+          .q-header .q-toolbar-title .text-h5,
+          .q-header .q-toolbar-title .text-weight-bold {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+            font-weight: 400 !important;
+            font-style: normal !important;
+            letter-spacing: 0.05em !important;
+            text-transform: none !important;
+            color: #ffffff !important;
+          }
+
+          /* Ensure all header text stays white */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title *,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-btn,
+          body .q-header .q-chip,
+          body .q-header .q-btn .q-icon,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title span,
+          .q-header .q-btn,
+          .q-header .q-chip,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+
+          /* Ensure header buttons and icons are visible */
+          body .q-header .q-btn,
+          .q-header .q-btn {
+            color: #ffffff !important;
+          }
+
+          body .q-header .q-btn .q-icon,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+        `;
+        await themeService.updateThemeStyles(updatedBlackHeader.id, blackHeaderStyles);
+        console.log('Updated LineA Modern Black Header theme with latest styles');
+      }
+      
+      if (updatedWhiteHeader) {
+        // Update with latest white header styles (cursive font, black text)
+        const whiteHeaderStyles = `
+          /* Clean white background - no patterns */
+          .q-page-container,
+          .landing-page,
+          .hero-section {
+            background: #ffffff !important;
+            background-image: none !important;
+          }
+
+          /* Modern, clean hero title - elegant typography */
+          .hero-title {
+            color: #1a1a1a !important;
+            font-weight: 300 !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-style: normal !important;
+            text-shadow: none !important;
+            -webkit-text-stroke: none !important;
+            text-stroke: none !important;
+            transform: none !important;
+            letter-spacing: -0.02em !important;
+          }
+
+          /* Clean, elegant buttons - neutral colors, no purple */
+          body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+          body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1a1a !important;
+            border-radius: 4px !important;
+            filter: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.2s ease !important;
+          }
+
+          body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+          body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover {
+            background: #2a2a2a !important;
+            border-color: #2a2a2a !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+          }
+
+          /* Clean q-file buttons */
+          .q-file .q-field__control .q-btn,
+          .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1a1a !important;
+            border-radius: 4px !important;
+            filter: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+          }
+
+          .q-file .q-field__control .q-btn:hover,
+          .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):hover {
+            background: #2a2a2a !important;
+            border-color: #2a2a2a !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+          }
+
+          /* Remove shadows from easel images for cleaner look */
+          .easel-image {
+            filter: none !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+          }
+
+          /* Clean carousel dots */
+          .carousel-dot {
+            background: transparent !important;
+            border: 1.5px solid rgba(0, 0, 0, 0.3) !important;
+          }
+
+          .carousel-dot.dot-active {
+            background: #1a1a1a !important;
+            border-color: #1a1a1a !important;
+            box-shadow: none !important;
+          }
+
+          /* Change header to white - use maximum specificity to override MainLayout */
+          body .q-layout .q-header,
+          body .q-layout .q-header.bg-primary,
+          body .q-layout .q-header.elevated,
+          body .q-header.bg-primary,
+          body .q-header.elevated,
+          .q-layout .q-header.bg-primary,
+          .q-header.bg-primary,
+          .q-header {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            background-image: none !important;
+          }
+
+          /* Ensure toolbar and all header children don't override */
+          .q-header .q-toolbar,
+          body .q-header .q-toolbar,
+          .q-header .q-toolbar.bg-primary {
+            background: transparent !important;
+            background-color: transparent !important;
+          }
+
+          /* Header font - cursive for title, black text */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar-title .text-h5,
+          body .q-header .q-toolbar-title .text-weight-bold,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title span,
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title span,
+          .q-header .q-toolbar-title .text-h5,
+          .q-header .q-toolbar-title .text-weight-bold {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+            font-weight: 400 !important;
+            font-style: normal !important;
+            letter-spacing: 0.05em !important;
+            text-transform: none !important;
+            color: #1a1a1a !important;
+          }
+
+          /* Ensure all header text stays black */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title *,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-btn,
+          body .q-header .q-chip,
+          body .q-header .q-btn .q-icon,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title span,
+          .q-header .q-btn,
+          .q-header .q-chip,
+          .q-header .q-btn .q-icon {
+            color: #1a1a1a !important;
+          }
+
+          /* Ensure header buttons and icons are visible */
+          body .q-header .q-btn,
+          .q-header .q-btn {
+            color: #1a1a1a !important;
+          }
+
+          body .q-header .q-btn .q-icon,
+          .q-header .q-btn .q-icon {
+            color: #1a1a1a !important;
+          }
+        `;
+        await themeService.updateThemeStyles(updatedWhiteHeader.id, whiteHeaderStyles);
+        console.log('Updated LineA Modern White Header theme with latest styles');
+      }
 
       // If we still need to create them (e.g., only had one old theme)
       if (!lineAModernBlackExists) {
