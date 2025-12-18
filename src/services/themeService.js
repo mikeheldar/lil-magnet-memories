@@ -517,24 +517,28 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header from purple to neutral black */
+          /* Change header from purple to black fade to dark grey gradient */
           .q-header,
           .q-header.bg-primary {
-            background: #1a1a1a !important;
+            background: linear-gradient(135deg, #000000 0%, #2a2a2a 100%) !important;
             background-image: none !important;
           }
 
           /* Cursive, clean header font */
           .q-header .q-toolbar-title,
-          .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', cursive !important;
+          .q-header .q-toolbar-title span,
+          .q-header .q-toolbar-title .text-h5 {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
-            letter-spacing: 0.02em !important;
+            letter-spacing: 0.05em !important;
+            text-transform: none !important;
           }
 
           /* Ensure header text stays white */
           .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title span,
+          .q-header .q-toolbar-title .text-h5,
           .q-header .q-btn,
           .q-header .q-chip {
             color: #ffffff !important;
