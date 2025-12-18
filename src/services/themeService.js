@@ -12,7 +12,7 @@ import {
   orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '../firebase/config.js';
+import { db, ensureNetworkReady } from '../firebase/config.js';
 
 const THEMES_COLLECTION = 'themes';
 const ACTIVE_THEME_DOC = 'activeTheme';
@@ -26,6 +26,9 @@ export const themeService = {
    */
   async getAllThemes() {
     try {
+      // Ensure Firestore network is ready before attempting to read
+      await ensureNetworkReady();
+      
       const themesRef = collection(db, THEMES_COLLECTION);
       const q = query(themesRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -45,6 +48,9 @@ export const themeService = {
    */
   async getTheme(themeId) {
     try {
+      // Ensure Firestore network is ready before attempting to read
+      await ensureNetworkReady();
+      
       console.log(`[ThemeService] Fetching theme ${themeId} from Firestore`);
       const themeRef = doc(db, THEMES_COLLECTION, themeId);
       const themeSnap = await getDoc(themeRef);
@@ -104,9 +110,12 @@ export const themeService = {
    */
   async getActiveTheme() {
     try {
+      // Ensure Firestore network is ready before attempting to read
+      await ensureNetworkReady();
+      
       console.log(`[ThemeService] Attempting to get active theme from Firestore: ${THEMES_COLLECTION}/${ACTIVE_THEME_DOC}`);
       const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
-      
+
       // Use source: 'server' to avoid offline cache issues on first access
       const activeThemeSnap = await getDoc(activeThemeRef);
 
@@ -157,7 +166,7 @@ export const themeService = {
         stack: error?.stack,
         name: error?.name
       });
-      
+
       // Check if it's actually an offline error or just a missing document
       const isOfflineError = error?.code === 'unavailable' ||
                             error?.code === 'failed-precondition' ||
@@ -470,11 +479,11 @@ export const themeService = {
     try {
       const activeTheme = await Promise.race([
         this.getActiveTheme(),
-        new Promise((_, reject) => 
+        new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Theme fetch timeout')), 5000)
         )
       ]);
-      
+
       if (activeTheme && activeTheme.styles) {
         console.log(`[ThemeService] Applying theme from Firebase: ${activeTheme.name}`);
         this.applyTheme(activeTheme);
@@ -484,8 +493,8 @@ export const themeService = {
       }
     } catch (error) {
       // Don't log timeout or missing document as errors
-      if (error?.message !== 'Theme fetch timeout' && 
-          error?.code !== 'not-found' && 
+      if (error?.message !== 'Theme fetch timeout' &&
+          error?.code !== 'not-found' &&
           !error?.message?.includes('document does not exist')) {
         console.error('[ThemeService] Error initializing theme from Firebase:', error);
       }
