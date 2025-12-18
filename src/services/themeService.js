@@ -1026,7 +1026,7 @@ export const initializeDefaultThemes = async () => {
         (theme) => theme.name === 'LineA Modern White Header'
       );
 
-      // Update existing themes with latest styles if they exist
+      // ALWAYS update existing themes with latest styles to ensure they have cursive font
       const updatedBlackHeader = updatedThemes.find(
         (theme) => theme.name === 'LineA Modern Black Header'
       );
@@ -1035,6 +1035,7 @@ export const initializeDefaultThemes = async () => {
       );
 
       if (updatedBlackHeader) {
+        console.log(`[ThemeService] Found existing LineA Modern Black Header theme, updating with latest styles`);
         // Update with latest black header styles (cursive font)
         const blackHeaderStyles = `
           /* Clean white background - no patterns */
@@ -1196,20 +1197,27 @@ export const initializeDefaultThemes = async () => {
           }
         `;
         await themeService.updateThemeStyles(updatedBlackHeader.id, blackHeaderStyles);
-        console.log('Updated LineA Modern Black Header theme with latest styles');
+        console.log('[ThemeService] Updated LineA Modern Black Header theme with latest styles in Firestore');
         
-        // If this is the active theme, reapply it
+        // Always reapply if this is the active theme (to update cache and apply immediately)
         const activeTheme = await themeService.getActiveTheme();
         if (activeTheme && activeTheme.id === updatedBlackHeader.id) {
-          console.log('Reapplying updated LineA Modern Black Header theme');
+          console.log('[ThemeService] Active theme was updated, reapplying with latest styles');
+          // Fetch fresh from Firestore to get updated styles
           const updatedTheme = await themeService.getTheme(updatedBlackHeader.id);
           if (updatedTheme) {
+            // Clear old cache first
+            localStorage.removeItem('activeTheme');
+            localStorage.removeItem(`theme_${updatedBlackHeader.id}`);
+            // Apply fresh theme
             themeService.applyTheme(updatedTheme);
+            console.log('[ThemeService] Successfully reapplied updated LineA Modern Black Header theme');
           }
         }
       }
 
       if (updatedWhiteHeader) {
+        console.log(`[ThemeService] Found existing LineA Modern White Header theme, updating with latest styles`);
         // Update with latest white header styles (cursive font, black text)
         const whiteHeaderStyles = `
           /* Clean white background - no patterns */
@@ -1371,15 +1379,21 @@ export const initializeDefaultThemes = async () => {
           }
         `;
         await themeService.updateThemeStyles(updatedWhiteHeader.id, whiteHeaderStyles);
-        console.log('Updated LineA Modern White Header theme with latest styles');
+        console.log('[ThemeService] Updated LineA Modern White Header theme with latest styles in Firestore');
         
-        // If this is the active theme, reapply it
+        // Always reapply if this is the active theme (to update cache and apply immediately)
         const activeTheme = await themeService.getActiveTheme();
         if (activeTheme && activeTheme.id === updatedWhiteHeader.id) {
-          console.log('Reapplying updated LineA Modern White Header theme');
+          console.log('[ThemeService] Active theme was updated, reapplying with latest styles');
+          // Fetch fresh from Firestore to get updated styles
           const updatedTheme = await themeService.getTheme(updatedWhiteHeader.id);
           if (updatedTheme) {
+            // Clear old cache first
+            localStorage.removeItem('activeTheme');
+            localStorage.removeItem(`theme_${updatedWhiteHeader.id}`);
+            // Apply fresh theme
             themeService.applyTheme(updatedTheme);
+            console.log('[ThemeService] Successfully reapplied updated LineA Modern White Header theme');
           }
         }
       }
@@ -2142,6 +2156,14 @@ export const initializeDefaultThemes = async () => {
     }
 
     hasInitialized = true;
+    // After all themes are created/updated, force reapply active theme if it was updated
+    const finalActiveTheme = await themeService.getActiveTheme();
+    if (finalActiveTheme) {
+      // Reapply to ensure latest styles are used (this will also update cache)
+      console.log(`[ThemeService] Reapplying active theme after initialization: ${finalActiveTheme.name}`);
+      themeService.applyTheme(finalActiveTheme);
+    }
+
     console.log('Theme initialization completed');
   } catch (error) {
     console.error('Error initializing default themes:', error);
