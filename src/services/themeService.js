@@ -191,31 +191,54 @@ export const themeService = {
   },
 
   /**
-   * Activate a theme
+   * Activate a theme with offline support
    */
   async activateTheme(themeId) {
     try {
-      // Verify theme exists
+      // Verify theme exists (will use cache if offline)
       const theme = await this.getTheme(themeId);
       if (!theme) {
         throw new Error('Theme not found');
       }
 
-      // Set as active theme
-      const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
-      await setDoc(
-        activeThemeRef,
-        {
-          themeId: themeId,
-          activatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      // Set as active theme in Firebase (best effort, don't fail if offline)
+      try {
+        const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
+        await setDoc(
+          activeThemeRef,
+          {
+            themeId: themeId,
+            activatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      } catch (firebaseError) {
+        // If Firebase fails, still apply the theme locally
+        const isOfflineError = firebaseError?.code === 'unavailable' || 
+                              firebaseError?.message?.includes('offline') ||
+                              firebaseError?.message?.includes('Failed to get document');
+        if (isOfflineError) {
+          console.warn('Firebase offline, activating theme locally only');
+        } else {
+          throw firebaseError;
+        }
+      }
 
-      // Apply theme styles
+      // Apply theme styles (always works, even offline)
       this.applyTheme(theme);
     } catch (error) {
       console.error('Error activating theme:', error);
+      // If we have the theme cached, still try to apply it
+      const cachedTheme = localStorage.getItem(`theme_${themeId}`);
+      if (cachedTheme) {
+        try {
+          const theme = JSON.parse(cachedTheme);
+          console.log('Applying cached theme despite activation error');
+          this.applyTheme(theme);
+        } catch (parseError) {
+          console.error('Error parsing cached theme:', parseError);
+        }
+      }
       throw error;
     }
   },
