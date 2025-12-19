@@ -709,8 +709,8 @@ export default {
         }
       })();
 
-      // Add test environment indicator
-      return config.isTest ? `${baseTitle} (TEST)` : baseTitle;
+      // Return base title without (TEST) - orange pill badge already indicates test environment
+      return baseTitle;
     });
 
     const isTestEnvironment = computed(() => config.isTest);
