@@ -358,22 +358,27 @@ export const themeService = {
 
         if (isWhiteHeader) {
           // Force white background with inline styles (highest priority - overrides everything)
-          header.style.cssText += 'background: #ffffff !important; background-color: #ffffff !important; background-image: none !important;';
+          // Use setProperty instead of cssText to avoid overwriting other styles
+          header.style.setProperty('background', '#ffffff', 'important');
+          header.style.setProperty('background-color', '#ffffff', 'important');
+          header.style.setProperty('background-image', 'none', 'important');
           header.setAttribute('data-theme-override', 'white');
         } else if (isBlackHeader) {
           // Force black background with inline styles (highest priority - overrides everything)
-          header.style.cssText += 'background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important; background-color: #000000 !important; background-image: none !important;';
+          header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
+          header.style.setProperty('background-color', '#000000', 'important');
+          header.style.setProperty('background-image', 'none', 'important');
           header.setAttribute('data-theme-override', 'black');
         }
-        
-        // Also apply to toolbar
+
+        // Also apply to toolbar (only if it exists to avoid unnecessary DOM queries)
         const toolbar = header.querySelector('.q-toolbar');
         if (toolbar) {
           toolbar.style.setProperty('background', 'transparent', 'important');
           toolbar.style.setProperty('background-color', 'transparent', 'important');
         }
       }
-      
+
       // Apply inline styles to header title for instant font application
       const titleSpan = document.querySelector('.q-toolbar-title span.text-h5.text-weight-bold, .q-toolbar-title span, .q-toolbar-title');
       if (titleSpan) {
@@ -392,36 +397,32 @@ export const themeService = {
         }
       }
     }
-    
+
     // Apply immediately
     applyHeaderStyles();
     
-    // Also set up a MutationObserver to catch Vue re-renders and class changes
+    // Set up a simple MutationObserver to catch Vue re-renders (with timeout to prevent leaks)
     if (document.body) {
+      let observerDisconnected = false;
       const observer = new MutationObserver(function(mutations) {
-        // Check if header was added or modified
-        const header = document.querySelector('.q-header, [class*="q-header"]');
-        if (header) {
-          applyHeaderStyles();
-        }
+        if (observerDisconnected) return;
+        applyHeaderStyles();
       });
       
       observer.observe(document.body, {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ['class', 'style']
+        attributeFilter: ['class']
       });
       
-      // Also check aggressively for the first few seconds
-      let checkCount = 0;
-      const checkInterval = setInterval(function() {
-        checkCount++;
-        applyHeaderStyles();
-        if (checkCount >= 50) { // Check for 5 seconds (50 * 100ms)
-          clearInterval(checkInterval);
+      // Disconnect after 3 seconds to prevent memory leaks and performance issues
+      setTimeout(function() {
+        if (!observerDisconnected) {
+          observerDisconnected = true;
+          observer.disconnect();
         }
-      }, 100);
+      }, 3000);
     }
 
     // Force immediate style recalculation

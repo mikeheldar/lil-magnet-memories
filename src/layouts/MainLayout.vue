@@ -648,7 +648,7 @@ export default {
       const isLineAModern = activeThemeName.value &&
         (activeThemeName.value.includes('LineA Modern Black Header') ||
          activeThemeName.value.includes('LineA Modern White Header'));
-      
+
       if (isLineAModern) {
         // Don't use bg-primary for LineA Modern themes - we'll style it ourselves
         return 'text-white';
@@ -656,14 +656,14 @@ export default {
       // Default: use bg-primary for other themes
       return 'bg-primary text-white';
     });
-    
+
     // Computed inline style for header - apply theme background immediately
     const headerInlineStyle = computed(() => {
-      const isWhiteHeader = activeThemeName.value && 
+      const isWhiteHeader = activeThemeName.value &&
         activeThemeName.value.includes('LineA Modern White Header');
-      const isBlackHeader = activeThemeName.value && 
+      const isBlackHeader = activeThemeName.value &&
         activeThemeName.value.includes('LineA Modern Black Header');
-      
+
       if (isWhiteHeader) {
         return {
           background: '#ffffff',
@@ -679,7 +679,7 @@ export default {
       }
       return {};
     });
-    
+
     // Computed styles for header title based on active theme
     const headerTitleStyle = computed(() => {
       return {};

@@ -132,7 +132,7 @@
                 header.style.setProperty('background-color', '#000000', 'important');
                 header.style.setProperty('background-image', 'none', 'important');
               }
-              
+
               // Also apply to toolbar
               const toolbar = header.querySelector('.q-toolbar');
               if (toolbar) {
@@ -141,7 +141,7 @@
               }
             }
           }
-          
+
           // Try to apply inline styles immediately if elements exist
           applyHeaderInlineStyles();
 
@@ -167,85 +167,44 @@
     return false;
   }
 
-  // Aggressive function to wait for elements and apply styles
+  // Simple function to wait for elements and apply styles (no aggressive checking)
   function waitAndApply() {
     if (document.head) {
       applyCachedTheme();
     }
-
-    // Aggressively check for header element using requestAnimationFrame
-    let checkCount = 0;
-    const maxChecks = 100; // Check for up to ~6 seconds (100 * 16ms)
-
-    function checkForHeader() {
-      checkCount++;
-      const header = document.querySelector('.q-header, [class*="q-header"], header');
-      const titleSpan = document.querySelector('.q-toolbar-title span.text-h5.text-weight-bold, .q-toolbar-title span, .q-toolbar-title');
-      
-      if (header) {
-        // Apply inline styles directly to header immediately (highest priority)
-        const storedTheme = localStorage.getItem('activeTheme');
-        if (storedTheme) {
-          try {
-            const theme = JSON.parse(storedTheme);
-            const isWhiteHeader = theme.name && theme.name.includes('LineA Modern White Header');
-            const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
-            
-            if (isWhiteHeader) {
-              // Use cssText to completely override any existing inline styles
-              header.style.cssText += 'background: #ffffff !important; background-color: #ffffff !important; background-image: none !important;';
-            } else if (isBlackHeader) {
-              header.style.cssText += 'background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important; background-color: #000000 !important; background-image: none !important;';
-            }
-            
-            const toolbar = header.querySelector('.q-toolbar');
-            if (toolbar) {
-              toolbar.style.cssText += 'background: transparent !important; background-color: transparent !important;';
-            }
-          } catch (e) {}
-        }
-      }
-      
-      if (header || titleSpan) {
-        applyCachedTheme();
-        // Keep checking for a bit to catch any Vue re-renders
-        if (checkCount < 20) {
-          requestAnimationFrame(checkForHeader);
-        }
-      } else if (checkCount < maxChecks) {
-        requestAnimationFrame(checkForHeader);
-      }
-    }
-
-    // Start checking immediately
+    
+    // Simple MutationObserver - only watch for header creation, then stop
     if (document.body) {
-      // Use MutationObserver to catch when Vue creates the header
+      let observerDisconnected = false;
       const observer = new MutationObserver(function(mutations) {
-        const header = document.querySelector('.q-header, [class*="q-header"]');
-        const titleSpan = document.querySelector('.q-toolbar-title span, .q-toolbar-title');
-
-        if (header || titleSpan) {
+        if (observerDisconnected) return;
+        
+        const header = document.querySelector('.q-header');
+        if (header) {
+          // Header found, apply styles once and disconnect
           applyCachedTheme();
+          observerDisconnected = true;
+          observer.disconnect();
         }
       });
-
+      
       observer.observe(document.body, {
         childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['class', 'style']
+        subtree: true
       });
-
-      // Also use requestAnimationFrame for aggressive checking
-      requestAnimationFrame(checkForHeader);
-
+      
       // Also try immediately
       applyCachedTheme();
+      
+      // Disconnect after 2 seconds to prevent memory leaks
+      setTimeout(function() {
+        if (!observerDisconnected) {
+          observer.disconnect();
+        }
+      }, 2000);
     } else {
       // Body not ready, wait for it
-      document.addEventListener('DOMContentLoaded', function() {
-        requestAnimationFrame(checkForHeader);
-      });
+      document.addEventListener('DOMContentLoaded', applyCachedTheme);
     }
   }
 
