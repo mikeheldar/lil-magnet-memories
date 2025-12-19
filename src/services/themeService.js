@@ -357,13 +357,28 @@ export const themeService = {
         const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
 
         if (isWhiteHeader) {
+          // Force white background with inline styles (highest priority)
           header.style.setProperty('background', '#ffffff', 'important');
           header.style.setProperty('background-color', '#ffffff', 'important');
           header.style.setProperty('background-image', 'none', 'important');
+          // Remove Quasar's bg-primary class to prevent it from overriding
+          if (header.classList.contains('bg-primary')) {
+            // Don't remove the class (Vue might need it), but override it with inline style
+            header.setAttribute('data-theme-override', 'white');
+          }
         } else if (isBlackHeader) {
+          // Force black background with inline styles (highest priority)
           header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
           header.style.setProperty('background-color', '#000000', 'important');
           header.style.setProperty('background-image', 'none', 'important');
+          header.setAttribute('data-theme-override', 'black');
+        }
+        
+        // Also apply to toolbar
+        const toolbar = header.querySelector('.q-toolbar');
+        if (toolbar) {
+          toolbar.style.setProperty('background', 'transparent', 'important');
+          toolbar.style.setProperty('background-color', 'transparent', 'important');
         }
       }
       
@@ -389,10 +404,14 @@ export const themeService = {
     // Apply immediately
     applyHeaderStyles();
     
-    // Also set up a MutationObserver to catch Vue re-renders
+    // Also set up a MutationObserver to catch Vue re-renders and class changes
     if (document.body) {
       const observer = new MutationObserver(function(mutations) {
-        applyHeaderStyles();
+        // Check if header was added or modified
+        const header = document.querySelector('.q-header, [class*="q-header"]');
+        if (header) {
+          applyHeaderStyles();
+        }
       });
       
       observer.observe(document.body, {
@@ -402,12 +421,12 @@ export const themeService = {
         attributeFilter: ['class', 'style']
       });
       
-      // Also check periodically for a few seconds to catch delayed renders
+      // Also check aggressively for the first few seconds
       let checkCount = 0;
       const checkInterval = setInterval(function() {
         checkCount++;
         applyHeaderStyles();
-        if (checkCount >= 30) { // Check for 3 seconds (30 * 100ms)
+        if (checkCount >= 50) { // Check for 5 seconds (50 * 100ms)
           clearInterval(checkInterval);
         }
       }, 100);
