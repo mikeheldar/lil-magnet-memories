@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="bg-primary text-white">
+    <q-header elevated :class="headerClasses" :style="headerInlineStyle">
       <q-toolbar>
         <!-- Menu button (always visible) -->
         <q-btn
@@ -643,6 +643,43 @@ export default {
       // so we don't need polling anymore
     });
 
+    // Computed classes for header - conditionally apply bg-primary only if not LineA Modern theme
+    const headerClasses = computed(() => {
+      const isLineAModern = activeThemeName.value &&
+        (activeThemeName.value.includes('LineA Modern Black Header') ||
+         activeThemeName.value.includes('LineA Modern White Header'));
+      
+      if (isLineAModern) {
+        // Don't use bg-primary for LineA Modern themes - we'll style it ourselves
+        return 'text-white';
+      }
+      // Default: use bg-primary for other themes
+      return 'bg-primary text-white';
+    });
+    
+    // Computed inline style for header - apply theme background immediately
+    const headerInlineStyle = computed(() => {
+      const isWhiteHeader = activeThemeName.value && 
+        activeThemeName.value.includes('LineA Modern White Header');
+      const isBlackHeader = activeThemeName.value && 
+        activeThemeName.value.includes('LineA Modern Black Header');
+      
+      if (isWhiteHeader) {
+        return {
+          background: '#ffffff',
+          backgroundColor: '#ffffff',
+          backgroundImage: 'none',
+        };
+      } else if (isBlackHeader) {
+        return {
+          background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
+          backgroundColor: '#000000',
+          backgroundImage: 'none',
+        };
+      }
+      return {};
+    });
+    
     // Computed styles for header title based on active theme
     const headerTitleStyle = computed(() => {
       return {};
@@ -893,6 +930,8 @@ export default {
 
     return {
       pageTitle,
+      headerClasses,
+      headerInlineStyle,
       headerTitleStyle,
       headerTitleSpanStyle,
       userNameStyle,
