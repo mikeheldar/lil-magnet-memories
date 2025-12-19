@@ -651,44 +651,57 @@ export const themeService = {
       console.log('[ThemeService] Setting up real-time listener for active theme');
       const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
 
-      // Set up real-time listener
+      // Set up real-time listener with debouncing to prevent excessive updates
+      let updateTimeout = null;
       activeThemeUnsubscribe = onSnapshot(
         activeThemeRef,
         async (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.data();
-            const activeThemeId = data?.themeId;
+          // Debounce rapid changes
+          if (updateTimeout) {
+            clearTimeout(updateTimeout);
+          }
+          
+          updateTimeout = setTimeout(async () => {
+            if (snapshot.exists()) {
+              const data = snapshot.data();
+              const activeThemeId = data?.themeId;
 
-            if (activeThemeId) {
-              console.log(`[ThemeService] Active theme changed in real-time: ${activeThemeId}`);
-              try {
-                // Fetch the full theme data
-                const theme = await this.getTheme(activeThemeId);
-                if (theme) {
-                  console.log(`[ThemeService] Applying new active theme immediately: ${theme.name}`);
-                  // Apply the theme immediately
-                  this.applyTheme(theme);
-                }
-              } catch (error) {
-                console.error('[ThemeService] Error fetching theme in real-time listener:', error);
-                // Try to use cached theme if available
-                const cachedTheme = localStorage.getItem(`theme_${activeThemeId}`);
-                if (cachedTheme) {
-                  try {
-                    const theme = JSON.parse(cachedTheme);
-                    console.log('[ThemeService] Using cached theme in real-time listener');
+              if (activeThemeId) {
+                console.log(`[ThemeService] Active theme changed in real-time: ${activeThemeId}`);
+                try {
+                  // Fetch the full theme data
+                  const theme = await this.getTheme(activeThemeId);
+                  if (theme) {
+                    console.log(`[ThemeService] Applying new active theme immediately: ${theme.name}`);
+                    // Apply the theme immediately
                     this.applyTheme(theme);
-                  } catch (parseError) {
-                    console.error('[ThemeService] Error parsing cached theme:', parseError);
+                    
+                    // Notify MainLayout to update activeThemeName
+                    window.dispatchEvent(new CustomEvent('theme-changed', { detail: { themeName: theme.name } }));
+                  }
+                } catch (error) {
+                  console.error('[ThemeService] Error fetching theme in real-time listener:', error);
+                  // Try to use cached theme if available
+                  const cachedTheme = localStorage.getItem(`theme_${activeThemeId}`);
+                  if (cachedTheme) {
+                    try {
+                      const theme = JSON.parse(cachedTheme);
+                      console.log('[ThemeService] Using cached theme in real-time listener');
+                      this.applyTheme(theme);
+                      window.dispatchEvent(new CustomEvent('theme-changed', { detail: { themeName: theme.name } }));
+                    } catch (parseError) {
+                      console.error('[ThemeService] Error parsing cached theme:', parseError);
+                    }
                   }
                 }
               }
+            } else {
+              console.log('[ThemeService] Active theme document deleted, applying fallback');
+              const fallbackTheme = this.getDefaultFallbackTheme();
+              this.applyTheme(fallbackTheme);
+              window.dispatchEvent(new CustomEvent('theme-changed', { detail: { themeName: null } }));
             }
-          } else {
-            console.log('[ThemeService] Active theme document deleted, applying fallback');
-            const fallbackTheme = this.getDefaultFallbackTheme();
-            this.applyTheme(fallbackTheme);
-          }
+          }, 100); // Debounce by 100ms
         },
         (error) => {
           console.error('[ThemeService] Error in active theme real-time listener:', error);

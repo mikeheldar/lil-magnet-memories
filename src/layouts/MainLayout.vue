@@ -622,25 +622,38 @@ export default {
       }
     };
 
-    // Track active theme for header styling
-    const activeThemeName = ref(null);
-
-    // Check active theme on mount and when it changes
+    // Track active theme for header styling - get from cache immediately (synchronous)
+    const activeThemeName = ref(() => {
+      // Try to get theme name from cache immediately (synchronous, no async)
+      try {
+        const storedTheme = localStorage.getItem('activeTheme');
+        if (storedTheme) {
+          const theme = JSON.parse(storedTheme);
+          return theme?.name || null;
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+      return null;
+    }());
+    
+    // Check active theme from Firebase in background (non-blocking)
     const checkActiveTheme = async () => {
       try {
         const theme = await themeService.getActiveTheme();
-        activeThemeName.value = theme?.name || null;
+        if (theme?.name) {
+          activeThemeName.value = theme.name;
+        }
       } catch (error) {
-        console.error('[MainLayout] Error getting active theme:', error);
+        // Ignore errors, use cached theme
       }
     };
-
-    // Check theme on mount and immediately (real-time listener handles changes automatically)
+    
+    // Check theme from Firebase in background (non-blocking)
     checkActiveTheme();
     onMounted(() => {
       checkActiveTheme();
-      // Real-time listener in themeService handles theme changes automatically,
-      // so we don't need polling anymore
+      // Real-time listener in themeService handles theme changes automatically
     });
 
     // Computed classes for header - conditionally apply bg-primary only if not LineA Modern theme
