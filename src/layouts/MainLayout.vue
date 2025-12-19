@@ -52,8 +52,8 @@
         </div>
 
         <!-- Page title in center -->
-        <q-toolbar-title class="text-center">
-          <span class="text-h5 text-weight-bold">{{ pageTitle }}</span>
+        <q-toolbar-title class="text-center" :style="headerTitleStyle">
+          <span class="text-h5 text-weight-bold" :style="headerTitleSpanStyle">{{ pageTitle }}</span>
         </q-toolbar-title>
 
         <!-- About Button -->
@@ -492,7 +492,8 @@
 </template>
 
 <script>
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import { themeService } from '../services/themeService.js';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
@@ -619,6 +620,53 @@ export default {
         });
       }
     };
+
+    // Track active theme for header styling
+    const activeThemeName = ref(null);
+    
+    // Check active theme on mount and when it changes
+    const checkActiveTheme = async () => {
+      try {
+        const theme = await themeService.getActiveTheme();
+        activeThemeName.value = theme?.name || null;
+      } catch (error) {
+        console.error('[MainLayout] Error getting active theme:', error);
+      }
+    };
+    
+    // Check theme on mount
+    onMounted(() => {
+      checkActiveTheme();
+      // Also check periodically in case theme changes
+      const themeCheckInterval = setInterval(checkActiveTheme, 2000);
+      onUnmounted(() => {
+        clearInterval(themeCheckInterval);
+      });
+    });
+    
+    // Computed styles for header title based on active theme
+    const headerTitleStyle = computed(() => {
+      return {};
+    });
+    
+    const headerTitleSpanStyle = computed(() => {
+      const isLineAModern = activeThemeName.value && 
+        (activeThemeName.value.includes('LineA Modern Black Header') || 
+         activeThemeName.value.includes('LineA Modern White Header'));
+      
+      if (isLineAModern) {
+        const isWhiteHeader = activeThemeName.value.includes('White Header');
+        return {
+          fontFamily: "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive",
+          fontWeight: '400',
+          fontStyle: 'normal',
+          letterSpacing: '0.05em',
+          textTransform: 'none',
+          color: isWhiteHeader ? '#1a1a1a' : '#ffffff',
+        };
+      }
+      return {};
+    });
 
     const pageTitle = computed(() => {
       const baseTitle = (() => {
@@ -820,6 +868,8 @@ export default {
 
     return {
       pageTitle,
+      headerTitleStyle,
+      headerTitleSpanStyle,
       isTestEnvironment,
       isAtMarketEvent,
       activeMarketEvent,
