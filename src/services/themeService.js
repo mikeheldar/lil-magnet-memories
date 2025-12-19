@@ -327,6 +327,10 @@ export const themeService = {
     if (existingPreloadStyle) {
       existingPreloadStyle.remove();
     }
+    const existingPreloadHeaderStyle = document.getElementById('theme-preload-header-styles');
+    if (existingPreloadHeaderStyle) {
+      existingPreloadHeaderStyle.remove();
+    }
     const existingStyle = document.getElementById('dynamic-theme-styles');
     if (existingStyle) {
       existingStyle.remove();
@@ -345,38 +349,68 @@ export const themeService = {
     }
 
     // Apply inline styles directly to header for instant application
-    const header = document.querySelector('.q-header, [class*="q-header"]');
-    if (header) {
-      const isWhiteHeader = theme.name && theme.name.includes('LineA Modern White Header');
-      const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
+    // Use a function that can be called multiple times to catch Vue re-renders
+    function applyHeaderStyles() {
+      const header = document.querySelector('.q-header, [class*="q-header"], header');
+      if (header) {
+        const isWhiteHeader = theme.name && theme.name.includes('LineA Modern White Header');
+        const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
+
+        if (isWhiteHeader) {
+          header.style.setProperty('background', '#ffffff', 'important');
+          header.style.setProperty('background-color', '#ffffff', 'important');
+          header.style.setProperty('background-image', 'none', 'important');
+        } else if (isBlackHeader) {
+          header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
+          header.style.setProperty('background-color', '#000000', 'important');
+          header.style.setProperty('background-image', 'none', 'important');
+        }
+      }
       
-      if (isWhiteHeader) {
-        header.style.setProperty('background', '#ffffff', 'important');
-        header.style.setProperty('background-color', '#ffffff', 'important');
-        header.style.setProperty('background-image', 'none', 'important');
-      } else if (isBlackHeader) {
-        header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
-        header.style.setProperty('background-color', '#000000', 'important');
-        header.style.setProperty('background-image', 'none', 'important');
+      // Apply inline styles to header title for instant font application
+      const titleSpan = document.querySelector('.q-toolbar-title span.text-h5.text-weight-bold, .q-toolbar-title span, .q-toolbar-title');
+      if (titleSpan) {
+        const isLineAModern = theme.name &&
+          (theme.name.includes('LineA Modern Black Header') ||
+           theme.name.includes('LineA Modern White Header'));
+
+        if (isLineAModern) {
+          const isWhiteHeader = theme.name.includes('White Header');
+          titleSpan.style.setProperty('font-family', "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive", 'important');
+          titleSpan.style.setProperty('font-weight', '400', 'important');
+          titleSpan.style.setProperty('font-style', 'normal', 'important');
+          titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
+          titleSpan.style.setProperty('text-transform', 'none', 'important');
+          titleSpan.style.setProperty('color', isWhiteHeader ? '#1a1a1a' : '#ffffff', 'important');
+        }
       }
     }
     
-    // Apply inline styles to header title for instant font application
-    const titleSpan = document.querySelector('.q-toolbar-title span.text-h5.text-weight-bold, .q-toolbar-title span, .q-toolbar-title');
-    if (titleSpan) {
-      const isLineAModern = theme.name && 
-        (theme.name.includes('LineA Modern Black Header') || 
-         theme.name.includes('LineA Modern White Header'));
+    // Apply immediately
+    applyHeaderStyles();
+    
+    // Also set up a MutationObserver to catch Vue re-renders
+    if (document.body) {
+      const observer = new MutationObserver(function(mutations) {
+        applyHeaderStyles();
+      });
       
-      if (isLineAModern) {
-        const isWhiteHeader = theme.name.includes('White Header');
-        titleSpan.style.setProperty('font-family', "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive", 'important');
-        titleSpan.style.setProperty('font-weight', '400', 'important');
-        titleSpan.style.setProperty('font-style', 'normal', 'important');
-        titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
-        titleSpan.style.setProperty('text-transform', 'none', 'important');
-        titleSpan.style.setProperty('color', isWhiteHeader ? '#1a1a1a' : '#ffffff', 'important');
-      }
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'style']
+      });
+      
+      // Also check periodically for a few seconds to catch delayed renders
+      let checkCount = 0;
+      const checkInterval = setInterval(function() {
+        checkCount++;
+        applyHeaderStyles();
+        if (checkCount >= 30) { // Check for 3 seconds (30 * 100ms)
+          clearInterval(checkInterval);
+        }
+      }, 100);
     }
 
     // Force immediate style recalculation
