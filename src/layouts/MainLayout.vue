@@ -669,6 +669,32 @@ export default {
       }
       return {};
     });
+    
+    // Computed style for user name - black on white header
+    const userNameStyle = computed(() => {
+      const isWhiteHeader = activeThemeName.value && 
+        activeThemeName.value.includes('LineA Modern White Header');
+      
+      if (isWhiteHeader) {
+        return {
+          color: '#1a1a1a',
+        };
+      }
+      return {};
+    });
+    
+    // Computed style for header buttons (About, etc.) - black on white header
+    const headerButtonStyle = computed(() => {
+      const isWhiteHeader = activeThemeName.value && 
+        activeThemeName.value.includes('LineA Modern White Header');
+      
+      if (isWhiteHeader) {
+        return {
+          color: '#1a1a1a',
+        };
+      }
+      return {};
+    });
 
     const pageTitle = computed(() => {
       const baseTitle = (() => {
