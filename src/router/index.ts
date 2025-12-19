@@ -45,7 +45,7 @@ export default route(function (/* { store, ssrContext } */) {
   // 1. Initialize default themes (background)
   // 2. Update from Firebase if different (non-blocking)
   // 3. Set up real-time listener for future changes
-  
+
   // Initialize themes (don't wait, let it happen in background)
   // This ensures themes are created even if Firebase is slow
   initializeDefaultThemes()

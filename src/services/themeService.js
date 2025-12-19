@@ -344,15 +344,45 @@ export const themeService = {
       document.head.appendChild(style);
     }
 
-    // Force immediate style recalculation
-    if (document.body) {
-      document.body.style.display = 'none';
-      void document.body.offsetHeight; // Force reflow
-      document.body.style.display = '';
+    // Apply inline styles directly to header for instant application
+    const header = document.querySelector('.q-header, [class*="q-header"]');
+    if (header) {
+      const isWhiteHeader = theme.name && theme.name.includes('LineA Modern White Header');
+      const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
+      
+      if (isWhiteHeader) {
+        header.style.setProperty('background', '#ffffff', 'important');
+        header.style.setProperty('background-color', '#ffffff', 'important');
+        header.style.setProperty('background-image', 'none', 'important');
+      } else if (isBlackHeader) {
+        header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
+        header.style.setProperty('background-color', '#000000', 'important');
+        header.style.setProperty('background-image', 'none', 'important');
+      }
+    }
+    
+    // Apply inline styles to header title for instant font application
+    const titleSpan = document.querySelector('.q-toolbar-title span.text-h5.text-weight-bold, .q-toolbar-title span, .q-toolbar-title');
+    if (titleSpan) {
+      const isLineAModern = theme.name && 
+        (theme.name.includes('LineA Modern Black Header') || 
+         theme.name.includes('LineA Modern White Header'));
+      
+      if (isLineAModern) {
+        const isWhiteHeader = theme.name.includes('White Header');
+        titleSpan.style.setProperty('font-family', "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive", 'important');
+        titleSpan.style.setProperty('font-weight', '400', 'important');
+        titleSpan.style.setProperty('font-style', 'normal', 'important');
+        titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
+        titleSpan.style.setProperty('text-transform', 'none', 'important');
+        titleSpan.style.setProperty('color', isWhiteHeader ? '#1a1a1a' : '#ffffff', 'important');
+      }
     }
 
-    // Force reflow to ensure styles are applied
-    void document.body.offsetHeight;
+    // Force immediate style recalculation
+    if (document.body) {
+      void document.body.offsetHeight; // Force reflow
+    }
 
     // Store theme in localStorage for quick access (this also clears old cache)
     localStorage.setItem('activeTheme', JSON.stringify(theme));
@@ -491,41 +521,12 @@ export const themeService = {
 
   /**
    * Initialize theme on page load with robust fallback
+   * NOTE: Theme preload script already applied cached theme synchronously before this runs
+   * This function now just updates from Firebase if different (non-blocking)
    */
   async initializeTheme() {
-    // First, try to apply from localStorage immediately (fastest, works offline)
-    const storedTheme = localStorage.getItem('activeTheme');
-    if (storedTheme) {
-      try {
-        const theme = JSON.parse(storedTheme);
-        if (theme && theme.styles) {
-          console.log('[ThemeService] Applying cached theme immediately');
-          this.applyTheme(theme);
-          // Still try to update from Firebase in background (non-blocking)
-          this.getActiveTheme()
-            .then((firebaseTheme) => {
-              if (firebaseTheme && firebaseTheme.id !== theme.id) {
-                console.log('[ThemeService] Updating theme from Firebase (different theme)');
-                this.applyTheme(firebaseTheme);
-              } else if (firebaseTheme && firebaseTheme.styles !== theme.styles) {
-                // Theme updated, apply new styles
-                console.log('[ThemeService] Theme styles updated from Firebase');
-                this.applyTheme(firebaseTheme);
-              }
-            })
-            .catch((error) => {
-              // Don't log as error if it's just missing document
-              if (error?.code !== 'not-found' && !error?.message?.includes('document does not exist')) {
-                console.warn('[ThemeService] Background Firebase theme fetch failed, using cached theme:', error);
-              }
-            });
-          return theme;
-        }
-      } catch (parseError) {
-        console.error('[ThemeService] Error parsing cached theme:', parseError);
-        localStorage.removeItem('activeTheme');
-      }
-    }
+    // Theme preload script already applied cached theme, so we just check Firebase
+    // This is non-blocking and happens in background
 
     // Try to get active theme from Firebase (with timeout to avoid hanging)
     try {
@@ -537,11 +538,31 @@ export const themeService = {
       ]);
 
       if (activeTheme && activeTheme.styles) {
-        console.log(`[ThemeService] Applying theme from Firebase: ${activeTheme.name}`);
-        this.applyTheme(activeTheme);
-        return activeTheme;
+        // Check if it's different from cached theme
+        const storedTheme = localStorage.getItem('activeTheme');
+        if (storedTheme) {
+          const cachedTheme = JSON.parse(storedTheme);
+          if (cachedTheme.id !== activeTheme.id || cachedTheme.styles !== activeTheme.styles) {
+            console.log(`[ThemeService] Updating theme from Firebase: ${activeTheme.name}`);
+            this.applyTheme(activeTheme);
+            return activeTheme;
+          } else {
+            console.log(`[ThemeService] Theme already matches cached: ${activeTheme.name}`);
+            return cachedTheme;
+          }
+        } else {
+          // No cached theme, apply Firebase theme
+          console.log(`[ThemeService] Applying theme from Firebase: ${activeTheme.name}`);
+          this.applyTheme(activeTheme);
+          return activeTheme;
+        }
       } else {
         console.log('[ThemeService] No active theme found in Firebase');
+        // Use cached theme if available
+        const storedTheme = localStorage.getItem('activeTheme');
+        if (storedTheme) {
+          return JSON.parse(storedTheme);
+        }
       }
     } catch (error) {
       // Don't log timeout or missing document as errors
@@ -549,6 +570,16 @@ export const themeService = {
           error?.code !== 'not-found' &&
           !error?.message?.includes('document does not exist')) {
         console.error('[ThemeService] Error initializing theme from Firebase:', error);
+      }
+
+      // Use cached theme if available
+      const storedTheme = localStorage.getItem('activeTheme');
+      if (storedTheme) {
+        try {
+          return JSON.parse(storedTheme);
+        } catch (parseError) {
+          console.error('[ThemeService] Error parsing cached theme:', parseError);
+        }
       }
     }
 
