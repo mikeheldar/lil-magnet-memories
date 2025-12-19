@@ -62,6 +62,7 @@
           dense
           class="gt-xs q-mr-sm"
           label="About"
+          :style="headerButtonStyle"
           @click="$router.push('/about')"
         />
 
@@ -82,7 +83,7 @@
 
         <!-- User Profile Dropdown (only when authenticated) -->
         <template v-if="isAuthenticated">
-          <q-btn-dropdown flat dense no-caps class="user-profile-dropdown">
+          <q-btn-dropdown flat dense no-caps class="user-profile-dropdown" :style="headerButtonStyle">
             <q-tooltip class="lt-md">User Profile</q-tooltip>
             <template v-slot:label>
               <div class="row items-center no-wrap">
@@ -634,7 +635,8 @@ export default {
       }
     };
 
-    // Check theme on mount
+    // Check theme on mount and immediately
+    checkActiveTheme();
     onMounted(() => {
       checkActiveTheme();
       // Also check periodically in case theme changes
@@ -870,6 +872,8 @@ export default {
       pageTitle,
       headerTitleStyle,
       headerTitleSpanStyle,
+      userNameStyle,
+      headerButtonStyle,
       isTestEnvironment,
       isAtMarketEvent,
       activeMarketEvent,
