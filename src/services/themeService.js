@@ -335,7 +335,7 @@ export const themeService = {
     } else {
       document.head.appendChild(style);
     }
-    
+
     // Force immediate style recalculation
     if (document.body) {
       document.body.style.display = 'none';

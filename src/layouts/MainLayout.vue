@@ -100,7 +100,7 @@
                   />
                 </q-avatar>
                 <!-- Show name only on larger screens -->
-                <span class="user-name gt-sm q-ml-sm">{{
+                <span class="user-name gt-sm q-ml-sm" :style="userNameStyle">{{
                   userProfile.displayName || 'User'
                 }}</span>
               </div>
@@ -623,7 +623,7 @@ export default {
 
     // Track active theme for header styling
     const activeThemeName = ref(null);
-    
+
     // Check active theme on mount and when it changes
     const checkActiveTheme = async () => {
       try {
@@ -633,7 +633,7 @@ export default {
         console.error('[MainLayout] Error getting active theme:', error);
       }
     };
-    
+
     // Check theme on mount
     onMounted(() => {
       checkActiveTheme();
@@ -643,17 +643,17 @@ export default {
         clearInterval(themeCheckInterval);
       });
     });
-    
+
     // Computed styles for header title based on active theme
     const headerTitleStyle = computed(() => {
       return {};
     });
-    
+
     const headerTitleSpanStyle = computed(() => {
-      const isLineAModern = activeThemeName.value && 
-        (activeThemeName.value.includes('LineA Modern Black Header') || 
+      const isLineAModern = activeThemeName.value &&
+        (activeThemeName.value.includes('LineA Modern Black Header') ||
          activeThemeName.value.includes('LineA Modern White Header'));
-      
+
       if (isLineAModern) {
         const isWhiteHeader = activeThemeName.value.includes('White Header');
         return {
