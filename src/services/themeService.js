@@ -328,8 +328,20 @@ export const themeService = {
     const style = document.createElement('style');
     style.id = 'dynamic-theme-styles';
     style.textContent = theme.styles;
-    // Append at the end of head to ensure it overrides other styles
-    document.head.appendChild(style);
+    // Set highest priority by appending at the very end and using !important
+    // Also try to ensure it loads after all other stylesheets
+    if (document.head.lastChild && document.head.lastChild.tagName === 'STYLE') {
+      document.head.insertBefore(style, document.head.lastChild.nextSibling);
+    } else {
+      document.head.appendChild(style);
+    }
+    
+    // Force immediate style recalculation
+    if (document.body) {
+      document.body.style.display = 'none';
+      void document.body.offsetHeight; // Force reflow
+      document.body.style.display = '';
+    }
 
     // Force reflow to ensure styles are applied
     void document.body.offsetHeight;
@@ -824,28 +836,30 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, white text - MAXIMUM SPECIFICITY */
+          /* Header font - cursive for title, white text - ULTRA MAXIMUM SPECIFICITY */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar .q-toolbar-title span,
-          body .q-header .q-toolbar .q-toolbar-title,
           .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          .q-layout .q-header .q-toolbar .q-toolbar-title,
           .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-header .q-toolbar .q-toolbar-title span,
-          .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar-title span,
-          body .q-header .q-toolbar-title {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          /* Also target without classes for fallback */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
@@ -1000,28 +1014,30 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, black text - MAXIMUM SPECIFICITY */
+          /* Header font - cursive for title, black text - ULTRA MAXIMUM SPECIFICITY */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar .q-toolbar-title span,
-          body .q-header .q-toolbar .q-toolbar-title,
           .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          .q-layout .q-header .q-toolbar .q-toolbar-title,
           .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-header .q-toolbar .q-toolbar-title span,
-          .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar-title span,
-          body .q-header .q-toolbar-title {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          /* Also target without classes for fallback */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
@@ -1192,28 +1208,30 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, white text - MAXIMUM SPECIFICITY */
+          /* Header font - cursive for title, white text - ULTRA MAXIMUM SPECIFICITY */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar .q-toolbar-title span,
-          body .q-header .q-toolbar .q-toolbar-title,
           .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          .q-layout .q-header .q-toolbar .q-toolbar-title,
           .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-header .q-toolbar .q-toolbar-title span,
-          .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar-title span,
-          body .q-header .q-toolbar-title {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          /* Also target without classes for fallback */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
@@ -1384,28 +1402,30 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, black text - MAXIMUM SPECIFICITY */
+          /* Header font - cursive for title, black text - ULTRA MAXIMUM SPECIFICITY */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar .q-toolbar-title span,
-          body .q-header .q-toolbar .q-toolbar-title,
           .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          .q-layout .q-header .q-toolbar .q-toolbar-title,
           .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-header .q-toolbar .q-toolbar-title span,
-          .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar-title span,
-          body .q-header .q-toolbar-title {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          /* Also target without classes for fallback */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
@@ -1609,28 +1629,30 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, white text - MAXIMUM SPECIFICITY */
+          /* Header font - cursive for title, white text - ULTRA MAXIMUM SPECIFICITY */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar .q-toolbar-title span,
-          body .q-header .q-toolbar .q-toolbar-title,
           .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          .q-layout .q-header .q-toolbar .q-toolbar-title,
           .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-header .q-toolbar .q-toolbar-title span,
-          .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar-title span,
-          body .q-header .q-toolbar-title {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          /* Also target without classes for fallback */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
@@ -1796,28 +1818,30 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, black text - MAXIMUM SPECIFICITY */
+          /* Header font - cursive for title, black text - ULTRA MAXIMUM SPECIFICITY */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar .q-toolbar-title span,
-          body .q-header .q-toolbar .q-toolbar-title,
           .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          .q-layout .q-header .q-toolbar .q-toolbar-title,
           .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-header .q-toolbar .q-toolbar-title span,
-          .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar-title span,
-          body .q-header .q-toolbar-title {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          /* Also target without classes for fallback */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
@@ -1993,28 +2017,30 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, white text - MAXIMUM SPECIFICITY */
+          /* Header font - cursive for title, white text - ULTRA MAXIMUM SPECIFICITY */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar .q-toolbar-title span,
-          body .q-header .q-toolbar .q-toolbar-title,
           .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          .q-layout .q-header .q-toolbar .q-toolbar-title,
           .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-header .q-toolbar .q-toolbar-title span,
-          .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar-title span,
-          body .q-header .q-toolbar-title {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          /* Also target without classes for fallback */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
@@ -2176,28 +2202,30 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, black text - MAXIMUM SPECIFICITY */
+          /* Header font - cursive for title, black text - ULTRA MAXIMUM SPECIFICITY */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          body .q-layout .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar .q-toolbar-title span,
-          body .q-header .q-toolbar .q-toolbar-title,
           .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-layout .q-header .q-toolbar .q-toolbar-title span,
-          .q-layout .q-header .q-toolbar .q-toolbar-title,
           .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
-          .q-header .q-toolbar .q-toolbar-title span,
-          .q-header .q-toolbar .q-toolbar-title,
           body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
-          body .q-header .q-toolbar-title span,
-          body .q-header .q-toolbar-title {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          /* Also target without classes for fallback */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
             font-weight: 400 !important;
             font-style: normal !important;
             letter-spacing: 0.05em !important;
