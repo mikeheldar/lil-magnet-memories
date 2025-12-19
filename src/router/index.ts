@@ -53,6 +53,11 @@ export default route(function (/* { store, ssrContext } */) {
       } else {
         console.log('[Router] No theme found, using fallback');
       }
+      
+      // Set up real-time listener for theme changes after initial load
+      // This ensures all users see theme changes immediately when an admin changes them
+      console.log('[Router] Setting up real-time theme change listener');
+      themeService.setupActiveThemeListener();
     })
     .catch((error) => {
       console.error('[Router] Error initializing themes:', error);
@@ -60,6 +65,13 @@ export default route(function (/* { store, ssrContext } */) {
       themeService.initializeTheme().catch((initError) => {
         console.error('[Router] Error applying cached theme:', initError);
       });
+      
+      // Still try to set up listener even if initialization failed
+      try {
+        themeService.setupActiveThemeListener();
+      } catch (listenerError) {
+        console.error('[Router] Error setting up theme listener:', listenerError);
+      }
     });
 
   // Add authentication and admin guards

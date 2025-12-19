@@ -635,15 +635,12 @@ export default {
       }
     };
 
-    // Check theme on mount and immediately
+    // Check theme on mount and immediately (real-time listener handles changes automatically)
     checkActiveTheme();
     onMounted(() => {
       checkActiveTheme();
-      // Also check periodically in case theme changes
-      const themeCheckInterval = setInterval(checkActiveTheme, 2000);
-      onUnmounted(() => {
-        clearInterval(themeCheckInterval);
-      });
+      // Real-time listener in themeService handles theme changes automatically,
+      // so we don't need polling anymore
     });
 
     // Computed styles for header title based on active theme
@@ -669,12 +666,12 @@ export default {
       }
       return {};
     });
-    
+
     // Computed style for user name - black on white header
     const userNameStyle = computed(() => {
-      const isWhiteHeader = activeThemeName.value && 
+      const isWhiteHeader = activeThemeName.value &&
         activeThemeName.value.includes('LineA Modern White Header');
-      
+
       if (isWhiteHeader) {
         return {
           color: '#1a1a1a',
@@ -682,12 +679,12 @@ export default {
       }
       return {};
     });
-    
+
     // Computed style for header buttons (About, etc.) - black on white header
     const headerButtonStyle = computed(() => {
-      const isWhiteHeader = activeThemeName.value && 
+      const isWhiteHeader = activeThemeName.value &&
         activeThemeName.value.includes('LineA Modern White Header');
-      
+
       if (isWhiteHeader) {
         return {
           color: '#1a1a1a',

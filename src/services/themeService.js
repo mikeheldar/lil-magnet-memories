@@ -11,11 +11,15 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db, ensureNetworkReady } from '../firebase/config.js';
 
 const THEMES_COLLECTION = 'themes';
 const ACTIVE_THEME_DOC = 'activeTheme';
+
+// Store the active theme listener unsubscribe function
+let activeThemeUnsubscribe = null;
 
 /**
  * Theme Service - Manages site themes and visual styling
@@ -549,6 +553,93 @@ export const themeService = {
     const fallbackTheme = this.getDefaultFallbackTheme();
     this.applyTheme(fallbackTheme);
     return fallbackTheme;
+  },
+
+  /**
+   * Set up real-time listener for active theme changes
+   * This ensures all users see theme changes immediately when an admin changes them
+   */
+  setupActiveThemeListener() {
+    // Clean up existing listener if any
+    if (activeThemeUnsubscribe) {
+      activeThemeUnsubscribe();
+      activeThemeUnsubscribe = null;
+    }
+
+    try {
+      console.log('[ThemeService] Setting up real-time listener for active theme');
+      const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
+
+      // Set up real-time listener
+      activeThemeUnsubscribe = onSnapshot(
+        activeThemeRef,
+        async (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            const activeThemeId = data?.themeId;
+            
+            if (activeThemeId) {
+              console.log(`[ThemeService] Active theme changed in real-time: ${activeThemeId}`);
+              try {
+                // Fetch the full theme data
+                const theme = await this.getTheme(activeThemeId);
+                if (theme) {
+                  console.log(`[ThemeService] Applying new active theme immediately: ${theme.name}`);
+                  // Apply the theme immediately
+                  this.applyTheme(theme);
+                }
+              } catch (error) {
+                console.error('[ThemeService] Error fetching theme in real-time listener:', error);
+                // Try to use cached theme if available
+                const cachedTheme = localStorage.getItem(`theme_${activeThemeId}`);
+                if (cachedTheme) {
+                  try {
+                    const theme = JSON.parse(cachedTheme);
+                    console.log('[ThemeService] Using cached theme in real-time listener');
+                    this.applyTheme(theme);
+                  } catch (parseError) {
+                    console.error('[ThemeService] Error parsing cached theme:', parseError);
+                  }
+                }
+              }
+            }
+          } else {
+            console.log('[ThemeService] Active theme document deleted, applying fallback');
+            const fallbackTheme = this.getDefaultFallbackTheme();
+            this.applyTheme(fallbackTheme);
+          }
+        },
+        (error) => {
+          console.error('[ThemeService] Error in active theme real-time listener:', error);
+          // If offline, try to use cached theme
+          const storedTheme = localStorage.getItem('activeTheme');
+          if (storedTheme) {
+            try {
+              const theme = JSON.parse(storedTheme);
+              console.log('[ThemeService] Using cached theme due to listener error');
+              this.applyTheme(theme);
+            } catch (parseError) {
+              console.error('[ThemeService] Error parsing cached theme:', parseError);
+            }
+          }
+        }
+      );
+
+      console.log('[ThemeService] Real-time listener for active theme set up successfully');
+    } catch (error) {
+      console.error('[ThemeService] Error setting up active theme listener:', error);
+    }
+  },
+
+  /**
+   * Clean up the active theme listener
+   */
+  cleanupActiveThemeListener() {
+    if (activeThemeUnsubscribe) {
+      activeThemeUnsubscribe();
+      activeThemeUnsubscribe = null;
+      console.log('[ThemeService] Active theme listener cleaned up');
+    }
   },
 };
 
