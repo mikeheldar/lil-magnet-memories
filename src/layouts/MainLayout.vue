@@ -623,19 +623,18 @@ export default {
     };
 
     // Track active theme for header styling - get from cache immediately (synchronous)
-    const activeThemeName = ref(() => {
-      // Try to get theme name from cache immediately (synchronous, no async)
-      try {
-        const storedTheme = localStorage.getItem('activeTheme');
-        if (storedTheme) {
-          const theme = JSON.parse(storedTheme);
-          return theme?.name || null;
-        }
-      } catch (e) {
-        // Ignore errors
+    // Try to get theme name from cache immediately (synchronous, no async)
+    let initialThemeName = null;
+    try {
+      const storedTheme = localStorage.getItem('activeTheme');
+      if (storedTheme) {
+        const theme = JSON.parse(storedTheme);
+        initialThemeName = theme?.name || null;
       }
-      return null;
-    }());
+    } catch (e) {
+      // Ignore errors
+    }
+    const activeThemeName = ref(initialThemeName);
     
     // Check active theme from Firebase in background (non-blocking)
     const checkActiveTheme = async () => {
