@@ -322,7 +322,11 @@ export const themeService = {
 
     console.log(`[ThemeService] Applying theme: ${theme.name}`);
 
-    // Remove existing theme styles
+    // Remove existing theme styles (both preload and dynamic)
+    const existingPreloadStyle = document.getElementById('theme-preload-styles');
+    if (existingPreloadStyle) {
+      existingPreloadStyle.remove();
+    }
     const existingStyle = document.getElementById('dynamic-theme-styles');
     if (existingStyle) {
       existingStyle.remove();
@@ -577,7 +581,7 @@ export const themeService = {
           if (snapshot.exists()) {
             const data = snapshot.data();
             const activeThemeId = data?.themeId;
-            
+
             if (activeThemeId) {
               console.log(`[ThemeService] Active theme changed in real-time: ${activeThemeId}`);
               try {
@@ -2750,4 +2754,5 @@ export const initializeDefaultThemes = async () => {
     isInitializing = false;
   }
 };
+
 
