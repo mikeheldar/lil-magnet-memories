@@ -192,19 +192,15 @@
             const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
             
             if (isWhiteHeader) {
-              header.style.setProperty('background', '#ffffff', 'important');
-              header.style.setProperty('background-color', '#ffffff', 'important');
-              header.style.setProperty('background-image', 'none', 'important');
+              // Use cssText to completely override any existing inline styles
+              header.style.cssText += 'background: #ffffff !important; background-color: #ffffff !important; background-image: none !important;';
             } else if (isBlackHeader) {
-              header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
-              header.style.setProperty('background-color', '#000000', 'important');
-              header.style.setProperty('background-image', 'none', 'important');
+              header.style.cssText += 'background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important; background-color: #000000 !important; background-image: none !important;';
             }
             
             const toolbar = header.querySelector('.q-toolbar');
             if (toolbar) {
-              toolbar.style.setProperty('background', 'transparent', 'important');
-              toolbar.style.setProperty('background-color', 'transparent', 'important');
+              toolbar.style.cssText += 'background: transparent !important; background-color: transparent !important;';
             }
           } catch (e) {}
         }

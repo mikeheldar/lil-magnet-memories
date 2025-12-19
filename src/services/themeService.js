@@ -357,20 +357,12 @@ export const themeService = {
         const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
 
         if (isWhiteHeader) {
-          // Force white background with inline styles (highest priority)
-          header.style.setProperty('background', '#ffffff', 'important');
-          header.style.setProperty('background-color', '#ffffff', 'important');
-          header.style.setProperty('background-image', 'none', 'important');
-          // Remove Quasar's bg-primary class to prevent it from overriding
-          if (header.classList.contains('bg-primary')) {
-            // Don't remove the class (Vue might need it), but override it with inline style
-            header.setAttribute('data-theme-override', 'white');
-          }
+          // Force white background with inline styles (highest priority - overrides everything)
+          header.style.cssText += 'background: #ffffff !important; background-color: #ffffff !important; background-image: none !important;';
+          header.setAttribute('data-theme-override', 'white');
         } else if (isBlackHeader) {
-          // Force black background with inline styles (highest priority)
-          header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
-          header.style.setProperty('background-color', '#000000', 'important');
-          header.style.setProperty('background-image', 'none', 'important');
+          // Force black background with inline styles (highest priority - overrides everything)
+          header.style.cssText += 'background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important; background-color: #000000 !important; background-image: none !important;';
           header.setAttribute('data-theme-override', 'black');
         }
         
@@ -993,14 +985,24 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header to black - use maximum specificity to override MainLayout */
-          body .q-layout .q-header,
+          /* Change header to black - use maximum specificity to override MainLayout and Quasar bg-primary */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
           body .q-layout .q-header.bg-primary,
-          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
-          body .q-header.elevated,
           .q-layout .q-header.bg-primary,
           .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
           .q-header {
             background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
             background-color: #000000 !important;
@@ -1171,14 +1173,24 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header to white - use maximum specificity to override MainLayout */
-          body .q-layout .q-header,
+          /* Change header to white - use maximum specificity to override MainLayout and Quasar bg-primary */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
           body .q-layout .q-header.bg-primary,
-          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
-          body .q-header.elevated,
           .q-layout .q-header.bg-primary,
           .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
           .q-header {
             background: #ffffff !important;
             background-color: #ffffff !important;
@@ -1365,14 +1377,24 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header to black - use maximum specificity to override MainLayout */
-          body .q-layout .q-header,
+          /* Change header to black - use maximum specificity to override MainLayout and Quasar bg-primary */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
           body .q-layout .q-header.bg-primary,
-          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
-          body .q-header.elevated,
           .q-layout .q-header.bg-primary,
           .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
           .q-header {
             background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
             background-color: #000000 !important;
@@ -1559,14 +1581,24 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header to white - use maximum specificity to override MainLayout */
-          body .q-layout .q-header,
+          /* Change header to white - use maximum specificity to override MainLayout and Quasar bg-primary */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
           body .q-layout .q-header.bg-primary,
-          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
-          body .q-header.elevated,
           .q-layout .q-header.bg-primary,
           .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
           .q-header {
             background: #ffffff !important;
             background-color: #ffffff !important;
@@ -1786,14 +1818,24 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header to black - use maximum specificity to override MainLayout */
-          body .q-layout .q-header,
+          /* Change header to black - use maximum specificity to override MainLayout and Quasar bg-primary */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
           body .q-layout .q-header.bg-primary,
-          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
-          body .q-header.elevated,
           .q-layout .q-header.bg-primary,
           .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
           .q-header {
             background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
             background-color: #000000 !important;
@@ -1975,14 +2017,24 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header to white - use maximum specificity to override MainLayout */
-          body .q-layout .q-header,
+          /* Change header to white - use maximum specificity to override MainLayout and Quasar bg-primary */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
           body .q-layout .q-header.bg-primary,
-          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
-          body .q-header.elevated,
           .q-layout .q-header.bg-primary,
           .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
           .q-header {
             background: #ffffff !important;
             background-color: #ffffff !important;
@@ -2174,14 +2226,24 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header to black - use maximum specificity to override MainLayout */
-          body .q-layout .q-header,
+          /* Change header to black - use maximum specificity to override MainLayout and Quasar bg-primary */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
           body .q-layout .q-header.bg-primary,
-          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
-          body .q-header.elevated,
           .q-layout .q-header.bg-primary,
           .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
           .q-header {
             background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
             background-color: #000000 !important;
@@ -2359,14 +2421,24 @@ export const initializeDefaultThemes = async () => {
             box-shadow: none !important;
           }
 
-          /* Change header to white - use maximum specificity to override MainLayout */
-          body .q-layout .q-header,
+          /* Change header to white - use maximum specificity to override MainLayout and Quasar bg-primary */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
           body .q-layout .q-header.bg-primary,
-          body .q-layout .q-header.elevated,
           body .q-header.bg-primary,
-          body .q-header.elevated,
           .q-layout .q-header.bg-primary,
           .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
           .q-header {
             background: #ffffff !important;
             background-color: #ffffff !important;
