@@ -207,6 +207,130 @@
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
+        <!-- Shop section (always visible) -->
+        <q-expansion-item
+          icon="shopping_bag"
+          label="Shop"
+          :default-opened="false"
+          header-class="text-grey-8"
+        >
+          <!-- Custom Photo Magnets -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('custom-products-section')"
+            @mouseenter="hoveredCategory = 'custom'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="camera_alt" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Custom Photo Magnets</q-item-label>
+              <q-item-label caption>Create personalized magnets</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Custom -->
+          <div
+            v-if="hoveredCategory === 'custom' && customCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in customCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('custom-products-section')"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Designer Magnets -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('designer-products-section')"
+            @mouseenter="hoveredCategory = 'designer'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="palette" color="secondary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Designer Magnets</q-item-label>
+              <q-item-label caption>Ready-made designs</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Designer -->
+          <div
+            v-if="hoveredCategory === 'designer' && designerCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in designerCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('designer-products-section')"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Specialty Products -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('specialty-products-section')"
+            @mouseenter="hoveredCategory = 'specialty'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="star" color="amber" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Specialty Products</q-item-label>
+              <q-item-label caption>Unique specialty items</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Specialty -->
+          <div
+            v-if="hoveredCategory === 'specialty' && specialtyCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in specialtyCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('specialty-products-section')"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+        </q-expansion-item>
+
+        <q-separator class="q-my-md" />
+
         <!-- Content for non-authenticated users -->
         <template v-if="!isAuthenticated">
           <q-item clickable v-ripple @click="navigateTo('/')">
@@ -502,6 +626,7 @@ import { useQuasar } from 'quasar';
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
+import { firebaseService } from '../services/firebaseService.js';
 
 export default {
   name: 'MainLayout',
@@ -520,6 +645,82 @@ export default {
     });
 
     const { setCustomerType, isMarketCustomer } = useCustomerType();
+
+    // Shop section state
+    const products = ref([]);
+    const hoveredCategory = ref(null);
+
+    // Helper function to group products by collection
+    const groupProductsByCollection = (productList) => {
+      const grouped = {};
+      productList.forEach((product) => {
+        const collection = product.collection || 'Uncategorized';
+        if (!grouped[collection]) {
+          grouped[collection] = [];
+        }
+        grouped[collection].push(product);
+      });
+      return grouped;
+    };
+
+    // Computed collections for each category
+    const customCollections = computed(() => {
+      const customProducts = products.value.filter((p) => p.category === 'custom');
+      const grouped = groupProductsByCollection(customProducts);
+      return Object.keys(grouped).sort();
+    });
+
+    const designerCollections = computed(() => {
+      const designerProducts = products.value.filter((p) => p.category === 'designer');
+      const grouped = groupProductsByCollection(designerProducts);
+      return Object.keys(grouped).sort();
+    });
+
+    const specialtyCollections = computed(() => {
+      const specialtyProducts = products.value.filter((p) => p.category === 'specialty');
+      const grouped = groupProductsByCollection(specialtyProducts);
+      return Object.keys(grouped).sort();
+    });
+
+    // Function to scroll to section on landing page
+    const scrollToSection = (sectionId) => {
+      // Close drawer on mobile
+      leftDrawerOpen.value = false;
+
+      // Navigate to home page if not already there
+      if (route.path !== '/') {
+        router.push('/').then(() => {
+          // Wait for page to load, then scroll
+          setTimeout(() => {
+            const element = document.querySelector(`.${sectionId}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 100);
+        });
+      } else {
+        // Already on home page, just scroll
+        setTimeout(() => {
+          const element = document.querySelector(`.${sectionId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      }
+    };
+
+    // Load products
+    const loadProducts = async () => {
+      try {
+        const isAdminUser = authService.isAdmin();
+        const productsData = await firebaseService.getProducts(isAdminUser);
+        if (productsData && productsData.length > 0) {
+          products.value = productsData;
+        }
+      } catch (error) {
+        console.error('Error loading products in MainLayout:', error);
+      }
+    };
 
     // Create a ref that gets updated periodically to trigger reactivity
     const marketEventCheckTrigger = ref(0);
@@ -635,7 +836,7 @@ export default {
       // Ignore errors
     }
     const activeThemeName = ref(initialThemeName);
-    
+
     // Check active theme from Firebase in background (non-blocking)
     const checkActiveTheme = async () => {
       try {
@@ -647,7 +848,7 @@ export default {
         // Ignore errors, use cached theme
       }
     };
-    
+
     // Check theme from Firebase in background (non-blocking)
     checkActiveTheme();
     onMounted(() => {
@@ -890,6 +1091,9 @@ export default {
     };
 
     onMounted(() => {
+      // Load products for Shop section
+      loadProducts();
+
       // Listen for auth state changes
       authService.onAuthStateChanged((user) => {
         // Only treat non-anonymous users as authenticated for UI
@@ -969,6 +1173,12 @@ export default {
       confirmAtMarketEvent,
       goToOnlineOrder,
       toggleCustomerMode,
+      // Shop section
+      hoveredCategory,
+      customCollections,
+      designerCollections,
+      specialtyCollections,
+      scrollToSection,
     };
   },
 };
@@ -1020,6 +1230,43 @@ export default {
   min-height: 28px;
   opacity: 0.9;
   transition: opacity 0.2s;
+}
+
+// Shop section styles
+.shop-category-item {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.collection-submenu {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-left: 2px solid rgba(0, 0, 0, 0.1);
+  margin-left: 8px;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.collection-item {
+  padding: 4px 8px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
 
   &:hover {
     opacity: 1;

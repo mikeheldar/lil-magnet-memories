@@ -400,7 +400,7 @@ export const themeService = {
 
     // Apply immediately
     applyHeaderStyles();
-    
+
     // Set up a simple MutationObserver to catch Vue re-renders (with timeout to prevent leaks)
     if (document.body) {
       let observerDisconnected = false;
@@ -408,14 +408,14 @@ export const themeService = {
         if (observerDisconnected) return;
         applyHeaderStyles();
       });
-      
+
       observer.observe(document.body, {
         childList: true,
         subtree: true,
         attributes: true,
         attributeFilter: ['class']
       });
-      
+
       // Disconnect after 3 seconds to prevent memory leaks and performance issues
       setTimeout(function() {
         if (!observerDisconnected) {
@@ -660,7 +660,7 @@ export const themeService = {
           if (updateTimeout) {
             clearTimeout(updateTimeout);
           }
-          
+
           updateTimeout = setTimeout(async () => {
             if (snapshot.exists()) {
               const data = snapshot.data();
@@ -675,7 +675,7 @@ export const themeService = {
                     console.log(`[ThemeService] Applying new active theme immediately: ${theme.name}`);
                     // Apply the theme immediately
                     this.applyTheme(theme);
-                    
+
                     // Notify MainLayout to update activeThemeName
                     window.dispatchEvent(new CustomEvent('theme-changed', { detail: { themeName: theme.name } }));
                   }

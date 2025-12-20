@@ -172,13 +172,13 @@
     if (document.head) {
       applyCachedTheme();
     }
-    
+
     // Simple MutationObserver - only watch for header creation, then stop
     if (document.body) {
       let observerDisconnected = false;
       const observer = new MutationObserver(function(mutations) {
         if (observerDisconnected) return;
-        
+
         const header = document.querySelector('.q-header');
         if (header) {
           // Header found, apply styles once and disconnect
@@ -187,15 +187,15 @@
           observer.disconnect();
         }
       });
-      
+
       observer.observe(document.body, {
         childList: true,
         subtree: true
       });
-      
+
       // Also try immediately
       applyCachedTheme();
-      
+
       // Disconnect after 2 seconds to prevent memory leaks
       setTimeout(function() {
         if (!observerDisconnected) {
