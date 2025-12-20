@@ -63,8 +63,7 @@
             flat
             dense
             no-caps
-            :label="customCollections.length > 0 ? 'Custom' : null"
-            :icon="customCollections.length > 0 ? null : 'camera_alt'"
+            label="Custom Photo Magnets"
             :style="headerButtonStyle"
             class="shop-header-btn"
           >
@@ -84,7 +83,7 @@
             <q-list v-else>
               <q-item clickable v-close-popup @click="scrollToSection('custom-products-section')">
                 <q-item-section>
-                  <q-item-label>Custom Photo Magnets</q-item-label>
+                  <q-item-label>Shop Products</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -95,8 +94,7 @@
             flat
             dense
             no-caps
-            :label="designerCollections.length > 0 ? 'Designer' : null"
-            :icon="designerCollections.length > 0 ? null : 'palette'"
+            label="Designer Magnets"
             :style="headerButtonStyle"
             class="shop-header-btn"
           >
@@ -116,7 +114,7 @@
             <q-list v-else>
               <q-item clickable v-close-popup @click="scrollToSection('designer-products-section')">
                 <q-item-section>
-                  <q-item-label>Designer Magnets</q-item-label>
+                  <q-item-label>Shop Products</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -127,8 +125,7 @@
             flat
             dense
             no-caps
-            :label="specialtyCollections.length > 0 ? 'Specialty' : null"
-            :icon="specialtyCollections.length > 0 ? null : 'star'"
+            label="Specialty Products"
             :style="headerButtonStyle"
             class="shop-header-btn"
           >
@@ -148,7 +145,7 @@
             <q-list v-else>
               <q-item clickable v-close-popup @click="scrollToSection('specialty-products-section')">
                 <q-item-section>
-                  <q-item-label>Specialty Products</q-item-label>
+                  <q-item-label>Shop Products</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -763,22 +760,38 @@ export default {
     };
 
     // Computed collections for each category
+    // Returns collections, but filters out "Uncategorized" if it's the only one
     const customCollections = computed(() => {
       const customProducts = products.value.filter((p) => p.category === 'custom');
       const grouped = groupProductsByCollection(customProducts);
-      return Object.keys(grouped).sort();
+      const collections = Object.keys(grouped).sort();
+      // If only "Uncategorized" exists, return empty array (will show "Shop Products" instead)
+      if (collections.length === 1 && collections[0] === 'Uncategorized') {
+        return [];
+      }
+      return collections;
     });
 
     const designerCollections = computed(() => {
       const designerProducts = products.value.filter((p) => p.category === 'designer');
       const grouped = groupProductsByCollection(designerProducts);
-      return Object.keys(grouped).sort();
+      const collections = Object.keys(grouped).sort();
+      // If only "Uncategorized" exists, return empty array (will show "Shop Products" instead)
+      if (collections.length === 1 && collections[0] === 'Uncategorized') {
+        return [];
+      }
+      return collections;
     });
 
     const specialtyCollections = computed(() => {
       const specialtyProducts = products.value.filter((p) => p.category === 'specialty');
       const grouped = groupProductsByCollection(specialtyProducts);
-      return Object.keys(grouped).sort();
+      const collections = Object.keys(grouped).sort();
+      // If only "Uncategorized" exists, return empty array (will show "Shop Products" instead)
+      if (collections.length === 1 && collections[0] === 'Uncategorized') {
+        return [];
+      }
+      return collections;
     });
 
     // Function to scroll to section on landing page, optionally to a specific collection
@@ -805,13 +818,13 @@ export default {
     // Helper function to actually perform the scroll
     const scrollToElement = (sectionId, collectionName = null) => {
       let element = null;
-      
+
       if (collectionName) {
         // Try to find the collection by data attribute or ID
         // Collection groups have data-collection attribute or ID based on collection name
         const sanitizedCollectionName = collectionName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
         element = document.querySelector(`[data-collection="${collectionName}"], #collection-${sanitizedCollectionName}`);
-        
+
         // If not found, try to find within the section
         if (!element) {
           const section = document.querySelector(`.${sectionId}`);
@@ -827,12 +840,12 @@ export default {
           }
         }
       }
-      
+
       // Fallback to section if collection not found
       if (!element) {
         element = document.querySelector(`.${sectionId}`);
       }
-      
+
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         // Add a small offset for header
@@ -1408,7 +1421,7 @@ export default {
 
 .shop-header-btn {
   min-width: auto;
-  
+
   .q-btn__content {
     padding: 0 8px;
   }
