@@ -56,6 +56,105 @@
           <span class="text-h5 text-weight-bold" :style="headerTitleSpanStyle">{{ pageTitle }}</span>
         </q-toolbar-title>
 
+        <!-- Shop Dropdowns for Wide Screens -->
+        <div class="gt-md shop-header-dropdowns q-mr-md">
+          <!-- Custom Photo Magnets Dropdown -->
+          <q-btn-dropdown
+            flat
+            dense
+            no-caps
+            :label="customCollections.length > 0 ? 'Custom' : null"
+            :icon="customCollections.length > 0 ? null : 'camera_alt'"
+            :style="headerButtonStyle"
+            class="shop-header-btn"
+          >
+            <q-list v-if="customCollections.length > 0">
+              <q-item
+                v-for="collection in customCollections"
+                :key="collection"
+                clickable
+                v-close-popup
+                @click="scrollToSection('custom-products-section', collection)"
+              >
+                <q-item-section>
+                  <q-item-label>{{ collection }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+            <q-list v-else>
+              <q-item clickable v-close-popup @click="scrollToSection('custom-products-section')">
+                <q-item-section>
+                  <q-item-label>Custom Photo Magnets</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+
+          <!-- Designer Magnets Dropdown -->
+          <q-btn-dropdown
+            flat
+            dense
+            no-caps
+            :label="designerCollections.length > 0 ? 'Designer' : null"
+            :icon="designerCollections.length > 0 ? null : 'palette'"
+            :style="headerButtonStyle"
+            class="shop-header-btn"
+          >
+            <q-list v-if="designerCollections.length > 0">
+              <q-item
+                v-for="collection in designerCollections"
+                :key="collection"
+                clickable
+                v-close-popup
+                @click="scrollToSection('designer-products-section', collection)"
+              >
+                <q-item-section>
+                  <q-item-label>{{ collection }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+            <q-list v-else>
+              <q-item clickable v-close-popup @click="scrollToSection('designer-products-section')">
+                <q-item-section>
+                  <q-item-label>Designer Magnets</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+
+          <!-- Specialty Products Dropdown -->
+          <q-btn-dropdown
+            flat
+            dense
+            no-caps
+            :label="specialtyCollections.length > 0 ? 'Specialty' : null"
+            :icon="specialtyCollections.length > 0 ? null : 'star'"
+            :style="headerButtonStyle"
+            class="shop-header-btn"
+          >
+            <q-list v-if="specialtyCollections.length > 0">
+              <q-item
+                v-for="collection in specialtyCollections"
+                :key="collection"
+                clickable
+                v-close-popup
+                @click="scrollToSection('specialty-products-section', collection)"
+              >
+                <q-item-section>
+                  <q-item-label>{{ collection }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+            <q-list v-else>
+              <q-item clickable v-close-popup @click="scrollToSection('specialty-products-section')">
+                <q-item-section>
+                  <q-item-label>Specialty Products</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+        </div>
+
         <!-- About Button -->
         <q-btn
           flat
@@ -232,7 +331,7 @@
             </q-item-section>
           </q-item>
 
-          <!-- Show collections on hover for Custom -->
+          <!-- Show collections on hover for Custom (only if collections exist) -->
           <div
             v-if="hoveredCategory === 'custom' && customCollections.length > 0"
             class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
@@ -243,7 +342,7 @@
               clickable
               v-ripple
               dense
-              @click.stop="scrollToSection('custom-products-section')"
+              @click.stop="scrollToSection('custom-products-section', collection)"
               class="collection-item"
             >
               <q-item-section>
@@ -270,7 +369,7 @@
             </q-item-section>
           </q-item>
 
-          <!-- Show collections on hover for Designer -->
+          <!-- Show collections on hover for Designer (only if collections exist) -->
           <div
             v-if="hoveredCategory === 'designer' && designerCollections.length > 0"
             class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
@@ -281,7 +380,7 @@
               clickable
               v-ripple
               dense
-              @click.stop="scrollToSection('designer-products-section')"
+              @click.stop="scrollToSection('designer-products-section', collection)"
               class="collection-item"
             >
               <q-item-section>
@@ -308,7 +407,7 @@
             </q-item-section>
           </q-item>
 
-          <!-- Show collections on hover for Specialty -->
+          <!-- Show collections on hover for Specialty (only if collections exist) -->
           <div
             v-if="hoveredCategory === 'specialty' && specialtyCollections.length > 0"
             class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
@@ -319,7 +418,7 @@
               clickable
               v-ripple
               dense
-              @click.stop="scrollToSection('specialty-products-section')"
+              @click.stop="scrollToSection('specialty-products-section', collection)"
               class="collection-item"
             >
               <q-item-section>
@@ -682,8 +781,8 @@ export default {
       return Object.keys(grouped).sort();
     });
 
-    // Function to scroll to section on landing page
-    const scrollToSection = (sectionId) => {
+    // Function to scroll to section on landing page, optionally to a specific collection
+    const scrollToSection = (sectionId, collectionName = null) => {
       // Close drawer on mobile
       leftDrawerOpen.value = false;
 
@@ -692,20 +791,52 @@ export default {
         router.push('/').then(() => {
           // Wait for page to load, then scroll
           setTimeout(() => {
-            const element = document.querySelector(`.${sectionId}`);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }, 100);
+            scrollToElement(sectionId, collectionName);
+          }, 300);
         });
       } else {
         // Already on home page, just scroll
         setTimeout(() => {
-          const element = document.querySelector(`.${sectionId}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+          scrollToElement(sectionId, collectionName);
         }, 100);
+      }
+    };
+
+    // Helper function to actually perform the scroll
+    const scrollToElement = (sectionId, collectionName = null) => {
+      let element = null;
+      
+      if (collectionName) {
+        // Try to find the collection by data attribute or ID
+        // Collection groups have data-collection attribute or ID based on collection name
+        const sanitizedCollectionName = collectionName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+        element = document.querySelector(`[data-collection="${collectionName}"], #collection-${sanitizedCollectionName}`);
+        
+        // If not found, try to find within the section
+        if (!element) {
+          const section = document.querySelector(`.${sectionId}`);
+          if (section) {
+            // Look for q-expansion-item with matching label
+            const expansionItems = section.querySelectorAll('.collection-group');
+            expansionItems.forEach((item) => {
+              const label = item.querySelector('.q-item__label, .q-expansion-item__header');
+              if (label && label.textContent.trim() === collectionName) {
+                element = item;
+              }
+            });
+          }
+        }
+      }
+      
+      // Fallback to section if collection not found
+      if (!element) {
+        element = document.querySelector(`.${sectionId}`);
+      }
+      
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Add a small offset for header
+        window.scrollBy(0, -80);
       }
     };
 
@@ -1265,6 +1396,21 @@ export default {
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+// Header shop dropdowns for wide screens
+.shop-header-dropdowns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.shop-header-btn {
+  min-width: auto;
+  
+  .q-btn__content {
+    padding: 0 8px;
   }
 }
 

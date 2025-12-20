@@ -201,6 +201,7 @@
               }`"
               default-opened
               class="collection-group q-mb-md"
+              :data-collection="collectionName"
             >
               <div class="q-col-gutter-md q-pt-md">
                 <div
@@ -361,6 +362,7 @@
               }`"
               default-opened
               class="collection-group q-mb-md"
+              :data-collection="collectionName"
             >
               <div class="row q-col-gutter-md q-pt-md">
                 <div
@@ -517,6 +519,7 @@
               }`"
               default-opened
               class="collection-group q-mb-md"
+              :data-collection="collectionName"
             >
               <div class="row q-col-gutter-md q-pt-md">
                 <div
