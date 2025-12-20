@@ -617,7 +617,7 @@
 </template>
 
 <script>
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { themeService } from '../services/themeService.js';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
@@ -1265,16 +1265,6 @@ export default {
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
-  }
-}
-
-  &:hover {
-    opacity: 1;
-  }
-
-  @media (max-width: 600px) {
-    padding: 2px 6px;
-    min-height: 24px;
   }
 }
 
