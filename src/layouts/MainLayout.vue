@@ -802,56 +802,100 @@ export default {
       // Navigate to home page if not already there
       if (route.path !== '/') {
         router.push('/').then(() => {
-          // Wait for page to load, then scroll
-          setTimeout(() => {
-            scrollToElement(sectionId, collectionName);
-          }, 300);
+          // Wait for page to load and Vue to render, then scroll with retry
+          let attempts = 0;
+          const maxAttempts = 10;
+          const tryScroll = () => {
+            attempts++;
+            const element = findScrollTarget(sectionId, collectionName);
+            if (element || attempts >= maxAttempts) {
+              if (element) {
+                performScroll(element);
+              } else if (attempts >= maxAttempts) {
+                console.warn(`Could not find scroll target: ${sectionId}${collectionName ? ` - ${collectionName}` : ''}`);
+              }
+            } else {
+              // Retry after a short delay
+              setTimeout(tryScroll, 100);
+            }
+          };
+          setTimeout(tryScroll, 200);
         });
       } else {
-        // Already on home page, just scroll
-        setTimeout(() => {
-          scrollToElement(sectionId, collectionName);
-        }, 100);
+        // Already on home page, scroll with retry
+        let attempts = 0;
+        const maxAttempts = 10;
+        const tryScroll = () => {
+          attempts++;
+          const element = findScrollTarget(sectionId, collectionName);
+          if (element || attempts >= maxAttempts) {
+            if (element) {
+              performScroll(element);
+            } else if (attempts >= maxAttempts) {
+              console.warn(`Could not find scroll target: ${sectionId}${collectionName ? ` - ${collectionName}` : ''}`);
+            }
+          } else {
+            // Retry after a short delay
+            setTimeout(tryScroll, 50);
+          }
+        };
+        setTimeout(tryScroll, 50);
       }
     };
 
-    // Helper function to actually perform the scroll
-    const scrollToElement = (sectionId, collectionName = null) => {
-      let element = null;
-
+    // Helper function to find the scroll target element
+    const findScrollTarget = (sectionId, collectionName = null) => {
       if (collectionName) {
-        // Try to find the collection by data attribute or ID
-        // Collection groups have data-collection attribute or ID based on collection name
-        const sanitizedCollectionName = collectionName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-        element = document.querySelector(`[data-collection="${collectionName}"], #collection-${sanitizedCollectionName}`);
+        // Try to find the collection by data attribute
+        let element = document.querySelector(`[data-collection="${collectionName}"]`);
 
-        // If not found, try to find within the section
+        // If not found, try to find within the section by matching label text
         if (!element) {
           const section = document.querySelector(`.${sectionId}`);
           if (section) {
-            // Look for q-expansion-item with matching label
+            // Look for q-expansion-item with matching label text
             const expansionItems = section.querySelectorAll('.collection-group');
             expansionItems.forEach((item) => {
-              const label = item.querySelector('.q-item__label, .q-expansion-item__header');
+              // Try multiple selectors to find the label
+              const label = item.querySelector('.q-item__label, .q-expansion-item__header .q-item__label, [class*="q-expansion-item"] .q-item__label');
               if (label && label.textContent.trim() === collectionName) {
                 element = item;
               }
             });
           }
         }
+        return element;
       }
 
-      // Fallback to section if collection not found
-      if (!element) {
-        element = document.querySelector(`.${sectionId}`);
+      // If no collection specified, find section heading
+      const section = document.querySelector(`.${sectionId}`);
+      if (section) {
+        // Find the heading div (the one with text-h4 class containing the section title)
+        const heading = section.querySelector('.text-h4');
+        if (heading) {
+          return heading;
+        }
+        // Fallback to section itself
+        return section;
       }
-
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Add a small offset for header
-        window.scrollBy(0, -80);
-      }
+      return null;
     };
+
+    // Helper function to perform the actual scroll
+    const performScroll = (element) => {
+      if (!element) return;
+
+      // Calculate offset for fixed header (header is typically ~64px)
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    };
+
 
     // Load products
     const loadProducts = async () => {
