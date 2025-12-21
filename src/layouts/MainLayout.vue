@@ -1347,9 +1347,20 @@ export default {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: auto;
-  max-width: 50%;
+  min-width: 220px; /* Lock minimum width to prevent overlap with dropdowns */
+  width: 220px; /* Fixed width to lock title length */
   text-align: center;
+  z-index: 1; /* Ensure title is above dropdowns */
+  pointer-events: none; /* Allow clicks to pass through to elements below */
+  
+  span {
+    pointer-events: auto; /* Re-enable pointer events for the title text itself */
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+  }
 }
 
 // Keep logo large on medium screens
@@ -1422,13 +1433,52 @@ export default {
   display: flex;
   gap: 8px;
   align-items: center;
+  position: relative;
+  z-index: 0; /* Ensure dropdowns are below the title */
+  margin-left: auto; /* Push to the right */
+  flex-shrink: 0; /* Prevent shrinking */
+  
+  // Hide dropdowns one by one from the right as screen gets smaller
+  // Start hiding at 1400px, hide Specialty Products first (3rd child)
+  @media (max-width: 1400px) {
+    .shop-header-btn:nth-child(3) {
+      display: none !important; /* Hide Specialty Products first */
+    }
+  }
+  
+  // Hide Designer Magnets next (2nd child)
+  @media (max-width: 1200px) {
+    .shop-header-btn:nth-child(2) {
+      display: none !important; /* Hide Designer Magnets */
+    }
+  }
+  
+  // Hide Custom Photo Magnets last (1st child)
+  @media (max-width: 1000px) {
+    .shop-header-btn:nth-child(1) {
+      display: none !important; /* Hide Custom Photo Magnets */
+    }
+  }
+  
+  // Hide all dropdowns on smaller screens (they're in sidebar)
+  @media (max-width: 1024px) {
+    display: none !important;
+  }
 }
 
 .shop-header-btn {
   min-width: auto;
+  position: relative;
+  z-index: 0; /* Ensure dropdown buttons are below the title */
 
   .q-btn__content {
     padding: 0 8px;
+  }
+
+  // Ensure dropdown menu appears below the button, not overlapping title
+  :deep(.q-menu) {
+    z-index: 1000; /* Dropdown menu should appear above other content */
+    margin-top: 4px; /* Small gap from button */
   }
 }
 
