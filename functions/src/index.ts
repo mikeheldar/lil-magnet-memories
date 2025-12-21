@@ -195,6 +195,13 @@ app.post('/send-order-email', async (req, res) => {
       quantities,
       orderNumber,
       totalMagnets,
+      subtotal,
+      shipping,
+      tax,
+      totalAmount,
+      shippingOption,
+      paymentOption,
+      cartItems,
     } = req.body;
 
     // Validate required fields
@@ -223,6 +230,13 @@ app.post('/send-order-email', async (req, res) => {
       quantities: quantities || [],
       orderNumber,
       totalMagnets: totalMagnets || 0,
+      subtotal: subtotal || 0,
+      shipping: shipping || 0,
+      tax: tax || 0,
+      totalAmount: totalAmount || 0,
+      shippingOption: shippingOption || null,
+      paymentOption: paymentOption || null,
+      cartItems: cartItems || [],
     });
 
     return res.json({ success: true, messageId: result });
@@ -504,6 +518,13 @@ async function sendLilMagnetOrderEmail(params: {
   quantities: number[];
   orderNumber: string;
   totalMagnets: number;
+  subtotal?: number;
+  shipping?: number;
+  tax?: number;
+  totalAmount?: number;
+  shippingOption?: any;
+  paymentOption?: any;
+  cartItems?: any[];
 }): Promise<string> {
   const {
     firstName,
@@ -515,6 +536,13 @@ async function sendLilMagnetOrderEmail(params: {
     quantities,
     orderNumber,
     totalMagnets,
+    subtotal = 0,
+    shipping = 0,
+    tax = 0,
+    totalAmount = 0,
+    shippingOption = null,
+    paymentOption = null,
+    cartItems = [],
   } = params;
 
   // Get email configuration from Firebase Functions config
@@ -539,6 +567,54 @@ async function sendLilMagnetOrderEmail(params: {
     },
   });
 
+  // Helper functions for formatting
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  };
+
+  const formatAddress = (address: any): string => {
+    if (!address) return 'N/A';
+    const parts = [];
+    if (address.street) parts.push(address.street);
+    if (address.city) parts.push(address.city);
+    if (address.state) parts.push(address.state);
+    if (address.zip) parts.push(address.zip);
+    return parts.length > 0 ? parts.join(', ') : 'N/A';
+  };
+
+  const getPaymentMethodLabel = (paymentOption: any): string => {
+    if (!paymentOption) return 'Not specified';
+    const type = paymentOption.type;
+    switch (type) {
+      case 'square_card':
+        return 'Credit/Debit Card';
+      case 'apple_pay':
+        return 'Apple Pay';
+      case 'google_pay':
+        return 'Google Pay';
+      case 'paypal':
+        return 'PayPal';
+      case 'pay_at_event':
+        return 'Pay at Event';
+      default:
+        return type ? type.replace(/_/g, ' ') : 'Payment';
+    }
+  };
+
+  const getDeliveryOptionLabel = (shippingOption: any): string => {
+    if (!shippingOption) return 'Not specified';
+    if (shippingOption.type === 'pickup') {
+      return 'Pickup at Market Event';
+    }
+    return shippingOption.label || shippingOption.value?.replace(/_/g, ' ') || 'Shipping';
+  };
+
+  const isPayAtEvent = paymentOption?.type === 'pay_at_event';
+  const finalTotalAmount = totalAmount > 0 ? totalAmount : subtotal + shipping + tax;
+
   // Format photo details
   const photoDetails = photos
     .map(
@@ -547,6 +623,15 @@ async function sendLilMagnetOrderEmail(params: {
           quantities[index] > 1 ? 's' : ''
         })`
     )
+    .join('\n');
+
+  // Format cart items
+  const cartItemsDetails = cartItems
+    .map((item) => {
+      const quantity = item.quantity || 1;
+      const productName = item.productName || item.name || 'Product';
+      return `${productName} (${quantity} magnet${quantity > 1 ? 's' : ''})`;
+    })
     .join('\n');
 
   const subject = `lil-order ${orderNumber}`;
@@ -560,29 +645,44 @@ async function sendLilMagnetOrderEmail(params: {
       </div>
 
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h3 style="color: #1976d2; margin-top: 0;">Order Information</h3>
+        <h3 style="color: #1976d2; margin-top: 0;">Order Details</h3>
         <p><strong>Order Number:</strong> ${orderNumber}</p>
         <p><strong>Customer Name:</strong> ${firstName} ${lastName}</p>
         <p><strong>Customer Email:</strong> ${email}</p>
         <p><strong>Customer Phone:</strong> ${phone || 'Not provided'}</p>
         <p><strong>Total Magnets:</strong> ${totalMagnets}</p>
-        <p><strong>Photos Submitted:</strong> ${photos.length}</p>
-        <p><strong>Special Instructions:</strong> ${
-          specialInstructions || 'None'
-        }</p>
-        <p><strong>Submission Date:</strong> ${new Date().toLocaleString()}</p>
+        ${specialInstructions ? `<p><strong>Special Instructions:</strong> ${specialInstructions}</p>` : ''}
+        <p><strong>Order Date:</strong> ${new Date().toLocaleString()}</p>
       </div>
 
       ${
-        photos.length > 0
+        cartItems.length > 0
           ? `
-        <div style="margin-bottom: 20px;">
-          <h3 style="color: #1976d2;">📸 Photo Details</h3>
+        <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+          <h3 style="color: #1976d2; margin-top: 0;">Order Items</h3>
+          <ul style="list-style: none; padding: 0;">
+            ${cartItems
+              .map(
+                (item) => `
+              <li style="padding: 10px; margin: 5px 0; border-bottom: 1px solid #eee;">
+                <strong>${item.productName || item.name || 'Product'}</strong><br>
+                <span style="color: #666;">Quantity: ${item.quantity || 1} magnet${(item.quantity || 1) > 1 ? 's' : ''}</span>
+              </li>
+            `
+              )
+              .join('')}
+          </ul>
+        </div>
+      `
+          : photos.length > 0
+          ? `
+        <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+          <h3 style="color: #1976d2; margin-top: 0;">📸 Photo Details</h3>
           <ul style="list-style: none; padding: 0;">
             ${photos
               .map(
                 (photo, index) => `
-              <li style="background-color: #fff; padding: 10px; margin: 5px 0; border-radius: 4px; border-left: 4px solid #1976d2;">
+              <li style="padding: 10px; margin: 5px 0; border-bottom: 1px solid #eee;">
                 <strong>${photo.name}</strong><br>
                 <span style="color: #666;">Quantity: ${
                   quantities[index]
@@ -597,9 +697,50 @@ async function sendLilMagnetOrderEmail(params: {
           : ''
       }
 
-      <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #1976d2;">
-        <h4 style="margin-top: 0; color: #1976d2;">Next Steps</h4>
-        <p style="margin: 0;">Please review the order details and contact the customer to confirm pricing and delivery details.</p>
+      <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+        <h3 style="color: #1976d2; margin-top: 0;">Receipt Summary</h3>
+        <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+          <span>Subtotal:</span>
+          <strong>${formatCurrency(subtotal)}</strong>
+        </div>
+        ${shipping > 0 ? `
+        <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+          <span>Shipping:</span>
+          <strong>${formatCurrency(shipping)}</strong>
+        </div>
+        ` : ''}
+        ${tax > 0 ? `
+        <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+          <span>Tax:</span>
+          <strong>${formatCurrency(tax)}</strong>
+        </div>
+        ` : ''}
+        <div style="display: flex; justify-content: space-between; margin: 15px 0; padding-top: 15px; border-top: 2px solid #1976d2; font-size: 18px;">
+          <span><strong>${isPayAtEvent ? 'Total to pay at tent' : 'Total Paid'}:</strong></span>
+          <strong style="color: #1976d2;">${formatCurrency(finalTotalAmount)}</strong>
+        </div>
+      </div>
+
+      <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+        <h3 style="color: #1976d2; margin-top: 0;">Delivery & Payment</h3>
+        <div style="margin: 10px 0;">
+          <strong>Delivery Option:</strong> ${getDeliveryOptionLabel(shippingOption)}
+        </div>
+        ${shippingOption?.address ? `
+        <div style="margin: 10px 0; padding-left: 20px; color: #666;">
+          <strong>Shipping Address:</strong><br>
+          ${formatAddress(shippingOption.address)}
+        </div>
+        ` : ''}
+        <div style="margin: 10px 0;">
+          <strong>Payment Method:</strong> ${getPaymentMethodLabel(paymentOption)}
+        </div>
+        ${paymentOption?.billingAddress ? `
+        <div style="margin: 10px 0; padding-left: 20px; color: #666;">
+          <strong>Billing Address:</strong><br>
+          ${formatAddress(paymentOption.billingAddress)}
+        </div>
+        ` : ''}
       </div>
 
       <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
@@ -618,13 +759,20 @@ Customer Name: ${firstName} ${lastName}
 Customer Email: ${email}
 Customer Phone: ${phone || 'Not provided'}
 Total Magnets: ${totalMagnets}
-Photos Submitted: ${photos.length}
-Special Instructions: ${specialInstructions || 'None'}
-Submission Date: ${new Date().toLocaleString()}
+${specialInstructions ? `Special Instructions: ${specialInstructions}\n` : ''}
+Order Date: ${new Date().toLocaleString()}
 
-${photos.length > 0 ? `Photo Details:\n${photoDetails}\n` : ''}
+${cartItems.length > 0 ? `Order Items:\n${cartItemsDetails}\n` : ''}
+${photos.length > 0 && cartItems.length === 0 ? `Photo Details:\n${photoDetails}\n` : ''}
 
-Next Steps: Please review the order details and contact the customer to confirm pricing and delivery details.
+Receipt Summary:
+Subtotal: ${formatCurrency(subtotal)}
+${shipping > 0 ? `Shipping: ${formatCurrency(shipping)}\n` : ''}${tax > 0 ? `Tax: ${formatCurrency(tax)}\n` : ''}${isPayAtEvent ? 'Total to pay at tent' : 'Total Paid'}: ${formatCurrency(finalTotalAmount)}
+
+Delivery & Payment:
+Delivery Option: ${getDeliveryOptionLabel(shippingOption)}
+${shippingOption?.address ? `Shipping Address: ${formatAddress(shippingOption.address)}\n` : ''}Payment Method: ${getPaymentMethodLabel(paymentOption)}
+${paymentOption?.billingAddress ? `Billing Address: ${formatAddress(paymentOption.billingAddress)}\n` : ''}
 
 Best regards,
 Lil Magnet Memories System

@@ -676,6 +676,13 @@ class FirebaseService {
           quantities: orderData.quantities,
           orderNumber: orderData.orderNumber,
           totalMagnets: orderData.totalMagnets,
+          subtotal: orderData.subtotal || 0,
+          shipping: orderData.shipping || 0,
+          tax: orderData.tax || 0,
+          totalAmount: orderData.totalAmount || 0,
+          shippingOption: orderData.shippingOption || null,
+          paymentOption: orderData.paymentOption || null,
+          cartItems: [],
         });
         console.log('Order email sent successfully');
       } catch (emailError) {
@@ -1745,9 +1752,6 @@ class FirebaseService {
       const docRef = await Promise.race([savePromise, timeoutPromise]);
       console.log('Cart order saved with ID:', docRef.id);
 
-      // Return the document ID so we can update it later
-      return docRef.id;
-
       // Send email notification for new order (to admin)
       try {
         await this.sendOrderEmail({
@@ -1755,14 +1759,21 @@ class FirebaseService {
           lastName: orderData.customer.lastName,
           email: orderData.customer.email,
           phone: orderData.customer.phone || '',
-          specialInstructions: `Order Type: Cart Order\nShipping: ${orderData.shippingOption.type}`,
+          specialInstructions: `Order Type: Cart Order`,
           photos: [], // No photos for cart orders
-          quantities: orderData.cartItems.map((item) => item.quantity),
+          quantities: orderData.cartItems.map((item) => item.quantity || 1),
           orderNumber: orderData.orderNumber,
           totalMagnets: orderData.cartItems.reduce(
-            (sum, item) => sum + item.quantity,
+            (sum, item) => sum + (item.quantity || 1),
             0
           ),
+          subtotal: orderData.subtotal || 0,
+          shipping: orderData.shipping || 0,
+          tax: orderData.tax || 0,
+          totalAmount: orderData.totalAmount || 0,
+          shippingOption: orderData.shippingOption || null,
+          paymentOption: orderData.paymentOption || null,
+          cartItems: orderData.cartItems || [],
         });
         console.log('Order email sent successfully');
       } catch (emailError) {
@@ -1770,6 +1781,7 @@ class FirebaseService {
         // Don't throw error - order was saved successfully
       }
 
+      // Return the document ID so we can update it later
       return docRef.id;
     } catch (error) {
       console.error('Error saving cart order:', error);
