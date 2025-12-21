@@ -1341,18 +1341,28 @@ export default {
 // Ensure toolbar title stays centered
 .q-toolbar {
   position: relative;
+  padding-left: 8px;
+  padding-right: 8px;
+  
+  // Ensure right side elements respect title space
+  > .shop-header-dropdowns {
+    margin-left: auto;
+    padding-left: 20px; /* Extra padding to keep away from title */
+  }
 }
 
 .q-toolbar-title {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  min-width: 220px; /* Lock minimum width to prevent overlap with dropdowns */
-  width: 220px; /* Fixed width to lock title length */
+  min-width: 240px; /* Lock minimum width to prevent overlap with dropdowns */
+  width: 240px; /* Fixed width to lock title length */
   text-align: center;
-  z-index: 1; /* Ensure title is above dropdowns */
+  z-index: 2; /* Ensure title is above dropdowns */
   pointer-events: none; /* Allow clicks to pass through to elements below */
-  
+  flex-shrink: 0; /* Prevent title from shrinking */
+  padding: 0 20px; /* Add padding to create protected space around title */
+
   span {
     pointer-events: auto; /* Re-enable pointer events for the title text itself */
     white-space: nowrap; /* Prevent text wrapping */
@@ -1437,29 +1447,29 @@ export default {
   z-index: 0; /* Ensure dropdowns are below the title */
   margin-left: auto; /* Push to the right */
   flex-shrink: 0; /* Prevent shrinking */
-  
+
   // Hide dropdowns one by one from the right as screen gets smaller
-  // Start hiding at 1400px, hide Specialty Products first (3rd child)
-  @media (max-width: 1400px) {
+  // Start hiding earlier to protect title - hide Specialty Products first (3rd child)
+  @media (max-width: 1600px) {
     .shop-header-btn:nth-child(3) {
       display: none !important; /* Hide Specialty Products first */
     }
   }
-  
+
   // Hide Designer Magnets next (2nd child)
-  @media (max-width: 1200px) {
+  @media (max-width: 1350px) {
     .shop-header-btn:nth-child(2) {
       display: none !important; /* Hide Designer Magnets */
     }
   }
-  
+
   // Hide Custom Photo Magnets last (1st child)
-  @media (max-width: 1000px) {
+  @media (max-width: 1100px) {
     .shop-header-btn:nth-child(1) {
       display: none !important; /* Hide Custom Photo Magnets */
     }
   }
-  
+
   // Hide all dropdowns on smaller screens (they're in sidebar)
   @media (max-width: 1024px) {
     display: none !important;
