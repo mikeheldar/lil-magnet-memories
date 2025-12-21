@@ -65,7 +65,7 @@
             no-caps
             label="Custom Photo Magnets"
             :style="headerButtonStyle"
-            class="shop-header-btn"
+            class="shop-header-btn shop-header-btn-custom"
           >
             <q-list v-if="customCollections.length > 0">
               <q-item
@@ -96,7 +96,7 @@
             no-caps
             label="Designer Magnets"
             :style="headerButtonStyle"
-            class="shop-header-btn"
+            class="shop-header-btn shop-header-btn-designer"
           >
             <q-list v-if="designerCollections.length > 0">
               <q-item
@@ -127,7 +127,7 @@
             no-caps
             label="Specialty Products"
             :style="headerButtonStyle"
-            class="shop-header-btn"
+            class="shop-header-btn shop-header-btn-specialty"
           >
             <q-list v-if="specialtyCollections.length > 0">
               <q-item
@@ -1352,25 +1352,24 @@ export default {
 }
 
 .q-toolbar-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 240px; /* Lock minimum width to prevent overlap with dropdowns */
-  width: 240px; /* Fixed width to lock title length */
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: auto !important; /* Let width be determined by content */
+  min-width: auto !important;
+  max-width: none !important;
   text-align: center;
   z-index: 10 !important; /* High z-index to ensure title is always on top */
   pointer-events: none; /* Allow clicks to pass through to elements below */
   flex-shrink: 0 !important; /* Prevent title from shrinking */
-  padding: 0 20px; /* Add padding to create protected space around title */
+  padding: 0 !important; /* Remove padding - let text determine width */
   background: transparent; /* Ensure no background interferes */
+  box-sizing: content-box;
 
   span {
     pointer-events: auto; /* Re-enable pointer events for the title text itself */
-    white-space: nowrap; /* Prevent text wrapping */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    width: 100%;
+    white-space: nowrap !important; /* Prevent text wrapping */
+    display: inline-block; /* Let text determine width naturally */
     position: relative;
     z-index: 11; /* Even higher z-index for the text itself */
   }
@@ -1450,32 +1449,34 @@ export default {
   z-index: 1; /* Lower than title to ensure title stays on top */
   margin-left: auto; /* Push to the right */
   flex-shrink: 0; /* Prevent shrinking */
+}
 
-  // Hide dropdowns one by one from the right as screen gets smaller
-  // Very aggressive breakpoints to ensure title is never covered
-  // Hide Specialty Products first (3rd child) at 1700px
-  @media (max-width: 1700px) {
-    .shop-header-btn:nth-child(3) {
-      display: none !important; /* Hide Specialty Products first */
-    }
+// Hide dropdowns one by one from the right as screen gets smaller
+// Very aggressive breakpoints to ensure title is never covered
+// Hide Specialty Products first at 1700px
+@media (max-width: 1700px) {
+  .shop-header-dropdowns .shop-header-btn-specialty {
+    display: none !important;
   }
+}
 
-  // Hide Designer Magnets next (2nd child) at 1450px
-  @media (max-width: 1450px) {
-    .shop-header-btn:nth-child(2) {
-      display: none !important; /* Hide Designer Magnets */
-    }
+// Hide Designer Magnets next at 1450px
+@media (max-width: 1450px) {
+  .shop-header-dropdowns .shop-header-btn-designer {
+    display: none !important;
   }
+}
 
-  // Hide Custom Photo Magnets last (1st child) at 1200px
-  @media (max-width: 1200px) {
-    .shop-header-btn:nth-child(1) {
-      display: none !important; /* Hide Custom Photo Magnets */
-    }
+// Hide Custom Photo Magnets last at 1200px
+@media (max-width: 1200px) {
+  .shop-header-dropdowns .shop-header-btn-custom {
+    display: none !important;
   }
+}
 
-  // Hide all dropdowns on smaller screens (they're in sidebar)
-  @media (max-width: 1024px) {
+// Hide all dropdowns on smaller screens (they're in sidebar)
+@media (max-width: 1024px) {
+  .shop-header-dropdowns {
     display: none !important;
   }
 }
