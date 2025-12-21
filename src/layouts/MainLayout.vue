@@ -1355,14 +1355,14 @@ export default {
   position: absolute !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
-  width: auto !important; /* Let width be determined by content */
+  width: fit-content !important; /* Fit content width */
   min-width: auto !important;
   max-width: none !important;
   text-align: center;
   z-index: 10 !important; /* High z-index to ensure title is always on top */
   pointer-events: none; /* Allow clicks to pass through to elements below */
   flex-shrink: 0 !important; /* Prevent title from shrinking */
-  padding: 0 !important; /* Remove padding - let text determine width */
+  padding: 0 10px !important; /* Only 10px padding on each side */
   background: transparent; /* Ensure no background interferes */
   box-sizing: content-box;
 
