@@ -1343,7 +1343,7 @@ export default {
   position: relative;
   padding-left: 8px;
   padding-right: 8px;
-  
+
   // Ensure right side elements respect title space
   > .shop-header-dropdowns {
     margin-left: auto;
@@ -1358,10 +1358,11 @@ export default {
   min-width: 240px; /* Lock minimum width to prevent overlap with dropdowns */
   width: 240px; /* Fixed width to lock title length */
   text-align: center;
-  z-index: 2; /* Ensure title is above dropdowns */
+  z-index: 10 !important; /* High z-index to ensure title is always on top */
   pointer-events: none; /* Allow clicks to pass through to elements below */
-  flex-shrink: 0; /* Prevent title from shrinking */
+  flex-shrink: 0 !important; /* Prevent title from shrinking */
   padding: 0 20px; /* Add padding to create protected space around title */
+  background: transparent; /* Ensure no background interferes */
 
   span {
     pointer-events: auto; /* Re-enable pointer events for the title text itself */
@@ -1370,6 +1371,8 @@ export default {
     text-overflow: ellipsis;
     display: block;
     width: 100%;
+    position: relative;
+    z-index: 11; /* Even higher z-index for the text itself */
   }
 }
 
@@ -1444,27 +1447,28 @@ export default {
   gap: 8px;
   align-items: center;
   position: relative;
-  z-index: 0; /* Ensure dropdowns are below the title */
+  z-index: 1; /* Lower than title to ensure title stays on top */
   margin-left: auto; /* Push to the right */
   flex-shrink: 0; /* Prevent shrinking */
 
   // Hide dropdowns one by one from the right as screen gets smaller
-  // Start hiding earlier to protect title - hide Specialty Products first (3rd child)
-  @media (max-width: 1600px) {
+  // Very aggressive breakpoints to ensure title is never covered
+  // Hide Specialty Products first (3rd child) at 1700px
+  @media (max-width: 1700px) {
     .shop-header-btn:nth-child(3) {
       display: none !important; /* Hide Specialty Products first */
     }
   }
 
-  // Hide Designer Magnets next (2nd child)
-  @media (max-width: 1350px) {
+  // Hide Designer Magnets next (2nd child) at 1450px
+  @media (max-width: 1450px) {
     .shop-header-btn:nth-child(2) {
       display: none !important; /* Hide Designer Magnets */
     }
   }
 
-  // Hide Custom Photo Magnets last (1st child)
-  @media (max-width: 1100px) {
+  // Hide Custom Photo Magnets last (1st child) at 1200px
+  @media (max-width: 1200px) {
     .shop-header-btn:nth-child(1) {
       display: none !important; /* Hide Custom Photo Magnets */
     }
@@ -1479,7 +1483,7 @@ export default {
 .shop-header-btn {
   min-width: auto;
   position: relative;
-  z-index: 0; /* Ensure dropdown buttons are below the title */
+  z-index: 1; /* Lower than title z-index (10) */
 
   .q-btn__content {
     padding: 0 8px;
@@ -1487,7 +1491,7 @@ export default {
 
   // Ensure dropdown menu appears below the button, not overlapping title
   :deep(.q-menu) {
-    z-index: 1000; /* Dropdown menu should appear above other content */
+    z-index: 5; /* Dropdown menu z-index, but still below title (10) */
     margin-top: 4px; /* Small gap from button */
   }
 }
