@@ -37,18 +37,23 @@
 
     <!-- Hero Section with Big Magnet Images -->
     <div class="hero-section">
+      <!-- Logo always on top, full width -->
+      <div class="hero-logo-container">
+        <img
+          src="/biglogo.png"
+          alt="Lil Magnet Memories"
+          class="hero-logo hero-logo-wide"
+        />
+        <img
+          src="/assets/lil-magnet-memories-logo.png"
+          alt="Lil Magnet Memories"
+          class="hero-logo hero-logo-small"
+        />
+      </div>
+
+      <!-- Content below logo: text and easel gallery side-by-side on wide screens -->
       <div class="hero-content">
         <div class="hero-text">
-          <img
-            src="/biglogo.png"
-            alt="Lil Magnet Memories"
-            class="hero-logo hero-logo-wide"
-          />
-          <img
-            src="/assets/lil-magnet-memories-logo.png"
-            alt="Lil Magnet Memories"
-            class="hero-logo hero-logo-small"
-          />
           <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets!</h1>
 
           <div class="hero-actions">
@@ -1272,9 +1277,12 @@ export default {
 .hero-section {
   min-height: auto; // Remove min-height to allow content to determine height
   display: flex;
-  align-items: flex-start; // Align to top instead of center
-  justify-content: center;
-  padding: 10px 10px 40px 10px; // Much reduced padding, especially top
+  flex-direction: column; // Stack logo container and hero-content vertically
+  align-items: stretch; // Stretch children to full width
+  justify-content: flex-start;
+  padding: 20px 10px 40px 10px; // 20px top padding to position logo 20px below header
+  width: 100%;
+  max-width: 100%;
   background: #ffffff; // Bright white
   background-image:
     // Light source from upper left
@@ -1304,17 +1312,73 @@ export default {
   overflow-y: auto;
 }
 
+.hero-logo-container {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 40px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  position: relative;
+  align-self: stretch; // Stretch to full width of parent (hero-section)
+  // Ensure it spans full width of hero-section, not constrained by hero-content
+}
+
 .hero-content {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px; // Increased spacing between text and images when there's space
-  align-items: center;
+  display: flex;
+  flex-direction: column; // Stack content vertically by default
+  gap: 40px; // Spacing between hero-text and hero-images
+  align-items: flex-start; // Align to top by default
   z-index: 2;
   box-sizing: border-box;
   padding: 0 20px;
+}
+
+// On wide screens, make hero-text and hero-images side-by-side
+@media (min-width: 1024px) {
+  .hero-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start; // Align both columns to the top (use 'start' for grid)
+  }
+
+  .hero-text {
+    text-align: left; // Left align text when side-by-side
+    align-items: flex-start; // Left align items when side-by-side
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start; // Align content to top
+    justify-content: flex-start; // Align to top
+  }
+
+  .hero-images {
+    align-items: flex-start; // Align to top on wide screens
+    margin-top: 0;
+    padding-top: 0;
+    display: flex;
+    align-content: flex-start; // Align content to top
+    justify-content: flex-start; // Align to top
+  }
+
+  // Ensure title and easel container align at the same vertical position
+  .hero-title {
+    margin-top: 0 !important;
+    margin-bottom: 0; // Remove bottom margin
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .easel-container {
+    margin-top: 0 !important;
+    padding-top: 0;
+    align-self: flex-start; // Align to top of grid cell
+  }
 }
 
 .hero-text {
@@ -1328,24 +1392,48 @@ export default {
   padding-top: 0; // No padding at top
   display: flex;
   flex-direction: column;
-  gap: 2rem; // Add spacing between logo, title, and actions when there's space
+  gap: 2rem; // Add spacing between title and actions
+  align-items: center; // Center all content by default
+  align-content: flex-start; // Align content to top
+}
+
+// On wide screens, align text to left
+@media (min-width: 1024px) {
+  .hero-text {
+    align-items: flex-start; // Left align items when side-by-side
+  }
 }
 
 .hero-logo {
-  max-width: 95%; // Even bigger and wider
-  width: 95%; // Even bigger and wider
   height: auto;
   margin-bottom: 0.5rem; // Minimal margin to move up
   margin-top: 0; // No top margin
-  margin-left: auto;
-  margin-right: auto;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 .hero-logo-wide {
-  max-width: 95%; // Even bigger and wider
-  width: 95%; // Even bigger and wider
+  max-width: 80% !important; // 80% of visible content area - force override
+  width: 80% !important; // 80% of visible content area - force override
   display: block;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+// On wide screens, ensure logo stays at 80% of visible content area
+@media (min-width: 1024px) {
+  .hero-logo-container {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .hero-logo-wide {
+    max-width: 80% !important; // 80% of visible content area (not viewport)
+    width: 80% !important; // 80% of visible content area (not viewport)
+    margin-left: auto; // Center it
+    margin-right: auto; // Center it
+  }
 }
 
 .hero-logo-small {
@@ -1432,6 +1520,8 @@ export default {
   font-size: clamp(1.2rem, 3vw, 2rem); // Smaller and less prominent
   font-weight: 500; // Lighter weight
   font-family: 'Georgia', 'Times New Roman', serif; // Less italic, more elegant
+  margin-top: 0; // No top margin to align with easel container
+  padding-top: 0; // No top padding
   font-style: italic; // Keep italic but less pronounced with this font
   transform: skew(-2deg); // Slight skew for subtle italic effect instead of full italic
   margin: 0; // Remove margins, let flex gap handle spacing
@@ -1512,7 +1602,9 @@ export default {
   height: 800px; // Further increased
   display: flex;
   justify-content: center;
-  align-items: center;
+  margin-top: 0; // No top margin to align with left text
+  padding-top: 0; // No top padding to align with left text
+  align-items: flex-start; // Align image to top of container, not center
   position: relative;
   cursor: pointer;
   user-select: none;
@@ -1529,7 +1621,9 @@ export default {
   max-height: calc(800px - 6px); // Increased to match container
   height: auto;
   object-fit: contain;
+  object-position: top; // Align image to top
   border-radius: 17px; // Slightly smaller to account for border
+  align-self: flex-start; // Align to top of flex container
   // Add silver border around images with padding to keep image inside
   border: 3px solid rgba(192, 192, 192, 0.8);
   padding: 2px; // Small padding to ensure image corners stay inside border
@@ -1540,9 +1634,9 @@ export default {
           drop-shadow(0 2px 15px rgba(0, 0, 0, 0.1));
   transition: opacity 0.5s ease;
   position: absolute;
-  top: 50%;
+  top: 0; // Align to top of container
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%); // Center horizontally only
   overflow: hidden; // Clip image to border radius
   // No background color - let the image show through naturally
 }

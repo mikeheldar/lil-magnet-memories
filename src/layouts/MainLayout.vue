@@ -307,7 +307,7 @@
         <q-expansion-item
           icon="shopping_bag"
           label="Shop"
-          :default-opened="false"
+          :default-opened="true"
           header-class="text-grey-8"
         >
           <!-- Custom Photo Magnets -->
