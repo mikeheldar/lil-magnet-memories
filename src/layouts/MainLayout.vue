@@ -423,6 +423,17 @@
               </q-item-section>
             </q-item>
           </div>
+
+          <!-- Start Creating Now (last item in Shop section) -->
+          <q-item clickable v-ripple @click="handleUploadClick" class="shop-category-item">
+            <q-item-section avatar>
+              <q-icon name="camera_alt" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Start Creating Now</q-item-label>
+              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+            </q-item-section>
+          </q-item>
         </q-expansion-item>
 
         <q-separator class="q-my-md" />
@@ -436,28 +447,6 @@
             <q-item-section>
               <q-item-label>Home</q-item-label>
               <q-item-label caption>Go to main page</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item clickable v-ripple @click="handleUploadClick">
-            <q-item-section avatar>
-              <q-icon name="camera_alt" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ uploadLinkLabel }}</q-item-label>
-              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item clickable v-ripple @click="navigateTo('/about')">
-            <q-item-section avatar>
-              <q-icon name="info" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>About</q-item-label>
-              <q-item-label caption
-                >Get to know Li'l Magnet Memories</q-item-label
-              >
             </q-item-section>
           </q-item>
         </template>
@@ -692,8 +681,24 @@
             </q-item-section>
           </q-item>
 
+          <!-- My Orders for authenticated users -->
+          <q-item
+            v-if="isAuthenticated"
+            clickable
+            v-ripple
+            @click="navigateTo('/my-orders')"
+          >
+            <q-item-section avatar>
+              <q-icon name="assignment" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>My Orders</q-item-label>
+              <q-item-label caption>View your orders</q-item-label>
+            </q-item-section>
+          </q-item>
+
           <!-- Sign Out for authenticated users -->
-          <q-item v-else clickable v-ripple @click="handleSignOut">
+          <q-item v-if="isAuthenticated" clickable v-ripple @click="handleSignOut">
             <q-item-section avatar>
               <q-icon name="logout" color="negative" />
             </q-item-section>
