@@ -455,7 +455,6 @@
         <template v-else>
           <!-- Operator section (collapsible, default collapsed) -->
           <template v-if="isAdmin">
-            <q-separator class="q-my-md" />
             <q-expansion-item
               icon="work"
               label="Operator"
