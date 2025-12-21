@@ -726,37 +726,32 @@ export default {
     };
 
     // Computed collections for each category
-    // Returns collections, but filters out "Uncategorized" if it's the only one
+    // Returns collections, but filters out "Uncategorized" from the list
+    // If only "Uncategorized" exists (or no collections), return empty array (will show "Shop Products" instead)
     const customCollections = computed(() => {
       const customProducts = products.value.filter((p) => p.category === 'custom');
       const grouped = groupProductsByCollection(customProducts);
-      const collections = Object.keys(grouped).sort();
-      // If only "Uncategorized" exists, return empty array (will show "Shop Products" instead)
-      if (collections.length === 1 && collections[0] === 'Uncategorized') {
-        return [];
-      }
+      const allCollections = Object.keys(grouped).sort();
+      // Filter out "Uncategorized" - only return actual named collections
+      const collections = allCollections.filter(c => c !== 'Uncategorized');
       return collections;
     });
 
     const designerCollections = computed(() => {
       const designerProducts = products.value.filter((p) => p.category === 'designer');
       const grouped = groupProductsByCollection(designerProducts);
-      const collections = Object.keys(grouped).sort();
-      // If only "Uncategorized" exists, return empty array (will show "Shop Products" instead)
-      if (collections.length === 1 && collections[0] === 'Uncategorized') {
-        return [];
-      }
+      const allCollections = Object.keys(grouped).sort();
+      // Filter out "Uncategorized" - only return actual named collections
+      const collections = allCollections.filter(c => c !== 'Uncategorized');
       return collections;
     });
 
     const specialtyCollections = computed(() => {
       const specialtyProducts = products.value.filter((p) => p.category === 'specialty');
       const grouped = groupProductsByCollection(specialtyProducts);
-      const collections = Object.keys(grouped).sort();
-      // If only "Uncategorized" exists, return empty array (will show "Shop Products" instead)
-      if (collections.length === 1 && collections[0] === 'Uncategorized') {
-        return [];
-      }
+      const allCollections = Object.keys(grouped).sort();
+      // Filter out "Uncategorized" - only return actual named collections
+      const collections = allCollections.filter(c => c !== 'Uncategorized');
       return collections;
     });
 
