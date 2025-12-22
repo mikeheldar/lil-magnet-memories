@@ -1396,17 +1396,13 @@ export default {
 // Ensure title has protected space - menus must hide before reaching title area
 .q-toolbar {
   position: relative;
+  padding-left: 8px;
+  padding-right: 8px;
   
-  // Create a protected zone for the title in the center
-  &::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 300px; /* Protected zone width for title */
-    height: 100%;
-    z-index: 9998; /* Just below title */
-    pointer-events: none;
+  // Ensure right side elements respect title space
+  > .shop-header-dropdowns {
+    margin-left: auto;
+    padding-left: 20px; /* Extra padding to keep away from title */
   }
 }
 
@@ -1481,9 +1477,11 @@ export default {
   gap: 8px;
   align-items: center;
   position: relative;
-  z-index: 1; /* Lower than title (100) to ensure title stays on top */
+  z-index: 1; /* Lower than title (9999) to ensure title stays on top */
   margin-left: auto; /* Push to the right */
   flex-shrink: 0; /* Prevent shrinking */
+  max-width: calc(50% - 200px); /* Prevent menus from overlapping title (title is ~200px wide in center) */
+  margin-right: 0;
 }
 
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
