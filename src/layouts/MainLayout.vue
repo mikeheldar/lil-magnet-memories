@@ -298,8 +298,8 @@
       </q-card>
     </q-dialog>
 
-    <!-- Left Drawer for Navigation (always visible) -->
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="bg-grey-1">
+    <!-- Left Drawer for Navigation -->
+    <q-drawer v-model="leftDrawerOpen" bordered class="bg-grey-1">
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
@@ -1369,7 +1369,7 @@ export default {
   opacity: 1 !important; /* Always fully opaque */
   overflow: visible !important; /* Prevent clipping */
   text-overflow: clip !important; /* Don't truncate text */
-  
+
   // Override Quasar's ellipsis class if present
   &.ellipsis,
   &[class*="ellipsis"] {
