@@ -1597,9 +1597,10 @@ export default {
 }
 
 .easel-container {
-  max-width: 700px; // Further increased
+  max-width: 70% !important; // Never wider than hero-logo (which is 70%)
   width: 100%;
-  height: 800px; // Further increased
+  max-height: 640px; // 20% smaller (800px * 0.8 = 640px)
+  height: 640px;
   display: flex;
   justify-content: center;
   margin-top: 0; // No top margin to align with left text
