@@ -57,7 +57,7 @@
         </q-toolbar-title>
 
         <!-- Shop Dropdowns for Wide Screens -->
-        <div class="gt-md shop-header-dropdowns q-mr-md">
+        <div class="gt-sm shop-header-dropdowns q-mr-md">
           <!-- Custom Photo Magnets Dropdown -->
           <q-btn-dropdown
             flat
