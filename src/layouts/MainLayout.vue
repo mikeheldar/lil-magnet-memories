@@ -1359,19 +1359,23 @@ export default {
   min-width: auto !important;
   max-width: none !important;
   text-align: center;
-  z-index: 100 !important; /* Very high z-index to lock title on top */
+  z-index: 9999 !important; /* Very high z-index to lock title on top - always visible */
   pointer-events: none; /* Allow clicks to pass through to elements below */
   flex-shrink: 0 !important; /* Prevent title from shrinking */
   padding: 0 10px !important; /* Only 10px padding on each side */
-  background: transparent; /* Ensure no background interferes */
+  background: transparent !important; /* Ensure no background interferes */
   box-sizing: content-box;
+  visibility: visible !important; /* Always visible */
+  opacity: 1 !important; /* Always fully opaque */
 
   span {
     pointer-events: auto; /* Re-enable pointer events for the title text itself */
     white-space: nowrap !important; /* Prevent text wrapping */
     display: inline-block; /* Let text determine width naturally */
     position: relative;
-    z-index: 101 !important; /* Even higher z-index for the text itself */
+    z-index: 10000 !important; /* Even higher z-index for the text itself */
+    visibility: visible !important; /* Always visible */
+    opacity: 1 !important; /* Always fully opaque */
   }
 }
 
@@ -1452,24 +1456,46 @@ export default {
 }
 
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
-// Hide Custom Photo Magnets first (leftmost menu)
-@media (max-width: 1300px) {
-  .shop-header-dropdowns .shop-header-btn-custom {
+// Each menu hides individually, not as a unit
+// Hide Custom Photo Magnets first (leftmost menu) at 1400px
+@media (max-width: 1400px) {
+  .shop-header-btn-custom {
     display: none !important;
   }
 }
 
-// Hide Designer Magnets next (middle menu)
-@media (max-width: 1150px) {
-  .shop-header-dropdowns .shop-header-btn-designer {
+// Show Custom Photo Magnets again when screen is larger
+@media (min-width: 1401px) {
+  .shop-header-btn-custom {
+    display: flex !important;
+  }
+}
+
+// Hide Designer Magnets next (middle menu) at 1200px
+@media (max-width: 1200px) {
+  .shop-header-btn-designer {
     display: none !important;
   }
 }
 
-// Hide Specialty Products last (rightmost menu) - almost touching title before hiding
+// Show Designer Magnets again when screen is larger
+@media (min-width: 1201px) {
+  .shop-header-btn-designer {
+    display: flex !important;
+  }
+}
+
+// Hide Specialty Products last (rightmost menu) at 1000px - almost touching title before hiding
 @media (max-width: 1000px) {
-  .shop-header-dropdowns .shop-header-btn-specialty {
+  .shop-header-btn-specialty {
     display: none !important;
+  }
+}
+
+// Show Specialty Products again when screen is larger
+@media (min-width: 1001px) {
+  .shop-header-btn-specialty {
+    display: flex !important;
   }
 }
 
@@ -1483,7 +1509,8 @@ export default {
 .shop-header-btn {
   min-width: auto;
   position: relative;
-  z-index: 1; /* Lower than title z-index (100) */
+  z-index: 1; /* Lower than title z-index (9999) */
+  display: flex !important; /* Default to visible */
 
   .q-btn__content {
     padding: 0 8px;
@@ -1491,7 +1518,7 @@ export default {
 
   // Ensure dropdown menu appears below the button, not overlapping title
   :deep(.q-menu) {
-    z-index: 50; /* Dropdown menu z-index, but still below title (100) */
+    z-index: 50; /* Dropdown menu z-index, but still below title (9999) */
     margin-top: 4px; /* Small gap from button */
   }
 }
