@@ -52,7 +52,7 @@
         </div>
 
         <!-- Page title in center -->
-        <q-toolbar-title class="text-center" :style="headerTitleStyle">
+        <q-toolbar-title class="text-center no-ellipsis" :style="headerTitleStyle">
           <span class="text-h5 text-weight-bold" :style="headerTitleSpanStyle">{{ pageTitle }}</span>
         </q-toolbar-title>
 
@@ -1369,6 +1369,14 @@ export default {
   opacity: 1 !important; /* Always fully opaque */
   overflow: visible !important; /* Prevent clipping */
   text-overflow: clip !important; /* Don't truncate text */
+  
+  // Override Quasar's ellipsis class if present
+  &.ellipsis,
+  &[class*="ellipsis"] {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
 
   span {
     pointer-events: auto; /* Re-enable pointer events for the title text itself */
