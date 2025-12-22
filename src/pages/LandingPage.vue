@@ -1618,7 +1618,7 @@ export default {
 
 .easel-image {
   width: calc(100% - 6px); // Account for border width
-  max-height: calc(640px - 6px); // 20% smaller (800px * 0.8 = 640px)
+  max-height: calc(100% - 6px); // Fit within container height
   height: auto;
   object-fit: contain;
   object-position: top; // Align image to top
@@ -2073,9 +2073,9 @@ export default {
   }
 
   .easel-container {
-    max-width: 240px; // 20% smaller (300px * 0.8 = 240px)
+    max-width: 70% !important; // Never wider than hero-logo (which is 70%)
     max-height: 300px; // 20% smaller (375px * 0.8 = 300px)
-    height: 100%;
+    height: 300px;
     aspect-ratio: 4/5;
   }
 
