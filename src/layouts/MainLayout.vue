@@ -1356,7 +1356,7 @@ export default {
   left: 50% !important;
   transform: translateX(-50%) !important;
   width: fit-content !important; /* Fit content width */
-  min-width: auto !important;
+  min-width: fit-content !important; /* Ensure minimum width fits content */
   max-width: none !important;
   text-align: center;
   z-index: 9999 !important; /* Very high z-index to lock title on top - always visible */
@@ -1367,15 +1367,21 @@ export default {
   box-sizing: content-box;
   visibility: visible !important; /* Always visible */
   opacity: 1 !important; /* Always fully opaque */
+  overflow: visible !important; /* Prevent clipping */
+  text-overflow: clip !important; /* Don't truncate text */
 
   span {
     pointer-events: auto; /* Re-enable pointer events for the title text itself */
     white-space: nowrap !important; /* Prevent text wrapping */
-    display: inline-block; /* Let text determine width naturally */
+    display: inline-block !important; /* Let text determine width naturally */
     position: relative;
     z-index: 10000 !important; /* Even higher z-index for the text itself */
     visibility: visible !important; /* Always visible */
     opacity: 1 !important; /* Always fully opaque */
+    overflow: visible !important; /* Prevent text clipping */
+    text-overflow: clip !important; /* Don't truncate text */
+    max-width: none !important; /* No max-width restriction */
+    width: auto !important; /* Let text determine width */
   }
 }
 
