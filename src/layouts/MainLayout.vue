@@ -1452,23 +1452,23 @@ export default {
 }
 
 // Hide dropdowns one by one from the right as screen gets smaller
-// Very aggressive breakpoints to ensure title is never covered
-// Hide Specialty Products first at 1700px
-@media (max-width: 1700px) {
+// Menus should almost touch the title before dropping off
+// Hide Specialty Products first when screen gets smaller
+@media (max-width: 1400px) {
   .shop-header-dropdowns .shop-header-btn-specialty {
     display: none !important;
   }
 }
 
-// Hide Designer Magnets next at 1450px
-@media (max-width: 1450px) {
+// Hide Designer Magnets next when screen gets smaller
+@media (max-width: 1250px) {
   .shop-header-dropdowns .shop-header-btn-designer {
     display: none !important;
   }
 }
 
-// Hide Custom Photo Magnets last at 1200px
-@media (max-width: 1200px) {
+// Hide Custom Photo Magnets last - almost touching title before hiding
+@media (max-width: 1100px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }

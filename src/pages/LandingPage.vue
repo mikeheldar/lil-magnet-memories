@@ -1412,8 +1412,8 @@ export default {
 }
 
 .hero-logo-wide {
-  max-width: 80% !important; // 80% of visible content area - force override
-  width: 80% !important; // 80% of visible content area - force override
+  max-width: 70% !important; // 70% of visible content area - force override
+  width: 70% !important; // 70% of visible content area - force override
   display: block;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -1429,8 +1429,8 @@ export default {
   }
 
   .hero-logo-wide {
-    max-width: 80% !important; // 80% of visible content area (not viewport)
-    width: 80% !important; // 80% of visible content area (not viewport)
+    max-width: 70% !important; // 70% of visible content area (not viewport)
+    width: 70% !important; // 70% of visible content area (not viewport)
     margin-left: auto; // Center it
     margin-right: auto; // Center it
   }
@@ -1618,7 +1618,7 @@ export default {
 
 .easel-image {
   width: calc(100% - 6px); // Account for border width
-  max-height: calc(800px - 6px); // Increased to match container
+  max-height: calc(640px - 6px); // 20% smaller (800px * 0.8 = 640px)
   height: auto;
   object-fit: contain;
   object-position: top; // Align image to top
@@ -1979,8 +1979,8 @@ export default {
   }
 
   .easel-container {
-    max-width: 400px; // Set to 400px max width
-    max-height: 500px; // Set to 500px max height
+    max-width: 320px; // 20% smaller (400px * 0.8 = 320px)
+    max-height: 400px; // 20% smaller (500px * 0.8 = 400px)
     height: 100%;
     aspect-ratio: 4/5; // Maintain 400:500 ratio
   }
@@ -2073,8 +2073,8 @@ export default {
   }
 
   .easel-container {
-    max-width: 300px; // Smaller on mobile
-    max-height: 375px; // Maintain 4:5 aspect ratio (300:375)
+    max-width: 240px; // 20% smaller (300px * 0.8 = 240px)
+    max-height: 300px; // 20% smaller (375px * 0.8 = 300px)
     height: 100%;
     aspect-ratio: 4/5;
   }
