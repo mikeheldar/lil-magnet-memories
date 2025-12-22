@@ -1369,7 +1369,7 @@ export default {
   opacity: 1 !important; /* Always fully opaque */
   overflow: visible !important; /* Prevent clipping */
   text-overflow: clip !important; /* Don't truncate text */
-
+  
   // Override Quasar's ellipsis class if present
   &.ellipsis,
   &[class*="ellipsis"] {
@@ -1390,6 +1390,23 @@ export default {
     text-overflow: clip !important; /* Don't truncate text */
     max-width: none !important; /* No max-width restriction */
     width: auto !important; /* Let text determine width */
+  }
+}
+
+// Ensure title has protected space - menus must hide before reaching title area
+.q-toolbar {
+  position: relative;
+  
+  // Create a protected zone for the title in the center
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px; /* Protected zone width for title */
+    height: 100%;
+    z-index: 9998; /* Just below title */
+    pointer-events: none;
   }
 }
 
@@ -1470,45 +1487,44 @@ export default {
 }
 
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
-// Each menu hides individually, not as a unit
-// Menus show up earlier at narrower widths
-// Hide Custom Photo Magnets first (leftmost menu) at 1200px
-@media (max-width: 1200px) {
+// Each menu hides individually BEFORE covering the title
+// Hide Custom Photo Magnets first (leftmost menu) - hide early to protect title
+@media (max-width: 1400px) {
   .shop-header-btn-custom {
     display: none !important;
   }
 }
 
 // Show Custom Photo Magnets again when screen is larger
-@media (min-width: 1201px) {
+@media (min-width: 1401px) {
   .shop-header-btn-custom {
     display: flex !important;
   }
 }
 
-// Hide Designer Magnets next (middle menu) at 1100px
-@media (max-width: 1100px) {
+// Hide Designer Magnets next (middle menu) - hide before reaching title
+@media (max-width: 1300px) {
   .shop-header-btn-designer {
     display: none !important;
   }
 }
 
 // Show Designer Magnets again when screen is larger
-@media (min-width: 1101px) {
+@media (min-width: 1301px) {
   .shop-header-btn-designer {
     display: flex !important;
   }
 }
 
-// Hide Specialty Products last (rightmost menu) at 1000px - almost touching title before hiding
-@media (max-width: 1000px) {
+// Hide Specialty Products last (rightmost menu) - hide before touching title
+@media (max-width: 1200px) {
   .shop-header-btn-specialty {
     display: none !important;
   }
 }
 
 // Show Specialty Products again when screen is larger
-@media (min-width: 1001px) {
+@media (min-width: 1201px) {
   .shop-header-btn-specialty {
     display: flex !important;
   }
