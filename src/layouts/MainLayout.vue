@@ -1359,7 +1359,7 @@ export default {
   min-width: auto !important;
   max-width: none !important;
   text-align: center;
-  z-index: 10 !important; /* High z-index to ensure title is always on top */
+  z-index: 100 !important; /* Very high z-index to lock title on top */
   pointer-events: none; /* Allow clicks to pass through to elements below */
   flex-shrink: 0 !important; /* Prevent title from shrinking */
   padding: 0 10px !important; /* Only 10px padding on each side */
@@ -1371,7 +1371,7 @@ export default {
     white-space: nowrap !important; /* Prevent text wrapping */
     display: inline-block; /* Let text determine width naturally */
     position: relative;
-    z-index: 11; /* Even higher z-index for the text itself */
+    z-index: 101 !important; /* Even higher z-index for the text itself */
   }
 }
 
@@ -1446,30 +1446,29 @@ export default {
   gap: 8px;
   align-items: center;
   position: relative;
-  z-index: 1; /* Lower than title to ensure title stays on top */
+  z-index: 1; /* Lower than title (100) to ensure title stays on top */
   margin-left: auto; /* Push to the right */
   flex-shrink: 0; /* Prevent shrinking */
 }
 
-// Hide dropdowns one by one from the right as screen gets smaller
-// Menus should almost touch the title before dropping off
-// Hide Specialty Products first when screen gets smaller
+// Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
+// Hide Custom Photo Magnets first (leftmost menu)
 @media (max-width: 1300px) {
-  .shop-header-dropdowns .shop-header-btn-specialty {
+  .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
 }
 
-// Hide Designer Magnets next when screen gets smaller
+// Hide Designer Magnets next (middle menu)
 @media (max-width: 1150px) {
   .shop-header-dropdowns .shop-header-btn-designer {
     display: none !important;
   }
 }
 
-// Hide Custom Photo Magnets last - almost touching title before hiding
+// Hide Specialty Products last (rightmost menu) - almost touching title before hiding
 @media (max-width: 1000px) {
-  .shop-header-dropdowns .shop-header-btn-custom {
+  .shop-header-dropdowns .shop-header-btn-specialty {
     display: none !important;
   }
 }
@@ -1484,7 +1483,7 @@ export default {
 .shop-header-btn {
   min-width: auto;
   position: relative;
-  z-index: 1; /* Lower than title z-index (10) */
+  z-index: 1; /* Lower than title z-index (100) */
 
   .q-btn__content {
     padding: 0 8px;
@@ -1492,7 +1491,7 @@ export default {
 
   // Ensure dropdown menu appears below the button, not overlapping title
   :deep(.q-menu) {
-    z-index: 5; /* Dropdown menu z-index, but still below title (10) */
+    z-index: 50; /* Dropdown menu z-index, but still below title (100) */
     margin-top: 4px; /* Small gap from button */
   }
 }
