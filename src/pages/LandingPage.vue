@@ -76,7 +76,7 @@
 
         <div class="hero-images">
           <div
-            class="easel-container hero-logo-side"
+            class="easel-container hero-logo-wide"
             @click="nextImage"
             @touchstart="handleTouchStart"
             @touchmove="handleTouchMove"
@@ -1597,10 +1597,9 @@ export default {
 }
 
 .easel-container {
-  width: 90%;
-  max-width: 500px;
-  max-height: 640px;
-  height: 640px;
+  width: 100%;
+  max-height: 600px;
+  height: 600px;
   display: flex;
   justify-content: center;
   margin-top: 0;
