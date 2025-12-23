@@ -1426,16 +1426,25 @@ export default {
     padding: 0;
   }
   flex-shrink: 0 !important; /* Don't shrink */
-  z-index: 2; /* Above menus but below title */
+  z-index: 100 !important; /* Above menus but below title */
   margin-left: 8px; /* Small gap from menus */
+  position: relative;
 }
 
 // Ensure About button doesn't get overlapped
 .q-toolbar > .gt-xs.q-btn[label="About"],
 .q-toolbar > .q-btn:has([aria-label*="About"]) {
   flex-shrink: 0 !important; /* Don't shrink */
-  z-index: 2; /* Above menus but below title */
+  z-index: 100 !important; /* Above menus but below title */
   margin-left: 8px; /* Small gap from menus */
+  position: relative;
+}
+
+// Ensure shopping cart button also doesn't get overlapped
+.q-toolbar > .q-btn[aria-label="Shopping Cart"] {
+  flex-shrink: 0 !important;
+  z-index: 100 !important;
+  position: relative;
 }
 
 .customer-mode-toggle {
@@ -1493,48 +1502,47 @@ export default {
   flex-shrink: 0; /* Prevent shrinking */
   margin-right: 0;
   padding-left: 10px; /* Reduced padding to bring menus closer to title */
-  max-width: calc(50% - 180px); /* Prevent menus from overlapping title, account for About/user space */
 }
 
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
 // Each menu hides individually BEFORE covering the title or overlapping About/user
 // Hide Custom Photo Magnets first (leftmost menu) - hide before overlapping About/user
-@media (max-width: 1350px) {
+@media (max-width: 1200px) {
   .shop-header-btn-custom {
     display: none !important;
   }
 }
 
 // Show Custom Photo Magnets again when screen is larger
-@media (min-width: 1351px) {
+@media (min-width: 1201px) {
   .shop-header-btn-custom {
     display: flex !important;
   }
 }
 
 // Hide Designer Magnets next (middle menu) - hide before overlapping About/user
-@media (max-width: 1250px) {
+@media (max-width: 1100px) {
   .shop-header-btn-designer {
     display: none !important;
   }
 }
 
 // Show Designer Magnets again when screen is larger
-@media (min-width: 1251px) {
+@media (min-width: 1101px) {
   .shop-header-btn-designer {
     display: flex !important;
   }
 }
 
 // Hide Specialty Products last (rightmost menu) - hide before overlapping About/user
-@media (max-width: 1150px) {
+@media (max-width: 1000px) {
   .shop-header-btn-specialty {
     display: none !important;
   }
 }
 
 // Show Specialty Products again when screen is larger
-@media (min-width: 1151px) {
+@media (min-width: 1001px) {
   .shop-header-btn-specialty {
     display: flex !important;
   }
