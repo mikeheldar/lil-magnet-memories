@@ -1517,21 +1517,21 @@ export default {
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
 // Each menu hides individually BEFORE covering the title or overlapping About/user
 // Hide Custom Photo Magnets first (leftmost menu)
-@media (max-width: 1400px) {
+@media (max-width: 1300px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
 }
 
 // Hide Designer Magnets next (middle menu)
-@media (max-width: 1300px) {
+@media (max-width: 1200px) {
   .shop-header-dropdowns .shop-header-btn-designer {
     display: none !important;
   }
 }
 
 // Hide Specialty Products last (rightmost menu)
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
   .shop-header-dropdowns .shop-header-btn-specialty {
     display: none !important;
   }
