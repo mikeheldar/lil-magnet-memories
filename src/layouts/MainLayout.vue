@@ -57,7 +57,7 @@
         </q-toolbar-title>
 
         <!-- Shop Dropdowns for Wide Screens -->
-        <div class="gt-sm shop-header-dropdowns q-mr-md">
+        <div class="shop-header-dropdowns q-mr-md">
           <!-- Custom Photo Magnets Dropdown -->
           <q-btn-dropdown
             flat
@@ -1362,7 +1362,7 @@ export default {
   z-index: 9999 !important; /* Very high z-index to lock title on top - always visible */
   pointer-events: none; /* Allow clicks to pass through to elements below */
   flex-shrink: 0 !important; /* Prevent title from shrinking */
-  padding: 0 10px !important; /* Only 10px padding on each side */
+  padding: 0 20px !important; /* Padding to protect title area */
   background: transparent !important; /* Ensure no background interferes */
   box-sizing: content-box;
   visibility: visible !important; /* Always visible */
@@ -1492,8 +1492,9 @@ export default {
 }
 
 // Header shop dropdowns for wide screens
+// Container always visible on screens > 960px, individual buttons hide one by one
 .shop-header-dropdowns {
-  display: flex !important; /* Override gt-sm class */
+  display: flex;
   gap: 8px;
   align-items: center;
   position: relative;
@@ -1502,59 +1503,51 @@ export default {
   flex-shrink: 0; /* Prevent shrinking */
   margin-right: 0;
   padding-left: 10px; /* Reduced padding to bring menus closer to title */
+  max-width: calc(100% - 500px); /* Prevent menus from covering title (title is ~225px min + padding) */
 }
 
-// Individual button base styles - allow them to be hidden individually
+// Individual button base styles - visible by default on wide screens
 .shop-header-btn-custom,
 .shop-header-btn-designer,
 .shop-header-btn-specialty {
-  display: flex !important; /* Default: visible on wide screens */
+  display: flex !important;
+  flex-shrink: 0; /* Don't shrink buttons */
 }
 
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
 // Each menu hides individually BEFORE covering the title or overlapping About/user
-// Hide Custom Photo Magnets first (leftmost menu) - hide before overlapping About/user
-@media (max-width: 1300px) {
+// Hide Custom Photo Magnets first (leftmost menu)
+@media (max-width: 1400px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
 }
 
-// Hide Designer Magnets next (middle menu) - hide before overlapping About/user
-@media (max-width: 1200px) {
+// Hide Designer Magnets next (middle menu)
+@media (max-width: 1300px) {
   .shop-header-dropdowns .shop-header-btn-designer {
     display: none !important;
   }
 }
 
-// Hide Specialty Products last (rightmost menu) - hide before overlapping About/user
-@media (max-width: 1100px) {
+// Hide Specialty Products last (rightmost menu)
+@media (max-width: 1200px) {
   .shop-header-dropdowns .shop-header-btn-specialty {
     display: none !important;
   }
 }
 
-// Hide entire dropdown container only on very small screens (mobile) - they're in sidebar
-// Individual buttons hide one by one on larger screens before this
+// Hide entire dropdown container only on mobile (< 960px) - menus are in sidebar
 @media (max-width: 960px) {
   .shop-header-dropdowns {
     display: none !important;
   }
 }
 
-// Override Quasar's gt-sm class - ensure container is visible on screens larger than 960px
-// The gt-sm class might hide it, so we force it to show
+// Ensure container is visible on screens > 960px
 @media (min-width: 961px) {
-  .shop-header-dropdowns.gt-sm,
   .shop-header-dropdowns {
     display: flex !important;
-  }
-}
-
-// On smaller screens (600px-960px), still show container but let individual buttons hide
-@media (min-width: 601px) and (max-width: 960px) {
-  .shop-header-dropdowns.gt-sm {
-    display: flex !important; /* Override Quasar's gt-sm hiding behavior */
   }
 }
 
