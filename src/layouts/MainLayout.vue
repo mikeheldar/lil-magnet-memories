@@ -1369,7 +1369,7 @@ export default {
   opacity: 1 !important; /* Always fully opaque */
   overflow: visible !important; /* Prevent clipping */
   text-overflow: clip !important; /* Don't truncate text */
-  
+
   // Override Quasar's ellipsis class if present
   &.ellipsis,
   &[class*="ellipsis"] {
@@ -1398,12 +1398,12 @@ export default {
   position: relative;
   padding-left: 8px;
   padding-right: 8px;
-  
+
   // Ensure right side elements respect title space
   > .shop-header-dropdowns {
     margin-left: auto;
-    padding-left: 20px; /* Extra padding to keep away from title */
   }
+  
 }
 
 // Keep logo large on medium screens
@@ -1425,6 +1425,17 @@ export default {
   .q-btn__content {
     padding: 0;
   }
+  flex-shrink: 0 !important; /* Don't shrink */
+  z-index: 2; /* Above menus but below title */
+  margin-left: 8px; /* Small gap from menus */
+}
+
+// Ensure About button doesn't get overlapped
+.q-toolbar > .gt-xs.q-btn[label="About"],
+.q-toolbar > .q-btn:has([aria-label*="About"]) {
+  flex-shrink: 0 !important; /* Don't shrink */
+  z-index: 2; /* Above menus but below title */
+  margin-left: 8px; /* Small gap from menus */
 }
 
 .customer-mode-toggle {
@@ -1480,49 +1491,50 @@ export default {
   z-index: 1; /* Lower than title (9999) to ensure title stays on top */
   margin-left: auto; /* Push to the right */
   flex-shrink: 0; /* Prevent shrinking */
-  max-width: calc(50% - 200px); /* Prevent menus from overlapping title (title is ~200px wide in center) */
   margin-right: 0;
+  padding-left: 10px; /* Reduced padding to bring menus closer to title */
+  max-width: calc(50% - 180px); /* Prevent menus from overlapping title, account for About/user space */
 }
 
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
-// Each menu hides individually BEFORE covering the title
-// Hide Custom Photo Magnets first (leftmost menu) - hide early to protect title
-@media (max-width: 1400px) {
+// Each menu hides individually BEFORE covering the title or overlapping About/user
+// Hide Custom Photo Magnets first (leftmost menu) - hide before overlapping About/user
+@media (max-width: 1350px) {
   .shop-header-btn-custom {
     display: none !important;
   }
 }
 
 // Show Custom Photo Magnets again when screen is larger
-@media (min-width: 1401px) {
+@media (min-width: 1351px) {
   .shop-header-btn-custom {
     display: flex !important;
   }
 }
 
-// Hide Designer Magnets next (middle menu) - hide before reaching title
-@media (max-width: 1300px) {
+// Hide Designer Magnets next (middle menu) - hide before overlapping About/user
+@media (max-width: 1250px) {
   .shop-header-btn-designer {
     display: none !important;
   }
 }
 
 // Show Designer Magnets again when screen is larger
-@media (min-width: 1301px) {
+@media (min-width: 1251px) {
   .shop-header-btn-designer {
     display: flex !important;
   }
 }
 
-// Hide Specialty Products last (rightmost menu) - hide before touching title
-@media (max-width: 1200px) {
+// Hide Specialty Products last (rightmost menu) - hide before overlapping About/user
+@media (max-width: 1150px) {
   .shop-header-btn-specialty {
     display: none !important;
   }
 }
 
 // Show Specialty Products again when screen is larger
-@media (min-width: 1201px) {
+@media (min-width: 1151px) {
   .shop-header-btn-specialty {
     display: flex !important;
   }
