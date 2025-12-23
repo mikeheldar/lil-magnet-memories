@@ -1403,7 +1403,7 @@ export default {
   > .shop-header-dropdowns {
     margin-left: auto;
   }
-  
+
 }
 
 // Keep logo large on medium screens

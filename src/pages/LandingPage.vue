@@ -76,7 +76,7 @@
 
         <div class="hero-images">
           <div
-            class="easel-container"
+            class="easel-container hero-logo-side"
             @click="nextImage"
             @touchstart="handleTouchStart"
             @touchmove="handleTouchMove"
@@ -1597,19 +1597,20 @@ export default {
 }
 
 .easel-container {
-  max-width: 70% !important; // Never wider than hero-logo (which is 70%)
-  width: 100%;
-  max-height: 640px; // 20% smaller (800px * 0.8 = 640px)
+  width: 90%;
+  max-width: 500px;
+  max-height: 640px;
   height: 640px;
   display: flex;
   justify-content: center;
-  margin-top: 0; // No top margin to align with left text
-  padding-top: 0; // No top padding to align with left text
-  align-items: flex-start; // Align image to top of container, not center
+  margin-top: 0;
+  padding-top: 0;
+  align-items: flex-start;
   position: relative;
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
-  overflow: visible; // Allow shadows to extend beyond container
+  overflow: visible;
 
   img {
     display: block;
