@@ -1534,10 +1534,18 @@ export default {
   }
 }
 
-// Hide all dropdowns on smaller screens (they're in sidebar)
+// Hide entire dropdown container only on very small screens (mobile) - they're in sidebar
+// Individual buttons hide one by one on larger screens before this
 @media (max-width: 960px) {
   .shop-header-dropdowns {
     display: none !important;
+  }
+}
+
+// Ensure container is visible on screens larger than 960px
+@media (min-width: 961px) {
+  .shop-header-dropdowns {
+    display: flex !important;
   }
 }
 
