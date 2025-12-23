@@ -1329,9 +1329,9 @@ export default {
 }
 
 .hero-content {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
+  max-width: 70%; // Match hero-logo-wide width
+  width: 70%; // Match hero-logo-wide width
+  margin: 0 auto; // Center it like the logo
   display: flex;
   flex-direction: column; // Stack content vertically by default
   gap: 40px; // Spacing between hero-text and hero-images
