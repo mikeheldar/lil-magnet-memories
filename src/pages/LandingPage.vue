@@ -82,14 +82,15 @@
             @touchmove="handleTouchMove"
             @touchend="handleTouchEnd"
           >
-            <img
-              :src="currentEaselImage"
-              alt="Custom photo magnets on easel display"
-              class="easel-image"
-              :key="easelImageIndex"
-            />
-            <!-- Image carousel dots (only show if more than 1 image) -->
-            <div v-if="easelImages.length > 1" class="easel-carousel-dots">
+            <div class="easel-image-wrapper">
+              <img
+                :src="currentEaselImage"
+                alt="Custom photo magnets on easel display"
+                class="easel-image"
+                :key="easelImageIndex"
+              />
+              <!-- Image carousel dots (only show if more than 1 image) -->
+              <div v-if="easelImages.length > 1" class="easel-carousel-dots">
               <button
                 v-for="(image, index) in easelImages"
                 :key="index"
@@ -100,6 +101,7 @@
                 @click.stop="goToImage(index)"
                 aria-label="Go to image"
               />
+              </div>
             </div>
           </div>
         </div>
@@ -1617,35 +1619,41 @@ export default {
   }
 }
 
+.easel-image-wrapper {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 6px);
+  max-height: calc(100% - 6px);
+  height: auto;
+  display: block;
+}
+
 .easel-image {
-  width: calc(100% - 6px); // Account for border width
-  max-height: calc(100% - 6px); // Fit within container height
+  width: 100%;
+  max-height: 100%;
   height: auto;
   object-fit: contain;
-  object-position: top; // Align image to top
-  border-radius: 17px; // Slightly smaller to account for border
-  align-self: flex-start; // Align to top of flex container
+  object-position: top;
+  border-radius: 17px;
   // Add silver border around images with padding to keep image inside
   border: 3px solid rgba(192, 192, 192, 0.8);
-  padding: 2px; // Small padding to ensure image corners stay inside border
+  padding: 2px;
   box-sizing: border-box;
   // Use filter drop-shadow for natural, unclipped shadows that fade smoothly
   filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.12))
           drop-shadow(0 8px 50px rgba(0, 0, 0, 0.08))
           drop-shadow(0 2px 15px rgba(0, 0, 0, 0.1));
   transition: opacity 0.5s ease;
-  position: absolute;
-  top: 0; // Align to top of container
-  left: 50%;
-  transform: translateX(-50%); // Center horizontally only
+  display: block;
   overflow: hidden; // Clip image to border radius
-  // No background color - let the image show through naturally
 }
 
-// Carousel dots
+// Carousel dots - positioned 5px above the bottom of the image (inside wrapper)
 .easel-carousel-dots {
   position: absolute;
-  bottom: 5px;
+  bottom: 5px; // 5px from bottom of the image wrapper (which matches image height)
   left: 50%;
   transform: translateX(-50%);
   display: flex;
