@@ -1356,7 +1356,7 @@ export default {
   left: 50% !important;
   transform: translateX(-50%) !important;
   width: fit-content !important; /* Fit content width */
-  min-width: fit-content !important; /* Ensure minimum width fits content */
+  min-width: 225px !important; /* Ensure minimum width for title */
   max-width: none !important;
   text-align: center;
   z-index: 9999 !important; /* Very high z-index to lock title on top - always visible */
@@ -1504,47 +1504,33 @@ export default {
   padding-left: 10px; /* Reduced padding to bring menus closer to title */
 }
 
+// Default: all menu buttons visible on wide screens
+.shop-header-btn-custom,
+.shop-header-btn-designer,
+.shop-header-btn-specialty {
+  display: flex !important;
+}
+
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
 // Each menu hides individually BEFORE covering the title or overlapping About/user
 // Hide Custom Photo Magnets first (leftmost menu) - hide before overlapping About/user
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
   .shop-header-btn-custom {
     display: none !important;
-  }
-}
-
-// Show Custom Photo Magnets again when screen is larger
-@media (min-width: 1201px) {
-  .shop-header-btn-custom {
-    display: flex !important;
   }
 }
 
 // Hide Designer Magnets next (middle menu) - hide before overlapping About/user
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .shop-header-btn-designer {
     display: none !important;
-  }
-}
-
-// Show Designer Magnets again when screen is larger
-@media (min-width: 1101px) {
-  .shop-header-btn-designer {
-    display: flex !important;
   }
 }
 
 // Hide Specialty Products last (rightmost menu) - hide before overlapping About/user
-@media (max-width: 1000px) {
+@media (max-width: 1100px) {
   .shop-header-btn-specialty {
     display: none !important;
-  }
-}
-
-// Show Specialty Products again when screen is larger
-@media (min-width: 1001px) {
-  .shop-header-btn-specialty {
-    display: flex !important;
   }
 }
 
