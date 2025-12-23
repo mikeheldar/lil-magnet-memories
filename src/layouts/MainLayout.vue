@@ -1514,11 +1514,11 @@ export default {
   flex-shrink: 0; /* Don't shrink buttons */
 }
 
-// Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
+// Hide dropdowns one by one from RIGHT to LEFT as screen gets smaller
 // Each menu hides individually BEFORE covering the title or overlapping About/user
-// Hide Custom Photo Magnets first (leftmost menu)
+// Hide Specialty Products first (rightmost menu)
 @media (max-width: 1200px) {
-  .shop-header-dropdowns .shop-header-btn-custom {
+  .shop-header-dropdowns .shop-header-btn-specialty {
     display: none !important;
   }
 }
@@ -1530,9 +1530,9 @@ export default {
   }
 }
 
-// Hide Specialty Products last (rightmost menu)
+// Hide Custom Photo Magnets last (leftmost menu)
 @media (max-width: 1000px) {
-  .shop-header-dropdowns .shop-header-btn-specialty {
+  .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
 }
