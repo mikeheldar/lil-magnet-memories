@@ -1493,7 +1493,7 @@ export default {
 
 // Header shop dropdowns for wide screens
 .shop-header-dropdowns {
-  display: flex;
+  display: flex !important; /* Override gt-sm class */
   gap: 8px;
   align-items: center;
   position: relative;
@@ -1504,32 +1504,32 @@ export default {
   padding-left: 10px; /* Reduced padding to bring menus closer to title */
 }
 
-// Default: all menu buttons visible on wide screens
+// Individual button base styles - allow them to be hidden individually
 .shop-header-btn-custom,
 .shop-header-btn-designer,
 .shop-header-btn-specialty {
-  display: flex !important;
+  display: flex !important; /* Default: visible on wide screens */
 }
 
 // Hide dropdowns one by one from LEFT to RIGHT as screen gets smaller
 // Each menu hides individually BEFORE covering the title or overlapping About/user
 // Hide Custom Photo Magnets first (leftmost menu) - hide before overlapping About/user
 @media (max-width: 1300px) {
-  .shop-header-btn-custom {
+  .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
 }
 
 // Hide Designer Magnets next (middle menu) - hide before overlapping About/user
 @media (max-width: 1200px) {
-  .shop-header-btn-designer {
+  .shop-header-dropdowns .shop-header-btn-designer {
     display: none !important;
   }
 }
 
 // Hide Specialty Products last (rightmost menu) - hide before overlapping About/user
 @media (max-width: 1100px) {
-  .shop-header-btn-specialty {
+  .shop-header-dropdowns .shop-header-btn-specialty {
     display: none !important;
   }
 }
@@ -1542,10 +1542,19 @@ export default {
   }
 }
 
-// Ensure container is visible on screens larger than 960px
+// Override Quasar's gt-sm class - ensure container is visible on screens larger than 960px
+// The gt-sm class might hide it, so we force it to show
 @media (min-width: 961px) {
+  .shop-header-dropdowns.gt-sm,
   .shop-header-dropdowns {
     display: flex !important;
+  }
+}
+
+// On smaller screens (600px-960px), still show container but let individual buttons hide
+@media (min-width: 601px) and (max-width: 960px) {
+  .shop-header-dropdowns.gt-sm {
+    display: flex !important; /* Override Quasar's gt-sm hiding behavior */
   }
 }
 
@@ -1553,7 +1562,7 @@ export default {
   min-width: auto;
   position: relative;
   z-index: 1; /* Lower than title z-index (9999) */
-  display: flex !important; /* Default to visible */
+  /* Don't set display here - let individual button classes control it */
 
   .q-btn__content {
     padding: 0 8px;
