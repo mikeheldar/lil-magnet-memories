@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated :class="headerClasses" :style="headerInlineStyle">
-      <q-toolbar>
+      <q-toolbar :class="{ 'drawer-open': leftDrawerOpen }">
         <!-- Menu button (always visible) -->
         <q-btn
           flat
@@ -1534,6 +1534,31 @@ export default {
 @media (max-width: 1000px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
+  }
+}
+
+// When left drawer is open, adjust breakpoints to account for reduced space
+// Drawer is typically ~300px wide, so menus need to hide earlier
+.q-toolbar.drawer-open {
+  // Hide Specialty Products earlier when drawer is open
+  @media (max-width: 1500px) {
+    .shop-header-dropdowns .shop-header-btn-specialty {
+      display: none !important;
+    }
+  }
+
+  // Hide Designer Magnets earlier when drawer is open
+  @media (max-width: 1400px) {
+    .shop-header-dropdowns .shop-header-btn-designer {
+      display: none !important;
+    }
+  }
+
+  // Hide Custom Photo Magnets earlier when drawer is open
+  @media (max-width: 1300px) {
+    .shop-header-dropdowns .shop-header-btn-custom {
+      display: none !important;
+    }
   }
 }
 

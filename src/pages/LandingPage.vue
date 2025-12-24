@@ -1288,7 +1288,7 @@ export default {
   align-items: stretch; // Stretch children to full width
   justify-content: flex-start;
   padding: 20px 10px 40px 10px; // 20px top padding to position logo 20px below header
-  
+
   // Add extra 10px padding in test environment
   &.test-environment {
     padding-top: 30px; // 20px + 10px = 30px total
