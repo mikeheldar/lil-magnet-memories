@@ -76,7 +76,7 @@
 
         <div class="hero-images">
           <div
-            class="easel-container hero-logo-wide"
+            class="easel-container"
             @click="nextImage"
             @touchstart="handleTouchStart"
             @touchmove="handleTouchMove"
