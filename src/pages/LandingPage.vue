@@ -1661,28 +1661,34 @@ export default {
 }
 
 // Carousel dots - positioned 10px above the bottom of the image (inside wrapper)
+// Scale with image size to stay within boundaries
 .easel-carousel-dots {
   position: absolute;
-  bottom: 10px; // 10px from bottom of the image wrapper (which matches image height)
+  bottom: clamp(8px, 1.5%, 10px); // Scale with image, min 8px, max 10px
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: clamp(6px, 1.2%, 8px); // Scale gap with image
   z-index: 10;
+  // Ensure dots container doesn't exceed image width
+  max-width: 90%; // Leave 10% margin on each side
+  padding: 0 clamp(4px, 1%, 8px); // Padding that scales
 }
 
 .carousel-dot {
-  width: 12px;
-  height: 12px;
-  min-width: 12px;
-  min-height: 12px;
+  // Scale dot size with viewport/image size - use clamp for responsive sizing
+  width: clamp(8px, 1vw, 12px); // Scales between 8px and 12px based on viewport
+  height: clamp(8px, 1vw, 12px);
+  min-width: clamp(8px, 1vw, 12px);
+  min-height: clamp(8px, 1vw, 12px);
   border-radius: 50%;
   background: transparent; // No fill for inactive dots
-  border: 2px solid rgba(128, 128, 128, 0.6); // Grey border for inactive dots
+  border: clamp(1.5px, 0.15vw, 2px) solid rgba(128, 128, 128, 0.6); // Scale border width
   transition: all 0.3s ease;
   cursor: pointer;
   padding: 0;
   margin: 0;
+  flex-shrink: 0; // Prevent dots from shrinking
 
   &:hover {
     border-color: rgba(128, 128, 128, 0.9); // Slightly darker grey on hover
@@ -1692,7 +1698,7 @@ export default {
   &.dot-active {
     background: #764ba2; // Purple fill for active dot
     border-color: #764ba2; // Purple border for active dot
-    box-shadow: 0 0 8px rgba(118, 75, 162, 0.6);
+    box-shadow: 0 0 clamp(6px, 0.8vw, 8px) rgba(118, 75, 162, 0.6); // Scale shadow
   }
 }
 
