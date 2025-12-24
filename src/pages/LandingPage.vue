@@ -36,7 +36,7 @@
     </div>
 
     <!-- Hero Section with Big Magnet Images -->
-    <div class="hero-section">
+    <div class="hero-section" :class="{ 'test-environment': isTestEnvironment }">
       <!-- Logo always on top, full width -->
       <div class="hero-logo-container">
         <img
@@ -703,6 +703,7 @@ import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
 import { useCart } from '../composables/useCart.js';
+import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { userPreferencesService } from '../services/userPreferencesService.js';
 import { useQuasar } from 'quasar';
@@ -723,6 +724,9 @@ export default {
       useCustomerType();
 
     // Customer at event toggle - sync with customer type
+    // Check if we're in test environment
+    const isTestEnvironment = computed(() => config.isTest);
+
     const isCustomerAtEvent = computed({
       get: () => isMarketCustomer.value,
       set: () => {
@@ -1226,6 +1230,7 @@ export default {
       activeMarketEventName,
       activeMarketEventLink,
       isCustomerAtEvent,
+      isTestEnvironment,
       easelImages,
       currentEaselImage,
       easelImageIndex,
@@ -1283,6 +1288,11 @@ export default {
   align-items: stretch; // Stretch children to full width
   justify-content: flex-start;
   padding: 20px 10px 40px 10px; // 20px top padding to position logo 20px below header
+  
+  // Add extra 10px padding in test environment
+  &.test-environment {
+    padding-top: 30px; // 20px + 10px = 30px total
+  }
   width: 100%;
   max-width: 100%;
   background: #ffffff; // Bright white
@@ -1650,10 +1660,10 @@ export default {
   overflow: hidden; // Clip image to border radius
 }
 
-// Carousel dots - positioned 5px above the bottom of the image (inside wrapper)
+// Carousel dots - positioned 10px above the bottom of the image (inside wrapper)
 .easel-carousel-dots {
   position: absolute;
-  bottom: 5px; // 5px from bottom of the image wrapper (which matches image height)
+  bottom: 10px; // 10px from bottom of the image wrapper (which matches image height)
   left: 50%;
   transform: translateX(-50%);
   display: flex;
