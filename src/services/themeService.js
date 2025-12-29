@@ -1015,7 +1015,7 @@ export const initializeDefaultThemes = async () => {
             color: #2c3e50 !important;
           }
 
-          /* Header styling - purple background with white text - match button color exactly */
+          /* Header styling - purple gradient background with white text - match button gradient exactly */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
           body .q-layout .q-header.bg-primary.text-white.elevated,
@@ -1034,12 +1034,10 @@ export const initializeDefaultThemes = async () => {
           body .q-header,
           .q-layout .q-header,
           .q-header {
-            background: #8f44c4 !important;
-            background-color: #8f44c4 !important;
-            background-image: none !important;
-            /* Override any gradient that might be applied */
-            background: #8f44c4 !important;
-            /* Ensure no opacity or transparency */
+            /* Use same gradient as buttons: linear-gradient(135deg, #667eea 0%, #764ba2 100%) */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-color: #667eea !important; /* Fallback color */
             opacity: 1 !important;
           }
 
@@ -1134,7 +1132,7 @@ export const initializeDefaultThemes = async () => {
         whiteLattusDocRef = { id: existing.id };
         // Update existing theme with header styles
         const whiteLattusHeaderStyles = `
-          /* Header styling - purple background with white text - match button color exactly */
+          /* Header styling - purple gradient background with white text - match button gradient exactly */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
           body .q-layout .q-header.bg-primary.text-white.elevated,
@@ -1153,12 +1151,10 @@ export const initializeDefaultThemes = async () => {
           body .q-header,
           .q-layout .q-header,
           .q-header {
-            background: #8f44c4 !important;
-            background-color: #8f44c4 !important;
-            background-image: none !important;
-            /* Override any gradient that might be applied */
-            background: #8f44c4 !important;
-            /* Ensure no opacity or transparency */
+            /* Use same gradient as buttons: linear-gradient(135deg, #667eea 0%, #764ba2 100%) */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-color: #667eea !important; /* Fallback color */
             opacity: 1 !important;
           }
 
@@ -1275,7 +1271,7 @@ export const initializeDefaultThemes = async () => {
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
           }
 
-          /* Header styling - purple background with white text - match button color exactly */
+          /* Header styling - purple gradient background with white text - match button gradient exactly */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
           body .q-layout .q-header.bg-primary.text-white.elevated,
@@ -1294,12 +1290,10 @@ export const initializeDefaultThemes = async () => {
           body .q-header,
           .q-layout .q-header,
           .q-header {
-            background: #8f44c4 !important;
-            background-color: #8f44c4 !important;
-            background-image: none !important;
-            /* Override any gradient that might be applied */
-            background: #8f44c4 !important;
-            /* Ensure no opacity or transparency */
+            /* Use same gradient as buttons: linear-gradient(135deg, #667eea 0%, #764ba2 100%) */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-color: #667eea !important; /* Fallback color */
             opacity: 1 !important;
           }
 
@@ -1393,7 +1387,7 @@ export const initializeDefaultThemes = async () => {
       if (existing) {
         // Update existing theme with header styles
         const silverCrisCrossHeaderStyles = `
-          /* Header styling - purple background with white text - match button color exactly */
+          /* Header styling - purple gradient background with white text - match button gradient exactly */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
           body .q-layout .q-header.bg-primary.text-white.elevated,
@@ -1412,12 +1406,10 @@ export const initializeDefaultThemes = async () => {
           body .q-header,
           .q-layout .q-header,
           .q-header {
-            background: #8f44c4 !important;
-            background-color: #8f44c4 !important;
-            background-image: none !important;
-            /* Override any gradient that might be applied */
-            background: #8f44c4 !important;
-            /* Ensure no opacity or transparency */
+            /* Use same gradient as buttons: linear-gradient(135deg, #667eea 0%, #764ba2 100%) */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-color: #667eea !important; /* Fallback color */
             opacity: 1 !important;
           }
 

@@ -99,7 +99,7 @@
               `;
             } else if (isWhiteLattus || isSilverCrisCross) {
               headerCSS += `
-                /* Override Quasar bg-primary with maximum specificity - purple header */
+                /* Override Quasar bg-primary with maximum specificity - purple gradient header (matches buttons) */
                 html body .q-layout .q-header.bg-primary,
                 html body .q-header.bg-primary,
                 body .q-layout .q-header.bg-primary,
@@ -113,9 +113,10 @@
                 .q-layout .q-header,
                 .q-header,
                 [class*="q-header"] {
-                  background: #8f44c4 !important;
-                  background-color: #8f44c4 !important;
-                  background-image: none !important;
+                  /* Use same gradient as buttons: linear-gradient(135deg, #667eea 0%, #764ba2 100%) */
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                  background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                  background-color: #667eea !important; /* Fallback color */
                 }
                 /* Override toolbar background too */
                 html body .q-header .q-toolbar,
@@ -178,9 +179,11 @@
                 header.style.setProperty('background-color', '#000000', 'important');
                 header.style.setProperty('background-image', 'none', 'important');
               } else if (isWhiteLattus || isSilverCrisCross) {
-                header.style.setProperty('background', '#8f44c4', 'important');
-                header.style.setProperty('background-color', '#8f44c4', 'important');
-                header.style.setProperty('background-image', 'none', 'important');
+                // Use same gradient as buttons: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+                const buttonGradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                header.style.setProperty('background', buttonGradient, 'important');
+                header.style.setProperty('background-image', buttonGradient, 'important');
+                header.style.setProperty('background-color', '#667eea', 'important'); // Fallback color
               }
 
               // Also apply to toolbar
