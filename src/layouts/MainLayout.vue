@@ -1350,7 +1350,8 @@ export default {
 </script>
 
 <style lang="scss">
-.q-header {
+// Default header gradient - will be overridden by theme styles
+.q-header:not([data-theme-override]) {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
 }
 

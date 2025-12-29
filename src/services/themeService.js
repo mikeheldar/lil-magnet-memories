@@ -373,9 +373,14 @@ export const themeService = {
           header.setAttribute('data-theme-override', 'black');
         } else if (isWhiteLattus || isSilverCrisCross) {
           // Force purple background (#8f44c4) for White Lattus and Silver Cris-Cross themes
+          // Match button color exactly - solid color, no gradient, no opacity
           header.style.setProperty('background', '#8f44c4', 'important');
           header.style.setProperty('background-color', '#8f44c4', 'important');
           header.style.setProperty('background-image', 'none', 'important');
+          header.style.setProperty('opacity', '1', 'important');
+          // Remove any gradient that might be applied
+          header.style.removeProperty('background-image');
+          header.style.setProperty('background', '#8f44c4', 'important');
           header.setAttribute('data-theme-override', 'purple');
         }
 
@@ -500,12 +505,12 @@ export const themeService = {
             '.q-toolbar .q-btn[label="About"] .q-btn__content',
             '.q-toolbar .q-btn[label="About"] .q-btn__content *'
           ];
-          
+
           selectors.forEach((selector) => {
             const elements = header.querySelectorAll(selector);
             elements.forEach((element) => {
               // Skip test environment chip and its children
-              if (!element.closest('.test-environment-chip') && 
+              if (!element.closest('.test-environment-chip') &&
                   !element.classList.contains('test-environment-chip')) {
                 element.style.setProperty('color', '#ffffff', 'important');
               }
@@ -1010,7 +1015,7 @@ export const initializeDefaultThemes = async () => {
             color: #2c3e50 !important;
           }
 
-          /* Header styling - purple background with white text */
+          /* Header styling - purple background with white text - match button color exactly */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
           body .q-layout .q-header.bg-primary.text-white.elevated,
@@ -1032,6 +1037,10 @@ export const initializeDefaultThemes = async () => {
             background: #8f44c4 !important;
             background-color: #8f44c4 !important;
             background-image: none !important;
+            /* Override any gradient that might be applied */
+            background: #8f44c4 !important;
+            /* Ensure no opacity or transparency */
+            opacity: 1 !important;
           }
 
           /* Ensure toolbar is transparent */
@@ -1125,7 +1134,7 @@ export const initializeDefaultThemes = async () => {
         whiteLattusDocRef = { id: existing.id };
         // Update existing theme with header styles
         const whiteLattusHeaderStyles = `
-          /* Header styling - purple background with white text */
+          /* Header styling - purple background with white text - match button color exactly */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
           body .q-layout .q-header.bg-primary.text-white.elevated,
@@ -1147,6 +1156,10 @@ export const initializeDefaultThemes = async () => {
             background: #8f44c4 !important;
             background-color: #8f44c4 !important;
             background-image: none !important;
+            /* Override any gradient that might be applied */
+            background: #8f44c4 !important;
+            /* Ensure no opacity or transparency */
+            opacity: 1 !important;
           }
 
           /* Ensure toolbar is transparent */
@@ -1262,7 +1275,7 @@ export const initializeDefaultThemes = async () => {
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
           }
 
-          /* Header styling - purple background with white text */
+          /* Header styling - purple background with white text - match button color exactly */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
           body .q-layout .q-header.bg-primary.text-white.elevated,
@@ -1284,6 +1297,10 @@ export const initializeDefaultThemes = async () => {
             background: #8f44c4 !important;
             background-color: #8f44c4 !important;
             background-image: none !important;
+            /* Override any gradient that might be applied */
+            background: #8f44c4 !important;
+            /* Ensure no opacity or transparency */
+            opacity: 1 !important;
           }
 
           /* Ensure toolbar is transparent */
@@ -1376,7 +1393,7 @@ export const initializeDefaultThemes = async () => {
       if (existing) {
         // Update existing theme with header styles
         const silverCrisCrossHeaderStyles = `
-          /* Header styling - purple background with white text */
+          /* Header styling - purple background with white text - match button color exactly */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
           body .q-layout .q-header.bg-primary.text-white.elevated,
@@ -1398,6 +1415,10 @@ export const initializeDefaultThemes = async () => {
             background: #8f44c4 !important;
             background-color: #8f44c4 !important;
             background-image: none !important;
+            /* Override any gradient that might be applied */
+            background: #8f44c4 !important;
+            /* Ensure no opacity or transparency */
+            opacity: 1 !important;
           }
 
           /* Ensure toolbar is transparent */
