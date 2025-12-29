@@ -1549,7 +1549,7 @@ export default {
   .shop-header-dropdowns {
     max-width: calc(50% - 200px); /* Larger protected zone when drawer open */
   }
-  
+
   // Hide Specialty Products earlier when drawer is open
   @media (max-width: 1600px) {
     .shop-header-dropdowns .shop-header-btn-specialty {

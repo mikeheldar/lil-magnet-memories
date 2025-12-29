@@ -826,6 +826,94 @@ export const initializeDefaultThemes = async () => {
           .hero-title {
             color: #2c3e50 !important;
           }
+          
+          /* Header styling - purple background with white text */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
+          body .q-layout .q-header.bg-primary,
+          body .q-header.bg-primary,
+          .q-layout .q-header.bg-primary,
+          .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
+          .q-header {
+            background: #8f44c4 !important;
+            background-color: #8f44c4 !important;
+            background-image: none !important;
+          }
+          
+          /* Ensure toolbar is transparent */
+          .q-header .q-toolbar,
+          body .q-header .q-toolbar,
+          .q-header .q-toolbar.bg-primary {
+            background: transparent !important;
+            background-color: transparent !important;
+          }
+          
+          /* Header title - white text, non-cursive */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-weight: 500 !important;
+            font-style: normal !important;
+            color: #ffffff !important;
+          }
+          
+          /* All header text elements - white */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title *,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-btn,
+          body .q-header .q-chip,
+          body .q-header .q-btn .q-icon,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title span,
+          .q-header .q-btn,
+          .q-header .q-chip,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+          
+          body .q-header .q-btn,
+          .q-header .q-btn {
+            color: #ffffff !important;
+          }
+          
+          body .q-header .q-btn .q-icon,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
         `,
       };
 
@@ -836,12 +924,106 @@ export const initializeDefaultThemes = async () => {
       });
       console.log('White Lattus theme created');
     } else {
-      // Find existing White Lattus theme
+      // Find existing White Lattus theme and update it with header styles
       const existing = existingThemes.find(
         (theme) => theme.name === 'White Lattus'
       );
       if (existing) {
         whiteLattusDocRef = { id: existing.id };
+        // Update existing theme with header styles
+        const whiteLattusHeaderStyles = `
+          /* Header styling - purple background with white text */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
+          body .q-layout .q-header.bg-primary,
+          body .q-header.bg-primary,
+          .q-layout .q-header.bg-primary,
+          .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
+          .q-header {
+            background: #8f44c4 !important;
+            background-color: #8f44c4 !important;
+            background-image: none !important;
+          }
+          
+          /* Ensure toolbar is transparent */
+          .q-header .q-toolbar,
+          body .q-header .q-toolbar,
+          .q-header .q-toolbar.bg-primary {
+            background: transparent !important;
+            background-color: transparent !important;
+          }
+          
+          /* Header title - white text, non-cursive */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-weight: 500 !important;
+            font-style: normal !important;
+            color: #ffffff !important;
+          }
+          
+          /* All header text elements - white */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title *,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-btn,
+          body .q-header .q-chip,
+          body .q-header .q-btn .q-icon,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title span,
+          .q-header .q-btn,
+          .q-header .q-chip,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+          
+          body .q-header .q-btn,
+          .q-header .q-btn {
+            color: #ffffff !important;
+          }
+          
+          body .q-header .q-btn .q-icon,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+        `;
+        // Append header styles to existing theme styles
+        const updatedStyles = (existing.styles || '') + whiteLattusHeaderStyles;
+        await themeService.updateThemeStyles(existing.id, updatedStyles);
+        console.log('White Lattus theme updated with header styles');
       }
     }
 
@@ -876,6 +1058,94 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
           }
+          
+          /* Header styling - purple background with white text */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
+          body .q-layout .q-header.bg-primary,
+          body .q-header.bg-primary,
+          .q-layout .q-header.bg-primary,
+          .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
+          .q-header {
+            background: #8f44c4 !important;
+            background-color: #8f44c4 !important;
+            background-image: none !important;
+          }
+          
+          /* Ensure toolbar is transparent */
+          .q-header .q-toolbar,
+          body .q-header .q-toolbar,
+          .q-header .q-toolbar.bg-primary {
+            background: transparent !important;
+            background-color: transparent !important;
+          }
+          
+          /* Header title - white text, non-cursive */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-weight: 500 !important;
+            font-style: normal !important;
+            color: #ffffff !important;
+          }
+          
+          /* All header text elements - white */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title *,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-btn,
+          body .q-header .q-chip,
+          body .q-header .q-btn .q-icon,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title span,
+          .q-header .q-btn,
+          .q-header .q-chip,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+          
+          body .q-header .q-btn,
+          .q-header .q-btn {
+            color: #ffffff !important;
+          }
+          
+          body .q-header .q-btn .q-icon,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
         `,
       };
 
@@ -885,6 +1155,107 @@ export const initializeDefaultThemes = async () => {
         updatedAt: serverTimestamp(),
       });
       console.log('Silver Cris-Cross theme created');
+    } else {
+      // Find existing Silver Cris-Cross theme and update it with header styles
+      const existing = existingThemes.find(
+        (theme) => theme.name === 'Silver Cris-Cross'
+      );
+      if (existing) {
+        // Update existing theme with header styles
+        const silverCrisCrossHeaderStyles = `
+          /* Header styling - purple background with white text */
+          html body .q-layout .q-header.bg-primary.text-white.elevated,
+          html body .q-header.bg-primary.text-white.elevated,
+          body .q-layout .q-header.bg-primary.text-white.elevated,
+          body .q-header.bg-primary.text-white.elevated,
+          .q-layout .q-header.bg-primary.text-white.elevated,
+          .q-header.bg-primary.text-white.elevated,
+          html body .q-layout .q-header.bg-primary,
+          html body .q-header.bg-primary,
+          body .q-layout .q-header.bg-primary,
+          body .q-header.bg-primary,
+          .q-layout .q-header.bg-primary,
+          .q-header.bg-primary,
+          html body .q-layout .q-header,
+          html body .q-header,
+          body .q-layout .q-header,
+          body .q-header,
+          .q-layout .q-header,
+          .q-header {
+            background: #8f44c4 !important;
+            background-color: #8f44c4 !important;
+            background-image: none !important;
+          }
+          
+          /* Ensure toolbar is transparent */
+          .q-header .q-toolbar,
+          body .q-header .q-toolbar,
+          .q-header .q-toolbar.bg-primary {
+            background: transparent !important;
+            background-color: transparent !important;
+          }
+          
+          /* Header title - white text, non-cursive */
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+          body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+          html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          html body .q-header .q-toolbar .q-toolbar-title span,
+          body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar .q-toolbar-title span,
+          .q-layout .q-header .q-toolbar .q-toolbar-title span,
+          .q-header .q-toolbar .q-toolbar-title span,
+          body .q-header .q-toolbar-title span {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+            font-weight: 500 !important;
+            font-style: normal !important;
+            color: #ffffff !important;
+          }
+          
+          /* All header text elements - white */
+          body .q-header .q-toolbar-title,
+          body .q-header .q-toolbar-title *,
+          body .q-header .q-toolbar-title span,
+          body .q-header .q-btn,
+          body .q-header .q-chip,
+          body .q-header .q-btn .q-icon,
+          .q-layout .q-header .q-toolbar-title,
+          .q-layout .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title,
+          .q-header .q-toolbar-title *,
+          .q-header .q-toolbar-title span,
+          .q-header .q-btn,
+          .q-header .q-chip,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+          
+          body .q-header .q-btn,
+          .q-header .q-btn {
+            color: #ffffff !important;
+          }
+          
+          body .q-header .q-btn .q-icon,
+          .q-header .q-btn .q-icon {
+            color: #ffffff !important;
+          }
+        `;
+        // Append header styles to existing theme styles
+        const updatedStyles = (existing.styles || '') + silverCrisCrossHeaderStyles;
+        await themeService.updateThemeStyles(existing.id, updatedStyles);
+        console.log('Silver Cris-Cross theme updated with header styles');
+      }
     }
 
     // Handle old "LineA Modern" themes - convert them to the new naming
