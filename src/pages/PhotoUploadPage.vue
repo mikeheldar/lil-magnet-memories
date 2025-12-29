@@ -144,7 +144,30 @@
                     :key="index"
                     class="col-6 col-md-4 col-lg-3"
                   >
-                    <q-card class="q-pa-sm">
+                    <q-card class="q-pa-sm photo-preview-card" style="position: relative;">
+                      <!-- Remove button in upper right corner -->
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="close"
+                        color="white"
+                        size="sm"
+                        class="photo-remove-btn"
+                        @click="removeFile(index)"
+                        style="
+                          position: absolute;
+                          top: 4px;
+                          right: 4px;
+                          z-index: 10;
+                          background: rgba(0, 0, 0, 0.6);
+                          min-width: 24px;
+                          width: 24px;
+                          height: 24px;
+                        "
+                      >
+                        <q-tooltip>Remove photo</q-tooltip>
+                      </q-btn>
                       <!-- Square frame with centered photo -->
                       <div
                         class="square-photo-frame q-mb-sm"
