@@ -355,6 +355,8 @@ export const themeService = {
       if (header) {
         const isWhiteHeader = theme.name && theme.name.includes('LineA Modern White Header');
         const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
+        const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
+        const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
 
         if (isWhiteHeader) {
           // Force white background with inline styles (highest priority - overrides everything)
@@ -369,6 +371,12 @@ export const themeService = {
           header.style.setProperty('background-color', '#000000', 'important');
           header.style.setProperty('background-image', 'none', 'important');
           header.setAttribute('data-theme-override', 'black');
+        } else if (isWhiteLattus || isSilverCrisCross) {
+          // Force purple background (#8f44c4) for White Lattus and Silver Cris-Cross themes
+          header.style.setProperty('background', '#8f44c4', 'important');
+          header.style.setProperty('background-color', '#8f44c4', 'important');
+          header.style.setProperty('background-image', 'none', 'important');
+          header.setAttribute('data-theme-override', 'purple');
         }
 
         // Also apply to toolbar (only if it exists to avoid unnecessary DOM queries)
@@ -379,12 +387,14 @@ export const themeService = {
         }
       }
 
-      // Apply inline styles to header title for instant font application
+      // Apply inline styles to header title and all header text elements for instant application
       const titleSpan = document.querySelector('.q-toolbar-title span.text-h5.text-weight-bold, .q-toolbar-title span, .q-toolbar-title');
       if (titleSpan) {
         const isLineAModern = theme.name &&
           (theme.name.includes('LineA Modern Black Header') ||
            theme.name.includes('LineA Modern White Header'));
+        const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
+        const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
 
         if (isLineAModern) {
           const isWhiteHeader = theme.name.includes('White Header');
@@ -394,6 +404,35 @@ export const themeService = {
           titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
           titleSpan.style.setProperty('text-transform', 'none', 'important');
           titleSpan.style.setProperty('color', isWhiteHeader ? '#1a1a1a' : '#ffffff', 'important');
+        } else if (isWhiteLattus || isSilverCrisCross) {
+          // Non-cursive font, white text for White Lattus and Silver Cris-Cross
+          titleSpan.style.setProperty('font-family', "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif", 'important');
+          titleSpan.style.setProperty('font-weight', '500', 'important');
+          titleSpan.style.setProperty('font-style', 'normal', 'important');
+          titleSpan.style.setProperty('color', '#ffffff', 'important');
+        }
+      }
+
+      // Apply white text color to all header buttons and elements for White Lattus and Silver Cris-Cross
+      if (header) {
+        const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
+        const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
+        
+        if (isWhiteLattus || isSilverCrisCross) {
+          // Apply white color to all header buttons, icons, and text elements
+          const headerButtons = header.querySelectorAll('.q-btn, .q-btn .q-icon, .q-chip, .q-toolbar-title, .q-toolbar-title *');
+          headerButtons.forEach((element) => {
+            element.style.setProperty('color', '#ffffff', 'important');
+          });
+        } else if (theme.name && theme.name.includes('LineA Modern White Header')) {
+          // Apply black color to all header buttons, icons, and text elements for white header
+          const headerButtons = header.querySelectorAll('.q-btn, .q-btn .q-icon, .q-chip, .q-toolbar-title, .q-toolbar-title *');
+          headerButtons.forEach((element) => {
+            // Don't override the title span color if it's already set
+            if (!element.classList.contains('q-toolbar-title') && !element.closest('.q-toolbar-title')) {
+              element.style.setProperty('color', '#1a1a1a', 'important');
+            }
+          });
         }
       }
     }
@@ -826,7 +865,7 @@ export const initializeDefaultThemes = async () => {
           .hero-title {
             color: #2c3e50 !important;
           }
-          
+
           /* Header styling - purple background with white text */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
@@ -850,7 +889,7 @@ export const initializeDefaultThemes = async () => {
             background-color: #8f44c4 !important;
             background-image: none !important;
           }
-          
+
           /* Ensure toolbar is transparent */
           .q-header .q-toolbar,
           body .q-header .q-toolbar,
@@ -858,7 +897,7 @@ export const initializeDefaultThemes = async () => {
             background: transparent !important;
             background-color: transparent !important;
           }
-          
+
           /* Header title - white text, non-cursive */
           html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
@@ -886,7 +925,7 @@ export const initializeDefaultThemes = async () => {
             font-style: normal !important;
             color: #ffffff !important;
           }
-          
+
           /* All header text elements - white */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
@@ -904,12 +943,12 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn .q-icon {
             color: #ffffff !important;
           }
-          
+
           body .q-header .q-btn,
           .q-header .q-btn {
             color: #ffffff !important;
           }
-          
+
           body .q-header .q-btn .q-icon,
           .q-header .q-btn .q-icon {
             color: #ffffff !important;
@@ -955,7 +994,7 @@ export const initializeDefaultThemes = async () => {
             background-color: #8f44c4 !important;
             background-image: none !important;
           }
-          
+
           /* Ensure toolbar is transparent */
           .q-header .q-toolbar,
           body .q-header .q-toolbar,
@@ -963,7 +1002,7 @@ export const initializeDefaultThemes = async () => {
             background: transparent !important;
             background-color: transparent !important;
           }
-          
+
           /* Header title - white text, non-cursive */
           html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
@@ -991,7 +1030,7 @@ export const initializeDefaultThemes = async () => {
             font-style: normal !important;
             color: #ffffff !important;
           }
-          
+
           /* All header text elements - white */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
@@ -1009,12 +1048,12 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn .q-icon {
             color: #ffffff !important;
           }
-          
+
           body .q-header .q-btn,
           .q-header .q-btn {
             color: #ffffff !important;
           }
-          
+
           body .q-header .q-btn .q-icon,
           .q-header .q-btn .q-icon {
             color: #ffffff !important;
@@ -1058,7 +1097,7 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
           }
-          
+
           /* Header styling - purple background with white text */
           html body .q-layout .q-header.bg-primary.text-white.elevated,
           html body .q-header.bg-primary.text-white.elevated,
@@ -1082,7 +1121,7 @@ export const initializeDefaultThemes = async () => {
             background-color: #8f44c4 !important;
             background-image: none !important;
           }
-          
+
           /* Ensure toolbar is transparent */
           .q-header .q-toolbar,
           body .q-header .q-toolbar,
@@ -1090,7 +1129,7 @@ export const initializeDefaultThemes = async () => {
             background: transparent !important;
             background-color: transparent !important;
           }
-          
+
           /* Header title - white text, non-cursive */
           html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
@@ -1118,7 +1157,7 @@ export const initializeDefaultThemes = async () => {
             font-style: normal !important;
             color: #ffffff !important;
           }
-          
+
           /* All header text elements - white */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
@@ -1136,12 +1175,12 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn .q-icon {
             color: #ffffff !important;
           }
-          
+
           body .q-header .q-btn,
           .q-header .q-btn {
             color: #ffffff !important;
           }
-          
+
           body .q-header .q-btn .q-icon,
           .q-header .q-btn .q-icon {
             color: #ffffff !important;
@@ -1186,7 +1225,7 @@ export const initializeDefaultThemes = async () => {
             background-color: #8f44c4 !important;
             background-image: none !important;
           }
-          
+
           /* Ensure toolbar is transparent */
           .q-header .q-toolbar,
           body .q-header .q-toolbar,
@@ -1194,7 +1233,7 @@ export const initializeDefaultThemes = async () => {
             background: transparent !important;
             background-color: transparent !important;
           }
-          
+
           /* Header title - white text, non-cursive */
           html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
@@ -1222,7 +1261,7 @@ export const initializeDefaultThemes = async () => {
             font-style: normal !important;
             color: #ffffff !important;
           }
-          
+
           /* All header text elements - white */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
@@ -1240,12 +1279,12 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn .q-icon {
             color: #ffffff !important;
           }
-          
+
           body .q-header .q-btn,
           .q-header .q-btn {
             color: #ffffff !important;
           }
-          
+
           body .q-header .q-btn .q-icon,
           .q-header .q-btn .q-icon {
             color: #ffffff !important;

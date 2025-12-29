@@ -32,8 +32,10 @@
           const isLineAModern = theme.name &&
             (theme.name.includes('LineA Modern Black Header') ||
              theme.name.includes('LineA Modern White Header'));
+          const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
+          const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
 
-          if (isWhiteHeader || isBlackHeader || isLineAModern) {
+          if (isWhiteHeader || isBlackHeader || isLineAModern || isWhiteLattus || isSilverCrisCross) {
             // Add additional high-priority styles for header
             const headerStyle = document.createElement('style');
             headerStyle.id = 'theme-preload-header-styles';
@@ -95,6 +97,39 @@
                   background-color: transparent !important;
                 }
               `;
+            } else if (isWhiteLattus || isSilverCrisCross) {
+              headerCSS += `
+                /* Override Quasar bg-primary with maximum specificity - purple header */
+                html body .q-layout .q-header.bg-primary,
+                html body .q-header.bg-primary,
+                body .q-layout .q-header.bg-primary,
+                body .q-header.bg-primary,
+                .q-layout .q-header.bg-primary,
+                .q-header.bg-primary,
+                html body .q-layout .q-header,
+                html body .q-header,
+                body .q-layout .q-header,
+                body .q-header,
+                .q-layout .q-header,
+                .q-header,
+                [class*="q-header"] {
+                  background: #8f44c4 !important;
+                  background-color: #8f44c4 !important;
+                  background-image: none !important;
+                }
+                /* Override toolbar background too */
+                html body .q-header .q-toolbar,
+                body .q-header .q-toolbar,
+                .q-header .q-toolbar {
+                  background: transparent !important;
+                  background-color: transparent !important;
+                }
+                /* White text for all header elements */
+                .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold,
+                .q-header .q-btn, .q-header .q-btn .q-icon, .q-header .q-chip {
+                  color: #ffffff !important;
+                }
+              `;
             }
 
             if (isLineAModern) {
@@ -107,6 +142,15 @@
                   letter-spacing: 0.05em !important;
                   text-transform: none !important;
                   color: ${textColor} !important;
+                }
+              `;
+            } else if (isWhiteLattus || isSilverCrisCross) {
+              headerCSS += `
+                .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold {
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+                  font-weight: 500 !important;
+                  font-style: normal !important;
+                  color: #ffffff !important;
                 }
               `;
             }
@@ -131,6 +175,10 @@
                 header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
                 header.style.setProperty('background-color', '#000000', 'important');
                 header.style.setProperty('background-image', 'none', 'important');
+              } else if (isWhiteLattus || isSilverCrisCross) {
+                header.style.setProperty('background', '#8f44c4', 'important');
+                header.style.setProperty('background-color', '#8f44c4', 'important');
+                header.style.setProperty('background-image', 'none', 'important');
               }
 
               // Also apply to toolbar
@@ -138,6 +186,14 @@
               if (toolbar) {
                 toolbar.style.setProperty('background', 'transparent', 'important');
                 toolbar.style.setProperty('background-color', 'transparent', 'important');
+              }
+
+              // Apply white text color to all header elements for White Lattus and Silver Cris-Cross
+              if (isWhiteLattus || isSilverCrisCross) {
+                const headerButtons = header.querySelectorAll('.q-btn, .q-btn .q-icon, .q-chip, .q-toolbar-title, .q-toolbar-title *');
+                headerButtons.forEach((element) => {
+                  element.style.setProperty('color', '#ffffff', 'important');
+                });
               }
             }
           }
@@ -147,14 +203,21 @@
 
           // Apply header title font styles immediately if title element exists
           const titleSpan = document.querySelector('.q-toolbar-title span, .q-toolbar-title');
-          if (titleSpan && isLineAModern) {
-            const textColor = isWhiteHeader ? '#1a1a1a' : '#ffffff';
-            titleSpan.style.setProperty('font-family', "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive", 'important');
-            titleSpan.style.setProperty('font-weight', '400', 'important');
-            titleSpan.style.setProperty('font-style', 'normal', 'important');
-            titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
-            titleSpan.style.setProperty('text-transform', 'none', 'important');
-            titleSpan.style.setProperty('color', textColor, 'important');
+          if (titleSpan) {
+            if (isLineAModern) {
+              const textColor = isWhiteHeader ? '#1a1a1a' : '#ffffff';
+              titleSpan.style.setProperty('font-family', "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive", 'important');
+              titleSpan.style.setProperty('font-weight', '400', 'important');
+              titleSpan.style.setProperty('font-style', 'normal', 'important');
+              titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
+              titleSpan.style.setProperty('text-transform', 'none', 'important');
+              titleSpan.style.setProperty('color', textColor, 'important');
+            } else if (isWhiteLattus || isSilverCrisCross) {
+              titleSpan.style.setProperty('font-family', "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif", 'important');
+              titleSpan.style.setProperty('font-weight', '500', 'important');
+              titleSpan.style.setProperty('font-style', 'normal', 'important');
+              titleSpan.style.setProperty('color', '#ffffff', 'important');
+            }
           }
 
           console.log('[ThemePreload] Applied cached theme:', theme.name);
