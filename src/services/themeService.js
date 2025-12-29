@@ -397,18 +397,18 @@ export const themeService = {
         '.q-toolbar-title span',
         '.q-toolbar-title'
       ];
-      
+
       let titleSpan = null;
       for (const selector of titleSelectors) {
         titleSpan = document.querySelector(selector);
         if (titleSpan) break;
       }
-      
+
       // Also try to find the span directly
       if (!titleSpan) {
         titleSpan = document.querySelector('span.text-h5.text-weight-bold');
       }
-      
+
       if (titleSpan) {
         const isLineAModern = theme.name &&
           (theme.name.includes('LineA Modern Black Header') ||
@@ -433,7 +433,7 @@ export const themeService = {
           titleSpan.style.setProperty('color', '#ffffff', 'important');
         }
       }
-      
+
       // Also apply to the title container itself if found
       const titleContainer = document.querySelector('.q-toolbar__title, .q-toolbar-title');
       if (titleContainer && titleContainer !== titleSpan) {
@@ -442,7 +442,7 @@ export const themeService = {
            theme.name.includes('LineA Modern White Header'));
         const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
         const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
-        
+
         if (isLineAModern) {
           const isWhiteHeader = theme.name.includes('White Header');
           titleContainer.style.setProperty('color', isWhiteHeader ? '#1a1a1a' : '#ffffff', 'important');
@@ -470,12 +470,46 @@ export const themeService = {
 
         if (isWhiteLattus || isSilverCrisCross) {
           // Apply white color to all header buttons, icons, and text elements (except test chip)
-          const headerButtons = header.querySelectorAll('.q-btn:not(.test-environment-chip), .q-btn:not(.test-environment-chip) .q-icon, .q-chip:not(.test-environment-chip), .q-toolbar-title, .q-toolbar-title *');
-          headerButtons.forEach((element) => {
-            // Skip test environment chip
-            if (!element.closest('.test-environment-chip') && !element.classList.contains('test-environment-chip')) {
-              element.style.setProperty('color', '#ffffff', 'important');
-            }
+          // Use comprehensive selectors to catch all header elements
+          const selectors = [
+            '.q-btn:not(.test-environment-chip)',
+            '.q-btn:not(.test-environment-chip) .q-icon',
+            '.q-btn:not(.test-environment-chip) .q-btn__content',
+            '.q-btn:not(.test-environment-chip) .q-btn__content *',
+            '.q-chip:not(.test-environment-chip)',
+            '.q-toolbar-title',
+            '.q-toolbar-title *',
+            '.q-toolbar__title',
+            '.q-toolbar__title *',
+            '.shop-header-btn',
+            '.shop-header-btn *',
+            '.shop-header-btn .q-btn__content',
+            '.shop-header-btn .q-btn__content *',
+            '.shop-header-dropdowns .q-btn',
+            '.shop-header-dropdowns .q-btn *',
+            '.shop-header-dropdowns .q-btn .q-btn__content',
+            '.shop-header-dropdowns .q-btn .q-btn__content *',
+            '.user-profile-dropdown .q-btn',
+            '.user-profile-dropdown .q-btn *',
+            '.user-profile-dropdown .q-btn .q-btn__content',
+            '.user-profile-dropdown .q-btn .q-btn__content *',
+            '.user-name',
+            '.user-name *',
+            '.q-toolbar .q-btn[label="About"]',
+            '.q-toolbar .q-btn[label="About"] *',
+            '.q-toolbar .q-btn[label="About"] .q-btn__content',
+            '.q-toolbar .q-btn[label="About"] .q-btn__content *'
+          ];
+          
+          selectors.forEach((selector) => {
+            const elements = header.querySelectorAll(selector);
+            elements.forEach((element) => {
+              // Skip test environment chip and its children
+              if (!element.closest('.test-environment-chip') && 
+                  !element.classList.contains('test-environment-chip')) {
+                element.style.setProperty('color', '#ffffff', 'important');
+              }
+            });
           });
         } else if (isWhiteHeader) {
           // Apply black color to ALL header elements including title for white header (except test chip)
@@ -513,7 +547,7 @@ export const themeService = {
               }
             });
           });
-          
+
           // Also target the title container and span directly with both class variations
           const titleSelectors = [
             '.q-toolbar__title',
@@ -523,7 +557,7 @@ export const themeService = {
             '.q-toolbar-title span',
             '.q-toolbar-title span.text-h5.text-weight-bold'
           ];
-          
+
           titleSelectors.forEach((selector) => {
             const elements = header.querySelectorAll(selector);
             elements.forEach((element) => {

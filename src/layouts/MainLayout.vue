@@ -1066,27 +1066,43 @@ export default {
       return {};
     });
 
-    // Computed style for user name - black on white header
+    // Computed style for user name - changes based on theme
     const userNameStyle = computed(() => {
       const isWhiteHeader = activeThemeName.value &&
         activeThemeName.value.includes('LineA Modern White Header');
+      const isWhiteLattus = activeThemeName.value &&
+        activeThemeName.value.includes('White Lattus');
+      const isSilverCrisCross = activeThemeName.value &&
+        activeThemeName.value.includes('Silver Cris-Cross');
 
       if (isWhiteHeader) {
         return {
-          color: '#1a1a1a',
+          color: '#1a1a1a', // Black on white header
+        };
+      } else if (isWhiteLattus || isSilverCrisCross) {
+        return {
+          color: '#ffffff', // White on purple header
         };
       }
       return {};
     });
 
-    // Computed style for header buttons (About, etc.) - black on white header
+    // Computed style for header buttons (About, dropdowns, etc.) - changes based on theme
     const headerButtonStyle = computed(() => {
       const isWhiteHeader = activeThemeName.value &&
         activeThemeName.value.includes('LineA Modern White Header');
+      const isWhiteLattus = activeThemeName.value &&
+        activeThemeName.value.includes('White Lattus');
+      const isSilverCrisCross = activeThemeName.value &&
+        activeThemeName.value.includes('Silver Cris-Cross');
 
       if (isWhiteHeader) {
         return {
-          color: '#1a1a1a',
+          color: '#1a1a1a', // Black on white header
+        };
+      } else if (isWhiteLattus || isSilverCrisCross) {
+        return {
+          color: '#ffffff', // White on purple header
         };
       }
       return {};
