@@ -135,6 +135,7 @@
             if (isLineAModern) {
               const textColor = isWhiteHeader ? '#1a1a1a' : '#ffffff';
               headerCSS += `
+                .q-toolbar__title, .q-toolbar__title span, .q-toolbar__title span.text-h5.text-weight-bold,
                 .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold {
                   font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
                   font-weight: 400 !important;
@@ -146,6 +147,7 @@
               `;
             } else if (isWhiteLattus || isSilverCrisCross) {
               headerCSS += `
+                .q-toolbar__title, .q-toolbar__title span, .q-toolbar__title span.text-h5.text-weight-bold,
                 .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold {
                   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
                   font-weight: 500 !important;

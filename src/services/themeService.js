@@ -388,7 +388,27 @@ export const themeService = {
       }
 
       // Apply inline styles to header title and all header text elements for instant application
-      const titleSpan = document.querySelector('.q-toolbar-title span.text-h5.text-weight-bold, .q-toolbar-title span, .q-toolbar-title');
+      // Quasar renders q-toolbar-title as .q-toolbar__title (double underscore) in the DOM
+      const titleSelectors = [
+        '.q-toolbar__title span.text-h5.text-weight-bold',
+        '.q-toolbar__title span',
+        '.q-toolbar__title',
+        '.q-toolbar-title span.text-h5.text-weight-bold',
+        '.q-toolbar-title span',
+        '.q-toolbar-title'
+      ];
+      
+      let titleSpan = null;
+      for (const selector of titleSelectors) {
+        titleSpan = document.querySelector(selector);
+        if (titleSpan) break;
+      }
+      
+      // Also try to find the span directly
+      if (!titleSpan) {
+        titleSpan = document.querySelector('span.text-h5.text-weight-bold');
+      }
+      
       if (titleSpan) {
         const isLineAModern = theme.name &&
           (theme.name.includes('LineA Modern Black Header') ||
@@ -411,6 +431,23 @@ export const themeService = {
           titleSpan.style.setProperty('font-weight', '500', 'important');
           titleSpan.style.setProperty('font-style', 'normal', 'important');
           titleSpan.style.setProperty('color', '#ffffff', 'important');
+        }
+      }
+      
+      // Also apply to the title container itself if found
+      const titleContainer = document.querySelector('.q-toolbar__title, .q-toolbar-title');
+      if (titleContainer && titleContainer !== titleSpan) {
+        const isLineAModern = theme.name &&
+          (theme.name.includes('LineA Modern Black Header') ||
+           theme.name.includes('LineA Modern White Header'));
+        const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
+        const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
+        
+        if (isLineAModern) {
+          const isWhiteHeader = theme.name.includes('White Header');
+          titleContainer.style.setProperty('color', isWhiteHeader ? '#1a1a1a' : '#ffffff', 'important');
+        } else if (isWhiteLattus || isSilverCrisCross) {
+          titleContainer.style.setProperty('color', '#ffffff', 'important');
         }
       }
 
@@ -465,18 +502,37 @@ export const themeService = {
             '.user-profile-dropdown .q-btn .q-btn__content',
             '.user-profile-dropdown .q-btn .q-btn__content *'
           ];
-          
+
           selectors.forEach((selector) => {
             const elements = header.querySelectorAll(selector);
             elements.forEach((element) => {
               // Skip test environment chip and its children
-              if (!element.closest('.test-environment-chip') && 
+              if (!element.closest('.test-environment-chip') &&
                   !element.classList.contains('test-environment-chip')) {
                 element.style.setProperty('color', '#1a1a1a', 'important');
               }
             });
           });
           
+          // Also target the title container and span directly with both class variations
+          const titleSelectors = [
+            '.q-toolbar__title',
+            '.q-toolbar__title span',
+            '.q-toolbar__title span.text-h5.text-weight-bold',
+            '.q-toolbar-title',
+            '.q-toolbar-title span',
+            '.q-toolbar-title span.text-h5.text-weight-bold'
+          ];
+          
+          titleSelectors.forEach((selector) => {
+            const elements = header.querySelectorAll(selector);
+            elements.forEach((element) => {
+              if (!element.closest('.test-environment-chip')) {
+                element.style.setProperty('color', '#1a1a1a', 'important');
+              }
+            });
+          });
+
           // Also ensure title span gets black color (in case it wasn't caught above)
           if (titleSpan) {
             titleSpan.style.setProperty('color', '#1a1a1a', 'important');
