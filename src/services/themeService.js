@@ -415,22 +415,39 @@ export const themeService = {
       }
 
       // Apply text color to all header buttons and elements based on theme
+      // Exclude test-environment-chip (orange pill) - it should always have white text
       if (header) {
         const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
         const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
         const isWhiteHeader = theme.name && theme.name.includes('LineA Modern White Header');
 
+        // Always ensure test environment chip has white text
+        const testChip = header.querySelector('.test-environment-chip, .q-chip[color="orange"]');
+        if (testChip) {
+          testChip.style.setProperty('color', '#ffffff', 'important');
+          const testChipText = testChip.querySelector('span, .q-chip__content, *');
+          if (testChipText) {
+            testChipText.style.setProperty('color', '#ffffff', 'important');
+          }
+        }
+
         if (isWhiteLattus || isSilverCrisCross) {
-          // Apply white color to all header buttons, icons, and text elements
-          const headerButtons = header.querySelectorAll('.q-btn, .q-btn .q-icon, .q-chip, .q-toolbar-title, .q-toolbar-title *');
+          // Apply white color to all header buttons, icons, and text elements (except test chip)
+          const headerButtons = header.querySelectorAll('.q-btn:not(.test-environment-chip), .q-btn:not(.test-environment-chip) .q-icon, .q-chip:not(.test-environment-chip), .q-toolbar-title, .q-toolbar-title *');
           headerButtons.forEach((element) => {
-            element.style.setProperty('color', '#ffffff', 'important');
+            // Skip test environment chip
+            if (!element.closest('.test-environment-chip') && !element.classList.contains('test-environment-chip')) {
+              element.style.setProperty('color', '#ffffff', 'important');
+            }
           });
         } else if (isWhiteHeader) {
-          // Apply black color to ALL header elements including title for white header
-          const headerButtons = header.querySelectorAll('.q-btn, .q-btn .q-icon, .q-chip, .q-toolbar-title, .q-toolbar-title *, .q-toolbar-title span');
+          // Apply black color to ALL header elements including title for white header (except test chip)
+          const headerButtons = header.querySelectorAll('.q-btn:not(.test-environment-chip), .q-btn:not(.test-environment-chip) .q-icon, .q-chip:not(.test-environment-chip), .q-toolbar-title, .q-toolbar-title *, .q-toolbar-title span');
           headerButtons.forEach((element) => {
-            element.style.setProperty('color', '#1a1a1a', 'important');
+            // Skip test environment chip
+            if (!element.closest('.test-environment-chip') && !element.classList.contains('test-environment-chip')) {
+              element.style.setProperty('color', '#1a1a1a', 'important');
+            }
           });
           // Also ensure title span gets black color (in case it wasn't caught above)
           if (titleSpan) {
@@ -929,21 +946,31 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* All header text elements - white */
+          /* All header text elements - white (except test environment chip) */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
+            color: #ffffff !important;
+          }
+          
+          /* Ensure test environment chip always has white text */
+          body .q-header .test-environment-chip,
+          body .q-header .q-chip.test-environment-chip,
+          .q-header .test-environment-chip,
+          .q-header .q-chip.test-environment-chip,
+          .test-environment-chip,
+          .test-environment-chip * {
             color: #ffffff !important;
           }
 
@@ -1034,21 +1061,31 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* All header text elements - white */
+          /* All header text elements - white (except test environment chip) */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
+            color: #ffffff !important;
+          }
+          
+          /* Ensure test environment chip always has white text */
+          body .q-header .test-environment-chip,
+          body .q-header .q-chip.test-environment-chip,
+          .q-header .test-environment-chip,
+          .q-header .q-chip.test-environment-chip,
+          .test-environment-chip,
+          .test-environment-chip * {
             color: #ffffff !important;
           }
 
@@ -1161,21 +1198,31 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* All header text elements - white */
+          /* All header text elements - white (except test environment chip) */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
+            color: #ffffff !important;
+          }
+          
+          /* Ensure test environment chip always has white text */
+          body .q-header .test-environment-chip,
+          body .q-header .q-chip.test-environment-chip,
+          .q-header .test-environment-chip,
+          .q-header .q-chip.test-environment-chip,
+          .test-environment-chip,
+          .test-environment-chip * {
             color: #ffffff !important;
           }
 
@@ -1265,21 +1312,31 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* All header text elements - white */
+          /* All header text elements - white (except test environment chip) */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
+            color: #ffffff !important;
+          }
+          
+          /* Ensure test environment chip always has white text */
+          body .q-header .test-environment-chip,
+          body .q-header .q-chip.test-environment-chip,
+          .q-header .test-environment-chip,
+          .q-header .q-chip.test-environment-chip,
+          .test-environment-chip,
+          .test-environment-chip * {
             color: #ffffff !important;
           }
 
@@ -1663,32 +1720,42 @@ export const initializeDefaultThemes = async () => {
             color: #1a1a1a !important;
           }
 
-          /* Ensure all header text stays black */
+          /* Ensure all header text stays black (except test environment chip) */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
+          }
+          
+          /* Ensure test environment chip always has white text */
+          body .q-header .test-environment-chip,
+          body .q-header .q-chip.test-environment-chip,
+          .q-header .test-environment-chip,
+          .q-header .q-chip.test-environment-chip,
+          .test-environment-chip,
+          .test-environment-chip * {
+            color: #ffffff !important;
           }
 
           /* Ensure header buttons and icons are visible */
-          body .q-header .q-btn,
-          .q-header .q-btn {
+          body .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) {
             color: #1a1a1a !important;
           }
 
-          body .q-header .q-btn .q-icon,
-          .q-header .q-btn .q-icon {
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
         `;
@@ -2071,32 +2138,42 @@ export const initializeDefaultThemes = async () => {
             color: #1a1a1a !important;
           }
 
-          /* Ensure all header text stays black */
+          /* Ensure all header text stays black (except test environment chip) */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
+          }
+          
+          /* Ensure test environment chip always has white text */
+          body .q-header .test-environment-chip,
+          body .q-header .q-chip.test-environment-chip,
+          .q-header .test-environment-chip,
+          .q-header .q-chip.test-environment-chip,
+          .test-environment-chip,
+          .test-environment-chip * {
+            color: #ffffff !important;
           }
 
           /* Ensure header buttons and icons are visible */
-          body .q-header .q-btn,
-          .q-header .q-btn {
+          body .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) {
             color: #1a1a1a !important;
           }
 
-          body .q-header .q-btn .q-icon,
-          .q-header .q-btn .q-icon {
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
         `;
@@ -2507,32 +2584,42 @@ export const initializeDefaultThemes = async () => {
             color: #1a1a1a !important;
           }
 
-          /* Ensure all header text stays black */
+          /* Ensure all header text stays black (except test environment chip) */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
+          }
+          
+          /* Ensure test environment chip always has white text */
+          body .q-header .test-environment-chip,
+          body .q-header .q-chip.test-environment-chip,
+          .q-header .test-environment-chip,
+          .q-header .q-chip.test-environment-chip,
+          .test-environment-chip,
+          .test-environment-chip * {
+            color: #ffffff !important;
           }
 
           /* Ensure header buttons and icons are visible */
-          body .q-header .q-btn,
-          .q-header .q-btn {
+          body .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) {
             color: #1a1a1a !important;
           }
 
-          body .q-header .q-btn .q-icon,
-          .q-header .q-btn .q-icon {
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
         `;
@@ -2911,32 +2998,42 @@ export const initializeDefaultThemes = async () => {
             color: #1a1a1a !important;
           }
 
-          /* Ensure all header text stays black */
+          /* Ensure all header text stays black (except test environment chip) */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
+          }
+          
+          /* Ensure test environment chip always has white text */
+          body .q-header .test-environment-chip,
+          body .q-header .q-chip.test-environment-chip,
+          .q-header .test-environment-chip,
+          .q-header .q-chip.test-environment-chip,
+          .test-environment-chip,
+          .test-environment-chip * {
+            color: #ffffff !important;
           }
 
           /* Ensure header buttons and icons are visible */
-          body .q-header .q-btn,
-          .q-header .q-btn {
+          body .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) {
             color: #1a1a1a !important;
           }
 
-          body .q-header .q-btn .q-icon,
-          .q-header .q-btn .q-icon {
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
         `,

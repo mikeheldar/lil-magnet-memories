@@ -1708,6 +1708,13 @@ export default {
 }
 
 .test-environment-chip {
+  // Always ensure white text for test environment chip, regardless of theme
+  color: #ffffff !important;
+  
+  span, .q-chip__content, * {
+    color: #ffffff !important;
+  }
+  
   @media (max-width: 600px) {
     min-width: 24px !important;
     width: 24px !important;
