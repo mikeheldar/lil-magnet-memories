@@ -1359,16 +1359,19 @@ export default {
   min-width: 225px !important; /* Ensure minimum width for title */
   max-width: none !important;
   text-align: center;
-  z-index: 9999 !important; /* Very high z-index to lock title on top - always visible */
+  z-index: 99999 !important; /* Extremely high z-index - title is ALWAYS on top */
   pointer-events: none; /* Allow clicks to pass through to elements below */
   flex-shrink: 0 !important; /* Prevent title from shrinking */
-  padding: 0 20px !important; /* Padding to protect title area */
+  padding: 0 40px !important; /* Increased padding to create protected zone around title */
   background: transparent !important; /* Ensure no background interferes */
   box-sizing: content-box;
   visibility: visible !important; /* Always visible */
   opacity: 1 !important; /* Always fully opaque */
   overflow: visible !important; /* Prevent clipping */
   text-overflow: clip !important; /* Don't truncate text */
+  // Ensure title never gets clipped by parent containers
+  clip-path: none !important;
+  clip: auto !important;
 
   // Override Quasar's ellipsis class if present
   &.ellipsis,
@@ -1503,7 +1506,8 @@ export default {
   flex-shrink: 0; /* Prevent shrinking */
   margin-right: 0;
   padding-left: 10px; /* Reduced padding to bring menus closer to title */
-  max-width: calc(100% - 500px); /* Prevent menus from covering title (title is ~225px min + padding) */
+  // Don't allow menus to extend into the center 300px where title is (225px min-width + 75px padding)
+  max-width: calc(50% - 150px); /* Leave 300px protected zone in center for title */
 }
 
 // Individual button base styles - visible by default on wide screens
@@ -1516,46 +1520,52 @@ export default {
 
 // Hide dropdowns one by one from RIGHT to LEFT as screen gets smaller
 // Each menu hides individually BEFORE covering the title or overlapping About/user
-// Hide Specialty Products first (rightmost menu)
-@media (max-width: 1200px) {
+// Breakpoints are conservative to ensure title is NEVER cut off
+// Hide Specialty Products first (rightmost menu) - hide early to protect title
+@media (max-width: 1300px) {
   .shop-header-dropdowns .shop-header-btn-specialty {
     display: none !important;
   }
 }
 
-// Hide Designer Magnets next (middle menu)
-@media (max-width: 1100px) {
+// Hide Designer Magnets next (middle menu) - hide before reaching title
+@media (max-width: 1200px) {
   .shop-header-dropdowns .shop-header-btn-designer {
     display: none !important;
   }
 }
 
-// Hide Custom Photo Magnets last (leftmost menu)
-@media (max-width: 1000px) {
+// Hide Custom Photo Magnets last (leftmost menu) - hide before touching title
+@media (max-width: 1100px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
 }
 
 // When left drawer is open, adjust breakpoints to account for reduced space
-// Drawer is typically ~300px wide, so menus need to hide earlier
+// Drawer is typically ~300px wide, so menus need to hide much earlier
 .q-toolbar.drawer-open {
+  // Reduce max-width even more when drawer is open to protect title
+  .shop-header-dropdowns {
+    max-width: calc(50% - 200px); /* Larger protected zone when drawer open */
+  }
+  
   // Hide Specialty Products earlier when drawer is open
-  @media (max-width: 1500px) {
+  @media (max-width: 1600px) {
     .shop-header-dropdowns .shop-header-btn-specialty {
       display: none !important;
     }
   }
 
   // Hide Designer Magnets earlier when drawer is open
-  @media (max-width: 1400px) {
+  @media (max-width: 1500px) {
     .shop-header-dropdowns .shop-header-btn-designer {
       display: none !important;
     }
   }
 
   // Hide Custom Photo Magnets earlier when drawer is open
-  @media (max-width: 1300px) {
+  @media (max-width: 1400px) {
     .shop-header-dropdowns .shop-header-btn-custom {
       display: none !important;
     }
