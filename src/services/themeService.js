@@ -403,6 +403,7 @@ export const themeService = {
           titleSpan.style.setProperty('font-style', 'normal', 'important');
           titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
           titleSpan.style.setProperty('text-transform', 'none', 'important');
+          // Force black color for white header, white for black header
           titleSpan.style.setProperty('color', isWhiteHeader ? '#1a1a1a' : '#ffffff', 'important');
         } else if (isWhiteLattus || isSilverCrisCross) {
           // Non-cursive font, white text for White Lattus and Silver Cris-Cross
@@ -413,26 +414,28 @@ export const themeService = {
         }
       }
 
-      // Apply white text color to all header buttons and elements for White Lattus and Silver Cris-Cross
+      // Apply text color to all header buttons and elements based on theme
       if (header) {
         const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
         const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
-        
+        const isWhiteHeader = theme.name && theme.name.includes('LineA Modern White Header');
+
         if (isWhiteLattus || isSilverCrisCross) {
           // Apply white color to all header buttons, icons, and text elements
           const headerButtons = header.querySelectorAll('.q-btn, .q-btn .q-icon, .q-chip, .q-toolbar-title, .q-toolbar-title *');
           headerButtons.forEach((element) => {
             element.style.setProperty('color', '#ffffff', 'important');
           });
-        } else if (theme.name && theme.name.includes('LineA Modern White Header')) {
-          // Apply black color to all header buttons, icons, and text elements for white header
-          const headerButtons = header.querySelectorAll('.q-btn, .q-btn .q-icon, .q-chip, .q-toolbar-title, .q-toolbar-title *');
+        } else if (isWhiteHeader) {
+          // Apply black color to ALL header elements including title for white header
+          const headerButtons = header.querySelectorAll('.q-btn, .q-btn .q-icon, .q-chip, .q-toolbar-title, .q-toolbar-title *, .q-toolbar-title span');
           headerButtons.forEach((element) => {
-            // Don't override the title span color if it's already set
-            if (!element.classList.contains('q-toolbar-title') && !element.closest('.q-toolbar-title')) {
-              element.style.setProperty('color', '#1a1a1a', 'important');
-            }
+            element.style.setProperty('color', '#1a1a1a', 'important');
           });
+          // Also ensure title span gets black color (in case it wasn't caught above)
+          if (titleSpan) {
+            titleSpan.style.setProperty('color', '#1a1a1a', 'important');
+          }
         }
       }
     }
