@@ -583,34 +583,58 @@ export const themeService = {
     // Apply immediately
     applyHeaderStyles();
 
-    // Apply again after a short delay to catch elements that render after theme application
+    // Apply again after short delays to catch elements that render after theme application
     setTimeout(applyHeaderStyles, 100);
     setTimeout(applyHeaderStyles, 300);
     setTimeout(applyHeaderStyles, 500);
+    setTimeout(applyHeaderStyles, 1000);
+    setTimeout(applyHeaderStyles, 2000);
 
-    // Set up a simple MutationObserver to catch Vue re-renders (with timeout to prevent leaks)
+    // Set up a persistent MutationObserver that keeps running to maintain header styles
+    // This ensures header styles persist across page navigation and Vue re-renders
     if (document.body) {
       let observerDisconnected = false;
       const observer = new MutationObserver(function(mutations) {
         if (observerDisconnected) return;
-        applyHeaderStyles();
+        // Only reapply if header exists and might have changed
+        const header = document.querySelector('.q-header');
+        if (header) {
+          applyHeaderStyles();
+        }
       });
 
       observer.observe(document.body, {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ['class']
+        attributeFilter: ['class', 'style']
       });
 
-      // Disconnect after 5 seconds to prevent memory leaks and performance issues
-      // Increased from 3 to 5 seconds to give more time for header elements to render
+      // Keep observer running longer, but disconnect after 30 seconds to prevent memory leaks
+      // This gives enough time for page navigation and Vue re-renders
       setTimeout(function() {
         if (!observerDisconnected) {
           observerDisconnected = true;
           observer.disconnect();
         }
-      }, 5000);
+      }, 30000);
+      
+      // Also set up a periodic check to ensure styles persist
+      const styleCheckInterval = setInterval(function() {
+        if (observerDisconnected) {
+          clearInterval(styleCheckInterval);
+          return;
+        }
+        const header = document.querySelector('.q-header');
+        if (header) {
+          applyHeaderStyles();
+        }
+      }, 2000); // Check every 2 seconds
+      
+      // Clear interval when observer disconnects
+      setTimeout(function() {
+        clearInterval(styleCheckInterval);
+      }, 30000);
     }
 
     // Force immediate style recalculation
@@ -1077,24 +1101,52 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* All header text elements - white (except test environment chip) */
+          /* All header text elements - white (except test environment chip) - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
           body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           body .q-header .q-chip:not(.test-environment-chip),
           body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
           .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           .q-header .q-chip:not(.test-environment-chip),
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
-
+          
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -1194,24 +1246,52 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* All header text elements - white (except test environment chip) */
+          /* All header text elements - white (except test environment chip) - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
           body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           body .q-header .q-chip:not(.test-environment-chip),
           body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
           .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           .q-header .q-chip:not(.test-environment-chip),
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
-
+          
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -1333,24 +1413,52 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* All header text elements - white (except test environment chip) */
+          /* All header text elements - white (except test environment chip) - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
           body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           body .q-header .q-chip:not(.test-environment-chip),
           body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
           .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           .q-header .q-chip:not(.test-environment-chip),
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
-
+          
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -1449,24 +1557,52 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* All header text elements - white (except test environment chip) */
+          /* All header text elements - white (except test environment chip) - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
           body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           body .q-header .q-chip:not(.test-environment-chip),
           body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
           .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           .q-header .q-chip:not(.test-environment-chip),
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
-
+          
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -1857,24 +1993,52 @@ export const initializeDefaultThemes = async () => {
             color: #1a1a1a !important;
           }
 
-          /* Ensure all header text stays black (except test environment chip) */
+          /* Ensure all header text stays black (except test environment chip) - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
           body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           body .q-header .q-chip:not(.test-environment-chip),
           body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
           .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           .q-header .q-chip:not(.test-environment-chip),
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
-
+          
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -2275,24 +2439,52 @@ export const initializeDefaultThemes = async () => {
             color: #1a1a1a !important;
           }
 
-          /* Ensure all header text stays black (except test environment chip) */
+          /* Ensure all header text stays black (except test environment chip) - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
           body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           body .q-header .q-chip:not(.test-environment-chip),
           body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
           .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           .q-header .q-chip:not(.test-environment-chip),
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
-
+          
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -2721,24 +2913,52 @@ export const initializeDefaultThemes = async () => {
             color: #1a1a1a !important;
           }
 
-          /* Ensure all header text stays black (except test environment chip) */
+          /* Ensure all header text stays black (except test environment chip) - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
           body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           body .q-header .q-chip:not(.test-environment-chip),
           body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
           .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           .q-header .q-chip:not(.test-environment-chip),
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
-
+          
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -3135,24 +3355,52 @@ export const initializeDefaultThemes = async () => {
             color: #1a1a1a !important;
           }
 
-          /* Ensure all header text stays black (except test environment chip) */
+          /* Ensure all header text stays black (except test environment chip) - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
           body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           body .q-header .q-chip:not(.test-environment-chip),
           body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
           .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
           .q-header .q-chip:not(.test-environment-chip),
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
-
+          
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,

@@ -679,7 +679,7 @@
 </template>
 
 <script>
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { themeService } from '../services/themeService.js';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
@@ -1003,6 +1003,37 @@ export default {
     onMounted(() => {
       checkActiveTheme();
       // Real-time listener in themeService handles theme changes automatically
+    });
+    
+    // Listen for theme changes and reapply to ensure persistence
+    window.addEventListener('theme-changed', async (event) => {
+      if (event.detail && event.detail.themeName) {
+        activeThemeName.value = event.detail.themeName;
+        // Reapply theme to ensure header styles persist
+        try {
+          const theme = await themeService.getActiveTheme();
+          if (theme) {
+            themeService.applyTheme(theme);
+          }
+        } catch (error) {
+          console.error('Error reapplying theme after change:', error);
+        }
+      }
+    });
+    
+    // Reapply theme on route changes to ensure header styles persist across navigation
+    watch(() => route.path, async () => {
+      try {
+        const theme = await themeService.getActiveTheme();
+        if (theme) {
+          // Small delay to ensure DOM is ready after navigation
+          setTimeout(() => {
+            themeService.applyTheme(theme);
+          }, 100);
+        }
+      } catch (error) {
+        console.error('Error reapplying theme on route change:', error);
+      }
     });
 
     // Computed classes for header - conditionally apply bg-primary only if not LineA Modern theme

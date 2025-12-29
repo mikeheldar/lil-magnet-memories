@@ -164,11 +164,16 @@ export default {
         activeTheme.value = active;
       } catch (error) {
         console.error('Error loading themes:', error);
-        $q.notify({
-          type: 'negative',
-          message: 'Failed to load themes',
-          position: 'top',
-        });
+        // Only show notification if not already showing (prevent duplicates)
+        const existingNotifications = document.querySelectorAll('.q-notification');
+        if (existingNotifications.length === 0) {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to load themes',
+            position: 'top',
+            timeout: 2000,
+          });
+        }
       } finally {
         loading.value = false;
       }
@@ -178,18 +183,28 @@ export default {
       try {
         await themeService.activateTheme(themeId);
         await loadThemes();
-        $q.notify({
-          type: 'positive',
-          message: 'Theme activated successfully',
-          position: 'top',
-        });
+        // Only show notification if not already showing (prevent duplicates)
+        const existingNotifications = document.querySelectorAll('.q-notification');
+        if (existingNotifications.length === 0) {
+          $q.notify({
+            type: 'positive',
+            message: 'Theme activated successfully',
+            position: 'top',
+            timeout: 2000,
+          });
+        }
       } catch (error) {
         console.error('Error activating theme:', error);
-        $q.notify({
-          type: 'negative',
-          message: 'Failed to activate theme',
-          position: 'top',
-        });
+        // Only show notification if not already showing (prevent duplicates)
+        const existingNotifications = document.querySelectorAll('.q-notification');
+        if (existingNotifications.length === 0) {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to activate theme',
+            position: 'top',
+            timeout: 2000,
+          });
+        }
       }
     };
 
@@ -201,11 +216,16 @@ export default {
 
     const saveThemeName = async () => {
       if (!editingThemeName.value.trim()) {
-        $q.notify({
-          type: 'negative',
-          message: 'Theme name cannot be empty',
-          position: 'top',
-        });
+        // Only show notification if not already showing (prevent duplicates)
+        const existingNotifications = document.querySelectorAll('.q-notification');
+        if (existingNotifications.length === 0) {
+          $q.notify({
+            type: 'negative',
+            message: 'Theme name cannot be empty',
+            position: 'top',
+            timeout: 2000,
+          });
+        }
         return;
       }
 
@@ -216,18 +236,28 @@ export default {
         );
         await loadThemes();
         showEditDialog.value = false;
-        $q.notify({
-          type: 'positive',
-          message: 'Theme name updated',
-          position: 'top',
-        });
+        // Only show notification if not already showing (prevent duplicates)
+        const existingNotifications = document.querySelectorAll('.q-notification');
+        if (existingNotifications.length === 0) {
+          $q.notify({
+            type: 'positive',
+            message: 'Theme name updated',
+            position: 'top',
+            timeout: 2000,
+          });
+        }
       } catch (error) {
         console.error('Error updating theme name:', error);
-        $q.notify({
-          type: 'negative',
-          message: 'Failed to update theme name',
-          position: 'top',
-        });
+        // Only show notification if not already showing (prevent duplicates)
+        const existingNotifications = document.querySelectorAll('.q-notification');
+        if (existingNotifications.length === 0) {
+          $q.notify({
+            type: 'negative',
+            message: 'Failed to update theme name',
+            position: 'top',
+            timeout: 2000,
+          });
+        }
       }
     };
 
