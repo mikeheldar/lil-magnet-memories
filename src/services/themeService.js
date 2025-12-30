@@ -587,15 +587,22 @@ export const themeService = {
     setTimeout(applyHeaderStyles, 100);
     setTimeout(applyHeaderStyles, 300);
     setTimeout(applyHeaderStyles, 500);
-    setTimeout(applyHeaderStyles, 1000);
-    setTimeout(applyHeaderStyles, 2000);
 
-    // Set up a persistent MutationObserver that keeps running to maintain header styles
+    // Set up a lightweight MutationObserver that only watches for header changes
     // This ensures header styles persist across page navigation and Vue re-renders
     if (document.body) {
       let observerDisconnected = false;
+      let lastApplyTime = 0;
+      const THROTTLE_MS = 500; // Throttle to max once per 500ms
+      
       const observer = new MutationObserver(function(mutations) {
         if (observerDisconnected) return;
+        
+        // Throttle to prevent excessive calls
+        const now = Date.now();
+        if (now - lastApplyTime < THROTTLE_MS) return;
+        lastApplyTime = now;
+        
         // Only reapply if header exists and might have changed
         const header = document.querySelector('.q-header');
         if (header) {
@@ -603,38 +610,30 @@ export const themeService = {
         }
       });
 
+      // Only observe the header and toolbar, not the entire body
+      const header = document.querySelector('.q-header');
+      if (header) {
+        observer.observe(header, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['class', 'style']
+        });
+      }
+
+      // Also observe body for header creation (when navigating to new page)
       observer.observe(document.body, {
         childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['class', 'style']
+        subtree: false // Only direct children, not deep subtree
       });
 
-      // Keep observer running longer, but disconnect after 30 seconds to prevent memory leaks
-      // This gives enough time for page navigation and Vue re-renders
+      // Disconnect after 10 seconds to prevent memory leaks
       setTimeout(function() {
         if (!observerDisconnected) {
           observerDisconnected = true;
           observer.disconnect();
         }
-      }, 30000);
-      
-      // Also set up a periodic check to ensure styles persist
-      const styleCheckInterval = setInterval(function() {
-        if (observerDisconnected) {
-          clearInterval(styleCheckInterval);
-          return;
-        }
-        const header = document.querySelector('.q-header');
-        if (header) {
-          applyHeaderStyles();
-        }
-      }, 2000); // Check every 2 seconds
-      
-      // Clear interval when observer disconnects
-      setTimeout(function() {
-        clearInterval(styleCheckInterval);
-      }, 30000);
+      }, 10000);
     }
 
     // Force immediate style recalculation
@@ -1146,7 +1145,7 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
-          
+
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -1291,7 +1290,7 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
-          
+
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -1458,7 +1457,7 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
-          
+
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -1602,7 +1601,7 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
-          
+
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -2038,7 +2037,7 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
-          
+
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -2484,7 +2483,7 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
-          
+
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -2958,7 +2957,7 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
-          
+
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -3400,7 +3399,7 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #1a1a1a !important;
           }
-          
+
           /* Ensure test environment chip always has white text */
           body .q-header .test-environment-chip,
           body .q-header .q-chip.test-environment-chip,
@@ -3819,6 +3818,7 @@ export const initializeDefaultThemes = async () => {
     isInitializing = false;
   }
 };
+
 
 
 

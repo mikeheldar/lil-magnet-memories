@@ -1004,36 +1004,56 @@ export default {
       checkActiveTheme();
       // Real-time listener in themeService handles theme changes automatically
     });
-    
+
     // Listen for theme changes and reapply to ensure persistence
-    window.addEventListener('theme-changed', async (event) => {
-      if (event.detail && event.detail.themeName) {
-        activeThemeName.value = event.detail.themeName;
-        // Reapply theme to ensure header styles persist
-        try {
-          const theme = await themeService.getActiveTheme();
-          if (theme) {
-            themeService.applyTheme(theme);
+    let themeChangeHandler = null;
+    onMounted(() => {
+      themeChangeHandler = async (event) => {
+        if (event.detail && event.detail.themeName) {
+          activeThemeName.value = event.detail.themeName;
+          // Reapply theme to ensure header styles persist
+          try {
+            const theme = await themeService.getActiveTheme();
+            if (theme) {
+              themeService.applyTheme(theme);
+            }
+          } catch (error) {
+            console.error('Error reapplying theme after change:', error);
           }
-        } catch (error) {
-          console.error('Error reapplying theme after change:', error);
         }
+      };
+      window.addEventListener('theme-changed', themeChangeHandler);
+    });
+    
+    onUnmounted(() => {
+      if (themeChangeHandler) {
+        window.removeEventListener('theme-changed', themeChangeHandler);
       }
     });
     
     // Reapply theme on route changes to ensure header styles persist across navigation
+    // Use a debounced approach to prevent excessive reapplications
+    let routeChangeTimeout = null;
     watch(() => route.path, async () => {
-      try {
-        const theme = await themeService.getActiveTheme();
-        if (theme) {
-          // Small delay to ensure DOM is ready after navigation
-          setTimeout(() => {
-            themeService.applyTheme(theme);
-          }, 100);
-        }
-      } catch (error) {
-        console.error('Error reapplying theme on route change:', error);
+      // Clear any pending route change handler
+      if (routeChangeTimeout) {
+        clearTimeout(routeChangeTimeout);
       }
+      
+      // Debounce route changes to prevent excessive theme reapplications
+      routeChangeTimeout = setTimeout(async () => {
+        try {
+          const theme = await themeService.getActiveTheme();
+          if (theme) {
+            // Small delay to ensure DOM is ready after navigation
+            setTimeout(() => {
+              themeService.applyTheme(theme);
+            }, 200);
+          }
+        } catch (error) {
+          console.error('Error reapplying theme on route change:', error);
+        }
+      }, 300); // Debounce by 300ms
     });
 
     // Computed classes for header - conditionally apply bg-primary only if not LineA Modern theme
