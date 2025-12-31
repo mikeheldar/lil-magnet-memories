@@ -184,6 +184,8 @@
                 header.style.setProperty('background', buttonGradient, 'important');
                 header.style.setProperty('background-image', buttonGradient, 'important');
                 header.style.setProperty('background-color', '#667eea', 'important'); // Fallback color
+                header.style.setProperty('opacity', '1', 'important');
+                header.setAttribute('data-theme-override', 'purple-gradient');
               }
 
               // Also apply to toolbar

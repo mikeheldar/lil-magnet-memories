@@ -1032,28 +1032,33 @@ export default {
     });
 
     // Reapply theme on route changes to ensure header styles persist across navigation
-    // Use a debounced approach to prevent excessive reapplications
-    let routeChangeTimeout = null;
+    // Apply immediately (synchronously) to prevent flash of wrong color
     watch(() => route.path, async () => {
-      // Clear any pending route change handler
-      if (routeChangeTimeout) {
-        clearTimeout(routeChangeTimeout);
-      }
-
-      // Debounce route changes to prevent excessive theme reapplications
-      routeChangeTimeout = setTimeout(async () => {
-        try {
-          const theme = await themeService.getActiveTheme();
-          if (theme) {
-            // Small delay to ensure DOM is ready after navigation
-            setTimeout(() => {
-              themeService.applyTheme(theme);
-            }, 200);
+      try {
+        const theme = await themeService.getActiveTheme();
+        if (theme) {
+          // Apply immediately without delay to prevent flash of wrong color
+          themeService.applyTheme(theme);
+          
+          // Also apply header styles immediately after a microtask to ensure DOM is ready
+          await new Promise(resolve => setTimeout(resolve, 0));
+          const header = document.querySelector('.q-header');
+          if (header) {
+            const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
+            const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
+            if (isWhiteLattus || isSilverCrisCross) {
+              const buttonGradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+              header.style.setProperty('background', buttonGradient, 'important');
+              header.style.setProperty('background-image', buttonGradient, 'important');
+              header.style.setProperty('background-color', '#667eea', 'important');
+              header.style.setProperty('opacity', '1', 'important');
+              header.setAttribute('data-theme-override', 'purple-gradient');
+            }
           }
-        } catch (error) {
-          console.error('Error reapplying theme on route change:', error);
         }
-      }, 300); // Debounce by 300ms
+      } catch (error) {
+        console.error('Error reapplying theme on route change:', error);
+      }
     });
 
     // Computed classes for header - conditionally apply bg-primary only if not LineA Modern theme

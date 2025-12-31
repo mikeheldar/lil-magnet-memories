@@ -414,16 +414,14 @@ export const themeService = {
             });
           });
         } else if (isWhiteLattus || isSilverCrisCross) {
-          // Force purple background (#8f44c4) for White Lattus and Silver Cris-Cross themes
-          // Match button color exactly - solid color, no gradient, no opacity
-          header.style.setProperty('background', '#8f44c4', 'important');
-          header.style.setProperty('background-color', '#8f44c4', 'important');
-          header.style.setProperty('background-image', 'none', 'important');
+          // Force purple gradient background for White Lattus and Silver Cris-Cross themes
+          // Match button gradient exactly: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+          const buttonGradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+          header.style.setProperty('background', buttonGradient, 'important');
+          header.style.setProperty('background-image', buttonGradient, 'important');
+          header.style.setProperty('background-color', '#667eea', 'important'); // Fallback color
           header.style.setProperty('opacity', '1', 'important');
-          // Remove any gradient that might be applied
-          header.style.removeProperty('background-image');
-          header.style.setProperty('background', '#8f44c4', 'important');
-          header.setAttribute('data-theme-override', 'purple');
+          header.setAttribute('data-theme-override', 'purple-gradient');
         }
 
         // Also apply to toolbar (only if it exists to avoid unnecessary DOM queries)
