@@ -967,7 +967,7 @@ export default {
           message: 'Switched to Market Event Mode',
           caption: "You'll see pickup and local payment options",
           position: 'top',
-          timeout: 2000,
+          timeout: 1000,
         });
       }
     };

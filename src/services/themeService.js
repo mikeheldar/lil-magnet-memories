@@ -371,7 +371,7 @@ export const themeService = {
           header.style.setProperty('background-color', '#000000', 'important');
           header.style.setProperty('background-image', 'none', 'important');
           header.setAttribute('data-theme-override', 'black');
-          
+
           // Apply white color to ALL header elements (except test chip) for black header
           const selectors = [
             '.q-btn:not(.test-environment-chip)',
@@ -402,7 +402,7 @@ export const themeService = {
             '.q-toolbar .q-btn[label="About"] .q-btn__content',
             '.q-toolbar .q-btn[label="About"] .q-btn__content *'
           ];
-          
+
           selectors.forEach((selector) => {
             const elements = header.querySelectorAll(selector);
             elements.forEach((element) => {
@@ -548,7 +548,7 @@ export const themeService = {
             '.q-toolbar .q-btn[label="About"] .q-btn__content',
             '.q-toolbar .q-btn[label="About"] .q-btn__content *'
           ];
-          
+
           selectors.forEach((selector) => {
             const elements = header.querySelectorAll(selector);
             elements.forEach((element) => {
@@ -559,7 +559,7 @@ export const themeService = {
               }
             });
           });
-          
+
           // Also ensure title span gets white color (in case it wasn't caught above)
           if (titleSpan) {
             titleSpan.style.setProperty('color', '#ffffff', 'important');

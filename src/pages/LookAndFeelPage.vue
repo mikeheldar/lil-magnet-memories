@@ -171,7 +171,7 @@ export default {
             type: 'negative',
             message: 'Failed to load themes',
             position: 'top',
-            timeout: 2000,
+            timeout: 1000,
           });
         }
       } finally {
@@ -190,7 +190,7 @@ export default {
             type: 'positive',
             message: 'Theme activated successfully',
             position: 'top',
-            timeout: 2000,
+            timeout: 1000,
           });
         }
       } catch (error) {
@@ -223,7 +223,7 @@ export default {
             type: 'negative',
             message: 'Theme name cannot be empty',
             position: 'top',
-            timeout: 2000,
+            timeout: 1000,
           });
         }
         return;
@@ -243,7 +243,7 @@ export default {
             type: 'positive',
             message: 'Theme name updated',
             position: 'top',
-            timeout: 2000,
+            timeout: 1000,
           });
         }
       } catch (error) {
@@ -255,7 +255,7 @@ export default {
             type: 'negative',
             message: 'Failed to update theme name',
             position: 'top',
-            timeout: 2000,
+            timeout: 1000,
           });
         }
       }
