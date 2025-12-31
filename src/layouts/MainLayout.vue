@@ -1596,23 +1596,23 @@ export default {
 
 // Hide dropdowns one by one from RIGHT to LEFT as screen gets smaller
 // Each menu hides individually BEFORE covering the title or overlapping About/user
-// Breakpoints are conservative to ensure title is NEVER cut off
-// Hide Specialty Products first (rightmost menu) - hide early to protect title
-@media (max-width: 1300px) {
+// Breakpoints are conservative to ensure title is NEVER cut off and About doesn't overlap
+// Hide Specialty Products first (rightmost menu) - hide early to protect title and About
+@media (max-width: 1450px) {
   .shop-header-dropdowns .shop-header-btn-specialty {
     display: none !important;
   }
 }
 
-// Hide Designer Magnets next (middle menu) - hide before reaching title
-@media (max-width: 1200px) {
+// Hide Designer Magnets next (middle menu) - hide before reaching About button
+@media (max-width: 1350px) {
   .shop-header-dropdowns .shop-header-btn-designer {
     display: none !important;
   }
 }
 
-// Hide Custom Photo Magnets last (leftmost menu) - hide before touching title
-@media (max-width: 1100px) {
+// Hide Custom Photo Magnets last (leftmost menu) - hide before touching About button
+@media (max-width: 1250px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
@@ -1627,21 +1627,21 @@ export default {
   }
 
   // Hide Specialty Products earlier when drawer is open
-  @media (max-width: 1600px) {
+  @media (max-width: 1750px) {
     .shop-header-dropdowns .shop-header-btn-specialty {
       display: none !important;
     }
   }
 
   // Hide Designer Magnets earlier when drawer is open
-  @media (max-width: 1500px) {
+  @media (max-width: 1650px) {
     .shop-header-dropdowns .shop-header-btn-designer {
       display: none !important;
     }
   }
 
   // Hide Custom Photo Magnets earlier when drawer is open
-  @media (max-width: 1400px) {
+  @media (max-width: 1550px) {
     .shop-header-dropdowns .shop-header-btn-custom {
       display: none !important;
     }
