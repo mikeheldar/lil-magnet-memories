@@ -371,6 +371,48 @@ export const themeService = {
           header.style.setProperty('background-color', '#000000', 'important');
           header.style.setProperty('background-image', 'none', 'important');
           header.setAttribute('data-theme-override', 'black');
+          
+          // Apply white color to ALL header elements (except test chip) for black header
+          const selectors = [
+            '.q-btn:not(.test-environment-chip)',
+            '.q-btn:not(.test-environment-chip) .q-icon',
+            '.q-btn:not(.test-environment-chip) .q-btn__content',
+            '.q-btn:not(.test-environment-chip) .q-btn__content *',
+            '.q-chip:not(.test-environment-chip)',
+            '.q-toolbar-title',
+            '.q-toolbar-title *',
+            '.q-toolbar__title',
+            '.q-toolbar__title *',
+            '.shop-header-btn',
+            '.shop-header-btn *',
+            '.shop-header-btn .q-btn__content',
+            '.shop-header-btn .q-btn__content *',
+            '.shop-header-dropdowns .q-btn',
+            '.shop-header-dropdowns .q-btn *',
+            '.shop-header-dropdowns .q-btn .q-btn__content',
+            '.shop-header-dropdowns .q-btn .q-btn__content *',
+            '.user-profile-dropdown .q-btn',
+            '.user-profile-dropdown .q-btn *',
+            '.user-profile-dropdown .q-btn .q-btn__content',
+            '.user-profile-dropdown .q-btn .q-btn__content *',
+            '.user-name',
+            '.user-name *',
+            '.q-toolbar .q-btn[label="About"]',
+            '.q-toolbar .q-btn[label="About"] *',
+            '.q-toolbar .q-btn[label="About"] .q-btn__content',
+            '.q-toolbar .q-btn[label="About"] .q-btn__content *'
+          ];
+          
+          selectors.forEach((selector) => {
+            const elements = header.querySelectorAll(selector);
+            elements.forEach((element) => {
+              // Skip test environment chip and its children
+              if (!element.closest('.test-environment-chip') &&
+                  !element.classList.contains('test-environment-chip')) {
+                element.style.setProperty('color', '#ffffff', 'important');
+              }
+            });
+          });
         } else if (isWhiteLattus || isSilverCrisCross) {
           // Force purple background (#8f44c4) for White Lattus and Silver Cris-Cross themes
           // Match button color exactly - solid color, no gradient, no opacity
@@ -462,6 +504,7 @@ export const themeService = {
         const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
         const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
         const isWhiteHeader = theme.name && theme.name.includes('LineA Modern White Header');
+        const isBlackHeader = theme.name && theme.name.includes('LineA Modern Black Header');
 
         // Always ensure test environment chip has white text
         const testChip = header.querySelector('.test-environment-chip, .q-chip[color="orange"]');
@@ -473,7 +516,55 @@ export const themeService = {
           }
         }
 
-        if (isWhiteLattus || isSilverCrisCross) {
+        if (isBlackHeader) {
+          // Apply white color to ALL header elements for black header (except test chip)
+          // Use comprehensive selectors to catch all header elements
+          const selectors = [
+            '.q-btn:not(.test-environment-chip)',
+            '.q-btn:not(.test-environment-chip) .q-icon',
+            '.q-btn:not(.test-environment-chip) .q-btn__content',
+            '.q-btn:not(.test-environment-chip) .q-btn__content *',
+            '.q-chip:not(.test-environment-chip)',
+            '.q-toolbar-title',
+            '.q-toolbar-title *',
+            '.q-toolbar__title',
+            '.q-toolbar__title *',
+            '.shop-header-btn',
+            '.shop-header-btn *',
+            '.shop-header-btn .q-btn__content',
+            '.shop-header-btn .q-btn__content *',
+            '.shop-header-dropdowns .q-btn',
+            '.shop-header-dropdowns .q-btn *',
+            '.shop-header-dropdowns .q-btn .q-btn__content',
+            '.shop-header-dropdowns .q-btn .q-btn__content *',
+            '.user-profile-dropdown .q-btn',
+            '.user-profile-dropdown .q-btn *',
+            '.user-profile-dropdown .q-btn .q-btn__content',
+            '.user-profile-dropdown .q-btn .q-btn__content *',
+            '.user-name',
+            '.user-name *',
+            '.q-toolbar .q-btn[label="About"]',
+            '.q-toolbar .q-btn[label="About"] *',
+            '.q-toolbar .q-btn[label="About"] .q-btn__content',
+            '.q-toolbar .q-btn[label="About"] .q-btn__content *'
+          ];
+          
+          selectors.forEach((selector) => {
+            const elements = header.querySelectorAll(selector);
+            elements.forEach((element) => {
+              // Skip test environment chip and its children
+              if (!element.closest('.test-environment-chip') &&
+                  !element.classList.contains('test-environment-chip')) {
+                element.style.setProperty('color', '#ffffff', 'important');
+              }
+            });
+          });
+          
+          // Also ensure title span gets white color (in case it wasn't caught above)
+          if (titleSpan) {
+            titleSpan.style.setProperty('color', '#ffffff', 'important');
+          }
+        } else if (isWhiteLattus || isSilverCrisCross) {
           // Apply white color to all header buttons, icons, and text elements (except test chip)
           // Use comprehensive selectors to catch all header elements
           const selectors = [
@@ -594,15 +685,15 @@ export const themeService = {
       let observerDisconnected = false;
       let lastApplyTime = 0;
       const THROTTLE_MS = 500; // Throttle to max once per 500ms
-      
+
       const observer = new MutationObserver(function(mutations) {
         if (observerDisconnected) return;
-        
+
         // Throttle to prevent excessive calls
         const now = Date.now();
         if (now - lastApplyTime < THROTTLE_MS) return;
         lastApplyTime = now;
-        
+
         // Only reapply if header exists and might have changed
         const header = document.querySelector('.q-header');
         if (header) {
@@ -1804,21 +1895,49 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* Ensure all header text stays white */
+          /* Ensure all header text stays white - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
 
@@ -2234,21 +2353,49 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* Ensure all header text stays white */
+          /* Ensure all header text stays white - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
 
@@ -2713,21 +2860,49 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* Ensure all header text stays white */
+          /* Ensure all header text stays white - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
 
@@ -3159,21 +3334,49 @@ export const initializeDefaultThemes = async () => {
             color: #ffffff !important;
           }
 
-          /* Ensure all header text stays white */
+          /* Ensure all header text stays white - comprehensive selectors */
           body .q-header .q-toolbar-title,
           body .q-header .q-toolbar-title *,
           body .q-header .q-toolbar-title span,
-          body .q-header .q-btn,
-          body .q-header .q-chip,
-          body .q-header .q-btn .q-icon,
+          body .q-header .q-toolbar__title,
+          body .q-header .q-toolbar__title *,
+          body .q-header .q-toolbar__title span,
+          body .q-header .q-btn:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+          body .q-header .q-chip:not(.test-environment-chip),
+          body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+          body .q-header .shop-header-btn,
+          body .q-header .shop-header-btn *,
+          body .q-header .shop-header-btn .q-btn__content,
+          body .q-header .shop-header-btn .q-btn__content *,
+          body .q-header .shop-header-dropdowns .q-btn,
+          body .q-header .shop-header-dropdowns .q-btn *,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+          body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+          body .q-header .user-profile-dropdown .q-btn,
+          body .q-header .user-profile-dropdown .q-btn *,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+          body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+          body .q-header .user-name,
+          body .q-header .user-name *,
+          body .q-header .q-toolbar .q-btn[label="About"],
+          body .q-header .q-toolbar .q-btn[label="About"] *,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+          body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
           .q-layout .q-header .q-toolbar-title,
           .q-layout .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title,
           .q-header .q-toolbar-title *,
           .q-header .q-toolbar-title span,
-          .q-header .q-btn,
-          .q-header .q-chip,
-          .q-header .q-btn .q-icon {
+          .q-header .q-toolbar__title,
+          .q-header .q-toolbar__title *,
+          .q-header .q-toolbar__title span,
+          .q-header .q-btn:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+          .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+          .q-header .q-chip:not(.test-environment-chip),
+          .q-header .q-btn:not(.test-environment-chip) .q-icon {
             color: #ffffff !important;
           }
 

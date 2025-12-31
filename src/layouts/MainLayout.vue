@@ -1024,13 +1024,13 @@ export default {
       };
       window.addEventListener('theme-changed', themeChangeHandler);
     });
-    
+
     onUnmounted(() => {
       if (themeChangeHandler) {
         window.removeEventListener('theme-changed', themeChangeHandler);
       }
     });
-    
+
     // Reapply theme on route changes to ensure header styles persist across navigation
     // Use a debounced approach to prevent excessive reapplications
     let routeChangeTimeout = null;
@@ -1039,7 +1039,7 @@ export default {
       if (routeChangeTimeout) {
         clearTimeout(routeChangeTimeout);
       }
-      
+
       // Debounce route changes to prevent excessive theme reapplications
       routeChangeTimeout = setTimeout(async () => {
         try {
