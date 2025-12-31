@@ -88,6 +88,8 @@
                 alt="Custom photo magnets on easel display"
                 class="easel-image"
                 :key="easelImageIndex"
+                @load="handleImageLoad"
+                ref="easelImageRef"
               />
               <!-- Image carousel dots (only show if more than 1 image) -->
               <div v-if="easelImages.length > 1" class="easel-carousel-dots">
@@ -809,6 +811,48 @@ export default {
       touchEndX.value = 0;
     };
 
+    // Handle image load to constrain oversized images
+    const easelImageRef = ref(null);
+    const handleImageLoad = (event) => {
+      const img = event.target;
+      const container = img.closest('.easel-container');
+      if (!container) return;
+
+      // Get container dimensions
+      const containerRect = container.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const containerHeight = containerRect.height;
+
+      // Get image natural dimensions
+      const imgNaturalWidth = img.naturalWidth;
+      const imgNaturalHeight = img.naturalHeight;
+
+      // Calculate aspect ratios
+      const containerAspect = containerWidth / containerHeight;
+      const imgAspect = imgNaturalWidth / imgNaturalHeight;
+
+      // Check if image would overflow
+      // If image is wider than container aspect ratio, constrain by width
+      // If image is taller than container aspect ratio, constrain by height
+      if (imgAspect > containerAspect) {
+        // Image is wider - constrain by width
+        const maxWidth = containerWidth - 12; // Account for border and padding
+        if (img.offsetWidth > maxWidth) {
+          img.style.maxWidth = `${maxWidth}px`;
+          img.style.width = 'auto';
+          img.style.height = 'auto';
+        }
+      } else {
+        // Image is taller - constrain by height
+        const maxHeight = containerHeight - 12; // Account for border and padding
+        if (img.offsetHeight > maxHeight) {
+          img.style.maxHeight = `${maxHeight}px`;
+          img.style.width = 'auto';
+          img.style.height = 'auto';
+        }
+      }
+    };
+
     const handleGoogleSignIn = async () => {
       signingIn.value = true;
 
@@ -1216,6 +1260,7 @@ export default {
     });
 
     return {
+      easelImageRef,
       signingIn,
       isAuthenticated,
       isAdmin,
@@ -1250,6 +1295,7 @@ export default {
       handleTouchStart,
       handleTouchMove,
       handleTouchEnd,
+      handleImageLoad,
     };
   },
 };
@@ -1621,7 +1667,7 @@ export default {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: visible;
+  overflow: hidden; // Prevent images from overflowing the container
 
   img {
     display: block;
@@ -1634,15 +1680,18 @@ export default {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 6px);
-  max-height: calc(100% - 6px);
+  width: calc(100% - 12px); // Account for border
+  max-width: calc(100% - 12px);
+  max-height: calc(100% - 12px);
   height: auto;
   display: block;
+  overflow: hidden; // Prevent image from overflowing wrapper
 }
 
 .easel-image {
   width: 100%;
-  max-height: 100%;
+  max-width: 100%; // Ensure image never exceeds wrapper width
+  max-height: 100%; // Ensure image never exceeds wrapper height
   height: auto;
   object-fit: contain;
   object-position: top;

@@ -1039,7 +1039,7 @@ export default {
         if (theme) {
           // Apply immediately without delay to prevent flash of wrong color
           themeService.applyTheme(theme);
-          
+
           // Also apply header styles immediately after a microtask to ensure DOM is ready
           await new Promise(resolve => setTimeout(resolve, 0));
           const header = document.querySelector('.q-header');
