@@ -1612,7 +1612,7 @@ export default {
 }
 
 // Hide Custom Photo Magnets last (leftmost menu) - hide well before About button to prevent overlap
-@media (max-width: 1400px) {
+@media (max-width: 1500px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
@@ -1641,7 +1641,7 @@ export default {
   }
 
   // Hide Custom Photo Magnets earlier when drawer is open
-  @media (max-width: 1700px) {
+  @media (max-width: 1800px) {
     .shop-header-dropdowns .shop-header-btn-custom {
       display: none !important;
     }
