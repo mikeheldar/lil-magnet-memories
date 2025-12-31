@@ -202,7 +202,7 @@ export default {
             type: 'negative',
             message: 'Failed to activate theme',
             position: 'top',
-            timeout: 2000,
+            timeout: 1000,
           });
         }
       }

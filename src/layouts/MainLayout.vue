@@ -958,7 +958,7 @@ export default {
           message: 'Switched to Online Mode',
           caption: "You'll see shipping options for orders",
           position: 'top',
-          timeout: 2000,
+          timeout: 1000,
         });
       } else {
         setCustomerType('market_customer');
@@ -1231,6 +1231,7 @@ export default {
             type: 'positive',
             message: 'Successfully signed in!',
             position: 'top',
+            timeout: 1000,
           });
         } catch (notifyError) {
           console.error('Failed to show success notification:', notifyError);
@@ -1268,6 +1269,7 @@ export default {
             type: 'positive',
             message: 'Successfully signed out!',
             position: 'top',
+            timeout: 1000,
           });
         } catch (notifyError) {
           console.error('Failed to show success notification:', notifyError);
@@ -1294,6 +1296,7 @@ export default {
             type: 'negative',
             message: 'Failed to sign out. Please try again.',
             position: 'top',
+            timeout: 1000,
           });
         } catch (notifyError) {
           console.error('Failed to show notification:', notifyError);
