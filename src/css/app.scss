@@ -381,12 +381,16 @@ body .q-btn[rounded],
 body .q-btn.rounded,
 body .q-btn.cta-button.q-btn--rounded,
 body .q-btn.cta-button[rounded],
-body .q-btn.cta-button.rounded {
+body .q-btn.cta-button.rounded,
+body .q-btn.q-btn--rectangle,
+body .q-btn.cta-button.q-btn--rectangle {
   border-radius: 30px !important; // Override Quasar's rounded prop (28px) with our 30px - very rounded for testing
 }
 
-// Ultra-specific override for cta-button with rounded prop - highest specificity
+// Ultra-specific override for cta-button - highest specificity
+body .landing-page .q-btn.cta-button,
 body .landing-page .q-btn.cta-button.q-btn--rounded,
-body .landing-page .q-btn.cta-button[rounded] {
+body .landing-page .q-btn.cta-button[rounded],
+body .landing-page .q-btn.cta-button.q-btn--rectangle {
   border-radius: 30px !important; // Force 30px on CTA button
 }

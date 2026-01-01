@@ -62,6 +62,7 @@
               color="primary"
               size="xl"
               class="cta-button"
+              :style="{ borderRadius: '30px' }"
             >
               <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
               Start Creating Magnets
@@ -1642,7 +1643,7 @@ export default {
       border-color: rgba(255, 255, 255, 0.9);
     }
   }
-  
+
   // Force border-radius override - must be separate to override Quasar's rounded prop
   .cta-button,
   .cta-button.q-btn--rounded,
