@@ -1626,10 +1626,11 @@ export default {
       filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
               drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
               drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
-      // Match header purple gradient
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      // Use theme primary color
+      background: var(--q-primary, #000000) !important;
       border: 3px solid white;
       color: white;
+      border-radius: 9999px !important; // Very rounded, pill-like corners
       overflow: visible; // Ensure button doesn't clip its own shadows
       position: relative; // Allow shadows to extend
 

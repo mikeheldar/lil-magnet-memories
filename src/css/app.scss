@@ -1,21 +1,21 @@
 // app global css in SCSS form
 
-// Global button styling - use header bar color for button backgrounds
+// Global button styling - use theme color for button backgrounds
 // Target all buttons with primary/secondary colors, including those using bg-primary/bg-secondary classes
 // Use high specificity to override Quasar's default styles
 body .q-btn {
-  // Standardize border-radius for all buttons (rounded corners)
+  // Standardize border-radius for all buttons (very rounded, pill-like shape)
   &:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-    border-radius: 8px !important; // Consistent rounded corners
+    border-radius: 9999px !important; // Very rounded, pill-like corners
   }
 
   // Primary buttons - target by color attribute AND bg-primary class
   &[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
   &.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: var(--q-primary, #000000) !important; // Use theme primary color (defaults to black)
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 8px !important; // Consistent rounded corners
+    border-radius: 9999px !important; // Very rounded, pill-like corners
     // Use filter drop-shadow for natural, unclipped shadows (matching "Start Creating Magnets" button)
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -25,7 +25,8 @@ body .q-btn {
     transition: all 0.2s ease !important; // Smooth transitions
 
     &:hover {
-      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+      background: var(--q-primary, #000000) !important; // Use theme primary color on hover
+      opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important; // Slightly transparent border on hover
       transform: translateY(-2px);
       // More diffuse, natural shadows on hover
@@ -36,13 +37,13 @@ body .q-btn {
     }
   }
 
-  // Secondary buttons - also use purple gradient, target by color attribute AND bg-secondary class
+  // Secondary buttons - use theme secondary color
   &[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
   &.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme secondary or primary color
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 8px !important; // Consistent rounded corners
+    border-radius: 9999px !important; // Very rounded, pill-like corners
     // Use filter drop-shadow for natural, unclipped shadows (matching "Start Creating Magnets" button)
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -52,7 +53,8 @@ body .q-btn {
     transition: all 0.2s ease !important; // Smooth transitions
 
     &:hover {
-      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+      background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme color on hover
+      opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important; // Slightly transparent border on hover
       transform: translateY(-2px);
       // More diffuse, natural shadows on hover
@@ -67,10 +69,10 @@ body .q-btn {
 // Also target buttons using Quasar's internal color classes with higher specificity
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: var(--q-primary, #000000) !important; // Use theme primary color
   color: white !important;
   border: 3px solid white !important; // Consistent white border
-  border-radius: 8px !important; // Consistent rounded corners
+  border-radius: 9999px !important; // Very rounded, pill-like corners
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
           drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
           drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
@@ -79,7 +81,8 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
   transition: all 0.2s ease !important;
 
   &:hover {
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+    background: var(--q-primary, #000000) !important; // Use theme primary color on hover
+    opacity: 0.9 !important; // Slightly transparent on hover
     border-color: rgba(255, 255, 255, 0.9) !important;
     transform: translateY(-2px);
     filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
@@ -91,10 +94,10 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
 
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme secondary or primary color
   color: white !important;
   border: 3px solid white !important; // Consistent white border
-  border-radius: 8px !important; // Consistent rounded corners
+  border-radius: 9999px !important; // Very rounded, pill-like corners
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
           drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
           drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
@@ -103,7 +106,8 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   transition: all 0.2s ease !important;
 
   &:hover {
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+    background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme color on hover
+    opacity: 0.9 !important; // Slightly transparent on hover
     border-color: rgba(255, 255, 255, 0.9) !important;
     transform: translateY(-2px);
     filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
@@ -113,15 +117,15 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   }
 }
 
-// Style q-file upload buttons to match purple gradient
+// Style q-file upload buttons to match theme color
 .q-file {
   .q-field__control {
     .q-btn {
       // Style the upload button inside q-file
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      background: var(--q-primary, #000000) !important; // Use theme primary color
       color: white !important;
       border: 3px solid white !important; // Consistent white border
-      border-radius: 8px !important; // Consistent rounded corners
+      border-radius: 9999px !important; // Very rounded, pill-like corners
       // Use filter drop-shadow for natural, unclipped shadows
       filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
               drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -131,7 +135,8 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
       transition: all 0.2s ease !important;
 
       &:hover {
-        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+        background: var(--q-primary, #000000) !important; // Use theme primary color on hover
+        opacity: 0.9 !important; // Slightly transparent on hover
         border-color: rgba(255, 255, 255, 0.9) !important;
         transform: translateY(-2px);
         filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
@@ -144,10 +149,10 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 
   // Also target primary colored buttons in file inputs
   .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: var(--q-primary, #000000) !important; // Use theme primary color
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 8px !important; // Consistent rounded corners
+    border-radius: 9999px !important; // Very rounded, pill-like corners
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
             drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
@@ -156,7 +161,8 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
     transition: all 0.2s ease !important;
 
     &:hover {
-      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+      background: var(--q-primary, #000000) !important; // Use theme primary color on hover
+      opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important;
       transform: translateY(-2px);
       filter: drop-shadow(0 6px 30px rgba(0, 0, 0, 0.3))
