@@ -1423,7 +1423,7 @@ export default {
   // Ensure right side elements respect title space
   > .shop-header-dropdowns {
     margin-left: auto;
-    padding-left: 20px; /* Extra padding to keep away from title */
+    padding-left: 10px; /* Extra padding to keep away from title */
   }
 }
 
@@ -1438,7 +1438,7 @@ export default {
   z-index: 99999 !important; /* Extremely high z-index - title is ALWAYS on top */
   pointer-events: none; /* Allow clicks to pass through to elements below */
   flex-shrink: 0 !important; /* Prevent title from shrinking */
-  padding: 0 40px !important; /* Increased padding to create protected zone around title */
+  padding: 0 20px !important; /* Increased padding to create protected zone around title */
   background: transparent !important; /* Ensure no background interferes */
   box-sizing: content-box;
   visibility: visible !important; /* Always visible */
@@ -1614,7 +1614,7 @@ export default {
 }
 
 // Hide Custom Photo Magnets last (leftmost menu) - hide well before About button to prevent overlap
-@media (max-width: 1500px) {
+@media (max-width: 1550px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
