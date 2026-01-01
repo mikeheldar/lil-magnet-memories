@@ -266,7 +266,7 @@
                     <q-banner
                       dense
                       class="bg-blue-1 text-primary"
-                      style="border: 2px solid #1976d2; border-radius: 8px"
+                      style="border: 2px solid #1976d2; border-radius: 30px"
                     >
                       <template v-slot:avatar>
                         <q-icon

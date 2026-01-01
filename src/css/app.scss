@@ -7,11 +7,11 @@ body .q-btn {
   // Standardize border-radius for all buttons (rectangular with rounded corners)
   // Override Quasar's rounded prop which uses a very large border-radius
   &:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-    border-radius: 15px !important; // Rectangular with rounded corners
+    border-radius: 30px !important; // Very rounded corners for testing
   }
   // Also override Quasar's rounded class specifically (rounded prop adds q-btn--rounded class)
   &.q-btn--rounded:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-    border-radius: 15px !important; // Override Quasar's default rounded border-radius (typically 28px)
+    border-radius: 30px !important; // Override Quasar's default rounded border-radius (typically 28px) - very rounded for testing
   }
 
   // Primary buttons - target by color attribute AND bg-primary class
@@ -20,7 +20,7 @@ body .q-btn {
     background: var(--q-primary, #000000) !important; // Use theme primary color (defaults to black)
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 15px !important; // Rectangular with rounded corners
+    border-radius: 30px !important; // Very rounded corners for testing
     // Use filter drop-shadow for natural, unclipped shadows (matching "Start Creating Magnets" button)
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -48,7 +48,7 @@ body .q-btn {
     background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme secondary or primary color
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 15px !important; // Rectangular with rounded corners
+    border-radius: 30px !important; // Very rounded corners for testing
     // Use filter drop-shadow for natural, unclipped shadows (matching "Start Creating Magnets" button)
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -77,7 +77,7 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
   background: var(--q-primary, #000000) !important; // Use theme primary color
   color: white !important;
   border: 3px solid white !important; // Consistent white border
-  border-radius: 15px !important; // Rectangular with rounded corners
+  border-radius: 30px !important; // Very rounded corners for testing
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
           drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
           drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
@@ -102,7 +102,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme secondary or primary color
   color: white !important;
   border: 3px solid white !important; // Consistent white border
-  border-radius: 15px !important; // Rectangular with rounded corners
+  border-radius: 30px !important; // Very rounded corners for testing
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
           drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
           drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
@@ -130,7 +130,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
       background: var(--q-primary, #000000) !important; // Use theme primary color
       color: white !important;
       border: 3px solid white !important; // Consistent white border
-      border-radius: 15px !important; // Rectangular with rounded corners
+      border-radius: 30px !important; // Very rounded corners for testing
       // Use filter drop-shadow for natural, unclipped shadows
       filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
               drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -157,7 +157,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
     background: var(--q-primary, #000000) !important; // Use theme primary color
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 15px !important; // Rectangular with rounded corners
+    border-radius: 30px !important; // Very rounded corners for testing
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
             drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
@@ -379,5 +379,5 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 body .q-btn.q-btn--rounded,
 body .q-btn[rounded],
 body .q-btn.rounded {
-  border-radius: 15px !important; // Override Quasar's rounded prop (28px) with our 15px
+  border-radius: 30px !important; // Override Quasar's rounded prop (28px) with our 30px - very rounded for testing
 }
