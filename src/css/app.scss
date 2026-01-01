@@ -378,6 +378,15 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 // Force border-radius override for all buttons - must be at end to override Quasar's rounded class
 body .q-btn.q-btn--rounded,
 body .q-btn[rounded],
-body .q-btn.rounded {
+body .q-btn.rounded,
+body .q-btn.cta-button.q-btn--rounded,
+body .q-btn.cta-button[rounded],
+body .q-btn.cta-button.rounded {
   border-radius: 30px !important; // Override Quasar's rounded prop (28px) with our 30px - very rounded for testing
+}
+
+// Ultra-specific override for cta-button with rounded prop - highest specificity
+body .landing-page .q-btn.cta-button.q-btn--rounded,
+body .landing-page .q-btn.cta-button[rounded] {
+  border-radius: 30px !important; // Force 30px on CTA button
 }

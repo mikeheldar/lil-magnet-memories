@@ -62,7 +62,6 @@
               color="primary"
               size="xl"
               class="cta-button"
-              rounded
             >
               <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
               Start Creating Magnets
@@ -1630,7 +1629,6 @@ export default {
       background: var(--q-primary, #000000) !important;
       border: 3px solid white;
       color: white;
-      border-radius: 30px !important; // Very rounded corners for testing
       overflow: visible; // Ensure button doesn't clip its own shadows
       position: relative; // Allow shadows to extend
 
@@ -1643,6 +1641,13 @@ export default {
               drop-shadow(0 2px 10px rgba(255, 255, 255, 0.1));
       border-color: rgba(255, 255, 255, 0.9);
     }
+  }
+  
+  // Force border-radius override - must be separate to override Quasar's rounded prop
+  .cta-button,
+  .cta-button.q-btn--rounded,
+  .q-btn.cta-button.q-btn--rounded {
+    border-radius: 30px !important; // Very rounded corners for testing - override Quasar's rounded prop
   }
 }
 
