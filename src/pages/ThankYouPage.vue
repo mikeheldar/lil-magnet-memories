@@ -105,7 +105,7 @@
 
           <q-btn
             v-if="isAuthenticated"
-            color="purple"
+            color="primary"
             size="lg"
             class="full-width q-mb-md"
             @click="viewMyOrders"

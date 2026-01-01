@@ -167,7 +167,7 @@
                 </q-btn>
                 <q-btn
                   icon="print"
-                  color="purple"
+                  color="primary"
                   size="sm"
                   @click="openPrintTemplate(order)"
                 >
