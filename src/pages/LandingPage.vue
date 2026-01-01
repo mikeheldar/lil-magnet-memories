@@ -1695,7 +1695,7 @@ export default {
   max-height: 100%; // Ensure image never exceeds wrapper height
   height: auto;
   object-fit: contain;
-  object-position: top;
+  object-position: center top; /* Center horizontally, align to top vertically */
   border-radius: 17px;
   // Add silver border around images with padding to keep image inside
   border: 3px solid rgba(192, 192, 192, 0.8);
