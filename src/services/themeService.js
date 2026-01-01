@@ -1773,7 +1773,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -1798,7 +1798,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -1989,7 +1989,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -2014,7 +2014,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -2231,7 +2231,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -2256,7 +2256,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -2463,7 +2463,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -2488,7 +2488,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -2738,7 +2738,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -2763,7 +2763,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -2965,7 +2965,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -2990,7 +2990,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -3212,7 +3212,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -3237,7 +3237,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -3435,7 +3435,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -3460,7 +3460,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -3669,7 +3669,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -3694,7 +3694,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
@@ -3848,7 +3848,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
             transition: all 0.2s ease !important;
@@ -3873,7 +3873,7 @@ export const initializeDefaultThemes = async () => {
             background: #1a1a1a !important;
             color: #ffffff !important;
             border: 1px solid #1a1a1a !important;
-            border-radius: 4px !important;
+            border-radius: 10px !important;
             filter: none !important;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
           }
