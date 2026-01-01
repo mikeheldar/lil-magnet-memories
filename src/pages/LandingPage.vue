@@ -1685,7 +1685,9 @@ export default {
   max-width: calc(100% - 12px);
   max-height: calc(100% - 12px);
   height: auto;
-  display: block;
+  display: flex; // Use flexbox for better centering
+  justify-content: center; // Center content horizontally
+  align-items: flex-start; // Align to top
   overflow: hidden; // Prevent image from overflowing wrapper
 }
 
@@ -1696,6 +1698,7 @@ export default {
   height: auto;
   object-fit: contain;
   object-position: center top; /* Center horizontally, align to top vertically */
+  display: block; /* Ensure block display */
   border-radius: 17px;
   // Add silver border around images with padding to keep image inside
   border: 3px solid rgba(192, 192, 192, 0.8);
