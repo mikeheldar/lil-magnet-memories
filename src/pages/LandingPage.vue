@@ -1630,7 +1630,7 @@ export default {
       background: var(--q-primary, #000000) !important;
       border: 3px solid white;
       color: white;
-      border-radius: 10px !important; // Rectangular with rounded corners
+      border-radius: 15px !important; // Rectangular with rounded corners
       overflow: visible; // Ensure button doesn't clip its own shadows
       position: relative; // Allow shadows to extend
 
