@@ -4,9 +4,9 @@
 // Target all buttons with primary/secondary colors, including those using bg-primary/bg-secondary classes
 // Use high specificity to override Quasar's default styles
 body .q-btn {
-  // Standardize border-radius for all buttons (very rounded, pill-like shape)
+  // Standardize border-radius for all buttons (rectangular with subtle rounded corners)
   &:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-    border-radius: 9999px !important; // Very rounded, pill-like corners
+    border-radius: 8px !important; // Rectangular with subtle rounded corners
   }
 
   // Primary buttons - target by color attribute AND bg-primary class
@@ -15,7 +15,7 @@ body .q-btn {
     background: var(--q-primary, #000000) !important; // Use theme primary color (defaults to black)
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 9999px !important; // Very rounded, pill-like corners
+    border-radius: 8px !important; // Rectangular with subtle rounded corners
     // Use filter drop-shadow for natural, unclipped shadows (matching "Start Creating Magnets" button)
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -43,7 +43,7 @@ body .q-btn {
     background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme secondary or primary color
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 9999px !important; // Very rounded, pill-like corners
+    border-radius: 8px !important; // Rectangular with subtle rounded corners
     // Use filter drop-shadow for natural, unclipped shadows (matching "Start Creating Magnets" button)
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -72,7 +72,7 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
   background: var(--q-primary, #000000) !important; // Use theme primary color
   color: white !important;
   border: 3px solid white !important; // Consistent white border
-  border-radius: 9999px !important; // Very rounded, pill-like corners
+  border-radius: 8px !important; // Rectangular with subtle rounded corners
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
           drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
           drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
@@ -97,7 +97,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme secondary or primary color
   color: white !important;
   border: 3px solid white !important; // Consistent white border
-  border-radius: 9999px !important; // Very rounded, pill-like corners
+  border-radius: 8px !important; // Rectangular with subtle rounded corners
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
           drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
           drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
@@ -125,7 +125,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
       background: var(--q-primary, #000000) !important; // Use theme primary color
       color: white !important;
       border: 3px solid white !important; // Consistent white border
-      border-radius: 9999px !important; // Very rounded, pill-like corners
+      border-radius: 8px !important; // Rectangular with subtle rounded corners
       // Use filter drop-shadow for natural, unclipped shadows
       filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
               drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
@@ -152,7 +152,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
     background: var(--q-primary, #000000) !important; // Use theme primary color
     color: white !important;
     border: 3px solid white !important; // Consistent white border
-    border-radius: 9999px !important; // Very rounded, pill-like corners
+    border-radius: 8px !important; // Rectangular with subtle rounded corners
     filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
             drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
             drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) !important;
