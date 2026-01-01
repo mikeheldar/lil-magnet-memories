@@ -1421,7 +1421,7 @@ export default {
     padding-top: 0;
     display: flex;
     align-content: flex-start; // Align content to top
-    justify-content: flex-start; // Align to top
+    justify-content: center; // Keep easel centered on all screen sizes
   }
 
   // Ensure title and easel container align at the same vertical position
