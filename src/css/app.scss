@@ -4,9 +4,14 @@
 // Target all buttons with primary/secondary colors, including those using bg-primary/bg-secondary classes
 // Use high specificity to override Quasar's default styles
 body .q-btn {
-  // Standardize border-radius for all buttons (rectangular with subtle rounded corners)
+  // Standardize border-radius for all buttons (rectangular with rounded corners)
+  // Override Quasar's rounded prop which uses a very large border-radius
   &:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
     border-radius: 15px !important; // Rectangular with rounded corners
+  }
+  // Also override Quasar's rounded class specifically (rounded prop adds q-btn--rounded class)
+  &.q-btn--rounded:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+    border-radius: 15px !important; // Override Quasar's default rounded border-radius (typically 28px)
   }
 
   // Primary buttons - target by color attribute AND bg-primary class
@@ -368,4 +373,11 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
       display: inline;
     }
   }
+}
+
+// Force border-radius override for all buttons - must be at end to override Quasar's rounded class
+body .q-btn.q-btn--rounded,
+body .q-btn[rounded],
+body .q-btn.rounded {
+  border-radius: 15px !important; // Override Quasar's rounded prop (28px) with our 15px
 }
