@@ -47,32 +47,35 @@ const getApp = () => {
 };
 
 // Optionally initialize Firebase App Check (reCAPTCHA v3) when a site key is provided
-const appCheckSiteKey = import.meta.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
-if (appCheckSiteKey) {
-  // Lazy-load to avoid bundling in environments where App Check isn't used
-  import('firebase/app-check')
-    .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
-      try {
-        initializeAppCheck(getApp(), {
-          provider: new ReCaptchaV3Provider(appCheckSiteKey),
-          isTokenAutoRefreshEnabled: true,
-        });
+// Only initialize if window is available (runtime, not build time)
+if (typeof window !== 'undefined') {
+  const appCheckSiteKey = import.meta.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
+  if (appCheckSiteKey) {
+    // Lazy-load to avoid bundling in environments where App Check isn't used
+    import('firebase/app-check')
+      .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
+        try {
+          initializeAppCheck(getApp(), {
+            provider: new ReCaptchaV3Provider(appCheckSiteKey),
+            isTokenAutoRefreshEnabled: true,
+          });
+          // eslint-disable-next-line no-console
+          console.log('✅ App Check initialized (reCAPTCHA v3).');
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('App Check initialization failed:', err);
+        }
+      })
+      .catch((e) => {
         // eslint-disable-next-line no-console
-        console.log('✅ App Check initialized (reCAPTCHA v3).');
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('App Check initialization failed:', err);
-      }
-    })
-    .catch((e) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to load firebase/app-check module:', e);
-    });
-} else {
-  // eslint-disable-next-line no-console
-  console.log(
-    'ℹ️ App Check not initialized. Set VITE_FIREBASE_APPCHECK_SITE_KEY to enable.'
-  );
+        console.error('Failed to load firebase/app-check module:', e);
+      });
+  } else {
+    // eslint-disable-next-line no-console
+    console.log(
+      'ℹ️ App Check not initialized. Set VITE_FIREBASE_APPCHECK_SITE_KEY to enable.'
+    );
+  }
 }
 
 // Initialize Firestore (use default database - Firebase creates it automatically)
