@@ -219,8 +219,57 @@
               <!-- Inner square frame for image -->
               <div
                 class="print-square"
-                :class="{ 'selected-photo': isPhotoSelected(page[gridIndex]) }"
+                :class="{ 
+                  'selected-photo': isPhotoSelected(page[gridIndex]),
+                  'test-environment': config.isTest
+                }"
               >
+                <!-- Guide lines for test environment - window with window effect -->
+                <svg
+                  v-if="config.isTest"
+                  class="guide-lines"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
+                  <!-- Horizontal lines (two parallel lines) -->
+                  <line
+                    x1="0"
+                    y1="33.33"
+                    x2="100"
+                    y2="33.33"
+                    stroke="#1976d2"
+                    stroke-width="0.3"
+                    vector-effect="non-scaling-stroke"
+                  />
+                  <line
+                    x1="0"
+                    y1="66.67"
+                    x2="100"
+                    y2="66.67"
+                    stroke="#1976d2"
+                    stroke-width="0.3"
+                    vector-effect="non-scaling-stroke"
+                  />
+                  <!-- Vertical lines (two parallel lines) -->
+                  <line
+                    x1="33.33"
+                    y1="0"
+                    x2="33.33"
+                    y2="100"
+                    stroke="#1976d2"
+                    stroke-width="0.3"
+                    vector-effect="non-scaling-stroke"
+                  />
+                  <line
+                    x1="66.67"
+                    y1="0"
+                    x2="66.67"
+                    y2="100"
+                    stroke="#1976d2"
+                    stroke-width="0.3"
+                    vector-effect="non-scaling-stroke"
+                  />
+                </svg>
                 <div
                   v-if="page[gridIndex]"
                   class="image-wrapper"
@@ -250,6 +299,7 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { config } from '../config/environment.js';
 
 export default {
   name: 'PrintTemplatePage',
