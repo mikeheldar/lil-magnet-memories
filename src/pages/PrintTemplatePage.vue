@@ -221,12 +221,12 @@
                 class="print-square"
                 :class="{
                   'selected-photo': isPhotoSelected(page[gridIndex]),
-                  'test-environment': config && config.isTest
+                  'test-environment': isTestEnvironment
                 }"
               >
                 <!-- Guide lines for test environment - window with window effect -->
                 <svg
-                  v-if="config && config.isTest"
+                  v-if="isTestEnvironment"
                   class="guide-lines"
                   viewBox="0 0 100 100"
                   preserveAspectRatio="none"
@@ -867,6 +867,11 @@ export default {
       }
 
       return pagesArray;
+    });
+
+    // Computed property for test environment check
+    const isTestEnvironment = computed(() => {
+      return config && config.isTest;
     });
 
     onMounted(() => {
