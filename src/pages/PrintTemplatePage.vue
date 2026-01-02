@@ -237,7 +237,7 @@
                     y1="33.33"
                     x2="100"
                     y2="33.33"
-                    stroke="#1976d2"
+                    stroke="#ffffff"
                     stroke-width="0.3"
                     vector-effect="non-scaling-stroke"
                   />
@@ -246,7 +246,7 @@
                     y1="66.67"
                     x2="100"
                     y2="66.67"
-                    stroke="#1976d2"
+                    stroke="#ffffff"
                     stroke-width="0.3"
                     vector-effect="non-scaling-stroke"
                   />
@@ -256,7 +256,7 @@
                     y1="0"
                     x2="33.33"
                     y2="100"
-                    stroke="#1976d2"
+                    stroke="#ffffff"
                     stroke-width="0.3"
                     vector-effect="non-scaling-stroke"
                   />
@@ -265,7 +265,7 @@
                     y1="0"
                     x2="66.67"
                     y2="100"
-                    stroke="#1976d2"
+                    stroke="#ffffff"
                     stroke-width="0.3"
                     vector-effect="non-scaling-stroke"
                   />
@@ -1185,7 +1185,7 @@ export default {
 
   /* Test environment: blue border and guide lines */
   .print-square.test-environment {
-    border: 1px solid #1976d2; /* Blue border in test */
+    border: 2px solid #1976d2; /* Blue border in test - 1px thicker */
   }
 
   /* Guide lines SVG - positioned absolutely to stay in place */
@@ -1431,7 +1431,7 @@ export default {
 
   /* Test environment: blue border and guide lines */
   .print-square.test-environment {
-    border: 1px solid #1976d2; /* Blue border in test */
+    border: 2px solid #1976d2; /* Blue border in test - 1px thicker */
   }
 
   /* Guide lines SVG - positioned absolutely to stay in place */
