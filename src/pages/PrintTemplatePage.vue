@@ -221,12 +221,12 @@
                 class="print-square"
                 :class="{
                   'selected-photo': isPhotoSelected(page[gridIndex]),
-                  'test-environment': isTestEnvironment
+                  'test-environment': config && config.isTest
                 }"
               >
                 <!-- Guide lines for test environment - window with window effect -->
                 <svg
-                  v-if="isTestEnvironment"
+                  v-if="config && config.isTest"
                   class="guide-lines"
                   viewBox="0 0 100 100"
                   preserveAspectRatio="none"
@@ -915,7 +915,7 @@ export default {
       handlePrint,
       handleImageLoad,
       autoZoom,
-      config, // Make config available in template
+      isTestEnvironment, // Computed property for test environment check
     };
   },
 };
