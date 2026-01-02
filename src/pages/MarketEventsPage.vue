@@ -67,7 +67,7 @@
                         {{ event.name }}
                       </div>
                     </div>
-                    <div class="col-auto q-gutter-xs">
+                    <div class="col-auto q-gutter-xs status-chips">
                       <q-chip
                         v-if="event.isTesting"
                         color="orange"
@@ -217,50 +217,53 @@
                   </div>
                 </div>
 
-                <div class="col-auto">
-                  <q-btn-group vertical>
-                    <q-btn
-                      v-if="!event.checkedIn"
-                      color="green"
-                      icon="check_circle"
-                      label="Check In"
-                      size="sm"
-                      @click="checkInToEvent(event.id)"
-                      :loading="checkingIn === event.id"
-                    />
-                    <q-btn
-                      v-else-if="event.checkedIn && !event.checkedOut"
-                      color="blue"
-                      icon="exit_to_app"
-                      label="Check Out"
-                      size="sm"
-                      @click="checkOutOfEvent(event.id)"
-                      :loading="checkingIn === event.id"
-                    />
-                    <q-btn
-                      v-else-if="event.checkedOut"
-                      color="grey-6"
-                      icon="undo"
-                      label="Undo Check-out"
-                      size="sm"
-                      @click="undoCheckOut(event.id)"
-                      :loading="checkingIn === event.id"
-                    />
-                    <q-btn
-                      color="primary"
-                      icon="edit"
-                      label="Edit"
-                      size="sm"
-                      @click="openEditEventDialog(event)"
-                    />
-                    <q-btn
-                      color="negative"
-                      icon="delete"
-                      label="Delete"
-                      size="sm"
-                      @click="confirmDeleteEvent(event)"
-                    />
-                  </q-btn-group>
+                <div class="col-auto action-buttons">
+                  <q-btn
+                    v-if="!event.checkedIn"
+                    color="green"
+                    icon="check_circle"
+                    label="Check In"
+                    size="sm"
+                    @click="checkInToEvent(event.id)"
+                    :loading="checkingIn === event.id"
+                    class="action-btn"
+                  />
+                  <q-btn
+                    v-else-if="event.checkedIn && !event.checkedOut"
+                    color="blue"
+                    icon="exit_to_app"
+                    label="Check Out"
+                    size="sm"
+                    @click="checkOutOfEvent(event.id)"
+                    :loading="checkingIn === event.id"
+                    class="action-btn"
+                  />
+                  <q-btn
+                    v-else-if="event.checkedOut"
+                    color="grey-6"
+                    icon="undo"
+                    label="Undo Check-out"
+                    size="sm"
+                    @click="undoCheckOut(event.id)"
+                    :loading="checkingIn === event.id"
+                    class="action-btn"
+                  />
+                  <q-btn
+                    color="primary"
+                    icon="edit"
+                    label="Edit"
+                    size="sm"
+                    @click="openEditEventDialog(event)"
+                    class="action-btn"
+                  />
+                  <q-btn
+                    color="negative"
+                    icon="delete"
+                    label="Delete"
+                    size="sm"
+                    @click="confirmDeleteEvent(event)"
+                    class="action-btn"
+                  />
                 </div>
               </div>
             </q-card-section>
@@ -1245,6 +1248,24 @@ export default {
   gap: 0.5rem;
 }
 
+// Status chips - keep pill shape and add margin to separate from buttons
+.status-chips {
+  margin-right: 1.5rem; // Separate status pill from action buttons
+}
+
+// Action buttons - individual buttons with consistent shape and spacing
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; // Space between buttons
+  
+  .action-btn {
+    // Ensure all buttons have the same rounded shape (not conjoined)
+    border-radius: 10px !important; // Match global button border-radius
+    min-width: 120px; // Consistent button width
+  }
+}
+
 .order-stats {
   background: #f8f9fa;
   padding: 1rem;
@@ -1286,6 +1307,15 @@ export default {
     .col-auto {
       margin-top: 1rem;
 
+      &.action-buttons {
+        width: 100%;
+        
+        .action-btn {
+          width: 100%;
+        }
+      }
+      
+      // Legacy support for q-btn-group (if any remain)
       .q-btn-group {
         width: 100%;
 
