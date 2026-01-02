@@ -1177,6 +1177,22 @@ export default {
     z-index: 2;
   }
 
+  // Test environment: blue border and guide lines
+  .print-square.test-environment {
+    border: 1px solid #1976d2; // Blue border in test
+  }
+
+  // Guide lines SVG - positioned absolutely to stay in place
+  .guide-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; // Don't interfere with image dragging
+    z-index: 1; // Behind image but visible
+  }
+
   .image-wrapper {
     width: 100%;
     height: 100%;
@@ -1405,6 +1421,22 @@ export default {
     background: white;
     position: relative;
     z-index: 2;
+  }
+
+  // Test environment: blue border and guide lines
+  .print-square.test-environment {
+    border: 1px solid #1976d2; // Blue border in test
+  }
+
+  // Guide lines SVG - positioned absolutely to stay in place
+  .guide-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; // Don't interfere with image dragging
+    z-index: 1; // Behind image but visible
   }
 
   .image-wrapper {
