@@ -1,11 +1,23 @@
 // Environment configuration for test vs production
-// Use a getter function to avoid evaluating window during build time
+// Check environment variable first (available at build time), then fall back to window check at runtime
 const getIsTest = () => {
-  try {
-    return typeof window !== 'undefined' && window.location?.hostname === 'test.lilmagnetmemories.com';
-  } catch {
+  // First check if there's an environment variable set (for build time)
+  if (import.meta.env.VITE_IS_TEST_ENVIRONMENT === 'true') {
+    return true;
+  }
+  if (import.meta.env.VITE_IS_TEST_ENVIRONMENT === 'false') {
     return false;
   }
+  // At runtime, check window location (only if window is available)
+  try {
+    if (typeof window !== 'undefined' && window.location?.hostname) {
+      return window.location.hostname === 'test.lilmagnetmemories.com';
+    }
+  } catch {
+    // Silently fail if window is not available
+  }
+  // Default to false if we can't determine
+  return false;
 };
 
 export const config = {
