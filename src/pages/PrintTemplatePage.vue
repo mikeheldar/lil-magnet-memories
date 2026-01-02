@@ -221,12 +221,12 @@
                 class="print-square"
                 :class="{
                   'selected-photo': isPhotoSelected(page[gridIndex]),
-                  'test-environment': config.isTest
+                  'test-environment': config && config.isTest
                 }"
               >
                 <!-- Guide lines for test environment - window with window effect -->
                 <svg
-                  v-if="config.isTest"
+                  v-if="config && config.isTest"
                   class="guide-lines"
                   viewBox="0 0 100 100"
                   preserveAspectRatio="none"
