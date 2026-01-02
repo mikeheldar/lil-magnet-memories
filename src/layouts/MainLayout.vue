@@ -1598,7 +1598,7 @@ export default {
 // Each menu hides individually BEFORE covering the title or overlapping About/user
 // Breakpoints are conservative to ensure title is NEVER cut off and About doesn't overlap
 // Hide Specialty Products first (rightmost menu) - hide early to protect title and About
-@media (max-width: 1160px) {
+@media (max-width: 1100px) {
   // Increase specificity by including parent toolbar class
   .q-toolbar .shop-header-dropdowns .shop-header-btn-specialty,
   .shop-header-dropdowns .shop-header-btn-specialty.shop-header-btn-specialty {
@@ -1607,14 +1607,14 @@ export default {
 }
 
 // Hide Designer Magnets next (middle menu) - hide before reaching About button
-@media (max-width: 1240px) {
+@media (max-width: 1250px) {
   .shop-header-dropdowns .shop-header-btn-designer {
     display: none !important;
   }
 }
 
 // Hide Custom Photo Magnets last (leftmost menu) - hide well before About button to prevent overlap
-@media (max-width: 1300px) {
+@media (max-width: 1320px) {
   .shop-header-dropdowns .shop-header-btn-custom {
     display: none !important;
   }
