@@ -5,29 +5,46 @@ import { getAuth } from 'firebase/auth';
 import { config } from '../config/environment.js';
 
 // Firebase configuration - uses environment-specific config (with bucket normalization)
-const firebaseConfig = {
-  apiKey: config.firebase.apiKey,
-  authDomain: config.firebase.authDomain,
-  projectId: config.firebase.projectId,
-  // Respect the storageBucket provided by environment without normalization.
-  // This allows using either `<project-id>.appspot.com` or `<project-id>.firebasestorage.app`
-  // depending on how the Firebase project is provisioned.
-  storageBucket: (config.firebase.storageBucket || '').trim(),
-  messagingSenderId: config.firebase.messagingSenderId,
-  appId: config.firebase.appId,
+// Lazy initialization to avoid accessing config during build time
+let firebaseConfig = null;
+let app = null;
+
+const getFirebaseConfig = () => {
+  if (!firebaseConfig) {
+    firebaseConfig = {
+      apiKey: config.firebase.apiKey,
+      authDomain: config.firebase.authDomain,
+      projectId: config.firebase.projectId,
+      // Respect the storageBucket provided by environment without normalization.
+      // This allows using either `<project-id>.appspot.com` or `<project-id>.firebasestorage.app`
+      // depending on how the Firebase project is provisioned.
+      storageBucket: (config.firebase.storageBucket || '').trim(),
+      messagingSenderId: config.firebase.messagingSenderId,
+      appId: config.firebase.appId,
+    };
+  }
+  return firebaseConfig;
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Log which bucket is being used (for debugging test vs prod)
-console.log('Firebase Storage Bucket:', firebaseConfig.storageBucket);
-console.log('Firebase Project ID:', firebaseConfig.projectId);
-console.log('Environment:', config.environment);
-if (config.isTest && firebaseConfig.projectId !== 'lil-magnet-memories') {
-  console.warn('⚠️ Test environment is using a different Firebase project:', firebaseConfig.projectId);
-  console.warn('⚠️ Make sure this project exists and is configured, or set VITE_FIREBASE_PROJECT_ID_TEST=lil-magnet-memories to use the same project');
-}
+const getApp = () => {
+  if (!app) {
+    const cfg = getFirebaseConfig();
+    app = initializeApp(cfg);
+    
+    // Log which bucket is being used (for debugging test vs prod)
+    // Only log if window is available (runtime, not build time)
+    if (typeof window !== 'undefined') {
+      console.log('Firebase Storage Bucket:', cfg.storageBucket);
+      console.log('Firebase Project ID:', cfg.projectId);
+      console.log('Environment:', config.environment);
+      if (config.isTest && cfg.projectId !== 'lil-magnet-memories') {
+        console.warn('⚠️ Test environment is using a different Firebase project:', cfg.projectId);
+        console.warn('⚠️ Make sure this project exists and is configured, or set VITE_FIREBASE_PROJECT_ID_TEST=lil-magnet-memories to use the same project');
+      }
+    }
+  }
+  return app;
+};
 
 // Optionally initialize Firebase App Check (reCAPTCHA v3) when a site key is provided
 const appCheckSiteKey = import.meta.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
@@ -36,7 +53,7 @@ if (appCheckSiteKey) {
   import('firebase/app-check')
     .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
       try {
-        initializeAppCheck(app, {
+        initializeAppCheck(getApp(), {
           provider: new ReCaptchaV3Provider(appCheckSiteKey),
           isTokenAutoRefreshEnabled: true,
         });
@@ -60,7 +77,14 @@ if (appCheckSiteKey) {
 
 // Initialize Firestore (use default database - Firebase creates it automatically)
 // IMPORTANT: We're NOT enabling persistence to avoid offline mode issues
-export const db = getFirestore(app);
+// Lazy initialization to avoid accessing config during build time
+let dbInstance = null;
+export const db = (() => {
+  if (!dbInstance) {
+    dbInstance = getFirestore(getApp());
+  }
+  return dbInstance;
+})();
 
 // Track network initialization status
 let networkInitialized = false;
@@ -305,10 +329,23 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Initialize Storage
-export const storage = getStorage(app);
+// Initialize Storage - lazy initialization
+let storageInstance = null;
+export const storage = (() => {
+  if (!storageInstance) {
+    storageInstance = getStorage(getApp());
+  }
+  return storageInstance;
+})();
 
-// Initialize Auth
-export const auth = getAuth(app);
+// Initialize Auth - lazy initialization  
+let authInstance = null;
+export const auth = (() => {
+  if (!authInstance) {
+    authInstance = getAuth(getApp());
+  }
+  return authInstance;
+})();
 
-export default app;
+// Export app getter function
+export { getApp as default };
