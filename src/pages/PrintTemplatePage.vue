@@ -219,7 +219,7 @@
               <!-- Inner square frame for image -->
               <div
                 class="print-square"
-                :class="{ 
+                :class="{
                   'selected-photo': isPhotoSelected(page[gridIndex]),
                   'test-environment': config.isTest
                 }"
@@ -910,6 +910,7 @@ export default {
       handlePrint,
       handleImageLoad,
       autoZoom,
+      config, // Make config available in template
     };
   },
 };
