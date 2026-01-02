@@ -1580,7 +1580,7 @@ export default {
   z-index: 1; /* Lower than title (9999) to ensure title stays on top */
   margin-left: auto; /* Push to the right */
   flex-shrink: 0; /* Prevent shrinking */
-  margin-right: 100px; /* Shift menus 100px left to avoid About button */
+  margin-right: 85px; /* Shift menus 85px left to avoid About button (moved 15px right from 100px) */
   padding-left: 10px; /* Reduced padding to bring menus closer to title */
   // Don't allow menus to extend into the center 300px where title is (225px min-width + 75px padding)
   max-width: calc(50% - 150px); /* Leave 300px protected zone in center for title */
