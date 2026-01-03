@@ -348,11 +348,13 @@ export const themeService = {
     // Palette: Darkest Blue/Grey, Dark Blue-Grey, Medium Blue-Grey, Light Blue-Grey, Very Light Grey
     let primaryTextColor = '#8f44c4'; // Default purple for Silver Cris-Cross and White Lattus
     if (isLineAModernBlack) {
-      // Dark header background - use lighter blue-grey for contrast (Light Blue-Grey from palette)
-      primaryTextColor = '#9CA3AF'; // Light blue-grey - good contrast on dark background
+      // Dark header background but white content area - use darker blue-grey for better contrast
+      // Using Dark Blue-Grey from palette for strong contrast on white backgrounds
+      primaryTextColor = '#374151'; // Dark blue-grey - much darker for better contrast
     } else if (isLineAModernWhite) {
-      // Light header background - use darker blue-grey for contrast (Dark Blue-Grey from palette)
-      primaryTextColor = '#4B5563'; // Dark blue-grey - good contrast on light background
+      // Light header background and white content area - use darker blue-grey for better contrast
+      // Using darker shade from palette for strong contrast on white backgrounds
+      primaryTextColor = '#374151'; // Dark blue-grey - same as Black Header for consistent contrast
     }
     // else: keep purple for White Lattus and Silver Cris-Cross
 
