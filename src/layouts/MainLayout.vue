@@ -307,6 +307,7 @@
       v-model="leftDrawerOpen"
       bordered
       class="bg-grey-1 drawer-under-header"
+      :overlay="false"
       :breakpoint="1024"
       :width="300"
     >
