@@ -310,6 +310,7 @@
       :overlay="false"
       :breakpoint="0"
       :width="300"
+      :style="{ top: '84px', position: 'fixed', height: 'calc(100vh - 84px)' }"
     >
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
