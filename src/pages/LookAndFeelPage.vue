@@ -158,7 +158,18 @@ export default {
       try {
         loading.value = true;
         const allThemes = await themeService.getAllThemes();
-        themes.value = allThemes;
+        
+        // Sort themes: LineA Modern Black Header first, then others alphabetically
+        themes.value = allThemes.sort((a, b) => {
+          const aIsBlackHeader = a.name === 'LineA Modern Black Header';
+          const bIsBlackHeader = b.name === 'LineA Modern Black Header';
+          
+          if (aIsBlackHeader && !bIsBlackHeader) return -1;
+          if (!aIsBlackHeader && bIsBlackHeader) return 1;
+          
+          // Otherwise sort alphabetically
+          return a.name.localeCompare(b.name);
+        });
 
         const active = await themeService.getActiveTheme();
         activeTheme.value = active;

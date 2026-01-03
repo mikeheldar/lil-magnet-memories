@@ -1,5 +1,66 @@
 // app global css in SCSS form
 
+// ============================================================================
+// DEFAULT STYLES - Match LineA Modern Black Header Theme
+// These styles ensure the site looks correct on initial load before theme loads
+// ============================================================================
+
+/* Default header - black gradient matching LineA Modern Black Header */
+.q-header {
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
+  background-color: #000000 !important;
+  min-height: 84px !important; /* 20px thicker than default (64px) */
+}
+
+.q-header .q-toolbar {
+  background: transparent !important;
+  min-height: 84px !important;
+}
+
+/* Default header text - white, cursive title */
+.q-header .q-toolbar-title span,
+.q-header .q-toolbar__title span {
+  font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+  font-weight: 400 !important;
+  color: #ffffff !important;
+}
+
+/* Default header buttons and icons - white */
+.q-header .q-btn,
+.q-header .q-btn .q-icon,
+.q-header .q-chip:not(.test-environment-chip) {
+  color: #ffffff !important;
+}
+
+/* Default page background - clean white */
+.q-page-container {
+  background: #ffffff !important;
+}
+
+/* Default buttons - black matching LineA Modern Black Header */
+body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  border: 1px solid #1a1a1a !important;
+  border-radius: 10px !important;
+}
+
+/* Default text-primary color - dark blue-grey matching LineA Modern Black Header */
+:root {
+  --theme-primary-text-color: #374151 !important;
+}
+
+.text-primary,
+a.text-primary,
+[class*="text-primary"] {
+  color: var(--theme-primary-text-color) !important;
+}
+
+// ============================================================================
+// END DEFAULT STYLES
+// ============================================================================
+
 // Global button styling - use theme color for button backgrounds
 // Target all buttons with primary/secondary colors, including those using bg-primary/bg-secondary classes
 // Use high specificity to override Quasar's default styles

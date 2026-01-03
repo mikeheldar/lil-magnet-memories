@@ -9,11 +9,11 @@
           icon="menu"
           @click="toggleLeftDrawer"
           aria-label="Menu"
-          class="q-mr-sm"
+          class="q-mr-sm hamburger-menu-btn"
         />
 
         <!-- Logo on the left -->
-        <q-btn flat dense @click="$router.push('/')" class="q-mr-md">
+        <q-btn flat dense @click="$router.push('/')" class="q-mr-md header-element-responsive logo-header-btn">
           <img
             src="/assets/lil-magnet-memories-logo.png"
             alt="Lil Magnet Memories"
@@ -28,7 +28,7 @@
           color="orange"
           text-color="white"
           size="sm"
-          class="q-mr-md test-environment-chip"
+          class="q-mr-md test-environment-chip header-element-responsive"
           icon="bug_report"
         >
           <span class="gt-xs">TEST</span>
@@ -156,7 +156,7 @@
         <q-btn
           flat
           dense
-          class="gt-xs q-mr-sm"
+          class="gt-xs q-mr-sm header-element-responsive about-header-btn"
           label="About"
           :style="headerButtonStyle"
           @click="$router.push('/about')"
@@ -298,8 +298,15 @@
       </q-card>
     </q-dialog>
 
-    <!-- Left Drawer for Navigation -->
-    <q-drawer v-model="leftDrawerOpen" bordered class="bg-grey-1">
+    <!-- Left Drawer for Navigation - positioned under header -->
+    <q-drawer 
+      v-model="leftDrawerOpen" 
+      bordered 
+      class="bg-grey-1 drawer-under-header"
+      :overlay="false"
+      :breakpoint="0"
+      :width="300"
+    >
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
@@ -1409,6 +1416,20 @@ export default {
 </script>
 
 <style lang="scss">
+// Hamburger menu icon - bigger size
+.hamburger-menu-btn {
+  .q-icon {
+    font-size: 28px !important; // Increased from default ~24px
+  }
+}
+
+// Drawer positioned under header (not overlay)
+.drawer-under-header {
+  top: 84px !important; // Position below header (84px height)
+  height: calc(100vh - 84px) !important; // Full height minus header
+  z-index: 2000 !important; // Below header but above content
+}
+
 // Default header gradient - will be overridden by theme styles
 .q-header:not([data-theme-override]) {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
@@ -1620,35 +1641,31 @@ export default {
   }
 }
 
-// When left drawer is open, adjust breakpoints to account for reduced space
-// Drawer is typically ~300px wide, so menus need to hide much earlier
-.q-toolbar.drawer-open {
-  // Reduce max-width even more when drawer is open to protect title
-  .shop-header-dropdowns {
-    max-width: calc(50% - 200px); /* Larger protected zone when drawer open */
-  }
+// Responsive header element hiding - hide in order: test pill -> About -> logo -> (never title)
+// Priority order: Test chip (first to hide) -> About button -> Logo -> Title (never hidden)
 
-  // Hide Specialty Products earlier when drawer is open
-  @media (max-width: 1750px) {
-    .shop-header-dropdowns .shop-header-btn-specialty {
-      display: none !important;
-    }
-  }
-
-  // Hide Designer Magnets earlier when drawer is open
-  @media (max-width: 1650px) {
-    .shop-header-dropdowns .shop-header-btn-designer {
-      display: none !important;
-    }
-  }
-
-  // Hide Custom Photo Magnets earlier when drawer is open
-  @media (max-width: 1800px) {
-    .shop-header-dropdowns .shop-header-btn-custom {
-      display: none !important;
-    }
+// Hide test environment chip first (smallest screen)
+@media (max-width: 1200px) {
+  .test-environment-chip.header-element-responsive {
+    display: none !important;
   }
 }
+
+// Hide About button next
+@media (max-width: 1000px) {
+  .about-header-btn.header-element-responsive {
+    display: none !important;
+  }
+}
+
+// Hide logo last (before title)
+@media (max-width: 800px) {
+  .logo-header-btn.header-element-responsive {
+    display: none !important;
+  }
+}
+
+// Title is NEVER hidden - it's always visible
 
 // Hide entire dropdown container only on mobile (< 960px) - menus are in sidebar
 @media (max-width: 960px) {

@@ -1690,6 +1690,7 @@ export default {
   width: calc(100% - 12px); // Account for border
   max-width: calc(100% - 12px);
   max-height: calc(100% - 12px);
+  min-width: 280px; // Match CTA button width (approximately)
   height: auto;
   display: flex; // Use flexbox for better centering
   justify-content: center; // Center content horizontally
@@ -1700,6 +1701,7 @@ export default {
 .easel-image {
   width: 100%;
   max-width: 100%; // Ensure image never exceeds wrapper width
+  min-width: 280px; // Match CTA button width - ensure image is at least as wide as button
   max-height: 100%; // Ensure image never exceeds wrapper height
   height: auto;
   object-fit: contain;
@@ -1720,7 +1722,7 @@ export default {
 }
 
 // Carousel dots - positioned 10px above the bottom of the image (inside wrapper)
-// Scale with image size to stay within boundaries
+// Scale with image size to stay within boundaries - NEVER exceed image width
 .easel-carousel-dots {
   position: absolute;
   bottom: clamp(8px, 1.5%, 10px); // Scale with image, min 8px, max 10px
@@ -1729,9 +1731,14 @@ export default {
   display: flex;
   gap: clamp(6px, 1.2%, 8px); // Scale gap with image
   z-index: 10;
-  // Ensure dots container doesn't exceed image width
-  max-width: 90%; // Leave 10% margin on each side
+  // CRITICAL: Ensure dots container NEVER exceeds image width
+  max-width: 100%; // Never exceed parent (image wrapper) width
+  width: auto; // Let content determine width
   padding: 0 clamp(4px, 1%, 8px); // Padding that scales
+  // Constrain to image bounds - use calc to account for padding
+  box-sizing: border-box;
+  // Ensure dots stay within image boundaries
+  overflow: hidden; // Hide any dots that would overflow
 }
 
 .carousel-dot {
