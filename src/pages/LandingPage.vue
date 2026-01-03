@@ -69,9 +69,6 @@
               Start Creating Magnets
             </q-btn>
 
-            <div class="text-caption text-silver-dark q-mt-md">
-              No sign-in required • Upload photos and specify quantities
-            </div>
           </div>
         </div>
 

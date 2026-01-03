@@ -250,13 +250,15 @@
           >
             <q-tooltip>Start Creating Magnets</q-tooltip>
           </q-btn>
+          <!-- Info Icon (small screens only, hidden on medium+) -->
           <q-btn
             flat
             dense
             icon="info"
+            :style="headerButtonStyle"
             @click="$router.push('/about')"
             aria-label="About Li'l Magnet Memories"
-            class="q-ml-xs"
+            class="q-ml-xs lt-md"
           >
             <q-tooltip>About Li'l Magnet Memories</q-tooltip>
           </q-btn>
@@ -308,7 +310,7 @@
       bordered
       class="bg-grey-1 drawer-under-header"
       :overlay="false"
-      :breakpoint="1024"
+      :breakpoint="0"
       :width="300"
     >
       <q-list>
