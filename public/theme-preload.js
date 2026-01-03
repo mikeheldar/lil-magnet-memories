@@ -380,7 +380,11 @@
 
   // Also apply immediately if head is available
   if (document.head) {
-    applyCachedTheme();
+    const hasCachedTheme = applyCachedTheme();
+    // If no cached theme, apply default black header theme
+    if (!hasCachedTheme) {
+      applyDefaultBlackHeaderTheme();
+    }
   }
 })();
 

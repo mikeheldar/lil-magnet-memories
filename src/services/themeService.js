@@ -965,6 +965,22 @@ export const themeService = {
         if (storedTheme) {
           return JSON.parse(storedTheme);
         }
+
+        // If no cached theme, try to get and apply "LineA Modern Black Header" as default
+        console.log('[ThemeService] No cached theme, attempting to load LineA Modern Black Header as default');
+        try {
+          const allThemes = await this.getAllThemes();
+          const blackHeaderTheme = allThemes.find(theme => theme.name === 'LineA Modern Black Header');
+          if (blackHeaderTheme) {
+            console.log('[ThemeService] Found LineA Modern Black Header theme, applying as default');
+            this.applyTheme(blackHeaderTheme);
+            // Set it as active theme in Firebase
+            await this.setActiveTheme(blackHeaderTheme.id);
+            return blackHeaderTheme;
+          }
+        } catch (error) {
+          console.error('[ThemeService] Error loading default theme:', error);
+        }
       }
     } catch (error) {
       // Don't log timeout or missing document as errors
@@ -982,6 +998,22 @@ export const themeService = {
         } catch (parseError) {
           console.error('[ThemeService] Error parsing cached theme:', parseError);
         }
+      }
+
+      // If no cached theme, try to get and apply "LineA Modern Black Header" as default
+      console.log('[ThemeService] No cached theme after error, attempting to load LineA Modern Black Header as default');
+      try {
+        const allThemes = await this.getAllThemes();
+        const blackHeaderTheme = allThemes.find(theme => theme.name === 'LineA Modern Black Header');
+        if (blackHeaderTheme) {
+          console.log('[ThemeService] Found LineA Modern Black Header theme, applying as default');
+          this.applyTheme(blackHeaderTheme);
+          // Set it as active theme in Firebase
+          await this.setActiveTheme(blackHeaderTheme.id);
+          return blackHeaderTheme;
+        }
+      } catch (defaultThemeError) {
+        console.error('[ThemeService] Error loading default theme:', defaultThemeError);
       }
     }
 
