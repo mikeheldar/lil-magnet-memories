@@ -1259,7 +1259,7 @@ export default {
   flex-direction: row; // Horizontal layout
   gap: 0.5rem; // Space between buttons
   align-items: center;
-  
+
   .action-btn {
     // Ensure all buttons have the same rounded shape (not conjoined)
     border-radius: 10px !important; // Match global button border-radius
@@ -1311,12 +1311,12 @@ export default {
       &.action-buttons {
         width: 100%;
         flex-direction: column; // Stack vertically on mobile
-        
+
         .action-btn {
           width: 100%;
         }
       }
-      
+
       // Legacy support for q-btn-group (if any remain)
       .q-btn-group {
         width: 100%;

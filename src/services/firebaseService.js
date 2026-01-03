@@ -17,10 +17,11 @@ import {
   uploadBytesResumable,
   getDownloadURL,
   deleteObject,
+  getStorage,
 } from 'firebase/storage';
 import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
-import { db, storage } from '../firebase/config.js';
+import { db, storage, default as getApp } from '../firebase/config.js';
 import { config } from '../config/environment.js';
 
 export const DEFAULT_SHIPPING_OPTIONS = [
@@ -208,6 +209,10 @@ class FirebaseService {
     console.log(`Starting parallel upload of ${photos.length} photos...`);
     const timestamp = Date.now();
 
+    // Get the actual storage instance (not the Proxy) for use with ref()
+    // The Proxy works for property access but ref() needs the actual instance
+    const storageInstance = getStorage(getApp());
+
     // Track progress for each photo
     const progressMap = new Map();
     const totalSize = photos.reduce((sum, photo) => sum + (photo.size || 0), 0);
@@ -273,7 +278,7 @@ class FirebaseService {
         .replace(/[#\[\]()]/g, '_') // Replace special chars that can cause issues
         .replace(/\s+/g, '_'); // Replace spaces with underscores
       const fileName = `orders/${timestamp}_${i}_${sanitizedName}`;
-      const storageRef = ref(storage, fileName);
+      const storageRef = ref(storageInstance, fileName);
 
       try {
         console.log(

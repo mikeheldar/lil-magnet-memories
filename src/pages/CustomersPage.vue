@@ -7,6 +7,16 @@
       <div class="text-subtitle1 text-grey-7">
         View all customers who have placed orders
       </div>
+      <!-- Export Button (Test Environment Only) -->
+      <div v-if="isTestEnvironment" class="q-mt-md">
+        <q-btn
+          color="primary"
+          icon="download"
+          label="Export to CSV"
+          @click="exportToCSV"
+          :disable="loading || customers.length === 0"
+        />
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -239,6 +249,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { firebaseService } from '../services/firebaseService.js';
 import { useQuasar } from 'quasar';
+import { config } from '../config/environment.js';
 
 export default {
   name: 'CustomersPage',
@@ -363,6 +374,89 @@ export default {
       showOrdersDialog.value = true;
     };
 
+    // Check if test environment
+    const isTestEnvironment = computed(() => {
+      return config?.isTest === true;
+    });
+
+    // Export customers to CSV
+    const exportToCSV = () => {
+      if (customers.value.length === 0) {
+        $q.notify({
+          type: 'warning',
+          message: 'No customers to export',
+          position: 'top',
+        });
+        return;
+      }
+
+      // CSV Headers
+      const headers = [
+        'First Name',
+        'Last Name',
+        'Email',
+        'Phone',
+        'Total Orders',
+        'Total Magnets',
+        'First Order Date',
+        'Last Order Date',
+      ];
+
+      // Convert customers to CSV rows
+      const rows = customers.value.map((customer) => {
+        const formatDateForCSV = (timestamp) => {
+          if (!timestamp) return '';
+          const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+          return date.toLocaleString();
+        };
+
+        return [
+          customer.firstName || '',
+          customer.lastName || '',
+          customer.email || '',
+          customer.phone || '',
+          customer.totalOrders || 0,
+          customer.totalMagnets || 0,
+          formatDateForCSV(customer.firstOrderDate),
+          formatDateForCSV(customer.lastOrderDate),
+        ];
+      });
+
+      // Escape CSV values (handle commas, quotes, newlines)
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return '';
+        const stringValue = String(value);
+        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+          return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+      };
+
+      // Combine headers and rows
+      const csvContent = [
+        headers.map(escapeCSV).join(','),
+        ...rows.map((row) => row.map(escapeCSV).join(',')),
+      ].join('\n');
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `customers_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      $q.notify({
+        type: 'positive',
+        message: `Exported ${customers.value.length} customers to CSV`,
+        position: 'top',
+      });
+    };
+
     onMounted(() => {
       loadCustomers();
     });
@@ -380,6 +474,8 @@ export default {
       sendEmail,
       callPhone,
       viewAllOrders,
+      isTestEnvironment,
+      exportToCSV,
     };
   },
 };
