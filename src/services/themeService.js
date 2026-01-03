@@ -336,10 +336,64 @@ export const themeService = {
       existingStyle.remove();
     }
 
+    // Determine theme-specific text-primary color
+    const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
+    const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
+    const isLineAModernBlack = theme.name && theme.name.includes('LineA Modern Black Header');
+    const isLineAModernWhite = theme.name && theme.name.includes('LineA Modern White Header');
+
+    // Define theme-specific primary text colors
+    // Silver Cris-Cross and White Lattus: keep purple (#8f44c4)
+    // LineA Modern themes: use blue-grey palette colors
+    // Palette: Darkest Blue/Grey, Dark Blue-Grey, Medium Blue-Grey, Light Blue-Grey, Very Light Grey
+    let primaryTextColor = '#8f44c4'; // Default purple for Silver Cris-Cross and White Lattus
+    if (isLineAModernBlack) {
+      // Dark header background - use lighter blue-grey for contrast (Light Blue-Grey from palette)
+      primaryTextColor = '#9CA3AF'; // Light blue-grey - good contrast on dark background
+    } else if (isLineAModernWhite) {
+      // Light header background - use darker blue-grey for contrast (Dark Blue-Grey from palette)
+      primaryTextColor = '#4B5563'; // Dark blue-grey - good contrast on light background
+    }
+    // else: keep purple for White Lattus and Silver Cris-Cross
+
+    // Create CSS for theme-aware text-primary colors
+    const textPrimaryCSS = `
+      /* Theme-aware text-primary color */
+      :root {
+        --theme-primary-text-color: ${primaryTextColor} !important;
+      }
+
+      /* Override all text-primary classes to use theme color */
+      .text-primary,
+      a.text-primary,
+      .q-item-label.text-primary,
+      .text-h4.text-primary,
+      .text-h5.text-primary,
+      .text-h6.text-primary,
+      .text-subtitle1.text-primary,
+      .text-subtitle2.text-primary,
+      .text-body1.text-primary,
+      .text-body2.text-primary,
+      .text-weight-medium.text-primary,
+      .text-weight-bold.text-primary,
+      [class*="text-primary"] {
+        color: var(--theme-primary-text-color) !important;
+      }
+
+      /* Also handle links with text-primary */
+      a.text-primary:link,
+      a.text-primary:visited,
+      a.text-primary:hover,
+      a.text-primary:active {
+        color: var(--theme-primary-text-color) !important;
+      }
+    `;
+
     // Create new style element and append at the end of head for maximum specificity
     const style = document.createElement('style');
     style.id = 'dynamic-theme-styles';
-    style.textContent = theme.styles;
+    // Combine theme styles with text-primary overrides
+    style.textContent = textPrimaryCSS + '\n' + (theme.styles || '');
     // Set highest priority by appending at the very end and using !important
     // Also try to ensure it loads after all other stylesheets
     if (document.head.lastChild && document.head.lastChild.tagName === 'STYLE') {
