@@ -1684,7 +1684,7 @@ export default {
   justify-content: center;
   margin-top: 0;
   padding-top: 0;
-  align-items: flex-start;
+  align-items: flex-start; // Always align to top
   position: relative;
   cursor: pointer;
   -webkit-user-select: none;
@@ -1694,6 +1694,21 @@ export default {
   img {
     display: block;
     pointer-events: none; // Prevent image from blocking container clicks
+  }
+}
+
+// On medium and large screens, ensure easel aligns to top of title
+@media (min-width: 600px) {
+  .easel-container {
+    align-items: flex-start !important; // Force top alignment
+  }
+
+  .easel-image-wrapper {
+    align-items: flex-start !important; // Align image to top
+  }
+
+  .easel-image {
+    object-position: center top !important; // Center horizontally, top vertically
   }
 }
 
