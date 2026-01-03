@@ -58,6 +58,7 @@
 
           <div class="hero-actions">
             <q-btn
+              v-if="showCTAButton"
               @click="goToUpload"
               color="primary"
               size="xl"
@@ -1142,6 +1143,19 @@ export default {
       return event?.eventLink || null;
     });
 
+    // Show CTA button on larger screens OR when at market event
+    const showCTAButton = computed(() => {
+      // Check window width safely (may not be available during SSR)
+      if (typeof window !== 'undefined') {
+        // Always show on larger screens (gt-sm = > 600px)
+        if (window.innerWidth > 600) {
+          return true;
+        }
+      }
+      // On small screens, only show if at market event
+      return hasActiveEvent.value;
+    });
+
     // Safe notify wrapper
     const safeNotify = (options) => {
       try {
@@ -1276,6 +1290,7 @@ export default {
       activeMarketEventLink,
       isCustomerAtEvent,
       isTestEnvironment,
+      showCTAButton,
       easelImages,
       currentEaselImage,
       easelImageIndex,
@@ -1674,7 +1689,7 @@ export default {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: hidden; // Prevent images from overflowing the container
+  overflow: visible; // Allow image to be visible
 
   img {
     display: block;
@@ -1687,58 +1702,85 @@ export default {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 12px); // Account for border
-  max-width: calc(100% - 12px);
-  max-height: calc(100% - 12px);
-  min-width: 280px; // Match CTA button width (approximately)
-  height: auto;
-  display: flex; // Use flexbox for better centering
-  justify-content: center; // Center content horizontally
-  align-items: flex-start; // Align to top
-  overflow: hidden; // Prevent image from overflowing wrapper
+  width: 100%; // Full width of container
+  max-width: 100%;
+  height: 100%; // Full height of container
+  max-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center; // Center vertically and horizontally
+  overflow: hidden; // Prevent overflow
+  box-sizing: border-box;
+  padding: 10px; // Small padding to prevent edge clipping
 }
 
 .easel-image {
-  width: 100%;
-  max-width: 100%; // Ensure image never exceeds wrapper width
-  min-width: 280px; // Match CTA button width - ensure image is at least as wide as button
-  max-height: 100%; // Ensure image never exceeds wrapper height
+  // Ensure image fits within container while maintaining aspect ratio
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
-  object-fit: contain;
-  object-position: center top; /* Center horizontally, align to top vertically */
-  display: block; /* Ensure block display */
+  min-width: 280px; // Match CTA button width on mobile
+  object-fit: contain; // Maintain aspect ratio, fit within bounds - prevents cut-off
+  object-position: center; // Center the image
+  display: block;
   border-radius: 17px;
-  // Add silver border around images with padding to keep image inside
+  // Border always around the photo - no internal padding that creates white space
   border: 3px solid rgba(192, 192, 192, 0.8);
-  padding: 2px;
-  box-sizing: border-box;
-  // Use filter drop-shadow for natural, unclipped shadows that fade smoothly
+  padding: 0; // No padding inside border
+  box-sizing: border-box; // Border included in width/height calculations
+  // Use filter drop-shadow for natural, unclipped shadows
   filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.12))
           drop-shadow(0 8px 50px rgba(0, 0, 0, 0.08))
           drop-shadow(0 2px 15px rgba(0, 0, 0, 0.1));
   transition: opacity 0.5s ease;
-  display: block;
-  overflow: hidden; // Clip image to border radius
+  // Ensure image content is always visible within border
+  background: transparent;
 }
 
-// Carousel dots - positioned 10px above the bottom of the image (inside wrapper)
-// Scale with image size to stay within boundaries - NEVER exceed image width
+// On mobile, ensure easel image matches CTA button width and resizes properly
+@media (max-width: 600px) {
+  .easel-image-wrapper {
+    width: 100%;
+    padding: 10px 20px; // Match page padding, prevent edge clipping
+    box-sizing: border-box;
+  }
+  
+  .easel-image {
+    width: 100%; // Full width of wrapper on mobile
+    min-width: 280px; // Match button width - ensures consistency
+    max-width: 100%; // Never exceed wrapper
+    // Ensure proper resizing without cut-off
+    object-fit: contain !important;
+    object-position: center !important;
+  }
+}
+
+// Carousel dots - positioned above the bottom of the image, always within image bounds
 .easel-carousel-dots {
   position: absolute;
-  bottom: clamp(8px, 1.5%, 10px); // Scale with image, min 8px, max 10px
+  bottom: 12px; // Fixed distance from bottom
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: clamp(6px, 1.2%, 8px); // Scale gap with image
+  gap: 8px; // Fixed gap between dots
   z-index: 10;
-  // CRITICAL: Ensure dots container NEVER exceeds image width
+  // CRITICAL: Dots container must NEVER exceed image width
+  // Use the image's actual width as constraint
   max-width: 100%; // Never exceed parent (image wrapper) width
-  width: auto; // Let content determine width
-  padding: 0 clamp(4px, 1%, 8px); // Padding that scales
-  // Constrain to image bounds - use calc to account for padding
+  width: fit-content; // Fit content width
+  padding: 0 8px; // Small padding
   box-sizing: border-box;
-  // Ensure dots stay within image boundaries
-  overflow: hidden; // Hide any dots that would overflow
+  // Ensure dots are centered and contained within image
+  justify-content: center;
+  align-items: center;
+  // Constrain to image bounds - use calc to ensure dots stay within image
+  // The dots should be within the image border, not outside
+  left: 50%;
+  transform: translateX(-50%);
+  // Ensure dots don't overflow image boundaries
+  overflow: hidden; // Hide any overflow
+  white-space: nowrap; // Keep dots on one line
 }
 
 .carousel-dot {

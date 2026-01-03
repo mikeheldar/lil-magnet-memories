@@ -1,6 +1,10 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated :class="headerClasses" :style="headerInlineStyle">
+    <q-header 
+      elevated 
+      :class="[headerClasses, { 'header-hidden': !headerVisible }]"
+      :style="headerInlineStyle"
+    >
       <q-toolbar :class="{ 'drawer-open': leftDrawerOpen }">
         <!-- Menu button (always visible) -->
         <q-btn
@@ -299,9 +303,9 @@
     </q-dialog>
 
     <!-- Left Drawer for Navigation - positioned under header -->
-    <q-drawer 
-      v-model="leftDrawerOpen" 
-      bordered 
+    <q-drawer
+      v-model="leftDrawerOpen"
+      bordered
       class="bg-grey-1 drawer-under-header"
       :overlay="false"
       :breakpoint="0"
@@ -707,6 +711,30 @@ export default {
     const isAdmin = ref(false);
     const leftDrawerOpen = ref(false);
     const { cartItemCount } = useCart();
+    
+    // Header scroll behavior - hide on scroll down, show on scroll up
+    const headerVisible = ref(true);
+    let lastScrollTop = 0;
+    const scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
+    
+    const handleScroll = () => {
+      const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Only trigger if scroll distance is significant
+      if (Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {
+        return;
+      }
+      
+      if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
+        // Scrolling down - hide header
+        headerVisible.value = false;
+      } else {
+        // Scrolling up - show header
+        headerVisible.value = true;
+      }
+      
+      lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+    };
     const userProfile = ref({
       displayName: null,
       photoURL: null,
@@ -1010,6 +1038,14 @@ export default {
     onMounted(() => {
       checkActiveTheme();
       // Real-time listener in themeService handles theme changes automatically
+      
+      // Add scroll listener for header hide/show behavior
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    });
+    
+    onUnmounted(() => {
+      // Remove scroll listener on unmount
+      window.removeEventListener('scroll', handleScroll);
     });
 
     // Listen for theme changes and reapply to ensure persistence
@@ -1379,6 +1415,7 @@ export default {
       pageTitle,
       headerClasses,
       headerInlineStyle,
+      headerVisible,
       headerTitleStyle,
       headerTitleSpanStyle,
       userNameStyle,
@@ -1424,10 +1461,39 @@ export default {
 }
 
 // Drawer positioned under header (not overlay)
-.drawer-under-header {
+// Override Quasar's default drawer positioning
+.q-drawer.drawer-under-header {
   top: 84px !important; // Position below header (84px height)
   height: calc(100vh - 84px) !important; // Full height minus header
   z-index: 2000 !important; // Below header but above content
+  position: fixed !important; // Fixed positioning
+}
+
+// Ensure drawer slides from left edge when open
+.q-layout .q-drawer.drawer-under-header {
+  &.q-drawer--left {
+    left: 0 !important;
+  }
+  
+  // When drawer is open (not mini)
+  &:not(.q-drawer--mini) {
+    transform: translateX(0) !important;
+  }
+  
+  // When drawer is closed
+  &.q-drawer--mini,
+  &[aria-hidden="true"] {
+    transform: translateX(-100%) !important;
+  }
+}
+
+// Header scroll behavior - hide on scroll down, show on scroll up
+.q-header {
+  transition: transform 0.3s ease-in-out !important;
+  
+  &.header-hidden {
+    transform: translateY(-100%) !important;
+  }
 }
 
 // Default header gradient - will be overridden by theme styles
