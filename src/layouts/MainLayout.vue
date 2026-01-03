@@ -1041,6 +1041,27 @@ export default {
 
       // Add scroll listener for header hide/show behavior
       window.addEventListener('scroll', handleScroll, { passive: true });
+      
+      // Force drawer positioning below header after mount
+      const forceDrawerPosition = () => {
+        const drawer = document.querySelector('.q-drawer.drawer-under-header');
+        if (drawer) {
+          drawer.style.top = '84px';
+          drawer.style.height = 'calc(100vh - 84px)';
+          drawer.style.position = 'fixed';
+          drawer.style.zIndex = '1000';
+        }
+      };
+      
+      // Set position immediately and on drawer state changes
+      forceDrawerPosition();
+      setTimeout(forceDrawerPosition, 100);
+      setTimeout(forceDrawerPosition, 500);
+      
+      // Watch for drawer open/close and reapply positioning
+      watch(leftDrawerOpen, () => {
+        setTimeout(forceDrawerPosition, 50);
+      });
     });
 
     onUnmounted(() => {
