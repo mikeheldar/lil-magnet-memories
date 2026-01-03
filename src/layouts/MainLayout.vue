@@ -1479,52 +1479,9 @@ export default {
   // No need to override - the layout view handles it
 }
 
-// Ensure drawer slides from left edge when open
-.q-layout .q-drawer.drawer-under-header {
-  // Force positioning regardless of Quasar's state
-  top: 84px !important; // ALWAYS start below header
-  position: fixed !important; // Override any absolute positioning
-
-  &.q-drawer--left {
-    left: 0 !important;
-  }
-
-  // When drawer is open (not mini)
-  &:not(.q-drawer--mini) {
-    transform: translateX(0) !important;
-    top: 84px !important; // Always start below header
-  }
-
-  // When drawer is closed
-  &.q-drawer--mini,
-  &[aria-hidden="true"] {
-    transform: translateX(-100%) !important;
-    top: 84px !important; // Even when closed, stay below header
-  }
-}
-
-// Nuclear option: override ALL possible Quasar drawer positioning
-[class*="q-drawer"].drawer-under-header,
-[class^="q-drawer"].drawer-under-header {
-  top: 84px !important;
-  position: fixed !important;
-}
-
-// Override any Quasar default positioning that might place drawer at top: 0
-// Use maximum specificity to override Quasar's internal styles
-.q-layout__section--marginal .q-drawer.drawer-under-header,
-.q-layout__section--marginal.q-drawer.drawer-under-header,
-.q-layout .q-layout__section--marginal .q-drawer.drawer-under-header {
-  top: 84px !important; // Force position below header
-  position: fixed !important; // Override any absolute positioning
-}
-
-// Also target the drawer content wrapper if Quasar uses one
-.q-drawer__content.drawer-under-header,
-.q-drawer.drawer-under-header .q-drawer__content {
-  top: 0 !important; // Content starts at top of drawer (which is at 84px)
-  position: relative !important;
-}
+// Quasar's layout view "lHh Lpr lFf" naturally positions drawer below header
+// The 'p' in 'Lpr' means the drawer is positioned below the header
+// No CSS overrides needed - Quasar handles this automatically
 
 // Header scroll behavior - hide on scroll down, show on scroll up
 // Note: z-index is set above in the drawer section
