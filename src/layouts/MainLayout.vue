@@ -1467,23 +1467,17 @@ export default {
 }
 
 // Drawer positioned under header (not overlay)
-// Override Quasar's default drawer positioning with maximum specificity
-.q-drawer.drawer-under-header,
-.q-layout .q-drawer.drawer-under-header,
-.q-layout__section--marginal .q-drawer.drawer-under-header,
-body .q-drawer.drawer-under-header {
+// Override Quasar's default drawer positioning
+.q-drawer.drawer-under-header {
   top: 84px !important; // Position exactly at bottom edge of header (84px height)
   bottom: 0 !important; // Extend to bottom of viewport
   height: calc(100vh - 84px) !important; // Full height minus header
   max-height: calc(100vh - 84px) !important; // Prevent overflow
-  min-height: calc(100vh - 84px) !important; // Ensure it fills space
   z-index: 1000 !important; // Below header (3000) but above content
-  position: fixed !important; // Fixed positioning relative to viewport
+  position: fixed !important; // Fixed positioning
   margin-top: 0 !important; // No margin - flush with header
   padding-top: 0 !important; // No padding - flush with header
   border-top: none !important; // Remove any top border that might create visual gap
-  // Override any absolute positioning Quasar might use
-  left: 0 !important; // Start from left edge
 }
 
 // Ensure drawer slides from left edge when open
@@ -1507,8 +1501,19 @@ body .q-drawer.drawer-under-header {
 }
 
 // Override any Quasar default positioning that might place drawer at top: 0
-.q-layout__section--marginal .q-drawer.drawer-under-header {
+// Use maximum specificity to override Quasar's internal styles
+.q-layout__section--marginal .q-drawer.drawer-under-header,
+.q-layout__section--marginal.q-drawer.drawer-under-header,
+.q-layout .q-layout__section--marginal .q-drawer.drawer-under-header {
   top: 84px !important; // Force position below header
+  position: fixed !important; // Override any absolute positioning
+}
+
+// Also target the drawer content wrapper if Quasar uses one
+.q-drawer__content.drawer-under-header,
+.q-drawer.drawer-under-header .q-drawer__content {
+  top: 0 !important; // Content starts at top of drawer (which is at 84px)
+  position: relative !important;
 }
 
 // Header scroll behavior - hide on scroll down, show on scroll up
