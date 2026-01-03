@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="hHh lpR fFf">
     <q-header
       elevated
       :class="[headerClasses, { 'header-hidden': !headerVisible }]"
@@ -1042,35 +1042,7 @@ export default {
       // Add scroll listener for header hide/show behavior
       window.addEventListener('scroll', handleScroll, { passive: true });
 
-      // Force drawer positioning below header after mount
-      // Simple, reliable approach without performance issues
-      const forceDrawerPosition = () => {
-        try {
-          const drawer = document.querySelector('.q-drawer');
-          if (drawer) {
-            const header = document.querySelector('.q-header');
-            const headerHeight = header ? header.offsetHeight : 84;
-
-            // Force positioning
-            drawer.style.setProperty('top', `${headerHeight}px`, 'important');
-            drawer.style.setProperty('height', `calc(100vh - ${headerHeight}px)`, 'important');
-            drawer.style.setProperty('position', 'fixed', 'important');
-            drawer.style.setProperty('z-index', '1000', 'important');
-          }
-        } catch (error) {
-          console.error('Error positioning drawer:', error);
-        }
-      };
-
-      // Set position after mount with reasonable delays
-      setTimeout(forceDrawerPosition, 100);
-      setTimeout(forceDrawerPosition, 500);
-
-      // Watch for drawer open/close and reapply positioning
-      watch(leftDrawerOpen, () => {
-        setTimeout(forceDrawerPosition, 50);
-        setTimeout(forceDrawerPosition, 200);
-      });
+      // No custom drawer positioning needed - Quasar's layout view "hHh lpR fFf" handles it automatically
     });
 
     onUnmounted(() => {
@@ -1496,20 +1468,9 @@ export default {
   position: relative !important; // Ensure z-index works
 }
 
-// Drawer positioned under header
-// Force drawer to start below header (84px header height)
-.q-drawer.drawer-under-header {
-  top: 84px !important; // Start below header
-  height: calc(100vh - 84px) !important; // Full height minus header
-  position: fixed !important; // Fixed positioning
-  z-index: 1000 !important; // Below header but above content
-}
-
-// Ensure drawer is positioned correctly in layout
-.q-layout__section--marginal .q-drawer.drawer-under-header {
-  top: 84px !important;
-  position: fixed !important;
-}
+// Drawer positioned under header - Quasar's layout view "hHh lpR fFf" handles this automatically
+// The 'p' in 'lpR' means the drawer is positioned below the header
+// No custom CSS needed - Quasar's layout system handles it
 
 // Header scroll behavior - hide on scroll down, show on scroll up
 // Note: z-index is set above in the drawer section
