@@ -1465,18 +1465,18 @@ export default {
   position: relative !important; // Ensure z-index works
 }
 
-// Drawer positioned under header (not overlay)
-// Override Quasar's default drawer positioning
+// Drawer positioned under header - Quasar's layout system handles this naturally
+// The layout view "lHh Lpr lFf" positions drawer below header automatically
+// We just need to ensure proper spacing
 .q-drawer.drawer-under-header {
-  top: 84px !important; // Position exactly at bottom edge of header (84px height)
-  bottom: 0 !important; // Extend to bottom of viewport
-  height: calc(100vh - 84px) !important; // Full height minus header
-  max-height: calc(100vh - 84px) !important; // Prevent overflow
-  z-index: 1000 !important; // Below header (3000) but above content
-  position: fixed !important; // Fixed positioning
-  margin-top: 0 !important; // No margin - flush with header
-  padding-top: 0 !important; // No padding - flush with header
-  border-top: none !important; // Remove any top border that might create visual gap
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+// Ensure drawer content doesn't overlap header
+.q-layout__section--marginal {
+  // Quasar positions this section below the header automatically
+  // No need to override - the layout view handles it
 }
 
 // Ensure drawer slides from left edge when open
