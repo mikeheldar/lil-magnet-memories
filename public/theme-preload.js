@@ -237,6 +237,97 @@
     return false;
   }
 
+  // Apply default black header theme if no cached theme exists
+  function applyDefaultBlackHeaderTheme() {
+    try {
+      // Check if we already have a theme applied
+      const existingStyle = document.getElementById('theme-preload-styles');
+      if (existingStyle) {
+        return; // Theme already applied
+      }
+
+      // Apply default black header theme styles
+      const defaultBlackHeaderStyles = `
+        /* Default Black Header Theme - Applied before Firebase loads */
+        .q-header {
+          background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
+          background-color: #000000 !important;
+          min-height: 84px !important;
+        }
+        .q-header .q-toolbar {
+          background: transparent !important;
+          min-height: 84px !important;
+        }
+        .q-header .q-toolbar-title span,
+        .q-header .q-toolbar__title span {
+          font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+          font-weight: 400 !important;
+          color: #ffffff !important;
+        }
+        .q-header .q-btn, .q-header .q-btn .q-icon, .q-header .q-chip:not(.test-environment-chip) {
+          color: #ffffff !important;
+        }
+        .q-page-container {
+          background: #ffffff !important;
+        }
+        body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+        body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
+          background: #1a1a1a !important;
+          color: #ffffff !important;
+          border: 1px solid #1a1a1a !important;
+          border-radius: 10px !important;
+        }
+        :root {
+          --theme-primary-text-color: #374151 !important;
+        }
+        .text-primary, a.text-primary, [class*="text-primary"] {
+          color: var(--theme-primary-text-color) !important;
+        }
+      `;
+
+      const style = document.createElement('style');
+      style.id = 'theme-preload-styles';
+      style.textContent = defaultBlackHeaderStyles;
+      document.head.appendChild(style);
+
+      // Also apply inline styles to header when it appears
+      function applyHeaderInlineStyles() {
+        const header = document.querySelector('.q-header, [class*="q-header"], header');
+        if (header) {
+          header.style.setProperty('background', 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', 'important');
+          header.style.setProperty('background-color', '#000000', 'important');
+          header.style.setProperty('background-image', 'none', 'important');
+
+          const toolbar = header.querySelector('.q-toolbar');
+          if (toolbar) {
+            toolbar.style.setProperty('background', 'transparent', 'important');
+            toolbar.style.setProperty('background-color', 'transparent', 'important');
+          }
+        }
+      }
+
+      // Try to apply immediately if header exists
+      applyHeaderInlineStyles();
+
+      // Watch for header creation
+      if (document.body) {
+        const observer = new MutationObserver(() => {
+          applyHeaderInlineStyles();
+        });
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+        // Disconnect after 3 seconds
+        setTimeout(() => observer.disconnect(), 3000);
+      }
+
+      console.log('[ThemePreload] Applied default black header theme (no cached theme found)');
+    } catch (error) {
+      console.error('[ThemePreload] Error applying default theme:', error);
+    }
+  }
+
   // Simple function to wait for elements and apply styles (no aggressive checking)
   function waitAndApply() {
     if (document.head) {
