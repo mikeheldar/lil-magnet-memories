@@ -1478,8 +1478,6 @@ export default {
   margin-top: 0 !important; // No margin - flush with header
   padding-top: 0 !important; // No padding - flush with header
   border-top: none !important; // Remove any top border that might create visual gap
-  // Ensure drawer never extends above header
-  min-top: 84px !important; // Prevent any positioning above 84px
 }
 
 // Ensure drawer slides from left edge when open
@@ -1491,13 +1489,20 @@ export default {
   // When drawer is open (not mini)
   &:not(.q-drawer--mini) {
     transform: translateX(0) !important;
+    top: 84px !important; // Always start below header
   }
 
   // When drawer is closed
   &.q-drawer--mini,
   &[aria-hidden="true"] {
     transform: translateX(-100%) !important;
+    top: 84px !important; // Even when closed, stay below header
   }
+}
+
+// Override any Quasar default positioning that might place drawer at top: 0
+.q-layout__section--marginal .q-drawer.drawer-under-header {
+  top: 84px !important; // Force position below header
 }
 
 // Header scroll behavior - hide on scroll down, show on scroll up
