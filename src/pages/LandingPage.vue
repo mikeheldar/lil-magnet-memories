@@ -1675,8 +1675,8 @@ export default {
 
 .easel-container {
   width: 100%;
-  aspect-ratio: 1 / 1; // Square container
-  max-width: 100%;
+  max-height: 600px;
+  height: 600px;
   display: flex;
   justify-content: center;
   margin-top: 0;
@@ -1686,7 +1686,7 @@ export default {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: hidden; // Hide overflow for square images
+  overflow: visible; // Allow image to be visible
 
   img {
     display: block;
@@ -1701,11 +1701,11 @@ export default {
   }
 
   .easel-image-wrapper {
-    align-items: flex-start !important; // Align image to top
+    align-items: center !important; // Center for square images
   }
 
   .easel-image {
-    object-position: center top !important; // Center horizontally, top vertically
+    object-position: center !important; // Center for square cover fit
   }
 }
 
@@ -1723,7 +1723,7 @@ export default {
   align-items: center; // Center vertically and horizontally
   overflow: hidden; // Prevent overflow
   box-sizing: border-box;
-  padding: 10px; // Small padding to prevent edge clipping
+  padding: 0; // No padding for square images
 }
 
 .easel-image {
@@ -1750,20 +1750,24 @@ export default {
   background: transparent;
 }
 
-// On mobile, ensure easel image matches CTA button width and resizes properly
+// On small screens, make easel image width match hero logo width
 @media (max-width: 600px) {
+  .easel-container {
+    max-width: 250px; // Match hero logo width on small screens (from .hero-logo max-width: 250px)
+    width: 250px;
+    margin: 0 auto; // Center it
+  }
+
   .easel-image-wrapper {
     width: 100%;
-    padding: 10px 20px; // Match page padding, prevent edge clipping
+    padding: 0;
     box-sizing: border-box;
   }
 
   .easel-image {
-    width: 100%; // Full width of wrapper on mobile
-    min-width: 280px; // Match button width - ensures consistency
-    max-width: 100%; // Never exceed wrapper
-    // Ensure proper resizing without cut-off
-    object-fit: contain !important;
+    width: 100%;
+    height: 100%;
+    object-fit: cover !important; // Fill square with no empty space
     object-position: center !important;
   }
 }
