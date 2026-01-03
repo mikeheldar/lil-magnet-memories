@@ -1675,8 +1675,8 @@ export default {
 
 .easel-container {
   width: 100%;
-  max-height: 600px;
-  height: 600px;
+  aspect-ratio: 1 / 1; // Square container
+  max-width: 100%;
   display: flex;
   justify-content: center;
   margin-top: 0;
@@ -1686,7 +1686,7 @@ export default {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: visible; // Allow image to be visible
+  overflow: hidden; // Hide overflow for square images
 
   img {
     display: block;
