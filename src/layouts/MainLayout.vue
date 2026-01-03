@@ -307,16 +307,8 @@
       v-model="leftDrawerOpen"
       bordered
       class="bg-grey-1 drawer-under-header"
-      :overlay="false"
-      :breakpoint="0"
+      :breakpoint="1024"
       :width="300"
-      :style="{
-        top: '84px',
-        position: 'fixed',
-        height: 'calc(100vh - 84px)',
-        bottom: '0',
-        zIndex: '1000'
-      }"
     >
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
@@ -1492,7 +1484,7 @@ export default {
   // Force positioning regardless of Quasar's state
   top: 84px !important; // ALWAYS start below header
   position: fixed !important; // Override any absolute positioning
-  
+
   &.q-drawer--left {
     left: 0 !important;
   }
