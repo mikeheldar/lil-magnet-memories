@@ -1482,6 +1482,10 @@ export default {
 
 // Ensure drawer slides from left edge when open
 .q-layout .q-drawer.drawer-under-header {
+  // Force positioning regardless of Quasar's state
+  top: 84px !important; // ALWAYS start below header
+  position: fixed !important; // Override any absolute positioning
+  
   &.q-drawer--left {
     left: 0 !important;
   }
@@ -1498,6 +1502,13 @@ export default {
     transform: translateX(-100%) !important;
     top: 84px !important; // Even when closed, stay below header
   }
+}
+
+// Nuclear option: override ALL possible Quasar drawer positioning
+[class*="q-drawer"].drawer-under-header,
+[class^="q-drawer"].drawer-under-header {
+  top: 84px !important;
+  position: fixed !important;
 }
 
 // Override any Quasar default positioning that might place drawer at top: 0
