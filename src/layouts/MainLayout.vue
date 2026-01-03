@@ -1470,12 +1470,16 @@ export default {
 // Override Quasar's default drawer positioning
 .q-drawer.drawer-under-header {
   top: 84px !important; // Position exactly at bottom edge of header (84px height)
+  bottom: 0 !important; // Extend to bottom of viewport
   height: calc(100vh - 84px) !important; // Full height minus header
+  max-height: calc(100vh - 84px) !important; // Prevent overflow
   z-index: 1000 !important; // Below header (3000) but above content
   position: fixed !important; // Fixed positioning
   margin-top: 0 !important; // No margin - flush with header
   padding-top: 0 !important; // No padding - flush with header
   border-top: none !important; // Remove any top border that might create visual gap
+  // Ensure drawer never extends above header
+  min-top: 84px !important; // Prevent any positioning above 84px
 }
 
 // Ensure drawer slides from left edge when open
