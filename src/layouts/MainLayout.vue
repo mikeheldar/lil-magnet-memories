@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header 
-      elevated 
+    <q-header
+      elevated
       :class="[headerClasses, { 'header-hidden': !headerVisible }]"
       :style="headerInlineStyle"
     >
@@ -711,20 +711,20 @@ export default {
     const isAdmin = ref(false);
     const leftDrawerOpen = ref(false);
     const { cartItemCount } = useCart();
-    
+
     // Header scroll behavior - hide on scroll down, show on scroll up
     const headerVisible = ref(true);
     let lastScrollTop = 0;
     const scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
-    
+
     const handleScroll = () => {
       const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      
+
       // Only trigger if scroll distance is significant
       if (Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {
         return;
       }
-      
+
       if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
         // Scrolling down - hide header
         headerVisible.value = false;
@@ -732,7 +732,7 @@ export default {
         // Scrolling up - show header
         headerVisible.value = true;
       }
-      
+
       lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
     };
     const userProfile = ref({
@@ -1038,11 +1038,11 @@ export default {
     onMounted(() => {
       checkActiveTheme();
       // Real-time listener in themeService handles theme changes automatically
-      
+
       // Add scroll listener for header hide/show behavior
       window.addEventListener('scroll', handleScroll, { passive: true });
     });
-    
+
     onUnmounted(() => {
       // Remove scroll listener on unmount
       window.removeEventListener('scroll', handleScroll);
@@ -1474,12 +1474,12 @@ export default {
   &.q-drawer--left {
     left: 0 !important;
   }
-  
+
   // When drawer is open (not mini)
   &:not(.q-drawer--mini) {
     transform: translateX(0) !important;
   }
-  
+
   // When drawer is closed
   &.q-drawer--mini,
   &[aria-hidden="true"] {
@@ -1490,7 +1490,7 @@ export default {
 // Header scroll behavior - hide on scroll down, show on scroll up
 .q-header {
   transition: transform 0.3s ease-in-out !important;
-  
+
   &.header-hidden {
     transform: translateY(-100%) !important;
   }

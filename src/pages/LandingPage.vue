@@ -1745,7 +1745,7 @@ export default {
     padding: 10px 20px; // Match page padding, prevent edge clipping
     box-sizing: border-box;
   }
-  
+
   .easel-image {
     width: 100%; // Full width of wrapper on mobile
     min-width: 280px; // Match button width - ensures consistency
@@ -1756,10 +1756,11 @@ export default {
   }
 }
 
-// Carousel dots - positioned above the bottom of the image, always within image bounds
+// Carousel dots - positioned 20px below the image, always within image bounds
 .easel-carousel-dots {
   position: absolute;
-  bottom: 12px; // Fixed distance from bottom
+  top: 100%; // Position below the image
+  margin-top: 20px; // Exactly 20px below the photo
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1774,10 +1775,6 @@ export default {
   // Ensure dots are centered and contained within image
   justify-content: center;
   align-items: center;
-  // Constrain to image bounds - use calc to ensure dots stay within image
-  // The dots should be within the image border, not outside
-  left: 50%;
-  transform: translateX(-50%);
   // Ensure dots don't overflow image boundaries
   overflow: hidden; // Hide any overflow
   white-space: nowrap; // Keep dots on one line
