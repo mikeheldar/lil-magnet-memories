@@ -1460,12 +1460,18 @@ export default {
   }
 }
 
+// Ensure header is above drawer
+.q-header {
+  z-index: 3000 !important; // Header must be above drawer
+  position: relative !important; // Ensure z-index works
+}
+
 // Drawer positioned under header (not overlay)
 // Override Quasar's default drawer positioning
 .q-drawer.drawer-under-header {
   top: 84px !important; // Position exactly at bottom edge of header (84px height)
   height: calc(100vh - 84px) !important; // Full height minus header
-  z-index: 2000 !important; // Below header but above content
+  z-index: 1000 !important; // Below header (3000) but above content
   position: fixed !important; // Fixed positioning
   margin-top: 0 !important; // No margin - flush with header
   padding-top: 0 !important; // No padding - flush with header
@@ -1491,6 +1497,7 @@ export default {
 }
 
 // Header scroll behavior - hide on scroll down, show on scroll up
+// Note: z-index is set above in the drawer section
 .q-header {
   transition: transform 0.3s ease-in-out !important;
 
