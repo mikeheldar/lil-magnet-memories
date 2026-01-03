@@ -1043,116 +1043,33 @@ export default {
       window.addEventListener('scroll', handleScroll, { passive: true });
 
       // Force drawer positioning below header after mount
-      // Use a more aggressive approach to ensure drawer stays below header
+      // Simple, reliable approach without performance issues
       const forceDrawerPosition = () => {
-        // Try multiple selectors to find the drawer
-        const drawer = document.querySelector('.q-drawer') ||
-                       document.querySelector('aside[role="complementary"]') ||
-                       document.querySelector('.q-layout__section--marginal .q-drawer');
-        
-        if (drawer) {
-          // Add class if missing
-          if (!drawer.classList.contains('drawer-under-header')) {
-            drawer.classList.add('drawer-under-header');
+        try {
+          const drawer = document.querySelector('.q-drawer');
+          if (drawer) {
+            const header = document.querySelector('.q-header');
+            const headerHeight = header ? header.offsetHeight : 84;
+
+            // Force positioning
+            drawer.style.setProperty('top', `${headerHeight}px`, 'important');
+            drawer.style.setProperty('height', `calc(100vh - ${headerHeight}px)`, 'important');
+            drawer.style.setProperty('position', 'fixed', 'important');
+            drawer.style.setProperty('z-index', '1000', 'important');
           }
-          
-          // Get header height dynamically
-          const header = document.querySelector('.q-header');
-          const headerHeight = header ? header.offsetHeight : 84;
-          
-          // Force positioning with !important using setProperty
-          drawer.style.setProperty('top', `${headerHeight}px`, 'important');
-          drawer.style.setProperty('height', `calc(100vh - ${headerHeight}px)`, 'important');
-          drawer.style.setProperty('position', 'fixed', 'important');
-          drawer.style.setProperty('z-index', '1000', 'important');
-          drawer.style.setProperty('left', '0', 'important');
-          drawer.style.setProperty('bottom', 'auto', 'important');
-          
-          // Also try setting directly (some browsers need this)
-          drawer.style.top = `${headerHeight}px`;
-          drawer.style.height = `calc(100vh - ${headerHeight}px)`;
-          drawer.style.position = 'fixed';
-          drawer.style.zIndex = '1000';
+        } catch (error) {
+          console.error('Error positioning drawer:', error);
         }
       };
 
-      // Set position immediately and repeatedly to override Quasar
-      forceDrawerPosition();
-      const intervals = [50, 100, 200, 500, 1000, 2000];
-      intervals.forEach(delay => {
-        setTimeout(forceDrawerPosition, delay);
-      });
+      // Set position after mount with reasonable delays
+      setTimeout(forceDrawerPosition, 100);
+      setTimeout(forceDrawerPosition, 500);
 
       // Watch for drawer open/close and reapply positioning
       watch(leftDrawerOpen, () => {
-        // When drawer state changes, force position multiple times
-        forceDrawerPosition();
-        setTimeout(forceDrawerPosition, 10);
         setTimeout(forceDrawerPosition, 50);
-        setTimeout(forceDrawerPosition, 100);
         setTimeout(forceDrawerPosition, 200);
-        setTimeout(forceDrawerPosition, 500);
-      });
-
-      // Use MutationObserver to catch ALL changes to drawer
-      let observer = null;
-      const setupObserver = () => {
-        const drawer = document.querySelector('.q-drawer');
-        if (drawer && !observer) {
-          observer = new MutationObserver((mutations) => {
-            // Reapply positioning on any change
-            forceDrawerPosition();
-          });
-          
-          observer.observe(drawer, {
-            attributes: true,
-            attributeFilter: ['class', 'style'],
-            childList: false,
-            subtree: false
-          });
-          
-          // Also observe the parent layout section
-          const layoutSection = drawer.closest('.q-layout__section--marginal');
-          if (layoutSection) {
-            observer.observe(layoutSection, {
-              attributes: true,
-              attributeFilter: ['class', 'style']
-            });
-          }
-        }
-      };
-      
-      // Try to set up observer immediately and with delays
-      setupObserver();
-      setTimeout(setupObserver, 100);
-      setTimeout(setupObserver, 500);
-      
-      // Also use requestAnimationFrame for continuous checking
-      let rafId = null;
-      const continuousCheck = () => {
-        const drawer = document.querySelector('.q-drawer');
-        if (drawer) {
-          const rect = drawer.getBoundingClientRect();
-          const header = document.querySelector('.q-header');
-          const headerHeight = header ? header.offsetHeight : 84;
-          
-          // If drawer is not at correct position, force it
-          if (Math.abs(rect.top - headerHeight) > 1) {
-            forceDrawerPosition();
-          }
-        }
-        rafId = requestAnimationFrame(continuousCheck);
-      };
-      rafId = requestAnimationFrame(continuousCheck);
-      
-      // Clean up on unmount
-      onUnmounted(() => {
-        if (observer) {
-          observer.disconnect();
-        }
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-        }
       });
     });
 
