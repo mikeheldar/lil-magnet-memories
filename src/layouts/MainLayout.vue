@@ -156,11 +156,11 @@
           </q-btn-dropdown>
         </div>
 
-        <!-- About Button -->
+        <!-- About Button (medium and large screens only) -->
         <q-btn
           flat
           dense
-          class="gt-xs q-mr-sm header-element-responsive about-header-btn"
+          class="gt-sm q-mr-sm header-element-responsive about-header-btn"
           label="About"
           :style="headerButtonStyle"
           @click="$router.push('/about')"
