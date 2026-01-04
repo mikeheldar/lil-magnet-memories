@@ -809,44 +809,9 @@ export default {
 
     // Handle image load to constrain oversized images
     const easelImageRef = ref(null);
-    const handleImageLoad = (event) => {
-      const img = event.target;
-      const container = img.closest('.easel-container');
-      if (!container) return;
-
-      // Get container dimensions
-      const containerRect = container.getBoundingClientRect();
-      const containerWidth = containerRect.width;
-      const containerHeight = containerRect.height;
-
-      // Get image natural dimensions
-      const imgNaturalWidth = img.naturalWidth;
-      const imgNaturalHeight = img.naturalHeight;
-
-      // Calculate aspect ratios
-      const containerAspect = containerWidth / containerHeight;
-      const imgAspect = imgNaturalWidth / imgNaturalHeight;
-
-      // Check if image would overflow
-      // If image is wider than container aspect ratio, constrain by width
-      // If image is taller than container aspect ratio, constrain by height
-      if (imgAspect > containerAspect) {
-        // Image is wider - constrain by width
-        const maxWidth = containerWidth - 12; // Account for border and padding
-        if (img.offsetWidth > maxWidth) {
-          img.style.maxWidth = `${maxWidth}px`;
-          img.style.width = 'auto';
-          img.style.height = 'auto';
-        }
-      } else {
-        // Image is taller - constrain by height
-        const maxHeight = containerHeight - 12; // Account for border and padding
-        if (img.offsetHeight > maxHeight) {
-          img.style.maxHeight = `${maxHeight}px`;
-          img.style.width = 'auto';
-          img.style.height = 'auto';
-        }
-      }
+    // Image now fills square container via CSS - no manual sizing needed
+    const handleImageLoad = () => {
+      // CSS handles sizing with object-fit: cover in square container
     };
 
     const handleGoogleSignIn = async () => {
