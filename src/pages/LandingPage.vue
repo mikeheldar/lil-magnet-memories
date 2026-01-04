@@ -1684,20 +1684,22 @@ export default {
 // Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
-  top: 100%; // Position below the image
-  margin-top: 20px !important; // 20px below the photo
+  top: calc(100% + 20px) !important; // Position 20px below the image
   left: 50%;
   transform: translateX(-50%);
   display: flex !important;
   justify-content: center;
   align-items: center;
   gap: 12px !important; // Slightly larger gap for better visibility
-  z-index: 10;
+  z-index: 10 !important;
   width: fit-content; // Fit content width
-  padding: 0;
+  padding: 8px 16px; // Add padding for better visibility
   box-sizing: border-box;
   white-space: nowrap; // Keep dots on one line
   pointer-events: auto; // Ensure dots are clickable
+  background: rgba(255, 255, 255, 0.9); // Light background to make dots stand out
+  border-radius: 20px; // Rounded background
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Subtle shadow for visibility
 }
 
 .carousel-dot {
@@ -2135,10 +2137,11 @@ export default {
   }
 
   .easel-container {
-    width: 70vw !important; // 70% of viewport width (same as logo)
-    max-width: 70vw !important;
-    aspect-ratio: 1 / 1 !important; // Always square
-    margin: 0 auto; // Center it
+    width: 100vw !important; // Full viewport width, edge to edge
+    max-width: 100vw !important;
+    aspect-ratio: 16 / 9 !important; // Wide rectangular format (same as larger screens)
+    margin-left: calc(-50vw + 50%) !important; // Break out of container to be edge-to-edge
+    margin-right: calc(-50vw + 50%) !important;
   }
 
   .easel-image {
@@ -2151,15 +2154,18 @@ export default {
   // Ensure dots are visible below the photo on small screens
   .easel-carousel-dots {
     position: absolute !important;
-    top: 100% !important; // Position below the image
-    margin-top: 20px !important; // Exactly 20px below the photo
+    top: calc(100% + 20px) !important; // Position 20px below the image
     left: 50% !important;
     transform: translateX(-50%) !important;
     display: flex !important;
     justify-content: center !important;
-    gap: 8px !important;
+    gap: 12px !important;
     z-index: 10 !important;
-    width: 100% !important; // Full width to center dots properly
+    width: fit-content !important;
+    padding: 8px 16px !important; // Add padding for better visibility
+    background: rgba(255, 255, 255, 0.9) !important; // Light background to make dots stand out
+    border-radius: 20px !important; // Rounded background
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important; // Subtle shadow for visibility
   }
 }
 </style>

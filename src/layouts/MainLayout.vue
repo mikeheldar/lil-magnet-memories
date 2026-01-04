@@ -178,7 +178,7 @@
     </q-header>
 
     <!-- Sub-Navigation Bar (below header, medium to large screens only) -->
-    <div class="sub-navigation-bar gt-sm" :class="headerClasses" :style="headerInlineStyle">
+    <div class="sub-navigation-bar gt-sm" :class="[headerClasses, { 'header-hidden': !headerVisible }]" :style="headerInlineStyle">
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
@@ -614,8 +614,11 @@ export default {
       if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
         // Scrolling down - hide header
         headerVisible.value = false;
-      } else {
-        // Scrolling up - show header
+      } else if (currentScrollTop < lastScrollTop) {
+        // Scrolling up - show header immediately (no need to wait until top)
+        headerVisible.value = true;
+      } else if (currentScrollTop <= 100) {
+        // Near the top - always show header
         headerVisible.value = true;
       }
 
@@ -1553,6 +1556,11 @@ export default {
   z-index: 2000; // Below header but above content
   position: relative;
   min-height: 48px; // Consistent height
+  transition: transform 0.3s ease-in-out !important; // Match header transition
+
+  &.header-hidden {
+    transform: translateY(-100%) !important; // Hide by moving up, same as header
+  }
 }
 
 // Hide on small screens
@@ -1575,12 +1583,12 @@ export default {
 .sub-nav-btn {
   min-width: auto;
   position: relative;
-  
+
   .q-btn__content {
     padding: 0 12px;
     color: inherit; // Inherit text color from header theme
   }
-  
+
   // Ensure dropdown menu appears below the button
   .q-menu {
     margin-top: 4px;
