@@ -1522,8 +1522,30 @@ export default {
 }
 
 // Override any Quasar layout positioning that might interfere
-.q-layout .q-drawer.drawer-under-header {
+// Use very high specificity to override Quasar's layout system
+.q-layout .q-drawer.drawer-under-header,
+body .q-layout .q-drawer.drawer-under-header,
+html body .q-layout .q-drawer.drawer-under-header {
   position: fixed !important;
+  // Prevent Quasar from applying any transforms or positioning
+  transform: none !important;
+  margin: 0 !important;
+  // Ensure drawer doesn't move with page scroll
+  will-change: transform !important;
+}
+
+// Prevent page container from interfering with drawer
+.q-page-container {
+  // Allow content to scroll under fixed drawer
+  position: relative;
+  z-index: 1;
+}
+
+// Ensure body/html can scroll to absolute top
+html, body {
+  overflow-x: hidden;
+  // Allow scrolling to absolute top (scrollTop: 0)
+  scroll-behavior: auto;
 }
 
 // Header scroll behavior - hide on scroll down, show on scroll up
