@@ -1167,7 +1167,7 @@ export default {
           fontFamily: "'Times New Roman', 'Times', serif",
           fontWeight: '400',
           fontStyle: 'italic',
-          fontSize: '1.1rem', // Slightly smaller than default text-h5
+          fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', // Responsive: 1.1rem on small, scales up to 1.5rem on large screens
           letterSpacing: '0.05em',
           textTransform: 'none',
           color: isWhiteHeader ? '#1a1a1a' : '#ffffff',

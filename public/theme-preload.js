@@ -146,6 +146,18 @@
                   text-transform: none !important;
                   color: ${textColor} !important;
                 }
+                @media (min-width: 768px) {
+                  .q-toolbar__title, .q-toolbar__title span, .q-toolbar__title span.text-h5.text-weight-bold,
+                  .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold {
+                    font-size: 1.3rem !important;
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .q-toolbar__title, .q-toolbar__title span, .q-toolbar__title span.text-h5.text-weight-bold,
+                  .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold {
+                    font-size: 1.5rem !important;
+                  }
+                }
               `;
             } else if (isWhiteLattus || isSilverCrisCross) {
               headerCSS += `
@@ -266,6 +278,18 @@
           font-style: italic !important;
           font-size: 1.1rem !important;
           color: #ffffff !important;
+        }
+        @media (min-width: 768px) {
+          .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title span {
+            font-size: 1.3rem !important;
+          }
+        }
+        @media (min-width: 1024px) {
+          .q-header .q-toolbar-title span,
+          .q-header .q-toolbar__title span {
+            font-size: 1.5rem !important;
+          }
         }
         .q-header .q-btn, .q-header .q-btn .q-icon, .q-header .q-chip:not(.test-environment-chip) {
           color: #ffffff !important;
@@ -390,6 +414,7 @@
     }
   }
 })();
+
 
 
 
