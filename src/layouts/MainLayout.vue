@@ -1494,21 +1494,31 @@ export default {
 // Drawer positioned under header - Quasar's layout view "hHh lpR fFf" handles this automatically
 // The 'p' in 'lpR' means the drawer is positioned below the header
 // Make drawer sticky/fixed when open so it stays visible while scrolling
+// The drawer should "float" and stay in the same position as user scrolls
 .q-drawer.drawer-under-header {
   position: fixed !important;
   top: 84px !important; // Position below header (header height)
   left: 0 !important;
-  height: calc(100vh - 84px) !important; // Full viewport height minus header
+  bottom: 0 !important; // Extend to bottom of viewport
+  height: auto !important; // Let bottom handle height
   max-height: calc(100vh - 84px) !important;
   z-index: 2000 !important; // Below header but above content
   overflow-y: auto !important; // Allow scrolling within drawer if content is long
   overflow-x: hidden !important;
+  transform: none !important; // Prevent any transforms that might move it
+  will-change: auto !important; // Optimize for fixed positioning
 }
 
-// Ensure drawer content is scrollable
+// Ensure drawer content is scrollable and takes full height
 .q-drawer.drawer-under-header .q-list {
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+}
+
+// Override any Quasar layout positioning that might interfere
+.q-layout .q-drawer.drawer-under-header {
+  position: fixed !important;
 }
 
 // Header scroll behavior - hide on scroll down, show on scroll up
