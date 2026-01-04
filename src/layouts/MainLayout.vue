@@ -1944,8 +1944,8 @@ html, body {
   right: 0 !important;
   width: 100% !important;
   min-height: 48px; // Consistent height
-  // Use exact same transition timing and easing as header for perfect synchronization
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  // Sub-nav transitions faster (0.25s) than header (0.3s) so it disappears first for smooth effect
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
   // Ensure sub-nav is visible by default
   transform: translateY(0) !important;
   opacity: 1 !important;
