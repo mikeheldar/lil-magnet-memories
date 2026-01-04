@@ -1699,34 +1699,13 @@ export default {
     align-items: flex-start !important; // Force top alignment
   }
 
-  .easel-image-wrapper {
-    align-items: center !important; // Center for square images
-  }
-
   .easel-image {
     object-position: center !important; // Center for square cover fit
   }
 }
 
-.easel-image-wrapper {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%; // Full width of container
-  max-width: 100%;
-  height: 100%; // Full height of container
-  max-height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center; // Center vertically and horizontally
-  overflow: hidden; // Prevent overflow
-  box-sizing: border-box;
-  padding: 0; // No padding for square images
-}
-
+// Simplified: image directly fills the square container
 .easel-image {
-  // Square image that fills container with no empty space (like product images)
   width: 100%;
   height: 100%;
   object-fit: cover; // Fill square, crop to fit (like product images)
@@ -1751,12 +1730,6 @@ export default {
     width: 100%;
     max-width: 100%;
     margin: 0 auto; // Center it
-  }
-
-  .easel-image-wrapper {
-    width: 100%;
-    padding: 0;
-    box-sizing: border-box;
   }
 
   .easel-image {
