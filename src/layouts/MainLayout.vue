@@ -1570,6 +1570,12 @@ export default {
   visibility: visible !important;
   pointer-events: auto !important;
 
+  // When header is hidden, extend to top of viewport
+  &.header-hidden {
+    top: 0 !important;
+    max-height: 100vh !important;
+  }
+
   // Full width on small screens
   @media (max-width: 599px) {
     width: 100vw !important;
@@ -1595,6 +1601,8 @@ export default {
   pointer-events: auto !important;
   display: flex !important;
   flex-direction: column !important;
+  // Hide when drawer is closed (v-show handles this, but ensure it's hidden)
+  visibility: visible !important;
 
   // When header is hidden, extend to top of viewport
   &.header-hidden {
@@ -1609,23 +1617,24 @@ export default {
 }
 
 // Drawer header fill - appears when main header is hidden
+// Matches main header style (black background, white hamburger)
 .drawer-header-fill {
   height: 84px !important; // Match header height
   width: 100% !important;
-  background: #f5f5f5 !important; // Match drawer background
+  background: #000000 !important; // Match main header black background
   display: flex !important;
   align-items: center !important;
   padding-left: 16px !important;
   flex-shrink: 0 !important; // Don't shrink
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important; // Subtle separator
 }
 
 .drawer-close-btn {
-  color: #000000 !important;
+  color: #ffffff !important; // White hamburger icon
   font-size: 24px !important;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.05) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
   }
 }
 
@@ -1665,7 +1674,7 @@ html, body {
   overflow-x: hidden;
   // Allow scrolling to absolute top (scrollTop: 0)
   scroll-behavior: auto;
-  
+
   // On small screens, prevent main page scrolling
   @media (max-width: 599px) {
     overflow: hidden !important;
