@@ -1732,13 +1732,18 @@ html, body {
   right: 0 !important;
   width: 100% !important;
   z-index: 3000 !important; // Ensure it's above content
-  // Use same transition timing as sub-nav for perfect synchronization
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  // Header appears faster (0.25s) than sub-nav (0.3s) when showing, but hides slower (0.3s) than sub-nav (0.25s)
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   // Ensure header is visible by default
   transform: translateY(0) !important;
   opacity: 1 !important;
   visibility: visible !important;
   will-change: transform !important; // Optimize for transform animations
+  
+  // When appearing (not hidden), use faster transition so header shows before sub-nav
+  &:not(.header-hidden) {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
 
   &.header-hidden {
     // Move up by combined height (132px = 84px header + 48px sub-nav) so both slide up together
@@ -1944,13 +1949,19 @@ html, body {
   right: 0 !important;
   width: 100% !important;
   min-height: 48px; // Consistent height
-  // Sub-nav transitions faster (0.25s) than header (0.3s) so it disappears first for smooth effect
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  // Sub-nav disappears faster (0.25s) than header (0.3s) when hiding
+  // Sub-nav appears slower (0.3s) than header (0.25s) when showing
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   // Ensure sub-nav is visible by default
   transform: translateY(0) !important;
   opacity: 1 !important;
   visibility: visible !important;
   will-change: transform !important; // Optimize for transform animations
+  
+  // When hiding, use faster transition so sub-nav disappears before header
+  &.header-hidden {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
 
   &.header-hidden {
     // Move up by combined height (132px = 84px header + 48px sub-nav) so both slide up together
