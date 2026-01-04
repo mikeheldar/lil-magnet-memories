@@ -466,8 +466,6 @@
           </q-item>
         </q-expansion-item>
 
-        <q-separator class="q-my-md" />
-
         <!-- Content for non-authenticated users -->
         <template v-if="!isAuthenticated">
         </template>
