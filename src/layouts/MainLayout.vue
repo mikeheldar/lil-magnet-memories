@@ -320,12 +320,386 @@
       :breakpoint="0"
       :width="300"
     >
-      <!-- Floating menu container that stays fixed when scrolling main page -->
-      <div ref="drawerMenuContainerRef" class="drawer-menu-container" v-show="leftDrawerOpen">
-        <q-list>
-          <q-item-label header class="text-grey-8"> Navigation </q-item-label>
+      <!-- Drawer background only - menu is in fixed container outside drawer -->
+          <q-item-section avatar>
+            <q-icon name="home" color="primary" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Home</q-item-label>
+            <q-item-label caption>Go to main page</q-item-label>
+          </q-item-section>
+        </q-item>
 
-          <!-- Home (always at top) -->
+        <q-separator />
+
+        <!-- Shop section (always visible) -->
+        <q-expansion-item
+          icon="shopping_bag"
+          label="Shop"
+          :default-opened="true"
+          header-class="text-grey-8"
+        >
+          <!-- Custom Photo Magnets -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('custom-products-section')"
+            @mouseenter="hoveredCategory = 'custom'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="camera_alt" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Custom Photo Magnets</q-item-label>
+              <q-item-label caption>Create personalized magnets</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Custom (only if collections exist) -->
+          <div
+            v-if="hoveredCategory === 'custom' && customCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in customCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('custom-products-section', collection)"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Designer Magnets -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('designer-products-section')"
+            @mouseenter="hoveredCategory = 'designer'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="palette" color="secondary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Designer Magnets</q-item-label>
+              <q-item-label caption>Ready-made designs</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Designer (only if collections exist) -->
+          <div
+            v-if="hoveredCategory === 'designer' && designerCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in designerCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('designer-products-section', collection)"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Specialty Products -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('specialty-products-section')"
+            @mouseenter="hoveredCategory = 'specialty'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="star" color="amber" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Specialty Products</q-item-label>
+              <q-item-label caption>Unique specialty items</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Specialty (only if collections exist) -->
+          <div
+            v-if="hoveredCategory === 'specialty' && specialtyCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in specialtyCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('specialty-products-section', collection)"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Start Creating Now (last item in Shop section) -->
+          <q-item clickable v-ripple @click="handleUploadClick" class="shop-category-item">
+            <q-item-section avatar>
+              <q-icon name="camera_alt" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Start Creating Now</q-item-label>
+              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-expansion-item>
+
+        <!-- Content for non-authenticated users -->
+        <template v-if="!isAuthenticated">
+        </template>
+
+        <!-- Content for authenticated users -->
+        <template v-else>
+          <!-- Operator section (collapsible, default collapsed) -->
+          <template v-if="isAdmin">
+            <q-expansion-item
+              icon="work"
+              label="Operator"
+              :default-opened="true"
+              header-class="text-grey-8"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/orders')">
+                <q-item-section avatar>
+                  <q-icon name="inventory" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Order List</q-item-label>
+                  <q-item-label caption>View all orders</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/customers')">
+                <q-item-section avatar>
+                  <q-icon name="people" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Customer List</q-item-label>
+                  <q-item-label caption>View all customers</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple to="/magnet-studio-select">
+                <q-item-section avatar>
+                  <q-icon name="apps" color="purple" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Magnet Studio</q-item-label>
+                  <q-item-label caption>Crop images into squares</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/photo-selector')">
+                <q-item-section avatar>
+                  <q-icon name="print" color="blue" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Print Template</q-item-label>
+                  <q-item-label caption
+                    >Select photos for print template</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                clickable
+                v-ripple
+                @click="navigateTo('/photo-management')"
+              >
+                <q-item-section avatar>
+                  <q-icon name="delete_sweep" color="red" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Photo Management</q-item-label>
+                  <q-item-label caption>Delete photos and orders</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/market-events')">
+                <q-item-section avatar>
+                  <q-icon name="event" color="green" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Market Events</q-item-label>
+                  <q-item-label caption>Manage market events</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/pricing')">
+                <q-item-section avatar>
+                  <q-icon name="inventory_2" color="green" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Manage Products</q-item-label>
+                  <q-item-label caption
+                    >Manage products and pricing</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+
+            <!-- Admin section (collapsible, default collapsed) -->
+            <q-separator class="q-my-md" />
+            <q-expansion-item
+              icon="admin_panel_settings"
+              label="Admin"
+              :default-opened="false"
+              header-class="text-grey-8"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/firebase-test')">
+                <q-item-section avatar>
+                  <q-icon name="bug_report" color="orange" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Firebase Diagnostic</q-item-label>
+                  <q-item-label caption>Test Firebase connection</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/admin')">
+                <q-item-section avatar>
+                  <q-icon name="settings" color="orange" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Admin Settings</q-item-label>
+                  <q-item-label caption>Manage system settings</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/look-and-feel')">
+                <q-item-section avatar>
+                  <q-icon name="palette" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Look and Feel</q-item-label>
+                  <q-item-label caption>Manage site themes</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/email-test')">
+                <q-item-section avatar>
+                  <q-icon name="email" color="purple" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Email Test</q-item-label>
+                  <q-item-label caption>Test email functionality</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/test-runner')">
+                <q-item-section avatar>
+                  <q-icon name="bug_report" color="purple" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Test Runner</q-item-label>
+                  <q-item-label caption>Run automated test suites</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                clickable
+                v-ripple
+                @click="navigateTo('/errored-transactions')"
+              >
+                <q-item-section avatar>
+                  <q-icon name="error_outline" color="red" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Errored Transactions</q-item-label>
+                  <q-item-label caption
+                    >View failed payments and uploads</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
+        </template>
+
+        <q-separator class="q-my-md" />
+
+        <!-- Account section (collapsible) -->
+        <q-expansion-item
+          icon="account_circle"
+          label="Account"
+          default-opened
+          header-class="text-grey-8"
+        >
+          <!-- Sign In for non-authenticated users -->
+          <q-item
+            v-if="!isAuthenticated"
+            clickable
+            v-ripple
+            @click="handleSignIn"
+          >
+            <q-item-section avatar>
+              <q-icon name="login" color="positive" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Sign In</q-item-label>
+              <q-item-label caption>Log in to your account</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- My Orders for authenticated users -->
+          <q-item
+            v-if="isAuthenticated"
+            clickable
+            v-ripple
+            @click="navigateTo('/my-orders')"
+          >
+            <q-item-section avatar>
+              <q-icon name="assignment" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>My Orders</q-item-label>
+              <q-item-label caption>View your orders</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Sign Out for authenticated users -->
+          <q-item v-if="isAuthenticated" clickable v-ripple @click="handleSignOut">
+            <q-item-section avatar>
+              <q-icon name="logout" color="negative" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Sign Out</q-item-label>
+              <q-item-label caption>Log out of your account</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-expansion-item>
+    </q-drawer>
+
+    <!-- Floating menu container that stays fixed when scrolling main page - outside drawer to avoid transform context -->
+    <div 
+      ref="drawerMenuContainerRef" 
+      class="drawer-menu-container" 
+      :class="{ 'header-hidden': !headerVisible }"
+      v-show="leftDrawerOpen"
+    >
+      <q-list>
+        <q-item-label header class="text-grey-8"> Navigation </q-item-label>
+
+        <!-- Home (always at top) -->
         <q-item clickable v-ripple @click="navigateTo('/')">
           <q-item-section avatar>
             <q-icon name="home" color="primary" />
@@ -694,8 +1068,7 @@
           </q-item>
         </q-expansion-item>
       </q-list>
-      </div>
-    </q-drawer>
+    </div>
 
     <q-page-container>
       <router-view />
@@ -724,7 +1097,6 @@ export default {
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
     const leftDrawerOpen = ref(false);
-    const drawerMenuContainerRef = ref(null);
     const { cartItemCount } = useCart();
 
     // Header scroll behavior - hide on scroll down, show on scroll up
@@ -1475,6 +1847,7 @@ export default {
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,
+      drawerMenuContainerRef,
       userProfile,
       toggleLeftDrawer,
       navigateTo,
@@ -1547,17 +1920,11 @@ export default {
     pointer-events: auto !important; // Enable interactions when visible
   }
 
-  // When drawer is hidden (closed), hide the menu container too
-  &:not(.q-drawer--on) {
-    .drawer-menu-container {
-      display: none !important;
-      pointer-events: none !important;
-    }
-  }
 }
 
 // Floating menu container - stays fixed in place when scrolling main page
 // When drawer is open, this container stays fixed and doesn't scroll with page content
+// Positioned outside drawer to avoid transform context issues
 .drawer-menu-container {
   position: fixed !important; // Fixed to viewport, not sticky to page scroll
   top: 84px !important; // Position below header
@@ -1567,10 +1934,25 @@ export default {
   overflow-y: auto !important; // Allow scrolling within menu if content is long
   overflow-x: hidden !important;
   z-index: 2001 !important; // Above drawer background but below header
+  background: #f5f5f5 !important; // Match drawer background
   // Ensure it stays in place when scrolling main page
   will-change: transform !important;
-  // Only show when drawer is open (controlled by drawer visibility)
-  pointer-events: auto !important;
+  // Match header transition for smooth movement
+  transition: transform 0.3s ease-in-out !important;
+  
+  // Move with header when header is hidden (same as drawer)
+  &.header-hidden {
+    transform: translateY(calc(-100% - 84px)) !important; // Move up with header
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  
+  // When header is visible, ensure menu is at correct position
+  &:not(.header-hidden) {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 }
 
 // Ensure drawer content is scrollable and takes full height
