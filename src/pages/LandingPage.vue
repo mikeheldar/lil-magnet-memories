@@ -1641,7 +1641,9 @@ export default {
   aspect-ratio: 1 / 1; // Always square
   display: flex;
   justify-content: center;
+  align-items: center; // Center the image vertically
   margin-top: 0;
+  position: relative; // Ensure dots can be positioned relative to container
   padding-top: 0;
   align-items: flex-start; // Always align to top
   position: relative;
@@ -1686,13 +1688,13 @@ export default {
   background: transparent;
 }
 
-// Small screens: match product image square size
+// Small screens: 80% of screen size (same as logo)
 @media (max-width: 600px) {
   .easel-container {
-    // Product images are 100% width with aspect-ratio 1/1, so match that
-    width: 100%;
-    max-width: 100%;
+    width: 80vw !important; // 80% of viewport width (same as logo)
+    max-width: 80vw !important;
     margin: 0 auto; // Center it
+    aspect-ratio: 1 / 1 !important; // Always square
   }
 
   .easel-image {
@@ -1722,13 +1724,17 @@ export default {
   }
 }
 
-// Carousel dots - positioned 20px below the image, always within image bounds
+// Carousel dots - positioned 20px below the image, always visible
 .easel-carousel-dots {
   position: absolute;
   top: 100%; // Position below the image
-  margin-top: 20px; // Exactly 20px below the photo
+  margin-top: 20px !important; // Exactly 20px below the photo - ensure visibility
   left: 50%;
   transform: translateX(-50%);
+  width: 100%; // Full width to center dots properly
+  display: flex !important; // Ensure dots are visible
+  justify-content: center;
+  gap: 8px;
   display: flex;
   gap: 8px; // Fixed gap between dots
   z-index: 10;
@@ -2140,7 +2146,8 @@ export default {
   }
 
   .hero-logo {
-    max-width: 250px;
+    max-width: 80vw !important; // 80% of viewport width on small screens
+    width: 80vw !important;
     margin-bottom: 1rem;
     margin-left: auto;
     margin-right: auto;
@@ -2177,15 +2184,31 @@ export default {
   }
 
   .easel-container {
-    max-width: 70% !important; // Never wider than hero-logo (which is 70%)
-    max-height: 300px; // 20% smaller (375px * 0.8 = 300px)
-    height: 300px;
-    aspect-ratio: 4/5;
+    width: 80vw !important; // 80% of viewport width (same as logo)
+    max-width: 80vw !important;
+    aspect-ratio: 1 / 1 !important; // Always square
+    margin: 0 auto; // Center it
   }
 
   .easel-image {
-    max-width: calc(100% - 6px); // Scale to fit
-    max-height: calc(100% - 6px); // Scale to fit
+    width: 100%;
+    height: 100%;
+    object-fit: cover !important; // Fill square with no empty space
+    object-position: center !important;
+  }
+
+  // Ensure dots are visible below the photo on small screens
+  .easel-carousel-dots {
+    position: absolute !important;
+    top: 100% !important; // Position below the image
+    margin-top: 20px !important; // Exactly 20px below the photo
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    z-index: 10 !important;
+    width: 100% !important; // Full width to center dots properly
   }
 }
 </style>
