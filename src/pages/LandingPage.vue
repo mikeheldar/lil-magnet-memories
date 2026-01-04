@@ -56,20 +56,6 @@
         <div class="hero-text">
           <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets!</h1>
 
-          <div class="hero-actions">
-            <q-btn
-              v-if="showCTAButton"
-              @click="goToUpload"
-              color="primary"
-              size="xl"
-              class="cta-button"
-              :style="{ borderRadius: '30px' }"
-            >
-              <q-icon name="camera_alt" size="24px" class="q-mr-sm" />
-              Start Creating Magnets
-            </q-btn>
-
-          </div>
         </div>
 
         <div class="hero-images">
