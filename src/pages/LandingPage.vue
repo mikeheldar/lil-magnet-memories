@@ -2149,7 +2149,7 @@ export default {
     width: 100%;
     height: 100%;
     object-fit: cover !important; // Fill square with no empty space
-    object-position: center !important;
+    object-position: top center !important; // Align to top, keep top visible when zoomed
   }
 
   // Ensure dots are visible below the photo on small screens

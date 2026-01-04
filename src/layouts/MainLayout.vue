@@ -737,6 +737,7 @@ export default {
       // Always show header on scroll up - check this FIRST before any threshold checks
       if (scrollingUp) {
         headerVisible.value = true;
+        // Allow scrolling to absolute top (scrollTop: 0)
         lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
         return; // Exit early to ensure header shows immediately on any scroll up
       }
@@ -755,6 +756,7 @@ export default {
         headerVisible.value = true;
       }
 
+      // Always allow scrolling to absolute top
       lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
     };
     const userProfile = ref({
@@ -908,8 +910,11 @@ export default {
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
+      // Ensure we can scroll to top (offsetPosition can be 0 or negative)
+      const finalPosition = Math.max(0, offsetPosition);
+
       window.scrollTo({
-        top: offsetPosition,
+        top: finalPosition,
         behavior: 'smooth'
       });
     };
