@@ -326,8 +326,20 @@
     <div
       ref="drawerMenuContainerRef"
       class="drawer-menu-container"
+      :class="{ 'header-hidden': !headerVisible }"
       v-show="leftDrawerOpen"
     >
+      <!-- Drawer header - shows when main header is hidden (scrolled down) -->
+      <div v-if="!headerVisible" class="drawer-header-fill">
+        <q-btn
+          flat
+          dense
+          icon="menu"
+          @click="toggleLeftDrawer"
+          aria-label="Close Menu"
+          class="drawer-close-btn"
+        />
+      </div>
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
@@ -1558,7 +1570,7 @@ export default {
 // Positioned outside drawer to avoid transform context issues
 .drawer-menu-container {
   position: fixed !important; // Fixed to viewport, not sticky to page scroll
-  top: 84px !important; // Position below header
+  top: 84px !important; // Position below header (or at top when header hidden)
   left: 0 !important; // Align with drawer
   width: 300px !important; // Default width for medium+ screens
   max-height: calc(100vh - 84px) !important;
@@ -1570,10 +1582,39 @@ export default {
   transform: translateY(0) !important;
   opacity: 1 !important;
   pointer-events: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+
+  // When header is hidden, extend to top of viewport
+  &.header-hidden {
+    top: 0 !important;
+    max-height: 100vh !important;
+  }
 
   // Full width on small screens
   @media (max-width: 599px) {
     width: 100vw !important;
+  }
+}
+
+// Drawer header fill - appears when main header is hidden
+.drawer-header-fill {
+  height: 84px !important; // Match header height
+  width: 100% !important;
+  background: #f5f5f5 !important; // Match drawer background
+  display: flex !important;
+  align-items: center !important;
+  padding-left: 16px !important;
+  flex-shrink: 0 !important; // Don't shrink
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator
+}
+
+.drawer-close-btn {
+  color: #000000 !important;
+  font-size: 24px !important;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
   }
 }
 
