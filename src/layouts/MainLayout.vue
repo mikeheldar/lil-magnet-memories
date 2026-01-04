@@ -1513,6 +1513,7 @@ export default {
   cursor: pointer;
   user-select: none;
   transition: opacity 0.2s ease;
+  pointer-events: auto !important; // Override parent's pointer-events: none
   
   &:hover {
     opacity: 0.8;
@@ -1532,7 +1533,7 @@ export default {
   max-width: none !important;
   text-align: center;
   z-index: 99999 !important; /* Extremely high z-index - title is ALWAYS on top */
-  pointer-events: none; /* Allow clicks to pass through to elements below */
+  pointer-events: none; /* Allow clicks to pass through to elements below, but children can override */
   flex-shrink: 0 !important; /* Prevent title from shrinking */
   padding: 0 10px !important; /* Reduced padding to allow menus to shift left */
   background: transparent !important; /* Ensure no background interferes */
