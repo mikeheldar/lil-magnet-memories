@@ -1599,10 +1599,11 @@ export default {
   transform: translateY(0) !important;
   opacity: 1 !important;
   pointer-events: auto !important;
-  display: flex !important;
+  // Use flex but don't use !important so v-show can override with display: none
+  display: flex;
   flex-direction: column !important;
-  // Hide when drawer is closed (v-show handles this, but ensure it's hidden)
-  visibility: visible !important;
+  // Don't force visibility - let v-show control it
+  visibility: visible;
 
   // When header is hidden, extend to top of viewport
   &.header-hidden {
