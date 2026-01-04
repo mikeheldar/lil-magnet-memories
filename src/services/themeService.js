@@ -519,9 +519,10 @@ export const themeService = {
 
         if (isLineAModern) {
           const isWhiteHeader = theme.name.includes('White Header');
-          titleSpan.style.setProperty('font-family', "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive", 'important');
+          titleSpan.style.setProperty('font-family', "'Times New Roman', 'Times', serif", 'important');
           titleSpan.style.setProperty('font-weight', '400', 'important');
-          titleSpan.style.setProperty('font-style', 'normal', 'important');
+          titleSpan.style.setProperty('font-style', 'italic', 'important');
+          titleSpan.style.setProperty('font-size', '1.1rem', 'important');
           titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
           titleSpan.style.setProperty('text-transform', 'none', 'important');
           // Force black color for white header, white for black header
@@ -910,9 +911,10 @@ export const themeService = {
         body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
         body .q-header .q-toolbar-title span,
         body .q-header .q-toolbar-title {
-          font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+          font-family: 'Times New Roman', 'Times', serif !important;
           font-weight: 400 !important;
-          font-style: normal !important;
+          font-style: italic !important;
+          font-size: 1.1rem !important;
           letter-spacing: 0.05em !important;
           text-transform: none !important;
           color: #1a1a1a !important;
@@ -1973,9 +1975,10 @@ export const initializeDefaultThemes = async () => {
           .q-layout .q-header .q-toolbar .q-toolbar-title span,
           .q-header .q-toolbar .q-toolbar-title span,
           body .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -2189,9 +2192,10 @@ export const initializeDefaultThemes = async () => {
           .q-layout .q-header .q-toolbar .q-toolbar-title span,
           .q-header .q-toolbar .q-toolbar-title span,
           body .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
@@ -2431,9 +2435,10 @@ export const initializeDefaultThemes = async () => {
           .q-layout .q-header .q-toolbar .q-toolbar-title span,
           .q-header .q-toolbar .q-toolbar-title span,
           body .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -2663,9 +2668,10 @@ export const initializeDefaultThemes = async () => {
           .q-layout .q-header .q-toolbar .q-toolbar-title span,
           .q-header .q-toolbar .q-toolbar-title span,
           body .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
@@ -2938,9 +2944,10 @@ export const initializeDefaultThemes = async () => {
           .q-layout .q-header .q-toolbar .q-toolbar-title span,
           .q-header .q-toolbar .q-toolbar-title span,
           body .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -3165,9 +3172,10 @@ export const initializeDefaultThemes = async () => {
           .q-layout .q-header .q-toolbar .q-toolbar-title span,
           .q-header .q-toolbar .q-toolbar-title span,
           body .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
@@ -3412,9 +3420,10 @@ export const initializeDefaultThemes = async () => {
           .q-layout .q-header .q-toolbar .q-toolbar-title span,
           .q-header .q-toolbar .q-toolbar-title span,
           body .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -3635,9 +3644,10 @@ export const initializeDefaultThemes = async () => {
           .q-layout .q-header .q-toolbar .q-toolbar-title span,
           .q-header .q-toolbar .q-toolbar-title span,
           body .q-header .q-toolbar-title span {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
