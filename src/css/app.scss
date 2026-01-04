@@ -17,11 +17,12 @@
   min-height: 84px !important;
 }
 
-/* Default header text - white, cursive title */
+/* Default header text - white, elegant serif that works consistently across devices */
 .q-header .q-toolbar-title span,
 .q-header .q-toolbar__title span {
-  font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+  font-family: 'Georgia', 'Times New Roman', 'Times', serif !important; // Simple, consistent serif font
   font-weight: 400 !important;
+  font-style: italic !important; // Keep elegant italic style
   color: #ffffff !important;
 }
 

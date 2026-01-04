@@ -1314,6 +1314,15 @@ export default {
   &.test-environment {
     padding-top: 30px; // 20px + 10px = 30px total
   }
+
+  // Reduce whitespace on small screens
+  @media (max-width: 600px) {
+    padding-top: 10px !important; // Much less whitespace between header and logo
+    &.test-environment {
+      padding-top: 15px !important; // Slightly more in test, but still reduced
+    }
+  }
+
   width: 100%;
   max-width: 100%;
   background: #ffffff; // Bright white
@@ -1688,11 +1697,11 @@ export default {
   background: transparent;
 }
 
-// Small screens: 80% of screen size (same as logo)
+// Small screens: 70% of screen size (same as logo)
 @media (max-width: 600px) {
   .easel-container {
-    width: 80vw !important; // 80% of viewport width (same as logo)
-    max-width: 80vw !important;
+    width: 70vw !important; // 70% of viewport width (same as logo)
+    max-width: 70vw !important;
     margin: 0 auto; // Center it
     aspect-ratio: 1 / 1 !important; // Always square
   }
@@ -2099,8 +2108,11 @@ export default {
 
 @media (max-width: 599px) {
   .hero-section {
-    padding: 20px 15px 100px 15px;
+    padding: 10px 15px 100px 15px !important; // Reduced top padding to minimize whitespace
     overflow-x: hidden;
+    &.test-environment {
+      padding-top: 15px !important; // Slightly more in test, but still reduced
+    }
   }
 
   .hero-content {
@@ -2146,8 +2158,8 @@ export default {
   }
 
   .hero-logo {
-    max-width: 80vw !important; // 80% of viewport width on small screens
-    width: 80vw !important;
+    max-width: 70vw !important; // 70% of viewport width on small screens
+    width: 70vw !important;
     margin-bottom: 1rem;
     margin-left: auto;
     margin-right: auto;
@@ -2184,8 +2196,8 @@ export default {
   }
 
   .easel-container {
-    width: 80vw !important; // 80% of viewport width (same as logo)
-    max-width: 80vw !important;
+    width: 70vw !important; // 70% of viewport width (same as logo)
+    max-width: 70vw !important;
     aspect-ratio: 1 / 1 !important; // Always square
     margin: 0 auto; // Center it
   }

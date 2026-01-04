@@ -138,9 +138,9 @@
               headerCSS += `
                 .q-toolbar__title, .q-toolbar__title span, .q-toolbar__title span.text-h5.text-weight-bold,
                 .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold {
-                  font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+                  font-family: 'Georgia', 'Times New Roman', 'Times', serif !important;
                   font-weight: 400 !important;
-                  font-style: normal !important;
+                  font-style: italic !important;
                   letter-spacing: 0.05em !important;
                   text-transform: none !important;
                   color: ${textColor} !important;
@@ -213,9 +213,9 @@
           if (titleSpan) {
             if (isLineAModern) {
               const textColor = isWhiteHeader ? '#1a1a1a' : '#ffffff';
-              titleSpan.style.setProperty('font-family', "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive", 'important');
+              titleSpan.style.setProperty('font-family', "'Georgia', 'Times New Roman', 'Times', serif", 'important');
               titleSpan.style.setProperty('font-weight', '400', 'important');
-              titleSpan.style.setProperty('font-style', 'normal', 'important');
+              titleSpan.style.setProperty('font-style', 'italic', 'important');
               titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
               titleSpan.style.setProperty('text-transform', 'none', 'important');
               titleSpan.style.setProperty('color', textColor, 'important');
@@ -260,8 +260,9 @@
         }
         .q-header .q-toolbar-title span,
         .q-header .q-toolbar__title span {
-          font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive !important;
+          font-family: 'Georgia', 'Times New Roman', 'Times', serif !important;
           font-weight: 400 !important;
+          font-style: italic !important;
           color: #ffffff !important;
         }
         .q-header .q-btn, .q-header .q-btn .q-icon, .q-header .q-chip:not(.test-environment-chip) {
