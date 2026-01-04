@@ -1724,9 +1724,9 @@ export default {
   }
 
   &.dot-active {
-    background: #764ba2 !important; // Purple fill for active dot
-    border-color: #764ba2 !important; // Purple border for active dot
-    box-shadow: 0 0 8px rgba(118, 75, 162, 0.8) !important; // More visible shadow
+    background: var(--q-primary, #2c3e50) !important; // Use primary color from palette (dark blue-grey)
+    border-color: var(--q-primary, #2c3e50) !important; // Use primary color from palette
+    box-shadow: 0 0 8px rgba(44, 62, 80, 0.8) !important; // Shadow matching primary color
   }
 }
 
@@ -1769,7 +1769,7 @@ export default {
     color: white;
     font-weight: bold;
     font-size: 1rem;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.3); // Shadow matching primary color
     z-index: 10;
   }
 
