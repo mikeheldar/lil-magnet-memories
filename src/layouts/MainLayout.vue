@@ -1685,13 +1685,22 @@ export default {
   border-top: 1px solid rgba(255, 255, 255, 0.1); // Subtle border to separate from header
   padding: 8px 20px;
   box-sizing: border-box;
-  z-index: 2000; // Below header but above content
-  position: relative;
+  z-index: 2999; // Just below header but above content
+  position: fixed !important;
+  top: 84px !important; // Position below header (header height)
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
   min-height: 48px; // Consistent height
   transition: transform 0.3s ease-in-out !important; // Match header transition
 
   &.header-hidden {
-    transform: translateY(-100%) !important; // Hide by moving up, same as header
+    transform: translateY(calc(-100% - 84px)) !important; // Hide by moving up (header height + subnav height)
+  }
+  
+  // When visible, ensure it's positioned correctly
+  &:not(.header-hidden) {
+    transform: translateY(0) !important;
   }
 }
 
