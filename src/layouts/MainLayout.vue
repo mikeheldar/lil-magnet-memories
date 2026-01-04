@@ -1741,7 +1741,8 @@ html, body {
   will-change: transform !important; // Optimize for transform animations
 
   &.header-hidden {
-    transform: translateY(-100%) !important;
+    // Move up by full header height (84px) to slide up together with sub-nav
+    transform: translateY(-84px) !important;
     opacity: 0 !important;
     pointer-events: none !important;
   }
@@ -1952,9 +1953,9 @@ html, body {
   will-change: transform !important; // Optimize for transform animations
 
   &.header-hidden {
-    // Move up by exactly the same amount as header moves up (84px header + 48px subnav = 132px total)
-    // This ensures they move together as a single unit
-    transform: translateY(calc(-100% - 84px)) !important;
+    // Move up by the same absolute distance as header (84px) so they slide together as one unit
+    // The sub-nav is positioned at top: 84px, so moving up 84px makes it align with header movement
+    transform: translateY(-84px) !important;
     opacity: 0 !important;
     pointer-events: none !important;
   }
