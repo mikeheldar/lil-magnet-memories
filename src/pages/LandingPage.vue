@@ -1635,11 +1635,11 @@ export default {
 // On medium and large screens, ensure easel aligns properly
 @media (min-width: 600px) {
   .easel-container {
-    align-items: center !important; // Center alignment
+    align-items: flex-start !important; // Align to top
   }
 
   .easel-image {
-    object-position: center !important; // Center for cover fit
+    object-position: top center !important; // Top alignment for cover fit
   }
 }
 
@@ -1648,7 +1648,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover; // Fill container, crop to fit
-  object-position: center; // Center the image
+  object-position: top center; // Align to top, keep top visible when zoomed
   display: block;
   border-radius: 0; // No border radius for edge-to-edge
   border: none; // No border for edge-to-edge
