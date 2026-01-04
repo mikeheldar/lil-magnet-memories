@@ -66,101 +66,6 @@
           </span>
         </q-toolbar-title>
 
-        <!-- Shop Dropdowns for Wide Screens -->
-        <div class="shop-header-dropdowns q-mr-md">
-          <!-- Custom Photo Magnets Dropdown -->
-          <q-btn-dropdown
-            flat
-            dense
-            no-caps
-            label="Custom Photo Magnets"
-            :style="headerButtonStyle"
-            class="shop-header-btn shop-header-btn-custom"
-          >
-            <q-list v-if="customCollections.length > 0">
-              <q-item
-                v-for="collection in customCollections"
-                :key="collection"
-                clickable
-                v-close-popup
-                @click="scrollToSection('custom-products-section', collection)"
-              >
-                <q-item-section>
-                  <q-item-label>{{ collection }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-            <q-list v-else>
-              <q-item clickable v-close-popup @click="scrollToSection('custom-products-section')">
-                <q-item-section>
-                  <q-item-label>Shop Products</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-btn-dropdown>
-
-          <!-- Designer Magnets Dropdown -->
-          <q-btn-dropdown
-            flat
-            dense
-            no-caps
-            label="Designer Magnets"
-            :style="headerButtonStyle"
-            class="shop-header-btn shop-header-btn-designer"
-          >
-            <q-list v-if="designerCollections.length > 0">
-              <q-item
-                v-for="collection in designerCollections"
-                :key="collection"
-                clickable
-                v-close-popup
-                @click="scrollToSection('designer-products-section', collection)"
-              >
-                <q-item-section>
-                  <q-item-label>{{ collection }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-            <q-list v-else>
-              <q-item clickable v-close-popup @click="scrollToSection('designer-products-section')">
-                <q-item-section>
-                  <q-item-label>Shop Products</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-btn-dropdown>
-
-          <!-- Specialty Products Dropdown -->
-          <q-btn-dropdown
-            flat
-            dense
-            no-caps
-            label="Specialty Products"
-            :style="headerButtonStyle"
-            class="shop-header-btn shop-header-btn-specialty"
-          >
-            <q-list v-if="specialtyCollections.length > 0">
-              <q-item
-                v-for="collection in specialtyCollections"
-                :key="collection"
-                clickable
-                v-close-popup
-                @click="scrollToSection('specialty-products-section', collection)"
-              >
-                <q-item-section>
-                  <q-item-label>{{ collection }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-            <q-list v-else>
-              <q-item clickable v-close-popup @click="scrollToSection('specialty-products-section')">
-                <q-item-section>
-                  <q-item-label>Shop Products</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-btn-dropdown>
-        </div>
 
         <!-- About Button (medium and large screens only) -->
         <q-btn
@@ -272,6 +177,101 @@
       </q-toolbar>
     </q-header>
 
+    <!-- Sub-Navigation Bar (below header, medium to large screens only) -->
+    <div class="sub-navigation-bar gt-sm" :class="headerClasses" :style="headerInlineStyle">
+      <div class="sub-nav-container">
+        <!-- Custom Photo Magnets Dropdown -->
+        <q-btn-dropdown
+          flat
+          dense
+          no-caps
+          label="Custom Photo Magnets"
+          class="sub-nav-btn sub-nav-btn-custom"
+        >
+          <q-list v-if="customCollections.length > 0">
+            <q-item
+              v-for="collection in customCollections"
+              :key="collection"
+              clickable
+              v-close-popup
+              @click="scrollToSection('custom-products-section', collection)"
+            >
+              <q-item-section>
+                <q-item-label>{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <q-list v-else>
+            <q-item clickable v-close-popup @click="scrollToSection('custom-products-section')">
+              <q-item-section>
+                <q-item-label>Shop Products</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+
+        <!-- Designer Magnets Dropdown -->
+        <q-btn-dropdown
+          flat
+          dense
+          no-caps
+          label="Designer Magnets"
+          class="sub-nav-btn sub-nav-btn-designer"
+        >
+          <q-list v-if="designerCollections.length > 0">
+            <q-item
+              v-for="collection in designerCollections"
+              :key="collection"
+              clickable
+              v-close-popup
+              @click="scrollToSection('designer-products-section', collection)"
+            >
+              <q-item-section>
+                <q-item-label>{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <q-list v-else>
+            <q-item clickable v-close-popup @click="scrollToSection('designer-products-section')">
+              <q-item-section>
+                <q-item-label>Shop Products</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+
+        <!-- Specialty Products Dropdown -->
+        <q-btn-dropdown
+          flat
+          dense
+          no-caps
+          label="Specialty Products"
+          class="sub-nav-btn sub-nav-btn-specialty"
+        >
+          <q-list v-if="specialtyCollections.length > 0">
+            <q-item
+              v-for="collection in specialtyCollections"
+              :key="collection"
+              clickable
+              v-close-popup
+              @click="scrollToSection('specialty-products-section', collection)"
+            >
+              <q-item-section>
+                <q-item-label>{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <q-list v-else>
+            <q-item clickable v-close-popup @click="scrollToSection('specialty-products-section')">
+              <q-item-section>
+                <q-item-label>Shop Products</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+      </div>
+    </div>
+
     <!-- Market Event Banner removed -->
 
     <!-- Market Event Dialog -->
@@ -322,138 +322,16 @@
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
-        <!-- Shop section (always visible) -->
-        <q-expansion-item
-          icon="shopping_bag"
-          label="Shop"
-          :default-opened="true"
-          header-class="text-grey-8"
-        >
-          <!-- Custom Photo Magnets -->
-          <q-item
-            clickable
-            v-ripple
-            @click="scrollToSection('custom-products-section')"
-            @mouseenter="hoveredCategory = 'custom'"
-            @mouseleave="hoveredCategory = null"
-            class="shop-category-item"
-          >
-            <q-item-section avatar>
-              <q-icon name="camera_alt" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Custom Photo Magnets</q-item-label>
-              <q-item-label caption>Create personalized magnets</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <!-- Show collections on hover for Custom (only if collections exist) -->
-          <div
-            v-if="hoveredCategory === 'custom' && customCollections.length > 0"
-            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
-          >
-            <q-item
-              v-for="collection in customCollections"
-              :key="collection"
-              clickable
-              v-ripple
-              dense
-              @click.stop="scrollToSection('custom-products-section', collection)"
-              class="collection-item"
-            >
-              <q-item-section>
-                <q-item-label class="text-caption">{{ collection }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </div>
-
-          <!-- Designer Magnets -->
-          <q-item
-            clickable
-            v-ripple
-            @click="scrollToSection('designer-products-section')"
-            @mouseenter="hoveredCategory = 'designer'"
-            @mouseleave="hoveredCategory = null"
-            class="shop-category-item"
-          >
-            <q-item-section avatar>
-              <q-icon name="palette" color="secondary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Designer Magnets</q-item-label>
-              <q-item-label caption>Ready-made designs</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <!-- Show collections on hover for Designer (only if collections exist) -->
-          <div
-            v-if="hoveredCategory === 'designer' && designerCollections.length > 0"
-            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
-          >
-            <q-item
-              v-for="collection in designerCollections"
-              :key="collection"
-              clickable
-              v-ripple
-              dense
-              @click.stop="scrollToSection('designer-products-section', collection)"
-              class="collection-item"
-            >
-              <q-item-section>
-                <q-item-label class="text-caption">{{ collection }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </div>
-
-          <!-- Specialty Products -->
-          <q-item
-            clickable
-            v-ripple
-            @click="scrollToSection('specialty-products-section')"
-            @mouseenter="hoveredCategory = 'specialty'"
-            @mouseleave="hoveredCategory = null"
-            class="shop-category-item"
-          >
-            <q-item-section avatar>
-              <q-icon name="star" color="amber" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Specialty Products</q-item-label>
-              <q-item-label caption>Unique specialty items</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <!-- Show collections on hover for Specialty (only if collections exist) -->
-          <div
-            v-if="hoveredCategory === 'specialty' && specialtyCollections.length > 0"
-            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
-          >
-            <q-item
-              v-for="collection in specialtyCollections"
-              :key="collection"
-              clickable
-              v-ripple
-              dense
-              @click.stop="scrollToSection('specialty-products-section', collection)"
-              class="collection-item"
-            >
-              <q-item-section>
-                <q-item-label class="text-caption">{{ collection }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </div>
-
-          <!-- Start Creating Now (last item in Shop section) -->
-          <q-item clickable v-ripple @click="handleUploadClick" class="shop-category-item">
-            <q-item-section avatar>
-              <q-icon name="camera_alt" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Start Creating Now</q-item-label>
-              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-expansion-item>
+        <!-- Start Creating Now -->
+        <q-item clickable v-ripple @click="handleUploadClick">
+          <q-item-section avatar>
+            <q-icon name="camera_alt" color="primary" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Start Creating Now</q-item-label>
+            <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+          </q-item-section>
+        </q-item>
 
         <q-separator class="q-my-md" />
 
@@ -1503,10 +1381,6 @@ export default {
   padding-right: 8px;
 
   // Ensure right side elements respect title space
-  > .shop-header-dropdowns {
-    margin-left: auto;
-    padding-left: 10px; /* Extra padding to keep away from title */
-  }
 }
 
 // Make header title clickable to go home
@@ -1577,10 +1451,6 @@ export default {
   padding-right: 8px;
 
   // Ensure right side elements respect title space
-  > .shop-header-dropdowns {
-    margin-left: auto;
-  }
-
 }
 
 // Keep logo large on medium screens
@@ -1668,53 +1538,49 @@ export default {
   }
 }
 
-// Header shop dropdowns for wide screens
-// Container always visible on screens > 960px, individual buttons hide one by one
-.shop-header-dropdowns {
+// Sub-Navigation Bar (below header, medium to large screens only)
+.sub-navigation-bar {
   display: flex;
-  gap: 8px;
+  justify-content: center;
   align-items: center;
+  width: 100%;
+  background: inherit; // Inherit header background from theme
+  border-top: 1px solid rgba(255, 255, 255, 0.1); // Subtle border to separate from header
+  padding: 8px 20px;
+  box-sizing: border-box;
+  z-index: 2000; // Below header but above content
   position: relative;
-  z-index: 1; /* Lower than title (9999) to ensure title stays on top */
-  margin-left: auto; /* Push to the right */
-  flex-shrink: 0; /* Prevent shrinking */
-  margin-right: 85px; /* Shift menus 85px left to avoid About button (moved 15px right from 100px) */
-  padding-left: 10px; /* Reduced padding to bring menus closer to title */
-  // Don't allow menus to extend into the center 300px where title is (225px min-width + 75px padding)
-  max-width: calc(50% - 150px); /* Leave 300px protected zone in center for title */
 }
 
-// Individual button base styles - visible by default on wide screens
-.shop-header-btn-custom,
-.shop-header-btn-designer,
-.shop-header-btn-specialty {
-  display: flex !important;
-  flex-shrink: 0; /* Don't shrink buttons */
-}
-
-// Hide dropdowns one by one from RIGHT to LEFT as screen gets smaller
-// Each menu hides individually BEFORE covering the title or overlapping About/user
-// Breakpoints are conservative to ensure title is NEVER cut off and About doesn't overlap
-// Hide Specialty Products first (rightmost menu) - hide early to protect title and About
-@media (max-width: 1100px) {
-  // Increase specificity by including parent toolbar class
-  .q-toolbar .shop-header-dropdowns .shop-header-btn-specialty,
-  .shop-header-dropdowns .shop-header-btn-specialty.shop-header-btn-specialty {
+// Hide on small screens
+@media (max-width: 767px) {
+  .sub-navigation-bar {
     display: none !important;
   }
 }
 
-// Hide Designer Magnets next (middle menu) - hide before reaching About button
-@media (max-width: 1250px) {
-  .shop-header-dropdowns .shop-header-btn-designer {
-    display: none !important;
-  }
+.sub-nav-container {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-// Hide Custom Photo Magnets last (leftmost menu) - hide well before About button to prevent overlap
-@media (max-width: 1430px) {
-  .shop-header-dropdowns .shop-header-btn-custom {
-    display: none !important;
+.sub-nav-btn {
+  min-width: auto;
+  position: relative;
+  
+  .q-btn__content {
+    padding: 0 12px;
+    color: inherit; // Inherit text color from header theme
+  }
+  
+  // Ensure dropdown menu appears below the button
+  .q-menu {
+    margin-top: 4px;
   }
 }
 
@@ -1743,37 +1609,6 @@ export default {
 }
 
 // Title is NEVER hidden - it's always visible
-
-// Hide entire dropdown container only on mobile (< 960px) - menus are in sidebar
-@media (max-width: 960px) {
-  .shop-header-dropdowns {
-    display: none !important;
-  }
-}
-
-// Ensure container is visible on screens > 960px
-@media (min-width: 961px) {
-  .shop-header-dropdowns {
-    display: flex !important;
-  }
-}
-
-.shop-header-btn {
-  min-width: auto;
-  position: relative;
-  z-index: 1; /* Lower than title z-index (9999) */
-  /* Don't set display here - let individual button classes control it */
-
-  .q-btn__content {
-    padding: 0 8px;
-  }
-
-  // Ensure dropdown menu appears below the button, not overlapping title
-  :deep(.q-menu) {
-    z-index: 50; /* Dropdown menu z-index, but still below title (9999) */
-    margin-top: 4px; /* Small gap from button */
-  }
-}
 
 .user-avatar {
   border: none !important;
