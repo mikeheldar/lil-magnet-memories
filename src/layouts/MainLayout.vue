@@ -320,10 +320,12 @@
       :breakpoint="0"
       :width="300"
     >
-      <q-list>
-        <q-item-label header class="text-grey-8"> Navigation </q-item-label>
+      <!-- Floating menu container that stays visible when scrolling -->
+      <div class="drawer-menu-container">
+        <q-list>
+          <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
-        <!-- Home (always at top) -->
+          <!-- Home (always at top) -->
         <q-item clickable v-ripple @click="navigateTo('/')">
           <q-item-section avatar>
             <q-icon name="home" color="primary" />
@@ -1520,7 +1522,7 @@ export default {
   &.header-hidden {
     transform: translateY(calc(-100% - 84px)) !important; // Move up completely (drawer height + header height) to hide it
   }
-  
+
   // When visible (header is visible), ensure drawer is at correct position
   // This makes the drawer slide down and appear when scrolling up
   &:not(.header-hidden) {
@@ -1529,6 +1531,21 @@ export default {
     visibility: visible !important;
     pointer-events: auto !important; // Enable interactions when visible
   }
+}
+
+// Floating menu container - stays visible when scrolling (like print template)
+// This div floats and stays visible as you scroll up and down
+.drawer-menu-container {
+  position: sticky !important;
+  top: 84px !important; // Position below header
+  align-self: flex-start !important;
+  width: 100% !important;
+  max-height: calc(100vh - 84px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 10 !important;
+  // Ensure it stays in place when scrolling
+  will-change: transform !important;
 }
 
 // Ensure drawer content is scrollable and takes full height

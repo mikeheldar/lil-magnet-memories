@@ -356,13 +356,27 @@ export const storage = new Proxy({}, {
 });
 
 // Initialize Auth - lazy initialization using Proxy
+// Fixed to properly handle property descriptors and setters to avoid _canInitEmulator read-only error
 let authInstance = null;
 export const auth = new Proxy({}, {
   get(target, prop) {
     if (!authInstance) {
       authInstance = getAuth(getApp());
     }
-    return authInstance[prop];
+    const value = authInstance[prop];
+    // If it's a function, bind it to the auth instance
+    if (typeof value === 'function') {
+      return value.bind(authInstance);
+    }
+    return value;
+  },
+  set(target, prop, value) {
+    if (!authInstance) {
+      authInstance = getAuth(getApp());
+    }
+    // Allow setting properties on the actual auth instance
+    authInstance[prop] = value;
+    return true;
   },
   getOwnPropertyDescriptor(target, prop) {
     if (!authInstance) {
@@ -375,6 +389,18 @@ export const auth = new Proxy({}, {
       authInstance = getAuth(getApp());
     }
     return Object.keys(authInstance);
+  },
+  has(target, prop) {
+    if (!authInstance) {
+      authInstance = getAuth(getApp());
+    }
+    return prop in authInstance;
+  },
+  defineProperty(target, prop, descriptor) {
+    if (!authInstance) {
+      authInstance = getAuth(getApp());
+    }
+    return Object.defineProperty(authInstance, prop, descriptor);
   }
 });
 
