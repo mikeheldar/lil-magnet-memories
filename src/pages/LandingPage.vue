@@ -1675,8 +1675,7 @@ export default {
 
 .easel-container {
   width: 100%;
-  max-height: 600px;
-  height: 600px;
+  aspect-ratio: 1 / 1; // Always square
   display: flex;
   justify-content: center;
   margin-top: 0;
@@ -1686,7 +1685,7 @@ export default {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: visible; // Allow image to be visible
+  overflow: hidden; // Hide overflow for square images
 
   img {
     display: block;
@@ -1727,34 +1726,30 @@ export default {
 }
 
 .easel-image {
-  // Ensure image fits within container while maintaining aspect ratio
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  min-width: 280px; // Match CTA button width on mobile
-  object-fit: contain; // Maintain aspect ratio, fit within bounds - prevents cut-off
+  // Square image that fills container with no empty space (like product images)
+  width: 100%;
+  height: 100%;
+  object-fit: cover; // Fill square, crop to fit (like product images)
   object-position: center; // Center the image
   display: block;
   border-radius: 17px;
-  // Border always around the photo - no internal padding that creates white space
   border: 3px solid rgba(192, 192, 192, 0.8);
-  padding: 0; // No padding inside border
-  box-sizing: border-box; // Border included in width/height calculations
+  padding: 0;
+  box-sizing: border-box;
   // Use filter drop-shadow for natural, unclipped shadows
   filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.12))
           drop-shadow(0 8px 50px rgba(0, 0, 0, 0.08))
           drop-shadow(0 2px 15px rgba(0, 0, 0, 0.1));
   transition: opacity 0.5s ease;
-  // Ensure image content is always visible within border
   background: transparent;
 }
 
-// On small screens, make easel image width match hero logo width
+// Small screens: match product image square size
 @media (max-width: 600px) {
   .easel-container {
-    max-width: 250px; // Match hero logo width on small screens (from .hero-logo max-width: 250px)
-    width: 250px;
+    // Product images are 100% width with aspect-ratio 1/1, so match that
+    width: 100%;
+    max-width: 100%;
     margin: 0 auto; // Center it
   }
 
@@ -1769,6 +1764,25 @@ export default {
     height: 100%;
     object-fit: cover !important; // Fill square with no empty space
     object-position: center !important;
+  }
+}
+
+// Medium screens: when big logo shows, match big logo width (70% of content area)
+@media (min-width: 601px) and (max-width: 1023px) {
+  .easel-container {
+    width: 70%; // Match big logo width
+    max-width: 70%;
+    margin: 0 auto; // Center it
+  }
+}
+
+// Large screens: when page splits (1024px+), square with max width of its grid section
+@media (min-width: 1024px) {
+  .easel-container {
+    // In grid layout, hero-images is 1fr (50% minus gap), so easel should fill its section
+    width: 100%;
+    max-width: 100%; // Fill its grid column (1fr)
+    margin: 0; // No auto margin in grid
   }
 }
 
