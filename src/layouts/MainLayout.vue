@@ -57,8 +57,8 @@
 
         <!-- Page title in center -->
         <q-toolbar-title class="text-center no-ellipsis" :style="headerTitleStyle">
-          <span 
-            class="text-h5 text-weight-bold header-title-clickable" 
+          <span
+            class="text-h5 text-weight-bold header-title-clickable"
             :style="headerTitleSpanStyle"
             @click="$router.push('/')"
           >
@@ -1514,11 +1514,11 @@ export default {
   user-select: none;
   transition: opacity 0.2s ease;
   pointer-events: auto !important; // Override parent's pointer-events: none
-  
+
   &:hover {
     opacity: 0.8;
   }
-  
+
   &:active {
     opacity: 0.6;
   }

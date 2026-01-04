@@ -1550,13 +1550,13 @@ export default {
 }
 
 .hero-title {
-  font-size: clamp(1.2rem, 3vw, 2rem); // Smaller and less prominent
-  font-weight: 500; // Lighter weight
-  font-family: 'Georgia', 'Times New Roman', serif; // Less italic, more elegant
+  font-size: clamp(1.2rem, 3vw, 2rem); // Responsive size
+  font-weight: 500 !important; // Lighter weight
+  font-family: 'Georgia', 'Times New Roman', serif !important; // Elegant serif font - consistent across all devices
   margin-top: 0; // No top margin to align with easel container
   padding-top: 0; // No top padding
-  font-style: italic; // Keep italic but less pronounced with this font
-  transform: skew(-2deg); // Slight skew for subtle italic effect instead of full italic
+  font-style: italic !important; // Keep italic
+  transform: skew(-2deg) !important; // Slight skew for subtle italic effect
   margin: 0; // Remove margins, let flex gap handle spacing
   line-height: 1.3;
   color: #2c3e50; // Dark grey-blue for better readability
@@ -2066,6 +2066,10 @@ export default {
 
   .hero-title {
     font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+    font-family: 'Georgia', 'Times New Roman', serif !important; // Ensure same font on medium screens
+    font-weight: 500 !important; // Same weight
+    font-style: italic !important; // Same style
+    transform: skew(-2deg) !important; // Same transform
     white-space: normal;
     text-align: center;
     width: 100%;
@@ -2114,6 +2118,10 @@ export default {
 
   .hero-title {
     font-size: clamp(1.2rem, 5vw, 1.8rem);
+    font-family: 'Georgia', 'Times New Roman', serif !important; // Ensure same font on mobile
+    font-weight: 500 !important; // Same weight
+    font-style: italic !important; // Same style
+    transform: skew(-2deg) !important; // Same transform
     white-space: normal;
     text-align: center;
     width: 100%;
