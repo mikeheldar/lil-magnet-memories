@@ -3857,9 +3857,10 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title .text-h5,
           .q-header .q-toolbar-title .text-weight-bold {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -4036,9 +4037,10 @@ export const initializeDefaultThemes = async () => {
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar-title .text-h5,
           .q-header .q-toolbar-title .text-weight-bold {
-            font-family: 'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', cursive !important;
+            font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
-            font-style: normal !important;
+            font-style: italic !important;
+            font-size: 1.1rem !important;
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
