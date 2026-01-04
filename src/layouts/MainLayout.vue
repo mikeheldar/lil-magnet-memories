@@ -1091,12 +1091,13 @@ export default {
 
     // Check theme from Firebase in background (non-blocking)
     checkActiveTheme();
-    // Watch for drawer opening and scroll menu to top
+    // Watch for drawer opening and scroll menu to top, reset scroll position
     watch(leftDrawerOpen, (isOpen) => {
       if (isOpen && drawerMenuContainerRef.value) {
         // Use nextTick to ensure DOM is updated
         setTimeout(() => {
           if (drawerMenuContainerRef.value) {
+            // Always scroll to top when drawer opens
             drawerMenuContainerRef.value.scrollTop = 0;
           }
         }, 0);
@@ -1117,6 +1118,27 @@ export default {
 
       // Add scroll listener for header hide/show behavior
       window.addEventListener('scroll', handleScroll, { passive: true });
+
+      // Listen for window resize to handle screen size changes
+      const handleResize = () => {
+        const isSmall = window.innerWidth <= 599;
+        if (isSmall) {
+          // On small screens, prevent scrolling only if drawer is open
+          if (leftDrawerOpen.value) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+          } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+          }
+          headerVisible.value = true; // Always show header on small screens
+        } else {
+          // On larger screens, always allow scrolling
+          document.body.style.overflow = '';
+          document.documentElement.style.overflow = '';
+        }
+      };
+      window.addEventListener('resize', handleResize);
 
       // No custom drawer positioning needed - Quasar's layout view "hHh lpR fFf" handles it automatically
     });
@@ -1536,11 +1558,15 @@ export default {
 </script>
 
 <style lang="scss">
-// Hamburger menu icon - bigger size
+// Hamburger menu icon - bigger size, consistent positioning
 .hamburger-menu-btn {
+  position: relative !important; // Keep position stable
   .q-icon {
     font-size: 28px !important; // Increased from default ~24px
   }
+  // Ensure button doesn't change size or position on scroll
+  min-width: 48px !important;
+  min-height: 48px !important;
 }
 
 // Ensure header is above drawer
@@ -1605,10 +1631,23 @@ export default {
   // Don't force visibility - let v-show control it
   visibility: visible;
 
-  // When header is hidden, extend to top of viewport
+  // When header is hidden, extend to top of viewport and account for header fill
   &.header-hidden {
     top: 0 !important;
     max-height: 100vh !important;
+    
+    // Ensure menu content starts below the black header fill (132px)
+    .q-list {
+      margin-top: 0 !important;
+    }
+  }
+
+  // On medium+ screens, account for sub-nav bar when header is visible
+  @media (min-width: 768px) {
+    &:not(.header-hidden) {
+      top: calc(84px + 48px) !important; // Header + sub-nav
+      max-height: calc(100vh - 84px - 48px) !important;
+    }
   }
 
   // Full width on small screens
@@ -1618,9 +1657,9 @@ export default {
 }
 
 // Drawer header fill - appears when main header is hidden
-// Matches main header style (black background, white hamburger)
+// Matches main header + sub-nav height (84px + 48px = 132px)
 .drawer-header-fill {
-  height: 84px !important; // Match header height
+  height: 132px !important; // Match header (84px) + sub-nav (48px) height
   width: 100% !important;
   background: #000000 !important; // Match main header black background
   display: flex !important;
@@ -1632,7 +1671,11 @@ export default {
 
 .drawer-close-btn {
   color: #ffffff !important; // White hamburger icon
-  font-size: 24px !important;
+  font-size: 28px !important; // Match main header hamburger size
+  
+  .q-icon {
+    font-size: 28px !important; // Ensure icon size matches
+  }
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
