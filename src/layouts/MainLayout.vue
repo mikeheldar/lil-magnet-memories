@@ -320,8 +320,8 @@
       :breakpoint="0"
       :width="300"
     >
-      <!-- Floating menu container that stays visible when scrolling -->
-      <div ref="drawerMenuContainerRef" class="drawer-menu-container">
+      <!-- Floating menu container that stays fixed when scrolling main page -->
+      <div ref="drawerMenuContainerRef" class="drawer-menu-container" v-show="leftDrawerOpen">
         <q-list>
           <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
@@ -724,6 +724,7 @@ export default {
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
     const leftDrawerOpen = ref(false);
+    const drawerMenuContainerRef = ref(null);
     const { cartItemCount } = useCart();
 
     // Header scroll behavior - hide on scroll down, show on scroll up
@@ -1524,7 +1525,8 @@ export default {
   height: auto !important; // Let bottom handle height
   max-height: calc(100vh - 84px) !important;
   z-index: 2000 !important; // Below header but above content
-  overflow-y: auto !important; // Allow scrolling within drawer if content is long
+  overflow: hidden !important; // Don't allow drawer itself to scroll - menu container handles it
+  overflow-y: hidden !important;
   overflow-x: hidden !important;
   // Move with header on scroll - same transition as header
   transition: transform 0.3s ease-in-out !important;
@@ -1544,21 +1546,31 @@ export default {
     visibility: visible !important;
     pointer-events: auto !important; // Enable interactions when visible
   }
+
+  // When drawer is hidden (closed), hide the menu container too
+  &:not(.q-drawer--on) {
+    .drawer-menu-container {
+      display: none !important;
+      pointer-events: none !important;
+    }
+  }
 }
 
-// Floating menu container - stays visible when scrolling (like print template)
-// This div floats and stays visible as you scroll up and down
+// Floating menu container - stays fixed in place when scrolling main page
+// When drawer is open, this container stays fixed and doesn't scroll with page content
 .drawer-menu-container {
-  position: sticky !important;
+  position: fixed !important; // Fixed to viewport, not sticky to page scroll
   top: 84px !important; // Position below header
-  align-self: flex-start !important;
-  width: 100% !important;
+  left: 0 !important; // Align with drawer
+  width: 300px !important; // Match drawer width
   max-height: calc(100vh - 84px) !important;
-  overflow-y: auto !important;
+  overflow-y: auto !important; // Allow scrolling within menu if content is long
   overflow-x: hidden !important;
-  z-index: 10 !important;
-  // Ensure it stays in place when scrolling
+  z-index: 2001 !important; // Above drawer background but below header
+  // Ensure it stays in place when scrolling main page
   will-change: transform !important;
+  // Only show when drawer is open (controlled by drawer visibility)
+  pointer-events: auto !important;
 }
 
 // Ensure drawer content is scrollable and takes full height
