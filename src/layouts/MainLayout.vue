@@ -57,7 +57,13 @@
 
         <!-- Page title in center -->
         <q-toolbar-title class="text-center no-ellipsis" :style="headerTitleStyle">
-          <span class="text-h5 text-weight-bold" :style="headerTitleSpanStyle">{{ pageTitle }}</span>
+          <span 
+            class="text-h5 text-weight-bold header-title-clickable" 
+            :style="headerTitleSpanStyle"
+            @click="$router.push('/')"
+          >
+            {{ pageTitle }}
+          </span>
         </q-toolbar-title>
 
         <!-- Shop Dropdowns for Wide Screens -->
@@ -1499,6 +1505,21 @@ export default {
   > .shop-header-dropdowns {
     margin-left: auto;
     padding-left: 10px; /* Extra padding to keep away from title */
+  }
+}
+
+// Make header title clickable to go home
+.header-title-clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s ease;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+  
+  &:active {
+    opacity: 0.6;
   }
 }
 
