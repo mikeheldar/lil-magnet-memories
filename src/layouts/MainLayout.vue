@@ -1499,8 +1499,8 @@ export default {
 
 // Drawer positioned under header - Quasar's layout view "hHh lpR fFf" handles this automatically
 // The 'p' in 'lpR' means the drawer is positioned below the header
-// Make drawer sticky/fixed when open so it stays visible while scrolling
-// The drawer should "float" and stay in the same position as user scrolls
+// Make drawer sticky/fixed when open and move with header on scroll
+// The drawer should move up/down with the header when scrolling
 .q-drawer.drawer-under-header {
   position: fixed !important;
   top: 84px !important; // Position below header (header height)
@@ -1511,8 +1511,19 @@ export default {
   z-index: 2000 !important; // Below header but above content
   overflow-y: auto !important; // Allow scrolling within drawer if content is long
   overflow-x: hidden !important;
-  transform: none !important; // Prevent any transforms that might move it
-  will-change: auto !important; // Optimize for fixed positioning
+  // Move with header on scroll - same transition as header
+  transition: transform 0.3s ease-in-out !important;
+  will-change: transform !important; // Optimize for transform animations
+  
+  // When header is hidden, move drawer up with it (same distance as header)
+  &.header-hidden {
+    transform: translateY(-84px) !important; // Move up by header height to stay aligned with hidden header
+  }
+  
+  // When visible, ensure it's at the correct position
+  &:not(.header-hidden) {
+    transform: translateY(0) !important;
+  }
 }
 
 // Ensure drawer content is scrollable and takes full height
@@ -1528,10 +1539,9 @@ export default {
 body .q-layout .q-drawer.drawer-under-header,
 html body .q-layout .q-drawer.drawer-under-header {
   position: fixed !important;
-  // Prevent Quasar from applying any transforms or positioning
-  transform: none !important;
   margin: 0 !important;
-  // Ensure drawer doesn't move with page scroll
+  // Allow transform for header sync animation
+  transition: transform 0.3s ease-in-out !important;
   will-change: transform !important;
 }
 
