@@ -27,12 +27,12 @@ export const config = {
   get environment() {
     return getIsTest() ? 'test' : 'production';
   },
-
+  
   // Firebase configuration - will use different projects for test vs production
   get firebase() {
     const test = getIsTest();
     return {
-      // Use test Firebase config if on test domain
+    // Use test Firebase config if on test domain
       apiKey: test ? import.meta.env.VITE_FIREBASE_API_KEY_TEST : import.meta.env.VITE_FIREBASE_API_KEY,
       authDomain: test ? import.meta.env.VITE_FIREBASE_AUTH_DOMAIN_TEST : import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
       projectId: test ? import.meta.env.VITE_FIREBASE_PROJECT_ID_TEST : import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -41,7 +41,7 @@ export const config = {
       appId: test ? import.meta.env.VITE_FIREBASE_APP_ID_TEST : import.meta.env.VITE_FIREBASE_APP_ID,
     };
   },
-
+  
   // App configuration
   get app() {
     const test = getIsTest();
@@ -51,7 +51,7 @@ export const config = {
       description: test ? 'Test environment for Lil Magnet Memories' : 'Photo upload form for Lil Magnet Memories custom magnets',
     };
   },
-
+  
   // Email configuration
   get email() {
     const test = getIsTest();

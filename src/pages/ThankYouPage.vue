@@ -66,12 +66,12 @@
             <div class="delivery-info q-mb-sm">
               <div class="row justify-between items-center text-body1 text-weight-medium">
                 <div class="row items-center">
-                  <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
+                <q-icon name="local_shipping" size="20px" class="q-mr-sm" />
                   <span>Delivery Option</span>
                 </div>
                 <div class="text-primary">
                   {{ deliveryOptionLabel }}
-                </div>
+              </div>
               </div>
             </div>
 
@@ -80,12 +80,12 @@
             <div class="payment-info q-mb-sm">
               <div class="row justify-between items-center text-body1 text-weight-medium">
                 <div class="row items-center">
-                  <q-icon name="credit_card" size="20px" class="q-mr-sm" />
+                <q-icon name="credit_card" size="20px" class="q-mr-sm" />
                   <span>Payment Method</span>
                 </div>
                 <div class="text-primary">
                   {{ displayPaymentMethod }}
-                </div>
+              </div>
               </div>
             </div>
           </q-card-section>

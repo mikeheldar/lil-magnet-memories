@@ -731,6 +731,7 @@ export default {
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
     const leftDrawerOpen = ref(false);
+    const drawerMenuContainerRef = ref(null);
     const { cartItemCount } = useCart();
 
     // Header scroll behavior - hide on scroll down, show on scroll up
@@ -1088,6 +1089,13 @@ export default {
     onMounted(() => {
       checkActiveTheme();
       // Real-time listener in themeService handles theme changes automatically
+
+      // Ensure header is visible on initial page load
+      const initialScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (initialScrollTop <= 100) {
+        headerVisible.value = true;
+      }
+      lastScrollTop = initialScrollTop;
 
       // Add scroll listener for header hide/show behavior
       window.addEventListener('scroll', handleScroll, { passive: true });
@@ -1849,23 +1857,14 @@ html, body {
   width: 100% !important;
   min-height: 48px; // Consistent height
   transition: transform 0.3s ease-in-out !important; // Match header transition
-  // Ensure sub-nav is visible by default
-  transform: translateY(0) !important;
-  opacity: 1 !important;
-  visibility: visible !important;
 
   &.header-hidden {
     transform: translateY(calc(-100% - 84px)) !important; // Hide by moving up (header height + subnav height)
-    opacity: 0 !important;
-    pointer-events: none !important;
   }
 
   // When visible, ensure it's positioned correctly
   &:not(.header-hidden) {
     transform: translateY(0) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
   }
 }
 

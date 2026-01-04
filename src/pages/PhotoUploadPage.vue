@@ -39,7 +39,7 @@
             />
             Photo Upload Form
           </div>
-
+          
           <div class="text-body2 text-grey-6 text-center q-mb-md">
             <span v-if="isAtMarketEvent"
               >Create custom magnets for market event pickup</span
@@ -272,25 +272,25 @@
             <div class="q-mb-md">
               <div class="text-subtitle2 q-mb-sm text-weight-medium">
                 Product <span class="text-negative">*</span>
-              </div>
-              <q-select
-                v-model="selectedProductId"
-                :options="productOptions"
-                option-label="description"
-                option-value="id"
-                emit-value
-                map-options
+                </div>
+                <q-select
+                  v-model="selectedProductId"
+                  :options="productOptions"
+                  option-label="description"
+                  option-value="id"
+                  emit-value
+                  map-options
                 :label="selectedProduct ? selectedProduct.description : 'Select a product'"
-                filled
-                :rules="[(val) => !!val || 'Please select a product']"
-                :loading="loadingProducts"
-                @update:model-value="onProductChange"
-                :disable="
-                  loadingProducts ||
-                  !productOptions ||
-                  productOptions.length === 0
-                "
-              >
+                  filled
+                  :rules="[(val) => !!val || 'Please select a product']"
+                  :loading="loadingProducts"
+                  @update:model-value="onProductChange"
+                  :disable="
+                    loadingProducts ||
+                    !productOptions ||
+                    productOptions.length === 0
+                  "
+                >
                 <template v-slot:selected>
                   <div v-if="selectedProduct" class="row items-center full-width">
                     <q-icon name="inventory_2" class="q-mr-sm text-primary" />
@@ -307,47 +307,47 @@
                     </q-chip>
                   </div>
                 </template>
-                <template v-slot:option="scope">
-                  <q-item
-                    v-bind="scope.itemProps"
-                    v-if="
-                      scope &&
-                      scope.opt &&
-                      scope.opt.id &&
-                      scope.opt.description
-                    "
-                  >
-                    <q-item-section>
-                      <q-item-label>{{ scope.opt.description }}</q-item-label>
-                      <q-item-label
-                        caption
-                        v-if="
-                          scope.opt.pricing &&
-                          typeof scope.opt.pricing === 'object'
-                        "
-                      >
-                        <div
-                          v-for="(price, qty) in scope.opt.pricing"
-                          :key="String(qty)"
-                          class="text-caption"
+                  <template v-slot:option="scope">
+                    <q-item
+                      v-bind="scope.itemProps"
+                      v-if="
+                        scope &&
+                        scope.opt &&
+                        scope.opt.id &&
+                        scope.opt.description
+                      "
+                    >
+                      <q-item-section>
+                        <q-item-label>{{ scope.opt.description }}</q-item-label>
+                        <q-item-label
+                          caption
+                          v-if="
+                            scope.opt.pricing &&
+                            typeof scope.opt.pricing === 'object'
+                          "
                         >
-                          {{ qty }}x for ${{ Number(price).toFixed(2) }}
-                        </div>
-                      </q-item-label>
-                    </q-item-section>
-                    <q-item-section side v-if="scope.opt.isDefault">
-                      <q-chip
-                        color="green"
-                        text-color="white"
-                        size="sm"
-                        icon="star"
-                      >
-                        Default
-                      </q-chip>
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
+                          <div
+                            v-for="(price, qty) in scope.opt.pricing"
+                            :key="String(qty)"
+                            class="text-caption"
+                          >
+                            {{ qty }}x for ${{ Number(price).toFixed(2) }}
+                          </div>
+                        </q-item-label>
+                      </q-item-section>
+                      <q-item-section side v-if="scope.opt.isDefault">
+                        <q-chip
+                          color="green"
+                          text-color="white"
+                          size="sm"
+                          icon="star"
+                        >
+                          Default
+                        </q-chip>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
               <!-- Show pricing info below the dropdown when product is selected -->
               <div
                 v-if="selectedProduct && selectedProduct.pricing && Object.keys(selectedProduct.pricing).length > 0"
@@ -593,39 +593,39 @@
           <q-list dense>
             <!-- Market Event Mode - Pay Online -->
             <template v-if="isAtMarketEvent && paymentChoice === 'pay_online'">
-              <q-item>
-                <q-item-section avatar>
-                  <q-icon name="check_circle" color="positive" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="check_circle" color="positive" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label
                     >We'll add this to cart and take you to the payment
                     page</q-item-label
-                  >
-                </q-item-section>
-              </q-item>
-              <q-item>
-                <q-item-section avatar>
-                  <q-icon name="check_circle" color="positive" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label
+                >
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="check_circle" color="positive" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label
                     >We'll send you an email notification about your magnets
                     when your order is accepted, in progress, and
                     ready!</q-item-label
-                  >
-                </q-item-section>
-              </q-item>
-              <q-item>
-                <q-item-section avatar>
-                  <q-icon name="check_circle" color="positive" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label
+                >
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="check_circle" color="positive" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label
                     >Pickup your magnets at the tent</q-item-label
-                  >
-                </q-item-section>
-              </q-item>
+                >
+              </q-item-section>
+            </q-item>
             </template>
 
             <!-- Market Event Mode - Pay at Tent -->
@@ -1028,8 +1028,8 @@ export default {
 
     // Handle submit button click - show validation errors if validation fails
     const handleSubmitClick = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
 
       // Check for photos first
       const hasPhotos = selectedFiles.value && selectedFiles.value.length > 0;
@@ -1073,42 +1073,42 @@ export default {
           missingFields.push('Valid Email');
         }
 
-        safeNotify({
-          type: 'warning',
+          safeNotify({
+            type: 'warning',
           message: 'Please add your personal information',
           caption: `Please fill in: ${missingFields.join(', ')}`,
-          position: 'top',
-          timeout: 4000,
-        });
+            position: 'top',
+            timeout: 4000,
+          });
 
         // Scroll to personal info section
-        setTimeout(() => {
+          setTimeout(() => {
           if (personalInfoSection.value) {
             personalInfoSection.value.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-            });
+                behavior: 'smooth',
+                block: 'center',
+              });
           }
           // Also focus on first missing field
           if (!formData.value.firstName && firstNameInput.value) {
             setTimeout(() => {
               firstNameInput.value.focus();
             }, 300);
-          } else if (!formData.value.lastName && lastNameInput.value) {
+            } else if (!formData.value.lastName && lastNameInput.value) {
             setTimeout(() => {
               lastNameInput.value.focus();
             }, 300);
-          } else if (
-            (!formData.value.email || !isValidEmail(formData.value.email)) &&
-            emailInput.value
-          ) {
+            } else if (
+              (!formData.value.email || !isValidEmail(formData.value.email)) &&
+              emailInput.value
+            ) {
             setTimeout(() => {
               emailInput.value.focus();
             }, 300);
-          }
-        }, 100);
+            }
+          }, 100);
         return;
-      }
+        }
 
       // If all validation passes, proceed with submission
       if (canSubmit.value) {
@@ -1821,21 +1821,21 @@ export default {
 
         // Only set defaults if we have products loaded AND no product is already selected
         if (!productToSelect && products.value.length > 0) {
-          // If not found in route, check for default product
+        // If not found in route, check for default product
           console.log('🔍 [LOAD] Looking for default product');
           productToSelect = products.value.find((p) => p.isDefault === true);
           if (productToSelect) {
             console.log('✅ [LOAD] Found default product:', productToSelect.description);
-          }
+        }
 
-          // If still not found, use first custom product
-          if (!productToSelect) {
+        // If still not found, use first custom product
+        if (!productToSelect) {
             console.log('🔍 [LOAD] Looking for first custom product');
-            productToSelect = products.value.find(
-              (p) =>
-                p.category === 'custom' ||
-                (!p.category && (!p.productType || p.productType === 'custom'))
-            );
+          productToSelect = products.value.find(
+            (p) =>
+              p.category === 'custom' ||
+              (!p.category && (!p.productType || p.productType === 'custom'))
+          );
             if (productToSelect) {
               console.log('✅ [LOAD] Found first custom product:', productToSelect.description);
             }
@@ -1922,11 +1922,11 @@ export default {
           const storedType = localStorage.getItem('lil-magnet-customer-type');
           if (!storedType) {
             // No preference set - auto-set to market for anonymous users at events
-            setCustomerType(CUSTOMER_TYPES.MARKET);
-            console.log(
-              '✅ Anonymous user auto-checked in to active market event:',
-              activeEvent.name
-            );
+          setCustomerType(CUSTOMER_TYPES.MARKET);
+          console.log(
+            '✅ Anonymous user auto-checked in to active market event:',
+            activeEvent.name
+          );
           } else {
             // User has a preference - respect it
             console.log(
@@ -2073,7 +2073,7 @@ export default {
                     );
                     if (savedProduct) {
                       selectedProductId.value = parsed.selectedProductId;
-                      console.log(
+                console.log(
                         '✅ [WATCH] Restored product selection from localStorage:',
                         savedProduct.description
                       );
@@ -2309,24 +2309,24 @@ export default {
     margin-bottom: 0 !important;
     margin-top: 0 !important;
   }
-
+  
   :deep(.q-field) {
     margin-bottom: 0 !important;
     margin-top: 0 !important;
   }
-
+  
   :deep(.q-field__control) {
     margin-bottom: 0 !important;
   }
-
+  
   :deep(.col) {
     margin-bottom: 0 !important;
   }
-
+  
   :deep(.q-field--with-bottom) {
     padding-bottom: 5px !important;
   }
-
+  
   :deep(.q-field__bottom) {
     margin-top: 0 !important;
     padding-top: 0 !important;

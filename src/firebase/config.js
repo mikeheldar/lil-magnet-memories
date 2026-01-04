@@ -12,16 +12,16 @@ let app = null;
 const getFirebaseConfig = () => {
   if (!firebaseConfig) {
     firebaseConfig = {
-      apiKey: config.firebase.apiKey,
-      authDomain: config.firebase.authDomain,
-      projectId: config.firebase.projectId,
-      // Respect the storageBucket provided by environment without normalization.
-      // This allows using either `<project-id>.appspot.com` or `<project-id>.firebasestorage.app`
-      // depending on how the Firebase project is provisioned.
-      storageBucket: (config.firebase.storageBucket || '').trim(),
-      messagingSenderId: config.firebase.messagingSenderId,
-      appId: config.firebase.appId,
-    };
+  apiKey: config.firebase.apiKey,
+  authDomain: config.firebase.authDomain,
+  projectId: config.firebase.projectId,
+  // Respect the storageBucket provided by environment without normalization.
+  // This allows using either `<project-id>.appspot.com` or `<project-id>.firebasestorage.app`
+  // depending on how the Firebase project is provisioned.
+  storageBucket: (config.firebase.storageBucket || '').trim(),
+  messagingSenderId: config.firebase.messagingSenderId,
+  appId: config.firebase.appId,
+};
   }
   return firebaseConfig;
 };
@@ -31,16 +31,16 @@ const getApp = () => {
     const cfg = getFirebaseConfig();
     app = initializeApp(cfg);
 
-    // Log which bucket is being used (for debugging test vs prod)
+// Log which bucket is being used (for debugging test vs prod)
     // Only log if window is available (runtime, not build time)
     if (typeof window !== 'undefined') {
       console.log('Firebase Storage Bucket:', cfg.storageBucket);
       console.log('Firebase Project ID:', cfg.projectId);
-      console.log('Environment:', config.environment);
+console.log('Environment:', config.environment);
       if (config.isTest && cfg.projectId !== 'lil-magnet-memories') {
         console.warn('⚠️ Test environment is using a different Firebase project:', cfg.projectId);
-        console.warn('⚠️ Make sure this project exists and is configured, or set VITE_FIREBASE_PROJECT_ID_TEST=lil-magnet-memories to use the same project');
-      }
+  console.warn('⚠️ Make sure this project exists and is configured, or set VITE_FIREBASE_PROJECT_ID_TEST=lil-magnet-memories to use the same project');
+}
     }
   }
   return app;
@@ -49,32 +49,32 @@ const getApp = () => {
 // Optionally initialize Firebase App Check (reCAPTCHA v3) when a site key is provided
 // Only initialize if window is available (runtime, not build time)
 if (typeof window !== 'undefined') {
-  const appCheckSiteKey = import.meta.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
-  if (appCheckSiteKey) {
-    // Lazy-load to avoid bundling in environments where App Check isn't used
-    import('firebase/app-check')
-      .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
-        try {
+const appCheckSiteKey = import.meta.env?.VITE_FIREBASE_APPCHECK_SITE_KEY;
+if (appCheckSiteKey) {
+  // Lazy-load to avoid bundling in environments where App Check isn't used
+  import('firebase/app-check')
+    .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
+      try {
           initializeAppCheck(getApp(), {
-            provider: new ReCaptchaV3Provider(appCheckSiteKey),
-            isTokenAutoRefreshEnabled: true,
-          });
-          // eslint-disable-next-line no-console
-          console.log('✅ App Check initialized (reCAPTCHA v3).');
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error('App Check initialization failed:', err);
-        }
-      })
-      .catch((e) => {
+          provider: new ReCaptchaV3Provider(appCheckSiteKey),
+          isTokenAutoRefreshEnabled: true,
+        });
         // eslint-disable-next-line no-console
-        console.error('Failed to load firebase/app-check module:', e);
-      });
-  } else {
-    // eslint-disable-next-line no-console
-    console.log(
-      'ℹ️ App Check not initialized. Set VITE_FIREBASE_APPCHECK_SITE_KEY to enable.'
-    );
+        console.log('✅ App Check initialized (reCAPTCHA v3).');
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('App Check initialization failed:', err);
+      }
+    })
+    .catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load firebase/app-check module:', e);
+    });
+} else {
+  // eslint-disable-next-line no-console
+  console.log(
+    'ℹ️ App Check not initialized. Set VITE_FIREBASE_APPCHECK_SITE_KEY to enable.'
+  );
   }
 }
 
@@ -96,12 +96,12 @@ let networkInitializingPromise = null;
 // Initialize network connection - disable then enable to force online state
 const initializeNetwork = async () => {
   if (networkInitialized) return;
-
+  
   // If already initializing, return that promise
   if (networkInitializingPromise) {
     return networkInitializingPromise;
   }
-
+  
   networkInitializingPromise = (async () => {
     try {
       // Try to clear persistence first (if possible) to reset any stuck state
@@ -118,7 +118,7 @@ const initializeNetwork = async () => {
           console.log('Persistence clear attempt:', persistenceError.message);
         }
       }
-
+      
       // Multiple disable/enable cycles to force reset
       for (let cycle = 0; cycle < 3; cycle++) {
         try {
@@ -133,12 +133,12 @@ const initializeNetwork = async () => {
           // Ignore errors - might already be in desired state
         }
       }
-
+      
       console.log('✅ Firestore network enabled');
-
+      
       // Wait longer to ensure connection is established
       await new Promise(resolve => setTimeout(resolve, 2000));
-
+      
       // Verify connection by attempting to read from an existing collection
       // This actually tests if we can connect, not just trigger an attempt
       // Use a longer timeout since connection might be slow to establish
@@ -148,12 +148,12 @@ const initializeNetwork = async () => {
         // This will succeed if online, fail if offline
         const testRef = collection(db, 'user_roles');
         const testQuery = query(testRef, limit(1));
-
+        
         await Promise.race([
           getDocs(testQuery),
           new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
         ]);
-
+        
         console.log('✅ Connection verified - successfully read from Firestore');
       } catch (testError) {
         // If user_roles doesn't exist or times out, try admin_config
@@ -161,12 +161,12 @@ const initializeNetwork = async () => {
           const { collection, getDocs, query, limit } = await import('firebase/firestore');
           const testRef = collection(db, 'admin_config');
           const testQuery = query(testRef, limit(1));
-
+          
           await Promise.race([
             getDocs(testQuery),
             new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
           ]);
-
+          
           console.log('✅ Connection verified - successfully read from Firestore');
         } catch (secondTestError) {
           // If both fail or timeout, it might be offline or connection is slow
@@ -179,14 +179,14 @@ const initializeNetwork = async () => {
           }
         }
       }
-
+      
       networkInitialized = true;
       networkInitializingPromise = null;
       console.log('✅ Network initialization complete');
     } catch (error) {
       console.error('❌ Failed to initialize network:', error);
       networkInitializingPromise = null;
-
+      
       // Retry after delay
       setTimeout(() => {
         networkInitialized = false;
@@ -194,7 +194,7 @@ const initializeNetwork = async () => {
       }, 2000);
     }
   })();
-
+  
   return networkInitializingPromise;
 };
 
@@ -209,13 +209,13 @@ export const ensureNetworkReady = async () => {
     await new Promise(resolve => setTimeout(resolve, 200));
     attempts++;
   }
-
+  
   if (!networkInitialized) {
     // Force initialization if not already started
     console.log('Network not initialized, forcing initialization...');
     await initializeNetwork();
   }
-
+  
   // Additional wait to ensure connection is stable
   await new Promise(resolve => setTimeout(resolve, 500));
   return true;
@@ -229,26 +229,26 @@ export const retryOnOffline = async (operation, maxRetries = 5, perAttemptTimeou
       // Wrap each attempt in its own timeout to detect hanging operations
       const attemptWithTimeout = Promise.race([
         operation(),
-        new Promise((_, reject) =>
+        new Promise((_, reject) => 
           setTimeout(() => reject(new Error(`Operation timeout after ${perAttemptTimeout}ms (attempt ${attempt + 1})`)), perAttemptTimeout)
         )
       ]);
-
+      
       return await attemptWithTimeout;
     } catch (error) {
       // Check if it's an offline error OR a timeout (which indicates connection issues)
       const isOfflineError = error.code === 'unavailable' || error.message?.toLowerCase().includes('offline');
       const isTimeoutError = error.message?.toLowerCase().includes('timeout') || error.name === 'TimeoutError';
-
+      
       if (isOfflineError || isTimeoutError) {
         const errorType = isTimeoutError ? 'timeout' : 'offline';
         console.warn(`⚠️ Operation failed with ${errorType} error (attempt ${attempt + 1}/${maxRetries}):`, error.message);
-
+        
         if (attempt < maxRetries - 1) {
           // More aggressive network reset with multiple cycles
           try {
             console.log(`🔄 Resetting network connection (attempt ${attempt + 1})...`);
-
+            
             // Try to clear persistence if possible (might fail if db is in use)
             try {
               await clearIndexedDbPersistence(db);
@@ -257,7 +257,7 @@ export const retryOnOffline = async (operation, maxRetries = 5, perAttemptTimeou
             } catch (persistenceError) {
               // Expected to fail if db is in use - that's okay
             }
-
+            
             // Multiple disable/enable cycles for more aggressive reset
             for (let cycle = 0; cycle < 2; cycle++) {
               await disableNetwork(db);
@@ -266,12 +266,12 @@ export const retryOnOffline = async (operation, maxRetries = 5, perAttemptTimeou
               await new Promise(resolve => setTimeout(resolve, 500));
             }
             console.log('✅ Network re-enabled');
-
+            
             // Wait longer for connection to establish (exponential backoff)
             const waitTime = 2000 * Math.pow(2, attempt); // 2s, 4s, 8s, 16s
             console.log(`⏳ Waiting ${waitTime}ms for connection to stabilize...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
-
+            
             // Try to verify connection with a simple read (skip if it takes too long)
             // Don't block retries if verification is slow
             try {
@@ -294,17 +294,17 @@ export const retryOnOffline = async (operation, maxRetries = 5, perAttemptTimeou
           } catch (networkError) {
             console.warn('⚠️ Failed to reset network:', networkError);
           }
-
+          
           // Continue to retry
           continue;
         }
       }
-
+      
       // If not an offline/timeout error, throw immediately (don't retry)
       throw error;
     }
   }
-
+  
   // If we get here, all retries failed
   throw new Error('Operation failed after all retries');
 };
@@ -315,17 +315,17 @@ if (typeof window !== 'undefined') {
   const checkConnection = () => {
     console.log('Network status:', navigator.onLine ? 'online' : 'offline');
   };
-
+  
   // Check immediately
   checkConnection();
-
+  
   // Listen for online/offline events
   window.addEventListener('online', () => {
     console.log('🟢 Browser came online - re-enabling Firestore network');
     enableNetwork(db).catch(err => console.warn('Failed to enable network:', err));
     checkConnection();
   });
-
+  
   window.addEventListener('offline', () => {
     console.log('🔴 Browser went offline');
     checkConnection();

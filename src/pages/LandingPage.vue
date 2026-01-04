@@ -5,7 +5,7 @@
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
         <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
-          <strong>Market Event Live!</strong>
+            <strong>Market Event Live!</strong>
           <span class="gt-xs">We're at {{ activeMarketEventName }}.</span>
           <a
             v-if="activeMarketEventLink"
@@ -39,16 +39,16 @@
     <div class="hero-section" :class="{ 'test-environment': isTestEnvironment }">
       <!-- Logo always on top, full width -->
       <div class="hero-logo-container">
-        <img
-          src="/biglogo.png"
-          alt="Lil Magnet Memories"
-          class="hero-logo hero-logo-wide"
-        />
-        <img
-          src="/assets/lil-magnet-memories-logo.png"
-          alt="Lil Magnet Memories"
-          class="hero-logo hero-logo-small"
-        />
+          <img
+            src="/biglogo.png"
+            alt="Lil Magnet Memories"
+            class="hero-logo hero-logo-wide"
+          />
+          <img
+            src="/assets/lil-magnet-memories-logo.png"
+            alt="Lil Magnet Memories"
+            class="hero-logo hero-logo-small"
+          />
       </div>
 
       <!-- Content below logo: text and easel gallery side-by-side on wide screens -->
@@ -1551,7 +1551,7 @@ export default {
 }
 
 
-  .hero-actions {
+.hero-actions {
     margin-bottom: 10px; // Reduced margin
     margin-top: 0; // No top margin
     width: 100%;
@@ -1566,18 +1566,18 @@ export default {
       font-weight: 500;
     }
 
-    .cta-button {
-      font-size: 1.3rem;
-      font-weight: 600;
-      padding: 16px 32px;
+  .cta-button {
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 16px 32px;
       // Use filter drop-shadow for natural, unclipped shadows
       filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25))
               drop-shadow(0 8px 40px rgba(0, 0, 0, 0.15))
               drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
       // Use theme primary color
       background: var(--q-primary, #000000) !important;
-      border: 3px solid white;
-      color: white;
+    border: 3px solid white;
+    color: white;
       overflow: visible; // Ensure button doesn't clip its own shadows
       position: relative; // Allow shadows to extend
 
