@@ -1544,12 +1544,15 @@ export default {
   justify-content: center;
   align-items: center;
   width: 100%;
-  background: inherit; // Inherit header background from theme
+  // Match header background - will be overridden by inline styles from headerInlineStyle
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  background-color: #000000;
   border-top: 1px solid rgba(255, 255, 255, 0.1); // Subtle border to separate from header
   padding: 8px 20px;
   box-sizing: border-box;
   z-index: 2000; // Below header but above content
   position: relative;
+  min-height: 48px; // Consistent height
 }
 
 // Hide on small screens
