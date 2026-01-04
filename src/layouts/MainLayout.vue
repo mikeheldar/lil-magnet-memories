@@ -1635,11 +1635,12 @@ export default {
   &.header-hidden {
     top: 0 !important;
     max-height: 100vh !important;
-    
-    // Ensure menu content starts below the black header fill (132px)
-    .q-list {
-      margin-top: 0 !important;
-    }
+  }
+
+  // Ensure the q-list inside always starts at the top (after header fill if present)
+  .q-list {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
   }
 
   // On medium+ screens, account for sub-nav bar when header is visible
@@ -1672,7 +1673,7 @@ export default {
 .drawer-close-btn {
   color: #ffffff !important; // White hamburger icon
   font-size: 28px !important; // Match main header hamburger size
-  
+
   .q-icon {
     font-size: 28px !important; // Ensure icon size matches
   }
@@ -1731,11 +1732,13 @@ html, body {
   right: 0 !important;
   width: 100% !important;
   z-index: 3000 !important; // Ensure it's above content
-  transition: transform 0.3s ease-in-out !important;
+  // Use same transition timing as sub-nav for perfect synchronization
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   // Ensure header is visible by default
   transform: translateY(0) !important;
   opacity: 1 !important;
   visibility: visible !important;
+  will-change: transform !important; // Optimize for transform animations
 
   &.header-hidden {
     transform: translateY(-100%) !important;
