@@ -1357,67 +1357,38 @@ export default {
 .hero-content {
   max-width: 100%; // Full width to allow easel to break out
   width: 100%; // Full width
-  margin: 0; // No margin to allow edge-to-edge
+  margin: 0 auto; // Center the container
   display: flex;
-  flex-direction: column; // Stack content vertically by default
+  flex-direction: column; // Stack content vertically (text, then easel)
   gap: 40px; // Spacing between hero-text and hero-images
-  align-items: flex-start; // Align to top by default
+  align-items: center; // Center all content
   z-index: 2;
   box-sizing: border-box;
   padding: 0; // No padding to allow edge-to-edge
 }
 
-// On wide screens, make hero-text and hero-images side-by-side
-@media (min-width: 1024px) {
-  .hero-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: start; // Align both columns to the top (use 'start' for grid)
-  }
+// On all screen sizes, keep content stacked vertically and centered
+.hero-content {
+  display: flex;
+  flex-direction: column; // Always stack vertically
+  align-items: center; // Always center content
+  gap: 40px;
+}
 
-  .hero-text {
-    text-align: left; // Left align text when side-by-side
-    align-items: flex-start; // Left align items when side-by-side
-    display: flex;
-    flex-direction: column;
-    align-content: flex-start; // Align content to top
-    justify-content: flex-start; // Align to top
-  }
+.hero-text {
+  text-align: center; // Always center text
+  align-items: center; // Always center items
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+}
 
-  .hero-images {
-    align-items: flex-start; // Align to top on wide screens
-    margin-top: 0;
-    padding-top: 0;
-    display: flex;
-    align-content: flex-start; // Align content to top
-    justify-content: center; // Keep easel centered on all screen sizes
-  }
-
-  // Ensure title and easel container align at the same vertical position
-  .hero-title {
-    margin-top: 0 !important;
-    margin-bottom: 0; // Remove bottom margin
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-
-  // On large screens, easel breaks out to be full width
-  .hero-images {
-    grid-column: 1 / -1; // Span full width across both columns
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
-  }
-
-  .easel-container {
-    margin-top: 0 !important;
-    padding-top: 0;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    margin-left: calc(-50vw + 50%) !important;
-    margin-right: calc(-50vw + 50%) !important;
-  }
+.hero-images {
+  width: 100%; // Full width for easel to break out
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .hero-text {
@@ -1427,22 +1398,16 @@ export default {
   max-width: 1200px; // Constrain text width for readability
   margin: 0 auto; // Center the text content
   padding: 0 20px; // Add padding for text content
-  overflow: visible; // Allow shadows from button to extend
+  overflow: visible;
   margin-bottom: 0;
-  margin-top: 0; // No top margin to move content up
-  padding-top: 0; // No padding at top
+  margin-top: 0;
+  padding-top: 0;
   display: flex;
   flex-direction: column;
-  gap: 2rem; // Add spacing between title and actions
-  align-items: center; // Center all content by default
-  align-content: flex-start; // Align content to top
-}
-
-// On wide screens, align text to left
-@media (min-width: 1024px) {
-  .hero-text {
-    align-items: flex-start; // Left align items when side-by-side
-  }
+  gap: 2rem;
+  align-items: center; // Always center content
+  align-content: center;
+  justify-content: center;
 }
 
 .hero-logo {
