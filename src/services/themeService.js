@@ -522,7 +522,7 @@ export const themeService = {
           titleSpan.style.setProperty('font-family', "'Times New Roman', 'Times', serif", 'important');
           titleSpan.style.setProperty('font-weight', '400', 'important');
           titleSpan.style.setProperty('font-style', 'italic', 'important');
-          titleSpan.style.setProperty('font-size', '1.1rem', 'important');
+          titleSpan.style.setProperty('font-size', 'clamp(1.1rem, 2vw, 1.5rem)', 'important'); // Responsive sizing
           titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
           titleSpan.style.setProperty('text-transform', 'none', 'important');
           // Force black color for white header, white for black header
