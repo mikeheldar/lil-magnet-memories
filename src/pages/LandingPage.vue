@@ -1611,19 +1611,20 @@ export default {
 
 .easel-container {
   width: 100%;
-  aspect-ratio: 1 / 1; // Always square
+  aspect-ratio: 16 / 9; // Wide rectangular format
   display: flex;
-  justify-content: center;
-  align-items: center; // Center the image vertically
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   margin-top: 0;
   position: relative; // Ensure dots can be positioned relative to container
   padding-top: 0;
-  align-items: flex-start; // Always align to top
-  position: relative;
+  padding-bottom: 0;
+  margin-bottom: 0;
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: hidden; // Hide overflow for square images
+  overflow: visible; // Allow dots to be visible below
 
   img {
     display: block;
