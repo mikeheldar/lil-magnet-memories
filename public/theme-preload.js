@@ -141,7 +141,7 @@
                   font-family: 'Times New Roman', 'Times', serif !important;
                   font-weight: 400 !important;
                   font-style: italic !important;
-                  font-size: 1.1rem !important;
+                  font-size: 1.5rem !important;
                   letter-spacing: 0.05em !important;
                   text-transform: none !important;
                   color: ${textColor} !important;
@@ -149,7 +149,7 @@
                 @media (min-width: 768px) {
                   .q-toolbar__title, .q-toolbar__title span, .q-toolbar__title span.text-h5.text-weight-bold,
                   .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold {
-                    font-size: 1.3rem !important;
+                    font-size: 1.5rem !important;
                   }
                 }
                 @media (min-width: 1024px) {
@@ -276,13 +276,13 @@
           font-family: 'Times New Roman', 'Times', serif !important;
           font-weight: 400 !important;
           font-style: italic !important;
-          font-size: 1.1rem !important;
+          font-size: 1.5rem !important;
           color: #ffffff !important;
         }
         @media (min-width: 768px) {
           .q-header .q-toolbar-title span,
           .q-header .q-toolbar__title span {
-            font-size: 1.3rem !important;
+            font-size: 1.5rem !important;
           }
         }
         @media (min-width: 1024px) {
