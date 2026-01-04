@@ -1675,14 +1675,8 @@ html, body {
   overflow-x: hidden;
   // Allow scrolling to absolute top (scrollTop: 0)
   scroll-behavior: auto;
-
-  // On small screens, prevent main page scrolling
-  @media (max-width: 599px) {
-    overflow: hidden !important;
-    height: 100vh !important;
-    position: fixed !important;
-    width: 100% !important;
-  }
+  // Note: JavaScript controls overflow on small screens when drawer is open
+  // CSS doesn't need to force it since we handle it dynamically
 }
 
 // Header scroll behavior - hide on scroll down, show on scroll up
