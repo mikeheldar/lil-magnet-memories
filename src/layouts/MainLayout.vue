@@ -1943,15 +1943,28 @@ html, body {
   right: 0 !important;
   width: 100% !important;
   min-height: 48px; // Consistent height
-  transition: transform 0.3s ease-in-out !important; // Match header transition
+  // Use exact same transition timing and easing as header for perfect synchronization
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  // Ensure sub-nav is visible by default
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  will-change: transform !important; // Optimize for transform animations
 
   &.header-hidden {
-    transform: translateY(calc(-100% - 84px)) !important; // Hide by moving up (header height + subnav height)
+    // Move up by exactly the same amount as header moves up (84px header + 48px subnav = 132px total)
+    // This ensures they move together as a single unit
+    transform: translateY(calc(-100% - 84px)) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   // When visible, ensure it's positioned correctly
   &:not(.header-hidden) {
     transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 }
 
