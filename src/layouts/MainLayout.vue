@@ -750,6 +750,13 @@ export default {
     const scrollThreshold = 5; // Reduced threshold for more sensitive detection
 
     const handleScroll = () => {
+      // On small screens, always keep header visible and don't allow main page scrolling
+      const isSmallScreen = window.innerWidth <= 599;
+      if (isSmallScreen) {
+        headerVisible.value = true;
+        return;
+      }
+
       const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
       // Determine scroll direction
@@ -1102,7 +1109,8 @@ export default {
 
       // Ensure header is visible on initial page load
       const initialScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      if (initialScrollTop <= 100) {
+      const isSmallScreen = window.innerWidth <= 599;
+      if (isSmallScreen || initialScrollTop <= 100) {
         headerVisible.value = true;
       }
       lastScrollTop = initialScrollTop;
@@ -1116,6 +1124,9 @@ export default {
     onUnmounted(() => {
       // Remove scroll listener on unmount
       window.removeEventListener('scroll', handleScroll);
+      // Restore body scrolling
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     });
 
     // Listen for theme changes and reapply to ensure persistence
@@ -1612,7 +1623,7 @@ export default {
 .drawer-close-btn {
   color: #000000 !important;
   font-size: 24px !important;
-  
+
   &:hover {
     background-color: rgba(0, 0, 0, 0.05) !important;
   }
@@ -1654,6 +1665,14 @@ html, body {
   overflow-x: hidden;
   // Allow scrolling to absolute top (scrollTop: 0)
   scroll-behavior: auto;
+  
+  // On small screens, prevent main page scrolling
+  @media (max-width: 599px) {
+    overflow: hidden !important;
+    height: 100vh !important;
+    position: fixed !important;
+    width: 100% !important;
+  }
 }
 
 // Header scroll behavior - hide on scroll down, show on scroll up
