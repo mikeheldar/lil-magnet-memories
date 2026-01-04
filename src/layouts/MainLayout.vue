@@ -1514,12 +1514,12 @@ export default {
   // Move with header on scroll - same transition as header
   transition: transform 0.3s ease-in-out !important;
   will-change: transform !important; // Optimize for transform animations
-  
+
   // When header is hidden, move drawer up with it (same distance as header)
   &.header-hidden {
     transform: translateY(-84px) !important; // Move up by header height to stay aligned with hidden header
   }
-  
+
   // When visible, ensure it's at the correct position
   &:not(.header-hidden) {
     transform: translateY(0) !important;
@@ -1546,10 +1546,18 @@ html body .q-layout .q-drawer.drawer-under-header {
 }
 
 // Prevent page container from interfering with drawer
+// Add padding to account for fixed header and sub-navigation bar
 .q-page-container {
   // Allow content to scroll under fixed drawer
   position: relative;
   z-index: 1;
+  // Add padding at top to account for fixed header (84px) + sub-nav bar (48px on medium+ screens)
+  padding-top: 84px !important; // Header height
+  
+  // On medium+ screens, add extra padding for sub-navigation bar
+  @media (min-width: 768px) {
+    padding-top: calc(84px + 48px) !important; // Header + sub-nav bar
+  }
 }
 
 // Ensure body/html can scroll to absolute top
