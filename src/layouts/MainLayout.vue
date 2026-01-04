@@ -321,7 +321,7 @@
       :width="300"
     >
       <!-- Floating menu container that stays visible when scrolling -->
-      <div class="drawer-menu-container">
+      <div ref="drawerMenuContainerRef" class="drawer-menu-container">
         <q-list>
           <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
@@ -694,6 +694,7 @@
           </q-item>
         </q-expansion-item>
       </q-list>
+      </div>
     </q-drawer>
 
     <q-page-container>
@@ -703,7 +704,7 @@
 </template>
 
 <script>
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { themeService } from '../services/themeService.js';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
@@ -1065,6 +1066,18 @@ export default {
 
     // Check theme from Firebase in background (non-blocking)
     checkActiveTheme();
+    // Watch for drawer opening and scroll menu to top
+    watch(leftDrawerOpen, (isOpen) => {
+      if (isOpen && drawerMenuContainerRef.value) {
+        // Use nextTick to ensure DOM is updated
+        setTimeout(() => {
+          if (drawerMenuContainerRef.value) {
+            drawerMenuContainerRef.value.scrollTop = 0;
+          }
+        }, 0);
+      }
+    });
+
     onMounted(() => {
       checkActiveTheme();
       // Real-time listener in themeService handles theme changes automatically
@@ -1549,10 +1562,10 @@ export default {
 }
 
 // Ensure drawer content is scrollable and takes full height
+// Remove overflow from q-list since drawer-menu-container handles scrolling
 .q-drawer.drawer-under-header .q-list {
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  height: auto;
+  overflow: visible;
 }
 
 // Override any Quasar layout positioning that might interfere
