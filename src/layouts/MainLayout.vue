@@ -1554,35 +1554,26 @@ export default {
 }
 
 // Floating menu container - stays fixed in place when scrolling main page
-// When drawer is open, this container stays fixed and doesn't scroll with page content
+// When drawer is open, this container stays fixed and scrolls independently
 // Positioned outside drawer to avoid transform context issues
 .drawer-menu-container {
   position: fixed !important; // Fixed to viewport, not sticky to page scroll
   top: 84px !important; // Position below header
   left: 0 !important; // Align with drawer
-  width: 300px !important; // Match drawer width
+  width: 300px !important; // Default width for medium+ screens
   max-height: calc(100vh - 84px) !important;
   overflow-y: auto !important; // Allow scrolling within menu if content is long
   overflow-x: hidden !important;
   z-index: 2001 !important; // Above drawer background but below header
   background: #f5f5f5 !important; // Match drawer background
-  // Ensure it stays in place when scrolling main page
-  will-change: transform !important;
-  // Match header transition for smooth movement
-  transition: transform 0.3s ease-in-out !important;
+  // Always visible when drawer is open - no header synchronization
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 
-  // Move with header when header is hidden (same as drawer)
-  &.header-hidden {
-    transform: translateY(calc(-100% - 84px)) !important; // Move up with header
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-
-  // When header is visible, ensure menu is at correct position
-  &:not(.header-hidden) {
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
+  // Full width on small screens
+  @media (max-width: 599px) {
+    width: 100vw !important;
   }
 }
 
