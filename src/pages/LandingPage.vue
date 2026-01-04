@@ -1724,9 +1724,9 @@ export default {
   }
 
   &.dot-active {
-    background: var(--q-primary, #2c3e50) !important; // Use primary color from palette (dark blue-grey)
-    border-color: var(--q-primary, #2c3e50) !important; // Use primary color from palette
-    box-shadow: 0 0 8px rgba(44, 62, 80, 0.8) !important; // Shadow matching primary color
+    background: #2c3e50 !important; // Dark blue-grey from palette (no purple)
+    border-color: #2c3e50 !important; // Dark blue-grey from palette
+    box-shadow: 0 0 8px rgba(44, 62, 80, 0.8) !important; // Shadow matching dark blue-grey
   }
 }
 
@@ -1761,7 +1761,7 @@ export default {
     left: 12px;
     width: 32px;
     height: 32px;
-    background: var(--q-primary, #2c3e50); // Use primary color from palette (dark blue-grey)
+    background: #2c3e50 !important; // Dark blue-grey from palette (no purple)
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1769,7 +1769,7 @@ export default {
     color: white;
     font-weight: bold;
     font-size: 1rem;
-    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.3); // Shadow matching primary color
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.3); // Shadow matching dark blue-grey
     z-index: 10;
   }
 
