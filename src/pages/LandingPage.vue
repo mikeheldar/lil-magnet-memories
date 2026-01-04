@@ -1369,16 +1369,16 @@ export default {
 }
 
 .hero-content {
-  max-width: 70%; // Match hero-logo-wide width
-  width: 70%; // Match hero-logo-wide width
-  margin: 0 auto; // Center it like the logo
+  max-width: 100%; // Full width to allow easel to break out
+  width: 100%; // Full width
+  margin: 0; // No margin to allow edge-to-edge
   display: flex;
   flex-direction: column; // Stack content vertically by default
   gap: 40px; // Spacing between hero-text and hero-images
   align-items: flex-start; // Align to top by default
   z-index: 2;
   box-sizing: border-box;
-  padding: 0 20px;
+  padding: 0; // No padding to allow edge-to-edge
 }
 
 // On wide screens, make hero-text and hero-images side-by-side
@@ -1416,10 +1416,21 @@ export default {
     padding-bottom: 0;
   }
 
+  // On large screens, easel breaks out to be full width
+  .hero-images {
+    grid-column: 1 / -1; // Span full width across both columns
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+  }
+
   .easel-container {
     margin-top: 0 !important;
     padding-top: 0;
-    align-self: flex-start; // Align to top of grid cell
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: calc(-50vw + 50%) !important;
+    margin-right: calc(-50vw + 50%) !important;
   }
 }
 
@@ -1427,7 +1438,9 @@ export default {
   color: white;
   text-align: center;
   width: 100%;
-  max-width: 100%;
+  max-width: 1200px; // Constrain text width for readability
+  margin: 0 auto; // Center the text content
+  padding: 0 20px; // Add padding for text content
   overflow: visible; // Allow shadows from button to extend
   margin-bottom: 0;
   margin-top: 0; // No top margin to move content up
@@ -1667,26 +1680,26 @@ export default {
   }
 }
 
-// On medium and large screens, ensure easel aligns to top of title
+// On medium and large screens, ensure easel aligns properly
 @media (min-width: 600px) {
   .easel-container {
-    align-items: flex-start !important; // Force top alignment
+    align-items: center !important; // Center alignment
   }
 
   .easel-image {
-    object-position: center !important; // Center for square cover fit
+    object-position: center !important; // Center for cover fit
   }
 }
 
-// Simplified: image directly fills the square container
+// Image fills the wide rectangular container
 .easel-image {
   width: 100%;
   height: 100%;
-  object-fit: cover; // Fill square, crop to fit (like product images)
+  object-fit: cover; // Fill container, crop to fit
   object-position: center; // Center the image
   display: block;
-  border-radius: 17px;
-  border: 3px solid rgba(192, 192, 192, 0.8);
+  border-radius: 0; // No border radius for edge-to-edge
+  border: none; // No border for edge-to-edge
   padding: 0;
   box-sizing: border-box;
   // Use filter drop-shadow for natural, unclipped shadows
@@ -1697,79 +1710,54 @@ export default {
   background: transparent;
 }
 
-// Small screens: 70% of screen size (same as logo)
+// All screen sizes: full width, edge to edge, wide rectangular format
+.easel-container {
+  width: 100vw !important; // Full viewport width, edge to edge
+  max-width: 100vw !important;
+  margin-left: calc(-50vw + 50%) !important; // Break out of container to be edge-to-edge
+  margin-right: calc(-50vw + 50%) !important;
+  aspect-ratio: 16 / 9 !important; // Wide rectangular format
+}
+
+// Small screens: maintain wide format but ensure it fits
 @media (max-width: 600px) {
   .easel-container {
-    width: 70vw !important; // 70% of viewport width (same as logo)
-    max-width: 70vw !important;
-    margin: 0 auto; // Center it
-    aspect-ratio: 1 / 1 !important; // Always square
-  }
-
-  .easel-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover !important; // Fill square with no empty space
-    object-position: center !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: calc(-50vw + 50%) !important;
+    margin-right: calc(-50vw + 50%) !important;
+    aspect-ratio: 16 / 9 !important;
   }
 }
 
-// Medium screens: when big logo shows, match big logo width (70% of content area)
-@media (min-width: 601px) and (max-width: 1023px) {
-  .easel-container {
-    width: 70%; // Match big logo width
-    max-width: 70%;
-    margin: 0 auto; // Center it
-  }
-}
-
-// Large screens: when page splits (1024px+), square with max width of its grid section
-@media (min-width: 1024px) {
-  .easel-container {
-    // In grid layout, hero-images is 1fr (50% minus gap), so easel should fill its section
-    width: 100%;
-    max-width: 100%; // Fill its grid column (1fr)
-    margin: 0; // No auto margin in grid
-  }
-}
-
-// Carousel dots - positioned 20px below the image, always visible
+// Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
   top: 100%; // Position below the image
-  margin-top: 20px !important; // Exactly 20px below the photo - ensure visibility
+  margin-top: 20px !important; // 20px below the photo
   left: 50%;
   transform: translateX(-50%);
-  width: 100%; // Full width to center dots properly
-  display: flex !important; // Ensure dots are visible
-  justify-content: center;
-  gap: 8px;
-  display: flex;
-  gap: 8px; // Fixed gap between dots
-  z-index: 10;
-  // CRITICAL: Dots container must NEVER exceed image width
-  // Use the image's actual width as constraint
-  max-width: 100%; // Never exceed parent (image wrapper) width
-  width: fit-content; // Fit content width
-  padding: 0 8px; // Small padding
-  box-sizing: border-box;
-  // Ensure dots are centered and contained within image
+  display: flex !important;
   justify-content: center;
   align-items: center;
-  // Ensure dots don't overflow image boundaries
-  overflow: hidden; // Hide any overflow
+  gap: 12px !important; // Slightly larger gap for better visibility
+  z-index: 10;
+  width: fit-content; // Fit content width
+  padding: 0;
+  box-sizing: border-box;
   white-space: nowrap; // Keep dots on one line
+  pointer-events: auto; // Ensure dots are clickable
 }
 
 .carousel-dot {
-  // Scale dot size with viewport/image size - use clamp for responsive sizing
-  width: clamp(8px, 1vw, 12px); // Scales between 8px and 12px based on viewport
-  height: clamp(8px, 1vw, 12px);
-  min-width: clamp(8px, 1vw, 12px);
-  min-height: clamp(8px, 1vw, 12px);
+  // Larger, more visible dots
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
   border-radius: 50%;
   background: transparent; // No fill for inactive dots
-  border: clamp(1.5px, 0.15vw, 2px) solid rgba(128, 128, 128, 0.6); // Scale border width
+  border: 2px solid rgba(128, 128, 128, 0.7); // More visible border
   transition: all 0.3s ease;
   cursor: pointer;
   padding: 0;
@@ -1777,14 +1765,14 @@ export default {
   flex-shrink: 0; // Prevent dots from shrinking
 
   &:hover {
-    border-color: rgba(128, 128, 128, 0.9); // Slightly darker grey on hover
-    transform: scale(1.1);
+    border-color: rgba(128, 128, 128, 1); // Fully opaque on hover
+    transform: scale(1.2);
   }
 
   &.dot-active {
-    background: #764ba2; // Purple fill for active dot
-    border-color: #764ba2; // Purple border for active dot
-    box-shadow: 0 0 clamp(6px, 0.8vw, 8px) rgba(118, 75, 162, 0.6); // Scale shadow
+    background: #764ba2 !important; // Purple fill for active dot
+    border-color: #764ba2 !important; // Purple border for active dot
+    box-shadow: 0 0 8px rgba(118, 75, 162, 0.8) !important; // More visible shadow
   }
 }
 
