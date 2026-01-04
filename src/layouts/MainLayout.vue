@@ -727,6 +727,9 @@ export default {
 
     const handleScroll = () => {
       const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      const isAtBottom = currentScrollTop + clientHeight >= scrollHeight - 10; // Within 10px of bottom
 
       // Only trigger if scroll distance is significant
       if (Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {
@@ -737,10 +740,13 @@ export default {
         // Scrolling down - hide header
         headerVisible.value = false;
       } else if (currentScrollTop < lastScrollTop) {
-        // Scrolling up - show header immediately (no need to wait until top)
+        // Scrolling up - show header immediately (works even at bottom of page)
         headerVisible.value = true;
       } else if (currentScrollTop <= 100) {
         // Near the top - always show header
+        headerVisible.value = true;
+      } else if (isAtBottom && currentScrollTop < lastScrollTop) {
+        // At bottom of page and scrolling up - show header
         headerVisible.value = true;
       }
 

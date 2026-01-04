@@ -1294,18 +1294,18 @@ export default {
   flex-direction: column; // Stack logo container and hero-content vertically
   align-items: stretch; // Stretch children to full width
   justify-content: flex-start;
-  padding: 20px 10px 40px 10px; // 20px top padding to position logo 20px below header
+  padding: 0px 10px 40px 10px; // Reduced top padding by 20px (was 20px, now 0px)
 
   // Add extra 10px padding in test environment
   &.test-environment {
-    padding-top: 30px; // 20px + 10px = 30px total
+    padding-top: 10px !important; // Reduced from 30px by 20px
   }
 
   // Reduce whitespace on small screens
   @media (max-width: 600px) {
-    padding-top: 10px !important; // Much less whitespace between header and logo
+    padding-top: 0px !important; // Reduced from 10px by 20px (clamped to 0)
     &.test-environment {
-      padding-top: 15px !important; // Slightly more in test, but still reduced
+      padding-top: 0px !important; // Reduced from 15px by 20px (clamped to 0)
     }
   }
 
