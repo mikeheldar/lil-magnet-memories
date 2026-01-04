@@ -333,6 +333,8 @@
           </q-item-section>
         </q-item>
 
+        <q-separator />
+
         <!-- Shop section (always visible) -->
         <q-expansion-item
           icon="shopping_bag"
@@ -723,26 +725,30 @@ export default {
     // Header scroll behavior - hide on scroll down, show on scroll up
     const headerVisible = ref(true);
     let lastScrollTop = 0;
-    const scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
+    const scrollThreshold = 5; // Reduced threshold for more sensitive detection
 
     const handleScroll = () => {
       const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      // Only trigger if scroll distance is significant
-      if (Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {
-        return;
-      }
-
-      // Determine scroll direction
+      // Determine scroll direction first (before threshold check for scroll up)
       const scrollingDown = currentScrollTop > lastScrollTop;
       const scrollingUp = currentScrollTop < lastScrollTop;
+
+      // Always show header on scroll up, even with small movements
+      if (scrollingUp && currentScrollTop < lastScrollTop) {
+        headerVisible.value = true;
+        lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+        return; // Exit early to ensure header shows immediately
+      }
+
+      // For scrolling down, only trigger if scroll distance is significant
+      if (scrollingDown && Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {
+        return;
+      }
 
       if (scrollingDown && currentScrollTop > 100) {
         // Scrolling down and past 100px - hide header
         headerVisible.value = false;
-      } else if (scrollingUp) {
-        // Scrolling up - always show header immediately (works anywhere on page, including bottom)
-        headerVisible.value = true;
       } else if (currentScrollTop <= 100) {
         // Near the top (within 100px) - always show header
         headerVisible.value = true;
