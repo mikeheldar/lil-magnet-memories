@@ -80,17 +80,16 @@
             @touchmove="handleTouchMove"
             @touchend="handleTouchEnd"
           >
-            <div class="easel-image-wrapper">
-              <img
-                :src="currentEaselImage"
-                alt="Custom photo magnets on easel display"
-                class="easel-image"
-                :key="easelImageIndex"
-                @load="handleImageLoad"
-                ref="easelImageRef"
-              />
-              <!-- Image carousel dots (only show if more than 1 image) -->
-              <div v-if="easelImages.length > 1" class="easel-carousel-dots">
+            <img
+              :src="currentEaselImage"
+              alt="Custom photo magnets on easel display"
+              class="easel-image"
+              :key="easelImageIndex"
+              @load="handleImageLoad"
+              ref="easelImageRef"
+            />
+            <!-- Image carousel dots (only show if more than 1 image) -->
+            <div v-if="easelImages.length > 1" class="easel-carousel-dots">
               <button
                 v-for="(image, index) in easelImages"
                 :key="index"
@@ -101,7 +100,6 @@
                 @click.stop="goToImage(index)"
                 aria-label="Go to image"
               />
-              </div>
             </div>
           </div>
         </div>
