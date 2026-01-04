@@ -324,9 +324,9 @@
     </q-drawer>
 
     <!-- Floating menu container that stays fixed when scrolling main page - outside drawer to avoid transform context -->
-    <div 
-      ref="drawerMenuContainerRef" 
-      class="drawer-menu-container" 
+    <div
+      ref="drawerMenuContainerRef"
+      class="drawer-menu-container"
       :class="{ 'header-hidden': !headerVisible }"
       v-show="leftDrawerOpen"
     >
@@ -1573,14 +1573,14 @@ export default {
   will-change: transform !important;
   // Match header transition for smooth movement
   transition: transform 0.3s ease-in-out !important;
-  
+
   // Move with header when header is hidden (same as drawer)
   &.header-hidden {
     transform: translateY(calc(-100% - 84px)) !important; // Move up with header
     opacity: 0 !important;
     pointer-events: none !important;
   }
-  
+
   // When header is visible, ensure menu is at correct position
   &:not(.header-hidden) {
     transform: translateY(0) !important;
@@ -1640,14 +1640,23 @@ html, body {
   width: 100% !important;
   z-index: 3000 !important; // Ensure it's above content
   transition: transform 0.3s ease-in-out !important;
+  // Ensure header is visible by default
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 
   &.header-hidden {
     transform: translateY(-100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   // When visible, ensure it's at the top of viewport
   &:not(.header-hidden) {
     transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 }
 
@@ -1840,14 +1849,23 @@ html, body {
   width: 100% !important;
   min-height: 48px; // Consistent height
   transition: transform 0.3s ease-in-out !important; // Match header transition
+  // Ensure sub-nav is visible by default
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 
   &.header-hidden {
     transform: translateY(calc(-100% - 84px)) !important; // Hide by moving up (header height + subnav height)
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   // When visible, ensure it's positioned correctly
   &:not(.header-hidden) {
     transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 }
 
