@@ -1761,7 +1761,7 @@ export default {
     left: 12px;
     width: 32px;
     height: 32px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--q-primary, #2c3e50); // Use primary color from palette (dark blue-grey)
     border-radius: 50%;
     display: flex;
     align-items: center;

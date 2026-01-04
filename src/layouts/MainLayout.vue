@@ -1739,7 +1739,7 @@ html, body {
   opacity: 1 !important;
   visibility: visible !important;
   will-change: transform !important; // Optimize for transform animations
-  
+
   // When appearing (not hidden), use faster transition so header shows before sub-nav
   &:not(.header-hidden) {
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -1957,7 +1957,7 @@ html, body {
   opacity: 1 !important;
   visibility: visible !important;
   will-change: transform !important; // Optimize for transform animations
-  
+
   // When hiding, use faster transition so sub-nav disappears before header
   &.header-hidden {
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
