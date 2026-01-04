@@ -730,19 +730,20 @@ export default {
     const handleScroll = () => {
       const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      // Determine scroll direction first (before threshold check for scroll up)
+      // Determine scroll direction
       const scrollingDown = currentScrollTop > lastScrollTop;
       const scrollingUp = currentScrollTop < lastScrollTop;
 
-      // Always show header on scroll up, even with small movements
-      if (scrollingUp && currentScrollTop < lastScrollTop) {
+      // Always show header on scroll up - check this FIRST before any threshold checks
+      if (scrollingUp) {
         headerVisible.value = true;
         lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
-        return; // Exit early to ensure header shows immediately
+        return; // Exit early to ensure header shows immediately on any scroll up
       }
 
       // For scrolling down, only trigger if scroll distance is significant
       if (scrollingDown && Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {
+        lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
         return;
       }
 
@@ -1497,10 +1498,21 @@ export default {
 // Header scroll behavior - hide on scroll down, show on scroll up
 // Note: z-index is set above in the drawer section
 .q-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 3000 !important; // Ensure it's above content
   transition: transform 0.3s ease-in-out !important;
 
   &.header-hidden {
     transform: translateY(-100%) !important;
+  }
+  
+  // When visible, ensure it's at the top of viewport
+  &:not(.header-hidden) {
+    transform: translateY(0) !important;
   }
 }
 
