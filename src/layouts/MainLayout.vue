@@ -315,7 +315,6 @@
       v-model="leftDrawerOpen"
       bordered
       class="bg-grey-1 drawer-under-header"
-      :class="{ 'header-hidden': !headerVisible }"
       :overlay="false"
       :breakpoint="0"
       :width="300"
@@ -327,7 +326,6 @@
     <div
       ref="drawerMenuContainerRef"
       class="drawer-menu-container"
-      :class="{ 'header-hidden': !headerVisible }"
       v-show="leftDrawerOpen"
     >
       <q-list>
@@ -1543,25 +1541,16 @@ export default {
   overflow: hidden !important; // Don't allow drawer itself to scroll - menu container handles it
   overflow-y: hidden !important;
   overflow-x: hidden !important;
-  // Move with header on scroll - same transition as header
-  transition: transform 0.3s ease-in-out !important;
-  will-change: transform !important; // Optimize for transform animations
+  // Always visible when drawer is open - no header synchronization
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 
-  // When header is hidden AND drawer is open, move drawer up with header
-  // This makes the drawer slide up and disappear when scrolling down
-  &.header-hidden {
-    transform: translateY(calc(-100% - 84px)) !important; // Move up completely (drawer height + header height) to hide it
+  // Full width on small screens
+  @media (max-width: 599px) {
+    width: 100vw !important;
   }
-
-  // When visible (header is visible), ensure drawer is at correct position
-  // This makes the drawer slide down and appear when scrolling up
-  &:not(.header-hidden) {
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important; // Enable interactions when visible
-  }
-
 }
 
 // Floating menu container - stays fixed in place when scrolling main page
@@ -1611,9 +1600,6 @@ body .q-layout .q-drawer.drawer-under-header,
 html body .q-layout .q-drawer.drawer-under-header {
   position: fixed !important;
   margin: 0 !important;
-  // Allow transform for header sync animation
-  transition: transform 0.3s ease-in-out !important;
-  will-change: transform !important;
 }
 
 // Prevent page container from interfering with drawer
