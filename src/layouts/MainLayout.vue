@@ -1697,7 +1697,7 @@ export default {
   &.header-hidden {
     transform: translateY(calc(-100% - 84px)) !important; // Hide by moving up (header height + subnav height)
   }
-  
+
   // When visible, ensure it's positioned correctly
   &:not(.header-hidden) {
     transform: translateY(0) !important;
