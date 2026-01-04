@@ -23,23 +23,8 @@
   font-family: 'Times New Roman', 'Times', serif !important; // Compact, professional serif font
   font-weight: 400 !important;
   font-style: italic !important; // Professional italic style
-  font-size: 1.1rem !important; // Base size for small screens
+  font-size: 1.5rem !important; // Always use larger size
   color: #ffffff !important;
-}
-
-// Make header title bigger on larger screens for better readability
-@media (min-width: 768px) {
-  .q-header .q-toolbar-title span,
-  .q-header .q-toolbar__title span {
-    font-size: 1.3rem !important; // Larger on medium screens
-  }
-}
-
-@media (min-width: 1024px) {
-  .q-header .q-toolbar-title span,
-  .q-header .q-toolbar__title span {
-    font-size: 1.5rem !important; // Even larger on large screens
-  }
 }
 
 /* Default header buttons and icons - white */

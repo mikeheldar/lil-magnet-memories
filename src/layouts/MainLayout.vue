@@ -322,30 +322,154 @@
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
-        <!-- Start Creating Now -->
-        <q-item clickable v-ripple @click="handleUploadClick">
+        <!-- Home (always at top) -->
+        <q-item clickable v-ripple @click="navigateTo('/')">
           <q-item-section avatar>
-            <q-icon name="camera_alt" color="primary" />
+            <q-icon name="home" color="primary" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Start Creating Now</q-item-label>
-            <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+            <q-item-label>Home</q-item-label>
+            <q-item-label caption>Go to main page</q-item-label>
           </q-item-section>
         </q-item>
+
+        <!-- Shop section (always visible) -->
+        <q-expansion-item
+          icon="shopping_bag"
+          label="Shop"
+          :default-opened="true"
+          header-class="text-grey-8"
+        >
+          <!-- Custom Photo Magnets -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('custom-products-section')"
+            @mouseenter="hoveredCategory = 'custom'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="camera_alt" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Custom Photo Magnets</q-item-label>
+              <q-item-label caption>Create personalized magnets</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Custom (only if collections exist) -->
+          <div
+            v-if="hoveredCategory === 'custom' && customCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in customCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('custom-products-section', collection)"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Designer Magnets -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('designer-products-section')"
+            @mouseenter="hoveredCategory = 'designer'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="palette" color="secondary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Designer Magnets</q-item-label>
+              <q-item-label caption>Ready-made designs</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Designer (only if collections exist) -->
+          <div
+            v-if="hoveredCategory === 'designer' && designerCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in designerCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('designer-products-section', collection)"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Specialty Products -->
+          <q-item
+            clickable
+            v-ripple
+            @click="scrollToSection('specialty-products-section')"
+            @mouseenter="hoveredCategory = 'specialty'"
+            @mouseleave="hoveredCategory = null"
+            class="shop-category-item"
+          >
+            <q-item-section avatar>
+              <q-icon name="star" color="amber" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Specialty Products</q-item-label>
+              <q-item-label caption>Unique specialty items</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- Show collections on hover for Specialty (only if collections exist) -->
+          <div
+            v-if="hoveredCategory === 'specialty' && specialtyCollections.length > 0"
+            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
+          >
+            <q-item
+              v-for="collection in specialtyCollections"
+              :key="collection"
+              clickable
+              v-ripple
+              dense
+              @click.stop="scrollToSection('specialty-products-section', collection)"
+              class="collection-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Start Creating Now (last item in Shop section) -->
+          <q-item clickable v-ripple @click="handleUploadClick" class="shop-category-item">
+            <q-item-section avatar>
+              <q-icon name="camera_alt" color="primary" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Start Creating Now</q-item-label>
+              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-expansion-item>
 
         <q-separator class="q-my-md" />
 
         <!-- Content for non-authenticated users -->
         <template v-if="!isAuthenticated">
-          <q-item clickable v-ripple @click="navigateTo('/')">
-            <q-item-section avatar>
-              <q-icon name="home" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Home</q-item-label>
-              <q-item-label caption>Go to main page</q-item-label>
-            </q-item-section>
-          </q-item>
         </template>
 
         <!-- Content for authenticated users -->
@@ -1048,7 +1172,7 @@ export default {
           fontFamily: "'Times New Roman', 'Times', serif",
           fontWeight: '400',
           fontStyle: 'italic',
-          fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', // Responsive: 1.1rem on small, scales up to 1.5rem on large screens
+          fontSize: '1.5rem', // Always use larger size
           letterSpacing: '0.05em',
           textTransform: 'none',
           color: isWhiteHeader ? '#1a1a1a' : '#ffffff',
@@ -1789,7 +1913,7 @@ export default {
 // Mobile responsive adjustments
 @media (max-width: 600px) {
   .q-toolbar-title {
-    font-size: 1.1rem !important;
+    font-size: 1.5rem !important;
   }
 
   .logo-header {
