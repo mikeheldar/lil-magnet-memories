@@ -1164,9 +1164,10 @@ export default {
       if (isLineAModern) {
         const isWhiteHeader = activeThemeName.value.includes('White Header');
         return {
-          fontFamily: "'Brush Script MT', 'Lucida Handwriting', 'Apple Chancery', 'Zapf Chancery', 'Dancing Script', 'Great Vibes', 'Comic Sans MS', cursive",
+          fontFamily: "'Times New Roman', 'Times', serif",
           fontWeight: '400',
-          fontStyle: 'normal',
+          fontStyle: 'italic',
+          fontSize: '1.1rem', // Slightly smaller than default text-h5
           letterSpacing: '0.05em',
           textTransform: 'none',
           color: isWhiteHeader ? '#1a1a1a' : '#ffffff',

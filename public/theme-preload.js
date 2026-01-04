@@ -138,9 +138,10 @@
               headerCSS += `
                 .q-toolbar__title, .q-toolbar__title span, .q-toolbar__title span.text-h5.text-weight-bold,
                 .q-toolbar-title, .q-toolbar-title span, .q-toolbar-title span.text-h5.text-weight-bold {
-                  font-family: 'Georgia', 'Times New Roman', 'Times', serif !important;
+                  font-family: 'Times New Roman', 'Times', serif !important;
                   font-weight: 400 !important;
                   font-style: italic !important;
+                  font-size: 1.1rem !important;
                   letter-spacing: 0.05em !important;
                   text-transform: none !important;
                   color: ${textColor} !important;
@@ -260,9 +261,10 @@
         }
         .q-header .q-toolbar-title span,
         .q-header .q-toolbar__title span {
-          font-family: 'Georgia', 'Times New Roman', 'Times', serif !important;
+          font-family: 'Times New Roman', 'Times', serif !important;
           font-weight: 400 !important;
           font-style: italic !important;
+          font-size: 1.1rem !important;
           color: #ffffff !important;
         }
         .q-header .q-btn, .q-header .q-btn .q-icon, .q-header .q-chip:not(.test-environment-chip) {
