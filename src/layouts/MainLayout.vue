@@ -315,6 +315,7 @@
       v-model="leftDrawerOpen"
       bordered
       class="bg-grey-1 drawer-under-header"
+      :class="{ 'header-hidden': !headerVisible }"
       :overlay="false"
       :breakpoint="0"
       :width="300"
