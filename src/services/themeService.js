@@ -2169,7 +2169,7 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, black text - ULTRA MAXIMUM SPECIFICITY */
+          /* Header font - Times New Roman italic for title, black text - ULTRA MAXIMUM SPECIFICITY */
           html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
@@ -2199,6 +2199,58 @@ export const initializeDefaultThemes = async () => {
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
+          }
+
+          /* Responsive font-size for larger screens */
+          @media (min-width: 768px) {
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            html body .q-header .q-toolbar .q-toolbar-title span,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar .q-toolbar-title span,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar-title span {
+              font-size: 1.3rem !important;
+            }
+          }
+          @media (min-width: 1024px) {
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            html body .q-header .q-toolbar .q-toolbar-title span,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar .q-toolbar-title span,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar-title span {
+              font-size: 1.5rem !important;
+            }
           }
 
           /* Ensure all header text stays black (except test environment chip) - comprehensive selectors */
@@ -2645,7 +2697,7 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, black text - ULTRA MAXIMUM SPECIFICITY */
+          /* Header font - Times New Roman italic for title, black text - ULTRA MAXIMUM SPECIFICITY */
           html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
@@ -2675,6 +2727,58 @@ export const initializeDefaultThemes = async () => {
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
+          }
+
+          /* Responsive font-size for larger screens */
+          @media (min-width: 768px) {
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            html body .q-header .q-toolbar .q-toolbar-title span,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar .q-toolbar-title span,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar-title span {
+              font-size: 1.3rem !important;
+            }
+          }
+          @media (min-width: 1024px) {
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            html body .q-header .q-toolbar .q-toolbar-title span,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar .q-toolbar-title span,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar-title span {
+              font-size: 1.5rem !important;
+            }
           }
 
           /* Ensure all header text stays black (except test environment chip) - comprehensive selectors */
@@ -3149,7 +3253,7 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, black text - ULTRA MAXIMUM SPECIFICITY */
+          /* Header font - Times New Roman italic for title, black text - ULTRA MAXIMUM SPECIFICITY */
           html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
@@ -3179,6 +3283,58 @@ export const initializeDefaultThemes = async () => {
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
+          }
+
+          /* Responsive font-size for larger screens */
+          @media (min-width: 768px) {
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            html body .q-header .q-toolbar .q-toolbar-title span,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar .q-toolbar-title span,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar-title span {
+              font-size: 1.3rem !important;
+            }
+          }
+          @media (min-width: 1024px) {
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            html body .q-header .q-toolbar .q-toolbar-title span,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar .q-toolbar-title span,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar-title span {
+              font-size: 1.5rem !important;
+            }
           }
 
           /* Ensure all header text stays black (except test environment chip) - comprehensive selectors */
@@ -3621,7 +3777,7 @@ export const initializeDefaultThemes = async () => {
             background-color: transparent !important;
           }
 
-          /* Header font - cursive for title, black text - ULTRA MAXIMUM SPECIFICITY */
+          /* Header font - Times New Roman italic for title, black text - ULTRA MAXIMUM SPECIFICITY */
           html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
           html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
           html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
@@ -3651,6 +3807,58 @@ export const initializeDefaultThemes = async () => {
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
+          }
+
+          /* Responsive font-size for larger screens */
+          @media (min-width: 768px) {
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            html body .q-header .q-toolbar .q-toolbar-title span,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar .q-toolbar-title span,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar-title span {
+              font-size: 1.3rem !important;
+            }
+          }
+          @media (min-width: 1024px) {
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            html body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            .q-header .q-toolbar .q-toolbar-title span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title.text-center span.text-h5.text-weight-bold,
+            body .q-header .q-toolbar-title span.text-h5.text-weight-bold,
+            html body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            html body .q-header .q-toolbar .q-toolbar-title span,
+            body .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar .q-toolbar-title span,
+            .q-layout .q-header .q-toolbar .q-toolbar-title span,
+            .q-header .q-toolbar .q-toolbar-title span,
+            body .q-header .q-toolbar-title span {
+              font-size: 1.5rem !important;
+            }
           }
 
           /* Ensure all header text stays black (except test environment chip) - comprehensive selectors */
