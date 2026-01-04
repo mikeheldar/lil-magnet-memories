@@ -315,7 +315,7 @@
       v-model="leftDrawerOpen"
       bordered
       class="bg-grey-1 drawer-under-header"
-      :class="{ 'header-hidden': !headerVisible }"
+      :class="{ 'header-hidden': !headerVisible && leftDrawerOpen }"
       :overlay="false"
       :breakpoint="0"
       :width="300"
@@ -1515,16 +1515,24 @@ export default {
   transition: transform 0.3s ease-in-out !important;
   will-change: transform !important; // Optimize for transform animations
 
-  // When header is hidden, move drawer up with it (same distance as header)
+  // When header is hidden AND drawer is open, move drawer up with header
   // This makes the drawer slide up and disappear when scrolling down
   &.header-hidden {
     transform: translateY(calc(-100% - 84px)) !important; // Move up completely (drawer height + header height) to hide it
   }
   
-  // When visible, ensure it's at the correct position
+  // When visible (header is visible OR drawer is closed), ensure it's at the correct position
   // This makes the drawer slide down and appear when scrolling up
   &:not(.header-hidden) {
     transform: translateY(0) !important;
+  }
+  
+  // Ensure drawer is always visible when open and header is visible
+  // Override any other transforms when both conditions are met
+  &:not(.header-hidden) {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 }
 
