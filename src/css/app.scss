@@ -25,19 +25,24 @@
   font-style: italic !important; // Professional italic style
   font-size: 1.5rem !important; // Default larger size
   color: #ffffff !important;
-  
+
   // Responsive font size on small screens to prevent text cutoff
-  // Scales down more aggressively as screen gets smaller
+  // Scales down very aggressively - NO ellipsis, font must shrink to fit full text
   @media (max-width: 599px) {
-    font-size: clamp(0.75rem, 4vw, 1.5rem) !important; // Scales from 12px to 24px based on viewport width
+    font-size: clamp(0.4rem, 2vw, 1.5rem) !important; // Very aggressive: min 6.4px, scales with 2vw, max 24px
     white-space: nowrap !important; // Prevent wrapping
-    overflow: hidden !important;
-    text-overflow: ellipsis !important; // Show ellipsis if still too long
+    overflow: visible !important; // Allow text to be visible
+    text-overflow: clip !important; // Clip instead of ellipsis, but font should shrink enough to prevent this
   }
-  
-  // Extra small screens - even smaller font
+
+  // Small screens - even more aggressive
+  @media (max-width: 480px) {
+    font-size: clamp(0.35rem, 1.8vw, 1.2rem) !important; // Even smaller on small screens (min 5.6px)
+  }
+
+  // Extra small screens - maximum shrinkage
   @media (max-width: 360px) {
-    font-size: clamp(0.65rem, 3.5vw, 1.2rem) !important; // Even smaller on very small screens
+    font-size: clamp(0.3rem, 1.5vw, 1rem) !important; // Maximum shrinkage for very small screens (min 4.8px)
   }
 }
 

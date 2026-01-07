@@ -1255,8 +1255,10 @@ export default {
          activeThemeName.value.includes('LineA Modern White Header'));
 
       // Responsive font size - scales down aggressively on small screens to prevent cutoff
-      // Use viewport-based calculation that shrinks more on very small screens
-      const fontSize = 'clamp(0.75rem, 4vw, 1.5rem)'; // Scales from 0.75rem (12px) to 1.5rem (24px) based on viewport
+      // Use very aggressive viewport-based calculation that shrinks significantly on small screens
+      // Minimum 0.4rem (6.4px), scales with 2vw, max 1.5rem (24px)
+      // This ensures text fits even on very narrow screens (~320px wide)
+      const fontSize = 'clamp(0.4rem, 2vw, 1.5rem)'; // Very aggressive scaling to prevent any truncation
 
       if (isLineAModern) {
         const isWhiteHeader = activeThemeName.value.includes('White Header');
@@ -1264,7 +1266,7 @@ export default {
           fontFamily: "'Times New Roman', 'Times', serif",
           fontWeight: '400',
           fontStyle: 'italic',
-          fontSize: fontSize, // Responsive size - scales down on small screens
+          fontSize: fontSize, // Responsive size - scales down aggressively on small screens
           letterSpacing: '0.05em',
           textTransform: 'none',
           color: isWhiteHeader ? '#1a1a1a' : '#ffffff',
@@ -1791,23 +1793,33 @@ html, body {
   user-select: none;
   transition: opacity 0.2s ease;
   pointer-events: auto !important; // Override parent's pointer-events: none
+  display: inline-block !important; // Allow width to be determined by content
+  max-width: 100% !important; // Ensure it doesn't exceed container, but container allows fit-content
+  white-space: nowrap !important; // Prevent text wrapping
+  overflow: visible !important; // Allow text to be fully visible
 
   &:hover {
     opacity: 0.8;
   }
 
   // Responsive font size on small screens to prevent text cutoff
-  // Scales down more aggressively as screen gets smaller
+  // Scales down very aggressively - NO ellipsis, font must shrink to fit full text
   @media (max-width: 599px) {
-    font-size: clamp(0.75rem, 4vw, 1.5rem) !important; // Scales from 12px to 24px based on viewport width
+    font-size: clamp(0.4rem, 2vw, 1.5rem) !important; // Very aggressive: min 6.4px, scales with 2vw, max 24px
     white-space: nowrap !important; // Prevent wrapping
-    overflow: hidden !important;
-    text-overflow: ellipsis !important; // Show ellipsis if still too long
+    overflow: visible !important; // Allow text to be visible
+    text-overflow: clip !important; // Clip instead of ellipsis, but font should shrink enough to prevent this
+    max-width: calc(100vw - 120px) !important; // Reserve space for hamburger (~48px) and avatar (~72px)
   }
-  
-  // Extra small screens - even smaller font
+
+  // Small screens - even more aggressive
+  @media (max-width: 480px) {
+    font-size: clamp(0.35rem, 1.8vw, 1.2rem) !important; // Even smaller on small screens (min 5.6px)
+  }
+
+  // Extra small screens - maximum shrinkage
   @media (max-width: 360px) {
-    font-size: clamp(0.65rem, 3.5vw, 1.2rem) !important; // Even smaller on very small screens
+    font-size: clamp(0.3rem, 1.5vw, 1rem) !important; // Maximum shrinkage for very small screens (min 4.8px)
   }
 
   &:active {
@@ -1820,7 +1832,7 @@ html, body {
   left: 50% !important;
   transform: translateX(-50%) !important;
   width: fit-content !important; /* Fit content width */
-  min-width: 225px !important; /* Ensure minimum width for title */
+  min-width: 225px !important; /* Ensure minimum width for title on larger screens */
   max-width: none !important;
   text-align: center;
   z-index: 99999 !important; /* Extremely high z-index - title is ALWAYS on top */
@@ -1833,6 +1845,13 @@ html, body {
   opacity: 1 !important; /* Always fully opaque */
   overflow: visible !important; /* Prevent clipping */
   text-overflow: clip !important; /* Don't truncate text */
+
+  // Remove min-width constraint on small screens to allow title to shrink fully
+  @media (max-width: 599px) {
+    min-width: unset !important; /* Allow title to shrink to fit text */
+    max-width: calc(100vw - 120px) !important; /* Reserve space for hamburger and avatar (roughly 60px each side) */
+    padding: 0 5px !important; /* Reduce padding on small screens */
+  }
   // Ensure title never gets clipped by parent containers
   clip-path: none !important;
   clip: auto !important;
