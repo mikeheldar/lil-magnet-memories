@@ -522,7 +522,8 @@ export const themeService = {
           titleSpan.style.setProperty('font-family', "'Times New Roman', 'Times', serif", 'important');
           titleSpan.style.setProperty('font-weight', '400', 'important');
           titleSpan.style.setProperty('font-style', 'italic', 'important');
-          titleSpan.style.setProperty('font-size', '1.5rem', 'important'); // Always use larger size
+          // Don't set font-size here - let CSS media queries handle responsive sizing
+          // titleSpan.style.setProperty('font-size', '1.5rem', 'important'); // Removed - let CSS handle responsive sizing
           titleSpan.style.setProperty('letter-spacing', '0.05em', 'important');
           titleSpan.style.setProperty('text-transform', 'none', 'important');
           // Force black color for white header, white for black header
@@ -2224,7 +2225,7 @@ export const initializeDefaultThemes = async () => {
             .q-layout .q-header .q-toolbar .q-toolbar-title span,
             .q-header .q-toolbar .q-toolbar-title span,
             body .q-header .q-toolbar-title span {
-              font-size: 1.5rem !important;
+              /* font-size removed - let CSS media queries handle responsive sizing */
             }
           }
           @media (min-width: 1024px) {
@@ -2249,7 +2250,7 @@ export const initializeDefaultThemes = async () => {
             .q-layout .q-header .q-toolbar .q-toolbar-title span,
             .q-header .q-toolbar .q-toolbar-title span,
             body .q-header .q-toolbar-title span {
-              font-size: 1.5rem !important;
+              /* font-size removed - let CSS media queries handle responsive sizing */
             }
           }
 
@@ -2752,7 +2753,7 @@ export const initializeDefaultThemes = async () => {
             .q-layout .q-header .q-toolbar .q-toolbar-title span,
             .q-header .q-toolbar .q-toolbar-title span,
             body .q-header .q-toolbar-title span {
-              font-size: 1.5rem !important;
+              /* font-size removed - let CSS media queries handle responsive sizing */
             }
           }
           @media (min-width: 1024px) {
@@ -2777,7 +2778,7 @@ export const initializeDefaultThemes = async () => {
             .q-layout .q-header .q-toolbar .q-toolbar-title span,
             .q-header .q-toolbar .q-toolbar-title span,
             body .q-header .q-toolbar-title span {
-              font-size: 1.5rem !important;
+              /* font-size removed - let CSS media queries handle responsive sizing */
             }
           }
 
@@ -3308,7 +3309,7 @@ export const initializeDefaultThemes = async () => {
             .q-layout .q-header .q-toolbar .q-toolbar-title span,
             .q-header .q-toolbar .q-toolbar-title span,
             body .q-header .q-toolbar-title span {
-              font-size: 1.5rem !important;
+              /* font-size removed - let CSS media queries handle responsive sizing */
             }
           }
           @media (min-width: 1024px) {
@@ -3333,7 +3334,7 @@ export const initializeDefaultThemes = async () => {
             .q-layout .q-header .q-toolbar .q-toolbar-title span,
             .q-header .q-toolbar .q-toolbar-title span,
             body .q-header .q-toolbar-title span {
-              font-size: 1.5rem !important;
+              /* font-size removed - let CSS media queries handle responsive sizing */
             }
           }
 
@@ -3832,7 +3833,7 @@ export const initializeDefaultThemes = async () => {
             .q-layout .q-header .q-toolbar .q-toolbar-title span,
             .q-header .q-toolbar .q-toolbar-title span,
             body .q-header .q-toolbar-title span {
-              font-size: 1.5rem !important;
+              /* font-size removed - let CSS media queries handle responsive sizing */
             }
           }
           @media (min-width: 1024px) {
@@ -3857,7 +3858,7 @@ export const initializeDefaultThemes = async () => {
             .q-layout .q-header .q-toolbar .q-toolbar-title span,
             .q-header .q-toolbar .q-toolbar-title span,
             body .q-header .q-toolbar-title span {
-              font-size: 1.5rem !important;
+              /* font-size removed - let CSS media queries handle responsive sizing */
             }
           }
 
