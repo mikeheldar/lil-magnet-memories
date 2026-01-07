@@ -1806,6 +1806,7 @@ html, body {
   // Scales down extremely aggressively - NO ellipsis, font must shrink to fit full text
   @media (max-width: 599px) {
     font-size: clamp(0.3rem, 1.2vw, 1.5rem) !important; // Extremely aggressive: min 4.8px, scales with 1.2vw, max 24px
+    letter-spacing: 0.02em !important; // Reduce letter spacing to make text more compact
     white-space: nowrap !important; // Prevent wrapping
     overflow: visible !important; // Allow text to be visible
     text-overflow: clip !important; // Clip instead of ellipsis, but font should shrink enough to prevent this
@@ -1815,11 +1816,13 @@ html, body {
   // Small screens - even more aggressive
   @media (max-width: 480px) {
     font-size: clamp(0.25rem, 1vw, 1.2rem) !important; // Even smaller on small screens (min 4px)
+    letter-spacing: 0.01em !important; // Even tighter letter spacing
   }
 
   // Extra small screens - maximum shrinkage
   @media (max-width: 360px) {
     font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens (min 3.2px)
+    letter-spacing: 0 !important; // No letter spacing on very small screens
   }
 
   &:active {
