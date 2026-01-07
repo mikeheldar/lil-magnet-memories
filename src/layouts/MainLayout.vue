@@ -1793,11 +1793,17 @@ html, body {
   }
 
   // Responsive font size on small screens to prevent text cutoff
+  // Scales down more aggressively as screen gets smaller
   @media (max-width: 599px) {
-    font-size: clamp(0.9rem, 3vw, 1.5rem) !important; // Scales down smoothly on small screens
+    font-size: clamp(0.75rem, 4vw, 1.5rem) !important; // Scales from 12px to 24px based on viewport width
     white-space: nowrap !important; // Prevent wrapping
     overflow: hidden !important;
     text-overflow: ellipsis !important; // Show ellipsis if still too long
+  }
+  
+  // Extra small screens - even smaller font
+  @media (max-width: 360px) {
+    font-size: clamp(0.65rem, 3.5vw, 1.2rem) !important; // Even smaller on very small screens
   }
 
   &:active {
