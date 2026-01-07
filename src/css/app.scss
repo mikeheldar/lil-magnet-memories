@@ -27,23 +27,17 @@
   color: #ffffff !important;
 
   // Responsive font size on small screens to prevent text cutoff
-  // Scales down extremely aggressively - NO ellipsis, font must shrink to fit full text
-  // Start resizing at 405px wide
+  // Font size stays at 1.5rem above 405px, starts shrinking below 405px
   @media (max-width: 405px) {
-    font-size: clamp(0.3rem, 1.2vw, 1.5rem) !important; // Extremely aggressive: min 4.8px, scales with 1.2vw, max 24px
+    font-size: clamp(0.3rem, 1.2vw, 1.2rem) !important; // Start shrinking: min 4.8px, scales with 1.2vw, max 19.2px (smaller than default)
     white-space: nowrap !important; // Prevent wrapping
     overflow: visible !important; // Allow text to be visible
     text-overflow: clip !important; // Clip instead of ellipsis, but font should shrink enough to prevent this
   }
 
-  // Small screens - even more aggressive
-  @media (max-width: 480px) {
-    font-size: clamp(0.25rem, 1vw, 1.2rem) !important; // Even smaller on small screens (min 4px)
-  }
-
   // Extra small screens - maximum shrinkage
   @media (max-width: 360px) {
-    font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens (min 3.2px)
+    font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens (min 3.2px, max 14.4px)
   }
 }
 

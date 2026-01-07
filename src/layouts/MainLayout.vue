@@ -1254,11 +1254,9 @@ export default {
         (activeThemeName.value.includes('LineA Modern Black Header') ||
          activeThemeName.value.includes('LineA Modern White Header'));
 
-      // Responsive font size - scales down very aggressively on small screens to prevent cutoff
-      // Use extremely aggressive viewport-based calculation that shrinks significantly on small screens
-      // Minimum 0.3rem (4.8px), scales with 1.2vw, max 1.5rem (24px)
-      // This ensures text fits even on very narrow screens (~320px wide)
-      const fontSize = 'clamp(0.3rem, 1.2vw, 1.5rem)'; // Extremely aggressive scaling to prevent any truncation
+      // Default font size - fixed at 1.5rem for larger screens
+      // Will be overridden by media queries below 405px to make it smaller
+      const fontSize = '1.5rem'; // Fixed size above 405px
 
       if (isLineAModern) {
         const isWhiteHeader = activeThemeName.value.includes('White Header');
@@ -1803,10 +1801,9 @@ html, body {
   }
 
   // Responsive font size on small screens to prevent text cutoff
-  // Scales down extremely aggressively - NO ellipsis, font must shrink to fit full text
-  // Start resizing at 405px wide
+  // Font size stays at 1.5rem above 405px, starts shrinking below 405px
   @media (max-width: 405px) {
-    font-size: clamp(0.3rem, 1.2vw, 1.5rem) !important; // Extremely aggressive: min 4.8px, scales with 1.2vw, max 24px
+    font-size: clamp(0.3rem, 1.2vw, 1.2rem) !important; // Start shrinking: min 4.8px, scales with 1.2vw, max 19.2px (smaller than default)
     letter-spacing: 0.02em !important; // Reduce letter spacing to make text more compact
     white-space: nowrap !important; // Prevent wrapping
     overflow: visible !important; // Allow text to be visible
@@ -1814,15 +1811,9 @@ html, body {
     max-width: calc(100vw - 120px) !important; // Reserve space for hamburger (~48px) and avatar (~72px)
   }
 
-  // Small screens - even more aggressive
-  @media (max-width: 480px) {
-    font-size: clamp(0.25rem, 1vw, 1.2rem) !important; // Even smaller on small screens (min 4px)
-    letter-spacing: 0.01em !important; // Even tighter letter spacing
-  }
-
   // Extra small screens - maximum shrinkage
   @media (max-width: 360px) {
-    font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens (min 3.2px)
+    font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens (min 3.2px, max 14.4px)
     letter-spacing: 0 !important; // No letter spacing on very small screens
   }
 
