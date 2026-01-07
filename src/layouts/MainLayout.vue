@@ -1254,13 +1254,17 @@ export default {
         (activeThemeName.value.includes('LineA Modern Black Header') ||
          activeThemeName.value.includes('LineA Modern White Header'));
 
+      // Responsive font size - scales down aggressively on small screens to prevent cutoff
+      // Use viewport-based calculation that shrinks more on very small screens
+      const fontSize = 'clamp(0.75rem, 4vw, 1.5rem)'; // Scales from 0.75rem (12px) to 1.5rem (24px) based on viewport
+
       if (isLineAModern) {
         const isWhiteHeader = activeThemeName.value.includes('White Header');
         return {
           fontFamily: "'Times New Roman', 'Times', serif",
           fontWeight: '400',
           fontStyle: 'italic',
-          fontSize: '1.5rem', // Always use larger size
+          fontSize: fontSize, // Responsive size - scales down on small screens
           letterSpacing: '0.05em',
           textTransform: 'none',
           color: isWhiteHeader ? '#1a1a1a' : '#ffffff',
