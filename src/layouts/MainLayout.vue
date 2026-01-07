@@ -1792,6 +1792,14 @@ html, body {
     opacity: 0.8;
   }
 
+  // Responsive font size on small screens to prevent text cutoff
+  @media (max-width: 599px) {
+    font-size: clamp(0.9rem, 3vw, 1.5rem) !important; // Scales down smoothly on small screens
+    white-space: nowrap !important; // Prevent wrapping
+    overflow: hidden !important;
+    text-overflow: ellipsis !important; // Show ellipsis if still too long
+  }
+
   &:active {
     opacity: 0.6;
   }
