@@ -1254,11 +1254,11 @@ export default {
         (activeThemeName.value.includes('LineA Modern Black Header') ||
          activeThemeName.value.includes('LineA Modern White Header'));
 
-      // Responsive font size - scales down aggressively on small screens to prevent cutoff
-      // Use very aggressive viewport-based calculation that shrinks significantly on small screens
-      // Minimum 0.4rem (6.4px), scales with 2vw, max 1.5rem (24px)
+      // Responsive font size - scales down very aggressively on small screens to prevent cutoff
+      // Use extremely aggressive viewport-based calculation that shrinks significantly on small screens
+      // Minimum 0.3rem (4.8px), scales with 1.2vw, max 1.5rem (24px)
       // This ensures text fits even on very narrow screens (~320px wide)
-      const fontSize = 'clamp(0.4rem, 2vw, 1.5rem)'; // Very aggressive scaling to prevent any truncation
+      const fontSize = 'clamp(0.3rem, 1.2vw, 1.5rem)'; // Extremely aggressive scaling to prevent any truncation
 
       if (isLineAModern) {
         const isWhiteHeader = activeThemeName.value.includes('White Header');
@@ -1803,9 +1803,9 @@ html, body {
   }
 
   // Responsive font size on small screens to prevent text cutoff
-  // Scales down very aggressively - NO ellipsis, font must shrink to fit full text
+  // Scales down extremely aggressively - NO ellipsis, font must shrink to fit full text
   @media (max-width: 599px) {
-    font-size: clamp(0.4rem, 2vw, 1.5rem) !important; // Very aggressive: min 6.4px, scales with 2vw, max 24px
+    font-size: clamp(0.3rem, 1.2vw, 1.5rem) !important; // Extremely aggressive: min 4.8px, scales with 1.2vw, max 24px
     white-space: nowrap !important; // Prevent wrapping
     overflow: visible !important; // Allow text to be visible
     text-overflow: clip !important; // Clip instead of ellipsis, but font should shrink enough to prevent this
@@ -1814,12 +1814,12 @@ html, body {
 
   // Small screens - even more aggressive
   @media (max-width: 480px) {
-    font-size: clamp(0.35rem, 1.8vw, 1.2rem) !important; // Even smaller on small screens (min 5.6px)
+    font-size: clamp(0.25rem, 1vw, 1.2rem) !important; // Even smaller on small screens (min 4px)
   }
 
   // Extra small screens - maximum shrinkage
   @media (max-width: 360px) {
-    font-size: clamp(0.3rem, 1.5vw, 1rem) !important; // Maximum shrinkage for very small screens (min 4.8px)
+    font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens (min 3.2px)
   }
 
   &:active {
