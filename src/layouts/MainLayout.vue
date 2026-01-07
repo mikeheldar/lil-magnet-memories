@@ -1602,9 +1602,12 @@ export default {
     max-height: 100vh !important;
   }
 
-  // Full width on small screens
+  // Full width and full height on small screens - extend to bottom
   @media (max-width: 599px) {
     width: 100vw !important;
+    height: calc(100vh - 84px) !important; // Full height minus header
+    max-height: calc(100vh - 84px) !important;
+    bottom: 0 !important; // Ensure it extends to bottom
   }
 }
 
