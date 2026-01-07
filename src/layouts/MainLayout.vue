@@ -1804,7 +1804,8 @@ html, body {
 
   // Responsive font size on small screens to prevent text cutoff
   // Scales down extremely aggressively - NO ellipsis, font must shrink to fit full text
-  @media (max-width: 599px) {
+  // Start resizing at 405px wide
+  @media (max-width: 405px) {
     font-size: clamp(0.3rem, 1.2vw, 1.5rem) !important; // Extremely aggressive: min 4.8px, scales with 1.2vw, max 24px
     letter-spacing: 0.02em !important; // Reduce letter spacing to make text more compact
     white-space: nowrap !important; // Prevent wrapping
@@ -1850,7 +1851,8 @@ html, body {
   text-overflow: clip !important; /* Don't truncate text */
 
   // Remove min-width constraint on small screens to allow title to shrink fully
-  @media (max-width: 599px) {
+  // Start resizing at 405px wide
+  @media (max-width: 405px) {
     min-width: unset !important; /* Allow title to shrink to fit text */
     max-width: calc(100vw - 120px) !important; /* Reserve space for hamburger and avatar (roughly 60px each side) */
     padding: 0 5px !important; /* Reduce padding on small screens */
