@@ -10,6 +10,29 @@
       </div>
     </div>
 
+    <!-- Theme Settings -->
+    <q-card class="q-mb-md">
+      <q-card-section>
+        <div class="text-h6 q-mb-md">
+          <q-icon name="settings" class="q-mr-sm" />
+          Theme Settings
+        </div>
+        <div class="row items-center q-gutter-md">
+          <div class="col-12">
+            <q-toggle
+              v-model="themeLoggingEnabled"
+              label="Enable Theme Service Logging"
+              color="primary"
+              @update:model-value="toggleThemeLogging"
+            />
+            <div class="text-caption text-grey-7 q-mt-xs">
+              Show theme service debug logs in console (default: off)
+            </div>
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+
     <!-- Current Theme Display -->
     <q-card class="q-mb-md">
       <q-card-section>
@@ -153,6 +176,7 @@ export default {
     const showEditDialog = ref(false);
     const editingTheme = ref(null);
     const editingThemeName = ref('');
+    const themeLoggingEnabled = ref(themeService.getLoggingEnabled());
 
     const loadThemes = async () => {
       try {
@@ -297,8 +321,15 @@ export default {
       }
     };
 
+    const toggleThemeLogging = (enabled) => {
+      themeService.setLoggingEnabled(enabled);
+      themeLoggingEnabled.value = enabled;
+    };
+
     onMounted(() => {
       loadThemes();
+      // Initialize theme logging setting (defaults to false/off)
+      themeLoggingEnabled.value = themeService.getLoggingEnabled();
     });
 
     return {
@@ -307,10 +338,12 @@ export default {
       loading,
       showEditDialog,
       editingThemeName,
+      themeLoggingEnabled,
       activateTheme,
       openEditDialog,
       saveThemeName,
       formatDate,
+      toggleThemeLogging,
     };
   },
 };

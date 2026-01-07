@@ -21,10 +21,36 @@ const ACTIVE_THEME_DOC = 'activeTheme';
 // Store the active theme listener unsubscribe function
 let activeThemeUnsubscribe = null;
 
+// Theme logging control - defaults to OFF
+const THEME_LOGGING_KEY = 'themeService_logging_enabled';
+const getThemeLoggingEnabled = () => {
+  const stored = localStorage.getItem(THEME_LOGGING_KEY);
+  return stored === 'true'; // Defaults to false if not set
+};
+
+const setThemeLoggingEnabled = (enabled) => {
+  localStorage.setItem(THEME_LOGGING_KEY, enabled ? 'true' : 'false');
+};
+
+// Helper function to conditionally log theme service messages
+const themeLog = (...args) => {
+  if (getThemeLoggingEnabled()) {
+    console.log(...args);
+  }
+};
+
 /**
  * Theme Service - Manages site themes and visual styling
  */
 export const themeService = {
+  // Logging control methods
+  getLoggingEnabled() {
+    return getThemeLoggingEnabled();
+  },
+  
+  setLoggingEnabled(enabled) {
+    setThemeLoggingEnabled(enabled);
+  },
   /**
    * Get all available themes
    */
@@ -55,18 +81,18 @@ export const themeService = {
       // Ensure Firestore network is ready before attempting to read
       await ensureNetworkReady();
 
-      console.log(`[ThemeService] Fetching theme ${themeId} from Firestore`);
+      themeLog(`[ThemeService] Fetching theme ${themeId} from Firestore`);
       const themeRef = doc(db, THEMES_COLLECTION, themeId);
       const themeSnap = await getDoc(themeRef);
 
-      console.log(`[ThemeService] Theme ${themeId} exists: ${themeSnap.exists()}`);
+      themeLog(`[ThemeService] Theme ${themeId} exists: ${themeSnap.exists()}`);
 
       if (themeSnap.exists()) {
         const theme = {
           id: themeSnap.id,
           ...themeSnap.data(),
         };
-        console.log(`[ThemeService] Theme ${themeId} loaded: ${theme.name}, has styles: ${!!theme.styles}`);
+        themeLog(`[ThemeService] Theme ${themeId} loaded: ${theme.name}, has styles: ${!!theme.styles}`);
         // Cache the theme for offline use
         if (theme.styles) {
           localStorage.setItem(`theme_${themeId}`, JSON.stringify(theme));
@@ -96,7 +122,7 @@ export const themeService = {
         if (cachedTheme) {
           try {
             const theme = JSON.parse(cachedTheme);
-            console.log(`[ThemeService] Using cached theme ${themeId} due to offline status`);
+            themeLog(`[ThemeService] Using cached theme ${themeId} due to offline status`);
             return theme;
           } catch (parseError) {
             console.error('[ThemeService] Error parsing cached theme:', parseError);
@@ -117,23 +143,23 @@ export const themeService = {
       // Ensure Firestore network is ready before attempting to read
       await ensureNetworkReady();
 
-      console.log(`[ThemeService] Attempting to get active theme from Firestore: ${THEMES_COLLECTION}/${ACTIVE_THEME_DOC}`);
+      themeLog(`[ThemeService] Attempting to get active theme from Firestore: ${THEMES_COLLECTION}/${ACTIVE_THEME_DOC}`);
       const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
 
       // Use source: 'server' to avoid offline cache issues on first access
       const activeThemeSnap = await getDoc(activeThemeRef);
 
-      console.log(`[ThemeService] Active theme document exists: ${activeThemeSnap.exists()}`);
+      themeLog(`[ThemeService] Active theme document exists: ${activeThemeSnap.exists()}`);
 
       if (activeThemeSnap.exists()) {
         const data = activeThemeSnap.data();
-        console.log(`[ThemeService] Active theme data:`, data);
+        themeLog(`[ThemeService] Active theme data:`, data);
         const activeThemeId = data?.themeId;
         if (activeThemeId) {
-          console.log(`[ThemeService] Fetching theme with ID: ${activeThemeId}`);
+          themeLog(`[ThemeService] Fetching theme with ID: ${activeThemeId}`);
           try {
             const theme = await this.getTheme(activeThemeId);
-            console.log(`[ThemeService] Successfully fetched theme: ${theme?.name}`);
+            themeLog(`[ThemeService] Successfully fetched theme: ${theme?.name}`);
             return theme;
           } catch (themeError) {
             // If we can't get the theme but have it cached, use cache
@@ -147,7 +173,7 @@ export const themeService = {
             if (storedTheme) {
               const theme = JSON.parse(storedTheme);
               if (theme.id === activeThemeId) {
-                console.log('[ThemeService] Using cached theme due to Firebase error');
+                themeLog('[ThemeService] Using cached theme due to Firebase error');
                 return theme;
               }
             }
@@ -157,7 +183,7 @@ export const themeService = {
           console.warn('[ThemeService] Active theme document exists but has no themeId');
         }
       } else {
-        console.log(`[ThemeService] Active theme document does not exist yet (this is normal on first run). Collection: ${THEMES_COLLECTION}, Doc: ${ACTIVE_THEME_DOC}`);
+        themeLog(`[ThemeService] Active theme document does not exist yet (this is normal on first run). Collection: ${THEMES_COLLECTION}, Doc: ${ACTIVE_THEME_DOC}`);
         // This is not an error - document just doesn't exist yet
         // Return null gracefully
       }
@@ -179,7 +205,7 @@ export const themeService = {
 
       // If it's a "document doesn't exist" error, that's fine - return null
       if (error?.code === 'not-found' || error?.message?.includes('document does not exist')) {
-        console.log('[ThemeService] Document does not exist (normal on first run)');
+        themeLog('[ThemeService] Document does not exist (normal on first run)');
         return null;
       }
 
@@ -189,7 +215,7 @@ export const themeService = {
         if (storedTheme) {
           try {
             const theme = JSON.parse(storedTheme);
-            console.log('[ThemeService] Using cached theme due to offline status');
+            themeLog('[ThemeService] Using cached theme due to offline status');
             return theme;
           } catch (parseError) {
             console.error('[ThemeService] Error parsing cached theme:', parseError);
@@ -320,7 +346,7 @@ export const themeService = {
       return;
     }
 
-    console.log(`[ThemeService] Applying theme: ${theme.name}`);
+    themeLog(`[ThemeService] Applying theme: ${theme.name}`);
 
     // Remove existing theme styles (both preload and dynamic)
     const existingPreloadStyle = document.getElementById('theme-preload-styles');
@@ -799,11 +825,11 @@ export const themeService = {
     // Verify styles were injected
     const injectedStyle = document.getElementById('dynamic-theme-styles');
     if (injectedStyle) {
-      console.log(`[ThemeService] Theme applied successfully: ${theme.name}`);
-      console.log(`[ThemeService] Injected styles length: ${injectedStyle.textContent.length} characters`);
+      themeLog(`[ThemeService] Theme applied successfully: ${theme.name}`);
+      themeLog(`[ThemeService] Injected styles length: ${injectedStyle.textContent.length} characters`);
       // Check if cursive font is in the styles
       if (injectedStyle.textContent.includes('Brush Script MT') || injectedStyle.textContent.includes('cursive')) {
-        console.log('[ThemeService] ✓ Cursive font styles found in injected theme');
+        themeLog('[ThemeService] ✓ Cursive font styles found in injected theme');
       } else {
         console.warn('[ThemeService] ⚠ Cursive font styles NOT found in injected theme');
       }
@@ -948,21 +974,21 @@ export const themeService = {
         if (storedTheme) {
           const cachedTheme = JSON.parse(storedTheme);
           if (cachedTheme.id !== activeTheme.id || cachedTheme.styles !== activeTheme.styles) {
-            console.log(`[ThemeService] Updating theme from Firebase: ${activeTheme.name}`);
+            themeLog(`[ThemeService] Updating theme from Firebase: ${activeTheme.name}`);
             this.applyTheme(activeTheme);
             return activeTheme;
           } else {
-            console.log(`[ThemeService] Theme already matches cached: ${activeTheme.name}`);
+            themeLog(`[ThemeService] Theme already matches cached: ${activeTheme.name}`);
             return cachedTheme;
           }
         } else {
           // No cached theme, apply Firebase theme
-          console.log(`[ThemeService] Applying theme from Firebase: ${activeTheme.name}`);
+          themeLog(`[ThemeService] Applying theme from Firebase: ${activeTheme.name}`);
           this.applyTheme(activeTheme);
           return activeTheme;
         }
       } else {
-        console.log('[ThemeService] No active theme found in Firebase');
+        themeLog('[ThemeService] No active theme found in Firebase');
         // Use cached theme if available
         const storedTheme = localStorage.getItem('activeTheme');
         if (storedTheme) {
@@ -970,12 +996,12 @@ export const themeService = {
         }
 
         // If no cached theme, try to get and apply "LineA Modern Black Header" as default
-        console.log('[ThemeService] No cached theme, attempting to load LineA Modern Black Header as default');
+        themeLog('[ThemeService] No cached theme, attempting to load LineA Modern Black Header as default');
         try {
           const allThemes = await this.getAllThemes();
           const blackHeaderTheme = allThemes.find(theme => theme.name === 'LineA Modern Black Header');
           if (blackHeaderTheme) {
-            console.log('[ThemeService] Found LineA Modern Black Header theme, applying as default');
+            themeLog('[ThemeService] Found LineA Modern Black Header theme, applying as default');
             this.applyTheme(blackHeaderTheme);
             // Set it as active theme in Firebase
             await this.setActiveTheme(blackHeaderTheme.id);
@@ -1004,12 +1030,12 @@ export const themeService = {
       }
 
       // If no cached theme, try to get and apply "LineA Modern Black Header" as default
-      console.log('[ThemeService] No cached theme after error, attempting to load LineA Modern Black Header as default');
+      themeLog('[ThemeService] No cached theme after error, attempting to load LineA Modern Black Header as default');
       try {
         const allThemes = await this.getAllThemes();
         const blackHeaderTheme = allThemes.find(theme => theme.name === 'LineA Modern Black Header');
         if (blackHeaderTheme) {
-          console.log('[ThemeService] Found LineA Modern Black Header theme, applying as default');
+          themeLog('[ThemeService] Found LineA Modern Black Header theme, applying as default');
           this.applyTheme(blackHeaderTheme);
           // Set it as active theme in Firebase
           await this.setActiveTheme(blackHeaderTheme.id);
@@ -1021,7 +1047,7 @@ export const themeService = {
     }
 
     // Final fallback: apply default theme with cursive font
-    console.log('[ThemeService] Applying default fallback theme (no theme found)');
+    themeLog('[ThemeService] Applying default fallback theme (no theme found)');
     const fallbackTheme = this.getDefaultFallbackTheme();
     this.applyTheme(fallbackTheme);
     return fallbackTheme;
@@ -1039,7 +1065,7 @@ export const themeService = {
     }
 
     try {
-      console.log('[ThemeService] Setting up real-time listener for active theme');
+      themeLog('[ThemeService] Setting up real-time listener for active theme');
       const activeThemeRef = doc(db, THEMES_COLLECTION, ACTIVE_THEME_DOC);
 
       // Set up real-time listener with debouncing to prevent excessive updates
@@ -1058,12 +1084,12 @@ export const themeService = {
               const activeThemeId = data?.themeId;
 
               if (activeThemeId) {
-                console.log(`[ThemeService] Active theme changed in real-time: ${activeThemeId}`);
+                themeLog(`[ThemeService] Active theme changed in real-time: ${activeThemeId}`);
                 try {
                   // Fetch the full theme data
                   const theme = await this.getTheme(activeThemeId);
                   if (theme) {
-                    console.log(`[ThemeService] Applying new active theme immediately: ${theme.name}`);
+                    themeLog(`[ThemeService] Applying new active theme immediately: ${theme.name}`);
                     // Apply the theme immediately
                     this.applyTheme(theme);
 
@@ -1077,7 +1103,7 @@ export const themeService = {
                   if (cachedTheme) {
                     try {
                       const theme = JSON.parse(cachedTheme);
-                      console.log('[ThemeService] Using cached theme in real-time listener');
+                      themeLog('[ThemeService] Using cached theme in real-time listener');
                       this.applyTheme(theme);
                       window.dispatchEvent(new CustomEvent('theme-changed', { detail: { themeName: theme.name } }));
                     } catch (parseError) {
@@ -1087,7 +1113,7 @@ export const themeService = {
                 }
               }
             } else {
-              console.log('[ThemeService] Active theme document deleted, applying fallback');
+              themeLog('[ThemeService] Active theme document deleted, applying fallback');
               const fallbackTheme = this.getDefaultFallbackTheme();
               this.applyTheme(fallbackTheme);
               window.dispatchEvent(new CustomEvent('theme-changed', { detail: { themeName: null } }));
@@ -1101,7 +1127,7 @@ export const themeService = {
           if (storedTheme) {
             try {
               const theme = JSON.parse(storedTheme);
-              console.log('[ThemeService] Using cached theme due to listener error');
+              themeLog('[ThemeService] Using cached theme due to listener error');
               this.applyTheme(theme);
             } catch (parseError) {
               console.error('[ThemeService] Error parsing cached theme:', parseError);
@@ -1110,7 +1136,7 @@ export const themeService = {
         }
       );
 
-      console.log('[ThemeService] Real-time listener for active theme set up successfully');
+      themeLog('[ThemeService] Real-time listener for active theme set up successfully');
     } catch (error) {
       console.error('[ThemeService] Error setting up active theme listener:', error);
     }
@@ -1123,7 +1149,7 @@ export const themeService = {
     if (activeThemeUnsubscribe) {
       activeThemeUnsubscribe();
       activeThemeUnsubscribe = null;
-      console.log('[ThemeService] Active theme listener cleaned up');
+      themeLog('[ThemeService] Active theme listener cleaned up');
     }
   },
 };
@@ -2342,7 +2368,7 @@ export const initializeDefaultThemes = async () => {
       );
 
       if (updatedBlackHeader) {
-        console.log(`[ThemeService] Found existing LineA Modern Black Header theme, updating with latest styles`);
+        themeLog(`[ThemeService] Found existing LineA Modern Black Header theme, updating with latest styles`);
         // Update with latest black header styles (cursive font)
         const blackHeaderStyles = `
           /* Clean white background - no patterns */
@@ -2555,12 +2581,12 @@ export const initializeDefaultThemes = async () => {
           }
         `;
         await themeService.updateThemeStyles(updatedBlackHeader.id, blackHeaderStyles);
-        console.log('[ThemeService] Updated LineA Modern Black Header theme with latest styles in Firestore');
+        themeLog('[ThemeService] Updated LineA Modern Black Header theme with latest styles in Firestore');
 
         // Always reapply if this is the active theme (to update cache and apply immediately)
         const activeTheme = await themeService.getActiveTheme();
         if (activeTheme && activeTheme.id === updatedBlackHeader.id) {
-          console.log('[ThemeService] Active theme was updated, reapplying with latest styles');
+          themeLog('[ThemeService] Active theme was updated, reapplying with latest styles');
           // Fetch fresh from Firestore to get updated styles
           const updatedTheme = await themeService.getTheme(updatedBlackHeader.id);
           if (updatedTheme) {
@@ -2569,13 +2595,13 @@ export const initializeDefaultThemes = async () => {
             localStorage.removeItem(`theme_${updatedBlackHeader.id}`);
             // Apply fresh theme
             themeService.applyTheme(updatedTheme);
-            console.log('[ThemeService] Successfully reapplied updated LineA Modern Black Header theme');
+            themeLog('[ThemeService] Successfully reapplied updated LineA Modern Black Header theme');
           }
         }
       }
 
       if (updatedWhiteHeader) {
-        console.log(`[ThemeService] Found existing LineA Modern White Header theme, updating with latest styles`);
+        themeLog(`[ThemeService] Found existing LineA Modern White Header theme, updating with latest styles`);
         // Update with latest white header styles (cursive font, black text)
         const whiteHeaderStyles = `
           /* Clean white background - no patterns */
@@ -2850,12 +2876,12 @@ export const initializeDefaultThemes = async () => {
           }
         `;
         await themeService.updateThemeStyles(updatedWhiteHeader.id, whiteHeaderStyles);
-        console.log('[ThemeService] Updated LineA Modern White Header theme with latest styles in Firestore');
+        themeLog('[ThemeService] Updated LineA Modern White Header theme with latest styles in Firestore');
 
         // Always reapply if this is the active theme (to update cache and apply immediately)
         const activeTheme = await themeService.getActiveTheme();
         if (activeTheme && activeTheme.id === updatedWhiteHeader.id) {
-          console.log('[ThemeService] Active theme was updated, reapplying with latest styles');
+          themeLog('[ThemeService] Active theme was updated, reapplying with latest styles');
           // Fetch fresh from Firestore to get updated styles
           const updatedTheme = await themeService.getTheme(updatedWhiteHeader.id);
           if (updatedTheme) {
@@ -2864,7 +2890,7 @@ export const initializeDefaultThemes = async () => {
             localStorage.removeItem(`theme_${updatedWhiteHeader.id}`);
             // Apply fresh theme
             themeService.applyTheme(updatedTheme);
-            console.log('[ThemeService] Successfully reapplied updated LineA Modern White Header theme');
+            themeLog('[ThemeService] Successfully reapplied updated LineA Modern White Header theme');
           }
         }
       }
@@ -2903,7 +2929,7 @@ export const initializeDefaultThemes = async () => {
       // No old themes, but ALWAYS update existing themes with latest styles
       // Update existing themes if they exist (to ensure they have latest cursive font)
       if (existingBlackHeader) {
-        console.log('[ThemeService] Updating existing LineA Modern Black Header theme with latest styles');
+        themeLog('[ThemeService] Updating existing LineA Modern Black Header theme with latest styles');
         // Use the same blackHeaderStyles from above
         const blackHeaderStyles = `
           /* Clean white background - no patterns */
@@ -3116,7 +3142,7 @@ export const initializeDefaultThemes = async () => {
           }
         `;
         await themeService.updateThemeStyles(existingBlackHeader.id, blackHeaderStyles);
-        console.log('[ThemeService] Updated existing LineA Modern Black Header theme');
+        themeLog('[ThemeService] Updated existing LineA Modern Black Header theme');
 
         // Reapply if active
         const activeTheme = await themeService.getActiveTheme();
@@ -3131,7 +3157,7 @@ export const initializeDefaultThemes = async () => {
       }
 
       if (existingWhiteHeader) {
-        console.log('[ThemeService] Updating existing LineA Modern White Header theme with latest styles');
+        themeLog('[ThemeService] Updating existing LineA Modern White Header theme with latest styles');
         // Use the same whiteHeaderStyles from above
         const whiteHeaderStyles = `
           /* Clean white background - no patterns */
@@ -3406,7 +3432,7 @@ export const initializeDefaultThemes = async () => {
           }
         `;
         await themeService.updateThemeStyles(existingWhiteHeader.id, whiteHeaderStyles);
-        console.log('[ThemeService] Updated existing LineA Modern White Header theme');
+        themeLog('[ThemeService] Updated existing LineA Modern White Header theme');
 
         // Reapply if active
         const activeTheme = await themeService.getActiveTheme();
@@ -4317,7 +4343,7 @@ export const initializeDefaultThemes = async () => {
     const finalActiveTheme = await themeService.getActiveTheme();
     if (finalActiveTheme) {
       // Reapply to ensure latest styles are used (this will also update cache)
-      console.log(`[ThemeService] Reapplying active theme after initialization: ${finalActiveTheme.name}`);
+      themeLog(`[ThemeService] Reapplying active theme after initialization: ${finalActiveTheme.name}`);
       themeService.applyTheme(finalActiveTheme);
     }
 

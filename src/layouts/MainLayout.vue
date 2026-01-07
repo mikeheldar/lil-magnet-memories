@@ -1254,9 +1254,8 @@ export default {
         (activeThemeName.value.includes('LineA Modern Black Header') ||
          activeThemeName.value.includes('LineA Modern White Header'));
 
-      // Default font size - fixed at 1.5rem for larger screens
-      // Will be overridden by media queries below 405px to make it smaller
-      const fontSize = '1.5rem'; // Fixed size above 405px
+      // Don't set fontSize inline - let CSS media queries handle responsive sizing
+      // CSS will set 1.5rem by default and shrink below 405px
 
       if (isLineAModern) {
         const isWhiteHeader = activeThemeName.value.includes('White Header');
@@ -1264,7 +1263,7 @@ export default {
           fontFamily: "'Times New Roman', 'Times', serif",
           fontWeight: '400',
           fontStyle: 'italic',
-          fontSize: fontSize, // Responsive size - scales down aggressively on small screens
+          // fontSize removed - let CSS media queries handle responsive sizing
           letterSpacing: '0.05em',
           textTransform: 'none',
           color: isWhiteHeader ? '#1a1a1a' : '#ffffff',
