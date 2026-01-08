@@ -27,9 +27,14 @@
   color: #ffffff !important;
 }
 
-/* Responsive header title - target .header-title-clickable specifically to override .text-h5 */
-.q-header .q-toolbar-title .header-title-clickable,
-.q-header .q-toolbar__title .header-title-clickable,
+/* Responsive header title - target .header-title-clickable specifically to override .text-h5 and theme CSS */
+/* Use very high specificity to override injected theme styles */
+body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center .header-title-clickable.text-h5.text-weight-bold,
+body .q-layout .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-weight-bold,
+body .q-header .q-toolbar .q-toolbar-title.text-center .header-title-clickable.text-h5.text-weight-bold,
+body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-weight-bold,
+.q-header .q-toolbar-title .header-title-clickable.text-h5.text-weight-bold,
+.q-header .q-toolbar__title .header-title-clickable.text-h5.text-weight-bold,
 .header-title-clickable.text-h5 {
   // Responsive font size on small screens to prevent text cutoff
   // Font size stays at 1.5rem above 405px, starts shrinking below 405px
@@ -325,7 +330,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 
   .text-h5 {
     font-size: 1.5rem !important; // Default size
-    
+
     // Responsive font size on small screens - override default for header title
     @media (max-width: 405px) {
       // Only apply to header title, not all text-h5 elements
@@ -333,7 +338,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
         font-size: clamp(0.3rem, 1.2vw, 1.2rem) !important; // Start shrinking: min 4.8px, scales with 1.2vw, max 19.2px
       }
     }
-    
+
     @media (max-width: 360px) {
       &.header-title-clickable {
         font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens

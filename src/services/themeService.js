@@ -941,7 +941,7 @@ export const themeService = {
           font-family: 'Times New Roman', 'Times', serif !important;
           font-weight: 400 !important;
           font-style: italic !important;
-          font-size: 1.1rem !important;
+          /* font-size removed - let CSS media queries handle responsive sizing */
           letter-spacing: 0.05em !important;
           text-transform: none !important;
           color: #1a1a1a !important;
@@ -2005,7 +2005,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -2222,7 +2222,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
@@ -2517,7 +2517,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -2750,7 +2750,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
@@ -3078,7 +3078,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -3306,7 +3306,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
@@ -3606,7 +3606,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -3830,7 +3830,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #1a1a1a !important;
@@ -4095,7 +4095,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
@@ -4275,7 +4275,7 @@ export const initializeDefaultThemes = async () => {
             font-family: 'Times New Roman', 'Times', serif !important;
             font-weight: 400 !important;
             font-style: italic !important;
-            font-size: 1.1rem !important;
+            /* font-size removed - let CSS media queries handle responsive sizing */
             letter-spacing: 0.05em !important;
             text-transform: none !important;
             color: #ffffff !important;
