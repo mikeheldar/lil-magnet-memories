@@ -1800,10 +1800,10 @@ html, body {
   }
 
   // Responsive font size on small screens to prevent text cutoff
-  // Font size stays at 1.5rem above 405px, starts shrinking below 405px
+  // Font size stays at 1.5rem (24px) above 405px, reduces to 1.2rem (19.2px) below 405px - just a few points smaller
   // Need very high specificity to override Quasar's .text-h5 class AND injected theme CSS
   @media (max-width: 405px) {
-    font-size: clamp(0.3rem, 1.2vw, 1.2rem) !important; // Start shrinking: min 4.8px, scales with 1.2vw, max 19.2px (smaller than default)
+    font-size: 1.2rem !important; // Reduced from 1.5rem to 1.2rem (24px to 19.2px) - just a few points smaller
     letter-spacing: 0.02em !important; // Reduce letter spacing to make text more compact
     white-space: nowrap !important; // Prevent wrapping
     overflow: visible !important; // Allow text to be visible
@@ -1811,19 +1811,19 @@ html, body {
     max-width: calc(100vw - 120px) !important; // Reserve space for hamburger (~48px) and avatar (~72px)
   }
 
-  // Extra small screens - maximum shrinkage
+  // Extra small screens - slightly smaller
   @media (max-width: 360px) {
-    font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens (min 3.2px, max 14.4px)
+    font-size: 1.1rem !important; // Reduced to 1.1rem (17.6px) on very small screens - still readable, not tiny
     letter-spacing: 0 !important; // No letter spacing on very small screens
   }
 
   // Override .text-h5 class with even higher specificity - must match or exceed theme CSS specificity
   &.text-h5.text-weight-bold {
     @media (max-width: 405px) {
-      font-size: clamp(0.3rem, 1.2vw, 1.2rem) !important;
+      font-size: 1.2rem !important; // Reduced from 1.5rem to 1.2rem - just a few points smaller
     }
     @media (max-width: 360px) {
-      font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important;
+      font-size: 1.1rem !important; // Reduced to 1.1rem on very small screens - still readable
     }
   }
 
