@@ -1801,6 +1801,7 @@ html, body {
 
   // Responsive font size on small screens to prevent text cutoff
   // Font size stays at 1.5rem above 405px, starts shrinking below 405px
+  // Need high specificity to override Quasar's .text-h5 class
   @media (max-width: 405px) {
     font-size: clamp(0.3rem, 1.2vw, 1.2rem) !important; // Start shrinking: min 4.8px, scales with 1.2vw, max 19.2px (smaller than default)
     letter-spacing: 0.02em !important; // Reduce letter spacing to make text more compact
@@ -1814,6 +1815,16 @@ html, body {
   @media (max-width: 360px) {
     font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important; // Maximum shrinkage for very small screens (min 3.2px, max 14.4px)
     letter-spacing: 0 !important; // No letter spacing on very small screens
+  }
+  
+  // Also need to override .text-h5 class when it's applied to this element
+  &.text-h5 {
+    @media (max-width: 405px) {
+      font-size: clamp(0.3rem, 1.2vw, 1.2rem) !important;
+    }
+    @media (max-width: 360px) {
+      font-size: clamp(0.2rem, 0.9vw, 0.9rem) !important;
+    }
   }
 
   &:active {

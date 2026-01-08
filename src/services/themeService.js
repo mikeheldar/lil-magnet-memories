@@ -47,7 +47,7 @@ export const themeService = {
   getLoggingEnabled() {
     return getThemeLoggingEnabled();
   },
-  
+
   setLoggingEnabled(enabled) {
     setThemeLoggingEnabled(enabled);
   },
