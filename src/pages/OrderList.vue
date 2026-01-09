@@ -570,8 +570,6 @@ import { useQuasar } from 'quasar';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import { config } from '../config/environment.js';
-import { ref as storageRef, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase/config.js';
 
 export default {
   name: 'OrderList',

@@ -268,8 +268,6 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase/config.js';
 
 export default {
   name: 'PhotoSelectorPage',

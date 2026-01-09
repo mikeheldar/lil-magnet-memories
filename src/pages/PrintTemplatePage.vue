@@ -301,8 +301,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { config } from '../config/environment.js';
-import { ref as storageRef, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase/config.js';
 
 export default {
   name: 'PrintTemplatePage',
