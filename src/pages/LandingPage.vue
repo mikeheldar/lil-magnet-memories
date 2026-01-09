@@ -37,21 +37,7 @@
 
     <!-- Hero Section with Big Magnet Images -->
     <div class="hero-section" :class="{ 'test-environment': isTestEnvironment }">
-      <!-- Logo always on top, full width -->
-      <div class="hero-logo-container">
-          <img
-            src="/biglogo.png"
-            alt="Lil Magnet Memories"
-            class="hero-logo hero-logo-wide"
-          />
-          <img
-            src="/assets/lil-magnet-memories-logo.png"
-            alt="Lil Magnet Memories"
-            class="hero-logo hero-logo-small"
-          />
-      </div>
-
-      <!-- Content below logo: text and easel gallery side-by-side on wide screens -->
+      <!-- Content: text and easel gallery side-by-side on wide screens -->
       <div class="hero-content">
         <div class="hero-text">
           <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets!</h1>
@@ -720,6 +706,7 @@ export default {
 
     // Easel image rotation
     const easelImages = [
+      '/biglogo.png',
       '/magnetboard.png',
       '/easel-gallery/0042F3E9-FEC0-4DE4-8AEB-2F3E0AA3ED01_1_105_c.jpeg',
       '/easel-gallery/1763CFC3-43BD-42A1-863F-48321A24C345_1_105_c.jpeg',
