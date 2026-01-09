@@ -2127,7 +2127,8 @@ export default {
   .easel-container {
     width: 100vw !important; // Full viewport width, edge to edge
     max-width: 100vw !important;
-    aspect-ratio: 16 / 9 !important; // Wide rectangular format (same as larger screens)
+    max-height: 300px !important; // Smaller height for very small screens
+    aspect-ratio: 16 / 9 !important; // Wide rectangular format
     margin-left: calc(-50vw + 50%) !important; // Break out of container to be edge-to-edge
     margin-right: calc(-50vw + 50%) !important;
   }
