@@ -1384,11 +1384,10 @@ export default {
   width: 100%;
   max-width: 1200px; // Constrain text width for readability
   margin: 0 auto; // Center the text content
-  padding: 0 20px; // Add padding for text content
+  padding: 2rem 20px; // Equal top and bottom padding to center text vertically
   overflow: visible;
   margin-bottom: 0;
   margin-top: 0;
-  padding-top: 0;
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -2055,7 +2054,7 @@ export default {
   .hero-text {
     width: 100%;
     max-width: 100%;
-    padding: 0;
+    padding: 1.5rem 10px; // Equal top and bottom padding for vertical centering on small screens
   }
 
   .hero-actions {
