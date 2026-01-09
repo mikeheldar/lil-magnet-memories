@@ -52,14 +52,19 @@
             @touchmove="handleTouchMove"
             @touchend="handleTouchEnd"
           >
-            <img
-              :src="currentEaselImage"
-              alt="Custom photo magnets on easel display"
-              class="easel-image"
-              :key="easelImageIndex"
-              @load="handleImageLoad"
-              ref="easelImageRef"
-            />
+            <div class="easel-image-container">
+              <transition name="slide" mode="out-in">
+                <img
+                  :key="easelImageIndex"
+                  :src="currentEaselImage"
+                  alt="Custom photo magnets on easel display"
+                  class="easel-image"
+                  :class="{ 'image-panning': isImagePanning }"
+                  @load="handleImageLoad"
+                  ref="easelImageRef"
+                />
+              </transition>
+            </div>
             <!-- Image carousel dots (only show if more than 1 image) -->
             <div v-if="easelImages.length > 1" class="easel-carousel-dots">
               <button
@@ -722,19 +727,26 @@ export default {
       '/easel-gallery/C374BFFD-1749-4450-89D4-A87D1561EAF4_1_105_c.jpeg',
     ];
     const easelImageIndex = ref(0);
+    const isImagePanning = ref(false);
     const currentEaselImage = computed(
       () => easelImages[easelImageIndex.value]
     );
 
     // Navigation functions for easel gallery
     const goToImage = (index) => {
-      easelImageIndex.value = index;
+      if (index !== easelImageIndex.value) {
+        easelImageIndex.value = index;
+        // Reset panning animation for new image
+        resetPanningAnimation();
+      }
     };
 
     const nextImage = () => {
       if (easelImages.length > 1) {
         easelImageIndex.value =
           (easelImageIndex.value + 1) % easelImages.length;
+        // Reset panning animation for new image
+        resetPanningAnimation();
       }
     };
 
@@ -744,7 +756,20 @@ export default {
           easelImageIndex.value === 0
             ? easelImages.length - 1
             : easelImageIndex.value - 1;
+        // Reset panning animation for new image
+        resetPanningAnimation();
       }
+    };
+
+    // Reset and start panning animation when image changes
+    const resetPanningAnimation = () => {
+      isImagePanning.value = false;
+      // Use nextTick to ensure DOM update before starting animation
+      nextTick(() => {
+        setTimeout(() => {
+          isImagePanning.value = true;
+        }, 100); // Small delay to ensure image is loaded
+      });
     };
 
     // Touch/swipe handling for mobile
@@ -785,6 +810,8 @@ export default {
     // Image now fills square container via CSS - no manual sizing needed
     const handleImageLoad = () => {
       // CSS handles sizing with object-fit: cover in square container
+      // Start panning animation when image loads
+      resetPanningAnimation();
     };
 
     const handleGoogleSignIn = async () => {
@@ -1197,12 +1224,17 @@ export default {
 
       // Don't auto-show dialog on load - only show when user clicks "Start Creating Magnets"
 
-      // Rotate easel images every 5 seconds (only if more than 1 image)
+      // Start panning animation for initial image
+      resetPanningAnimation();
+
+      // Rotate easel images every 8 seconds (longer to allow panning animation to complete)
+      // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
-        }, 5000);
+          // Panning animation will restart automatically via watch
+        }, 8000); // 8 seconds to allow 7s panning + 1s transition
       }
     });
 
@@ -1227,6 +1259,7 @@ export default {
       easelImages,
       currentEaselImage,
       easelImageIndex,
+      isImagePanning,
       showMarketEventDialog,
       activeMarketEvent,
       handleGoogleSignIn,
@@ -1597,6 +1630,7 @@ export default {
 
 .easel-container {
   width: 100%;
+  max-height: 620px; // Set max height to 620px
   aspect-ratio: 16 / 9; // Wide rectangular format
   display: flex;
   flex-direction: column;
@@ -1610,7 +1644,7 @@ export default {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: visible; // Allow dots to be visible below
+  overflow: hidden; // Hide overflow for panning animation
 
   img {
     display: block;
@@ -1618,14 +1652,29 @@ export default {
   }
 }
 
+.easel-image-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.easel-image-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
 // On medium and large screens, ensure easel aligns properly
 @media (min-width: 600px) {
   .easel-container {
     align-items: flex-start !important; // Align to top
+    max-height: 620px !important; // Keep 620px max height
   }
 
   .easel-image {
-    object-position: top center !important; // Top alignment for cover fit
+    object-position: top right !important; // Start at top-right for panning animation
   }
 }
 
@@ -1634,7 +1683,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover; // Fill container, crop to fit
-  object-position: top center; // Align to top, keep top visible when zoomed
+  object-position: top right; // Start at top-right for panning
   display: block;
   border-radius: 0; // No border radius for edge-to-edge
   border: none; // No border for edge-to-edge
@@ -1644,14 +1693,70 @@ export default {
   filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.12))
           drop-shadow(0 8px 50px rgba(0, 0, 0, 0.08))
           drop-shadow(0 2px 15px rgba(0, 0, 0, 0.1));
-  transition: opacity 0.5s ease;
   background: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+// Panning animation - slowly move from top-right to bottom-right
+.easel-image.image-panning {
+  animation: panImage 7s ease-in-out forwards;
+}
+
+@keyframes panImage {
+  0% {
+    object-position: top right; // Start at top-right
+  }
+  100% {
+    object-position: bottom right; // End at bottom-right
+  }
+}
+
+// Slide animation when changing images (Vue transition)
+.slide-enter-active {
+  transition: transform 1s ease-in-out, opacity 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.slide-leave-active {
+  transition: transform 1s ease-in-out, opacity 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.slide-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.slide-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.slide-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.slide-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
 .easel-container {
   width: 100vw !important; // Full viewport width, edge to edge
   max-width: 100vw !important;
+  max-height: 620px !important; // Set max height to 620px on all screens
   margin-left: calc(-50vw + 50%) !important; // Break out of container to be edge-to-edge
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
@@ -2023,9 +2128,9 @@ export default {
 
   .easel-container {
     max-width: 320px; // 20% smaller (400px * 0.8 = 320px)
-    max-height: 400px; // 20% smaller (500px * 0.8 = 400px)
+    max-height: 620px !important; // Set to 620px as requested
     height: 100%;
-    aspect-ratio: 4/5; // Maintain 400:500 ratio
+    aspect-ratio: 16 / 9 !important; // Maintain wide format
   }
 
   .easel-image {
@@ -2126,7 +2231,7 @@ export default {
   .easel-container {
     width: 100vw !important; // Full viewport width, edge to edge
     max-width: 100vw !important;
-    max-height: 300px !important; // Smaller height for very small screens
+    max-height: 620px !important; // Keep 620px max height even on small screens
     aspect-ratio: 16 / 9 !important; // Wide rectangular format
     margin-left: calc(-50vw + 50%) !important; // Break out of container to be edge-to-edge
     margin-right: calc(-50vw + 50%) !important;
@@ -2135,8 +2240,8 @@ export default {
   .easel-image {
     width: 100%;
     height: 100%;
-    object-fit: cover !important; // Fill square with no empty space
-    object-position: top center !important; // Align to top, keep top visible when zoomed
+    object-fit: cover !important; // Fill container with no empty space
+    object-position: top right !important; // Start at top-right for panning animation
   }
 
   // Ensure dots are visible below the photo on small screens
