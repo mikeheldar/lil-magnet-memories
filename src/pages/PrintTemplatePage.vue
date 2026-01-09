@@ -443,7 +443,7 @@ export default {
     };
 
     // Handle image loading errors
-    const handleImageError = (event, photo) => {
+    const handleImageError = async (event, photo) => {
       const failedSrc = event.target.src;
       const photoName = photo?.name || 'Unknown';
 
@@ -455,6 +455,15 @@ export default {
         hasPreview: !!photo?.preview,
         isBlobUrl: failedSrc.startsWith('blob:'),
       });
+
+      // Try to refresh expired Firebase Storage URL first
+      if (failedSrc && failedSrc.includes('firebasestorage.googleapis.com')) {
+        const freshUrl = await refreshPhotoUrl(photo);
+        if (freshUrl && event.target) {
+          event.target.src = freshUrl;
+          return; // Successfully refreshed, exit early
+        }
+      }
 
       // Try fallback if available
       if (photo?.url && photo.url !== failedSrc && !photo.url.startsWith('blob:')) {
