@@ -1384,13 +1384,13 @@ export default {
   width: 100%;
   max-width: 1200px; // Constrain text width for readability
   margin: 0 auto; // Center the text content
-  padding: 2rem 20px; // Equal top and bottom padding to center text vertically
+  padding: 1rem 20px; // Reduced from 2rem to 1rem - half the padding
   overflow: visible;
   margin-bottom: 0;
   margin-top: 0;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem; // Reduced from 2rem to 1rem - half the gap
   align-items: center; // Always center content
   align-content: center;
   justify-content: center;
@@ -1997,7 +1997,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem; // Add spacing between elements on medium screens
+    gap: 0.75rem; // Reduced from 1.5rem to 0.75rem - half the gap
     width: 100%;
     max-width: 100%;
   }
@@ -2054,7 +2054,7 @@ export default {
   .hero-text {
     width: 100%;
     max-width: 100%;
-    padding: 1.5rem 10px; // Equal top and bottom padding for vertical centering on small screens
+    padding: 0.75rem 10px; // Reduced from 1.5rem to 0.75rem - half the padding
   }
 
   .hero-actions {
