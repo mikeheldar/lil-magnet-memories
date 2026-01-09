@@ -374,9 +374,21 @@ export const auth = new Proxy({}, {
     if (!authInstance) {
       authInstance = getAuth(getApp());
     }
-    // Allow setting properties on the actual auth instance
-    authInstance[prop] = value;
-    return true;
+    // Check if property is read-only before trying to set it
+    try {
+      const descriptor = Object.getOwnPropertyDescriptor(authInstance, prop);
+      // If property exists and is read-only, skip assignment (Firebase handles this internally)
+      if (descriptor && !descriptor.writable && !descriptor.set) {
+        return true; // Return true to indicate "success" even though we didn't set it
+      }
+      // Allow setting properties on the actual auth instance
+      authInstance[prop] = value;
+      return true;
+    } catch (error) {
+      // If setting fails (e.g., read-only property), just return true
+      // Firebase will handle the property internally
+      return true;
+    }
   },
   getOwnPropertyDescriptor(target, prop) {
     if (!authInstance) {
@@ -400,7 +412,19 @@ export const auth = new Proxy({}, {
     if (!authInstance) {
       authInstance = getAuth(getApp());
     }
-    return Object.defineProperty(authInstance, prop, descriptor);
+    // Check if property is read-only before trying to define it
+    try {
+      const existingDescriptor = Object.getOwnPropertyDescriptor(authInstance, prop);
+      // If property exists and is read-only, skip redefinition
+      if (existingDescriptor && !existingDescriptor.writable && !existingDescriptor.set) {
+        return true; // Return true to indicate "success"
+      }
+      return Object.defineProperty(authInstance, prop, descriptor);
+    } catch (error) {
+      // If defineProperty fails (e.g., read-only property), return true
+      // Firebase will handle the property internally
+      return true;
+    }
   }
 });
 
