@@ -1671,16 +1671,16 @@ export default {
 .drawer-header-fill {
   height: 132px !important; // Match header (84px) + sub-nav (48px) height
   width: 100% !important;
-  background: #000000 !important; // Match main header black background
+  background: #f5f5f5 !important; // Match drawer grey background (bg-grey-1)
   display: flex !important;
   align-items: center !important;
   padding-left: 16px !important;
   flex-shrink: 0 !important; // Don't shrink
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important; // Subtle separator
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator for light background
 }
 
 .drawer-close-btn {
-  color: #ffffff !important; // White hamburger icon
+  color: #424242 !important; // Dark hamburger icon for light grey background
   font-size: 28px !important; // Match main header hamburger size
 
   .q-icon {
@@ -1688,7 +1688,7 @@ export default {
   }
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(0, 0, 0, 0.05) !important; // Light hover for light background
   }
 }
 
