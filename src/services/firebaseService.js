@@ -931,7 +931,16 @@ class FirebaseService {
         );
       }
 
-      const storageRef = ref(storage, filePath);
+      // Ensure storage is initialized by accessing it through the proxy
+      // This triggers the lazy initialization
+      const storageInstance = getStorage(getApp());
+      const storageRef = ref(storageInstance, filePath);
+      
+      // Verify the ref was created successfully
+      if (!storageRef) {
+        throw new Error(`Failed to create storage reference for path: ${filePath}`);
+      }
+      
       await deleteObject(storageRef);
       console.log('✅ Photo deleted from Storage:', filePath);
     } catch (error) {

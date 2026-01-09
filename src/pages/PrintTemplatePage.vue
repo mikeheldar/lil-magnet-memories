@@ -363,9 +363,12 @@ export default {
       try {
         const urlObj = new URL(url);
         // Firebase Storage URLs have format: /v0/b/{bucket}/o/{path}?alt=media&token=...
-        const match = urlObj.pathname.match(/\/o\/(.+)$/);
-        if (match) {
-          return decodeURIComponent(match[1]);
+        // The path is URL-encoded, so we need to decode it
+        const match = urlObj.pathname.match(/\/o\/(.+?)(?:\?|$)/);
+        if (match && match[1]) {
+          // Decode the path (handles %2F for slashes, etc.)
+          const decodedPath = decodeURIComponent(match[1]);
+          return decodedPath;
         }
       } catch (e) {
         console.warn('Failed to extract path from URL:', url, e);
@@ -387,14 +390,28 @@ export default {
           return null;
         }
 
+        // Ensure storage is initialized by getting the instance
+        const { getStorage: getStorageInstance } = await import('firebase/storage');
+        const { default: getApp } = await import('../firebase/config.js');
+        const storageInstance = getStorageInstance(getApp());
+        
         // Get fresh download URL from Firebase Storage
-        const fileRef = storageRef(storage, path);
+        const fileRef = storageRef(storageInstance, path);
+        
+        if (!fileRef) {
+          console.error('❌ Failed to create storage reference for path:', path);
+          return null;
+        }
+        
         const freshUrl = await getDownloadURL(fileRef);
         
         console.log('✅ Refreshed URL for photo:', photo?.name);
         return freshUrl;
       } catch (error) {
         console.error('❌ Failed to refresh URL for photo:', photo?.name, error);
+        if (error.code) {
+          console.error('Error code:', error.code);
+        }
         return null;
       }
     };
