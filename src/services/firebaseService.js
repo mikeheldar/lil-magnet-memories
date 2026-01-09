@@ -277,26 +277,37 @@ class FirebaseService {
       const sanitizedName = fileToUpload.name
         .replace(/[#\[\]()]/g, '_') // Replace special chars that can cause issues
         .replace(/\s+/g, '_'); // Replace spaces with underscores
-      const fileName = `orders/${timestamp}_${i}_${sanitizedName}`;
-      const storageRef = ref(storageInstance, fileName);
+      
+      // Helper function to perform upload with retry logic for 412 errors
+      const performUpload = async (retryCount = 0) => {
+        // Add a small random suffix on retry to avoid conflicts
+        const fileNameSuffix = retryCount > 0 ? `_retry${retryCount}_${Math.random().toString(36).substring(2, 8)}` : '';
+        const fileName = `orders/${timestamp}_${i}_${sanitizedName}${fileNameSuffix}`;
+        const storageRef = ref(storageInstance, fileName);
 
-      try {
-        console.log(
-          `Uploading photo ${i + 1}/${photos.length}: ${photo.name} (${(
-            photo.size /
-            1024 /
-            1024
-          ).toFixed(2)} MB)`
-        );
-        const uploadStartTime = Date.now();
+        try {
+          if (retryCount > 0) {
+            console.log(
+              `🔄 Retrying upload ${i + 1}/${photos.length} (attempt ${retryCount + 1}): ${photo.name}`
+            );
+          } else {
+            console.log(
+              `Uploading photo ${i + 1}/${photos.length}: ${photo.name} (${(
+                photo.size /
+                1024 /
+                1024
+              ).toFixed(2)} MB)`
+            );
+          }
+          const uploadStartTime = Date.now();
 
-        // Provide metadata to avoid multipart quirks and ensure proper Content-Type
-        const metadata = {
-          contentType: fileToUpload.type || 'image/jpeg',
-          cacheControl: 'public,max-age=3600',
-        };
+          // Provide metadata to avoid multipart quirks and ensure proper Content-Type
+          const metadata = {
+            contentType: fileToUpload.type || 'image/jpeg',
+            cacheControl: 'public,max-age=3600',
+          };
 
-        const uploadTask = uploadBytesResumable(storageRef, fileToUpload, metadata);
+          const uploadTask = uploadBytesResumable(storageRef, fileToUpload, metadata);
 
         // Initialize progress tracking for this photo
         progressMap.set(i, {
@@ -307,93 +318,135 @@ class FirebaseService {
         let lastProgressUpdate = Date.now();
         let lastBytesTransferred = 0;
 
-        await new Promise((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-              // Update progress for this specific photo
-              const bytesTransferred = snapshot.bytesTransferred;
-              const totalBytes = snapshot.totalBytes;
-              const photoProgress = progressMap.get(i);
+          await new Promise((resolve, reject) => {
+            uploadTask.on(
+              'state_changed',
+              (snapshot) => {
+                // Update progress for this specific photo
+                const bytesTransferred = snapshot.bytesTransferred;
+                const totalBytes = snapshot.totalBytes;
+                const photoProgress = progressMap.get(i);
 
-              if (photoProgress) {
-                const previousUploaded = photoProgress.uploaded;
-                photoProgress.uploaded = bytesTransferred;
-                photoProgress.total = totalBytes; // Update total in case it wasn't known initially
+                if (photoProgress) {
+                  const previousUploaded = photoProgress.uploaded;
+                  photoProgress.uploaded = bytesTransferred;
+                  photoProgress.total = totalBytes; // Update total in case it wasn't known initially
 
-                // Calculate bytes uploaded since last update
-                const bytesDelta = bytesTransferred - previousUploaded;
-                totalUploaded += bytesDelta;
+                  // Calculate bytes uploaded since last update
+                  const bytesDelta = bytesTransferred - previousUploaded;
+                  totalUploaded += bytesDelta;
 
-                // Log upload speed every second
-                const now = Date.now();
-                const timeDelta = now - lastProgressUpdate;
-                if (timeDelta >= 1000) {
-                  // Log every second
-                  const bytesSinceLastUpdate =
-                    bytesTransferred - lastBytesTransferred;
-                  const speedMBps =
-                    bytesSinceLastUpdate / 1024 / 1024 / (timeDelta / 1000);
-                  const elapsedSeconds = (now - uploadStartTime) / 1000;
-                  const totalMB = bytesTransferred / 1024 / 1024;
+                  // Log upload speed every second
+                  const now = Date.now();
+                  const timeDelta = now - lastProgressUpdate;
+                  if (timeDelta >= 1000) {
+                    // Log every second
+                    const bytesSinceLastUpdate =
+                      bytesTransferred - lastBytesTransferred;
+                    const speedMBps =
+                      bytesSinceLastUpdate / 1024 / 1024 / (timeDelta / 1000);
+                    const elapsedSeconds = (now - uploadStartTime) / 1000;
+                    const totalMB = bytesTransferred / 1024 / 1024;
 
-                  console.log(
-                    `📤 Photo ${i + 1}/${photos.length} (${
-                      fileToUpload.name
-                    }): ${totalMB.toFixed(
-                      2
-                    )} MB uploaded in ${elapsedSeconds.toFixed(
-                      1
-                    )}s (${speedMBps.toFixed(2)} MB/s)`
-                  );
+                    console.log(
+                      `📤 Photo ${i + 1}/${photos.length} (${
+                        fileToUpload.name
+                      }): ${totalMB.toFixed(
+                        2
+                      )} MB uploaded in ${elapsedSeconds.toFixed(
+                        1
+                      )}s (${speedMBps.toFixed(2)} MB/s)`
+                    );
 
-                  lastProgressUpdate = now;
-                  lastBytesTransferred = bytesTransferred;
+                    lastProgressUpdate = now;
+                    lastBytesTransferred = bytesTransferred;
+                  }
+
+                  // Update overall progress immediately (this triggers the callback)
+                  updateOverallProgress();
+                }
+              },
+              (err) => {
+                // Check if it's a 412 Precondition Failed error
+                if (err?.code === 'storage/unknown' && err?.serverResponse?.includes('412')) {
+                  console.warn(`⚠️ 412 Precondition Failed for photo ${i + 1}, will retry...`);
+                  // Reject with a special error that we can catch and retry
+                  reject({ ...err, isPreconditionFailed: true });
+                } else {
+                  reject(err);
+                }
+              },
+              () => {
+                // Mark as completed
+                const uploadEndTime = Date.now();
+                const uploadDuration = (uploadEndTime - uploadStartTime) / 1000;
+                const totalMB = (fileToUpload.size || 0) / 1024 / 1024;
+                const avgSpeedMBps = totalMB / uploadDuration;
+
+                const photoProgress = progressMap.get(i);
+                if (photoProgress) {
+                  photoProgress.completed = true;
+                  photoProgress.uploaded = photoProgress.total;
+                  updateOverallProgress();
                 }
 
-                // Update overall progress immediately (this triggers the callback)
-                updateOverallProgress();
+                console.log(
+                  `✅ Photo ${i + 1}/${photos.length} (${
+                    fileToUpload.name
+                  }) completed: ${totalMB.toFixed(
+                    2
+                  )} MB in ${uploadDuration.toFixed(
+                    1
+                  )}s (avg ${avgSpeedMBps.toFixed(2)} MB/s)`
+                );
+                resolve();
               }
-            },
-            (err) => reject(err),
-            () => {
-              // Mark as completed
-              const uploadEndTime = Date.now();
-              const uploadDuration = (uploadEndTime - uploadStartTime) / 1000;
-              const totalMB = (fileToUpload.size || 0) / 1024 / 1024;
-              const avgSpeedMBps = totalMB / uploadDuration;
+            );
+          });
 
-              const photoProgress = progressMap.get(i);
-              if (photoProgress) {
-                photoProgress.completed = true;
-                photoProgress.uploaded = photoProgress.total;
-                updateOverallProgress();
-              }
+          const downloadURL = await getDownloadURL(storageRef);
+          console.log(`Photo ${i + 1} uploaded successfully`);
 
-              console.log(
-                `✅ Photo ${i + 1}/${photos.length} (${
-                  fileToUpload.name
-                }) completed: ${totalMB.toFixed(
-                  2
-                )} MB in ${uploadDuration.toFixed(
-                  1
-                )}s (avg ${avgSpeedMBps.toFixed(2)} MB/s)`
-              );
-              resolve();
+          return {
+            name: fileToUpload.name,
+            url: downloadURL,
+            fileName: fileName,
+            size: fileToUpload.size,
+            type: fileToUpload.type,
+          };
+        } catch (error) {
+          // Check if it's a 412 Precondition Failed error that we should retry
+          const isPreconditionFailed = error?.isPreconditionFailed || 
+            (error?.code === 'storage/unknown' && 
+             (error?.message?.includes('412') || 
+              error?.serverResponse?.includes('412') ||
+              error?.serverResponseCode === 412));
+          
+          if (isPreconditionFailed && retryCount < 2) {
+            // Wait a bit before retrying (exponential backoff)
+            const waitTime = 1000 * Math.pow(2, retryCount); // 1s, 2s
+            console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            
+            // Reset progress tracking for retry
+            const photoProgress = progressMap.get(i);
+            if (photoProgress) {
+              photoProgress.uploaded = 0;
             }
-          );
-        });
+            lastProgressUpdate = Date.now();
+            lastBytesTransferred = 0;
+            
+            // Retry with a new upload session
+            return performUpload(retryCount + 1);
+          }
+          
+          // If not a 412 error or max retries reached, throw the error
+          throw error;
+        }
+      };
 
-        const downloadURL = await getDownloadURL(storageRef);
-        console.log(`Photo ${i + 1} uploaded successfully`);
-
-        return {
-          name: fileToUpload.name,
-          url: downloadURL,
-          fileName: fileName,
-          size: fileToUpload.size,
-          type: fileToUpload.type,
-        };
+      try {
+        return await performUpload();
       } catch (error) {
         console.error(`Error uploading photo ${i + 1}:`, error);
         // Mark as completed even on error to update progress
