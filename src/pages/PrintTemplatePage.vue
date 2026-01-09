@@ -1,8 +1,8 @@
 <template>
   <q-page class="q-pa-md print-template-page">
     <div class="text-center q-mb-lg">
-      <div class="text-h4 text-weight-bold text-primary">
-        Print Template - Order #{{ orderNumber }}
+      <div v-if="orderNumber" class="text-body1 text-grey-7 q-mb-sm">
+        Order #{{ orderNumber }}
       </div>
       <div class="q-mt-md">
         <q-btn

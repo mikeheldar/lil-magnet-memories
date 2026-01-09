@@ -83,6 +83,143 @@ a.text-primary,
   color: var(--theme-primary-text-color) !important;
 }
 
+/* Hard-coded LineA Modern Black Header Theme Styles */
+/* These ensure the site always loads with the correct appearance, even for new users */
+
+/* Clean white background - no patterns */
+.q-page-container,
+.landing-page,
+.hero-section {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+/* Modern, clean hero title - elegant typography */
+.hero-title {
+  color: #1a1a1a !important;
+  font-weight: 300 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-style: normal !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: none !important;
+  text-stroke: none !important;
+  transform: none !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Clean, elegant buttons - neutral colors, no purple */
+body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
+body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  border: 1px solid #1a1a1a !important;
+  border-radius: 10px !important;
+  filter: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
+body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover {
+  background: #2a2a2a !important;
+  border-color: #2a2a2a !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  filter: none !important;
+}
+
+/* Clean q-file buttons */
+.q-file .q-field__control .q-btn,
+.q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  border: 1px solid #1a1a1a !important;
+  border-radius: 10px !important;
+  filter: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.q-file .q-field__control .q-btn:hover,
+.q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):hover {
+  background: #2a2a2a !important;
+  border-color: #2a2a2a !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  filter: none !important;
+}
+
+/* Remove shadows from easel images for cleaner look */
+.easel-image {
+  filter: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Clean carousel dots */
+.carousel-dot {
+  background: transparent !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.3) !important;
+}
+
+.carousel-dot.dot-active {
+  background: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  box-shadow: none !important;
+}
+
+/* Ensure all header text stays white - comprehensive selectors */
+body .q-header .q-toolbar-title,
+body .q-header .q-toolbar-title *,
+body .q-header .q-toolbar-title span,
+body .q-header .q-toolbar__title,
+body .q-header .q-toolbar__title *,
+body .q-header .q-toolbar__title span,
+body .q-header .q-btn:not(.test-environment-chip),
+body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+body .q-header .q-chip:not(.test-environment-chip),
+body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+body .q-header .shop-header-btn,
+body .q-header .shop-header-btn *,
+body .q-header .shop-header-btn .q-btn__content,
+body .q-header .shop-header-btn .q-btn__content *,
+body .q-header .shop-header-dropdowns .q-btn,
+body .q-header .shop-header-dropdowns .q-btn *,
+body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
+body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+body .q-header .user-profile-dropdown .q-btn,
+body .q-header .user-profile-dropdown .q-btn *,
+body .q-header .user-profile-dropdown .q-btn .q-btn__content,
+body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+body .q-header .user-name,
+body .q-header .user-name *,
+body .q-header .q-toolbar .q-btn[label="About"],
+body .q-header .q-toolbar .q-btn[label="About"] *,
+body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
+.q-layout .q-header .q-toolbar-title,
+.q-layout .q-header .q-toolbar-title *,
+.q-header .q-toolbar-title,
+.q-header .q-toolbar-title *,
+.q-header .q-toolbar-title span,
+.q-header .q-toolbar__title,
+.q-header .q-toolbar__title *,
+.q-header .q-toolbar__title span,
+.q-header .q-btn:not(.test-environment-chip),
+.q-header .q-btn:not(.test-environment-chip) .q-btn__content,
+.q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+.q-header .q-chip:not(.test-environment-chip),
+.q-header .q-btn:not(.test-environment-chip) .q-icon {
+  color: #ffffff !important;
+}
+
 // ============================================================================
 // END DEFAULT STYLES
 // ============================================================================

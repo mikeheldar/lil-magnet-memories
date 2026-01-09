@@ -715,6 +715,10 @@
     </div>
 
     <q-page-container>
+      <!-- Page Title Section (below header, above page content) -->
+      <div v-if="getPageTitle($route.path)" class="page-title-section">
+        <div class="page-title-text">{{ getPageTitle($route.path) }}</div>
+      </div>
       <router-view />
     </q-page-container>
   </q-layout>
@@ -1314,48 +1318,64 @@ export default {
       return {};
     });
 
+    // Header always shows "Lil Magnet Memories"
     const pageTitle = computed(() => {
-      const baseTitle = (() => {
-        switch (route.path) {
-          case '/orders':
-            return 'Admin - Order List';
-          case '/customers':
-            return 'Admin - Customer List';
-          case '/upload':
-            return 'Upload Photos';
-          case '/my-orders':
-            return 'My Orders';
-          case '/thank-you':
-            return 'Order Confirmation';
-          case '/firebase-test':
-            return 'Firebase Diagnostic';
-          case '/admin':
-            return 'Admin Settings';
-          case '/email-test':
-            return 'Admin - Email Test';
-          case '/test-runner':
-            return 'Admin - Test Runner';
-          case '/errored-transactions':
-            return 'Admin - Errored Transactions';
-          case '/market-events':
-            return 'Admin - Market Events';
-          case '/magnet-studio':
-            return 'Admin - Magnet Studio';
-          case '/pricing':
-            return 'Admin - Manage Products';
-          case '/photo-selector':
-            return 'Print Template';
-          case '/photo-management':
-            return 'Photo Management';
-          case '/':
-          default:
-            return 'Lil Magnet Memories';
-        }
-      })();
-
-      // Return base title without (TEST) - orange pill badge already indicates test environment
-      return baseTitle;
+      return 'Lil Magnet Memories';
     });
+
+    // Get page title for display below header (on the page itself)
+    const getPageTitle = (path) => {
+      switch (path) {
+        case '/orders':
+          return 'Order List';
+        case '/customers':
+          return 'Customer List';
+        case '/upload':
+        case '/photo-upload':
+          return 'Upload Photos';
+        case '/my-orders':
+          return 'My Orders';
+        case '/thank-you':
+          return 'Order Confirmation';
+        case '/firebase-test':
+          return 'Firebase Diagnostic';
+        case '/admin':
+          return 'Admin Settings';
+        case '/email-test':
+          return 'Email Test';
+        case '/test-runner':
+          return 'Test Runner';
+        case '/errored-transactions':
+          return 'Errored Transactions';
+        case '/market-events':
+          return 'Market Events';
+        case '/magnet-studio':
+          return 'Magnet Studio';
+        case '/magnet-studio-select':
+          return 'Magnet Studio';
+        case '/pricing':
+          return 'Manage Products';
+        case '/photo-selector':
+          return 'Print Template';
+        case '/print-template':
+          return 'Print Template';
+        case '/photo-management':
+          return 'Photo Management';
+        case '/look-and-feel':
+          return 'Look and Feel';
+        case '/cart':
+          return 'Cart';
+        case '/checkout':
+          return 'Checkout';
+        case '/online-order':
+          return 'Online Order';
+        case '/about':
+          return 'About';
+        case '/':
+        default:
+          return null; // No page title for landing page
+      }
+    };
 
     const isTestEnvironment = computed(() => config.isTest);
 
@@ -1520,6 +1540,7 @@ export default {
 
     return {
       pageTitle,
+      getPageTitle,
       headerClasses,
       headerInlineStyle,
       headerVisible,
@@ -1710,16 +1731,32 @@ html body .q-layout .q-drawer.drawer-under-header {
 
 // Prevent page container from interfering with drawer
 // Add padding to account for fixed header and sub-navigation bar
+// Page title section - appears below header on each page
+.page-title-section {
+  background: #f5f5f5; // Light grey background matching drawer
+  padding: 1rem 0;
+  text-align: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.page-title-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #424242; // Dark grey text
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: 0.01em;
+}
+
 .q-page-container {
   // Allow content to scroll under fixed drawer
   position: relative;
   z-index: 1;
-  // Add padding at top to account for fixed header (84px) + sub-nav bar (48px on medium+ screens)
-  padding-top: 84px !important; // Header height
+  // Add padding at top to account for fixed header (84px) + sub-nav bar (48px on medium+ screens) + page title (57px)
+  padding-top: calc(84px + 57px) !important; // Header height + page title section
 
   // On medium+ screens, add extra padding for sub-navigation bar
   @media (min-width: 768px) {
-    padding-top: calc(84px + 48px) !important; // Header + sub-nav bar
+    padding-top: calc(84px + 48px + 57px) !important; // Header + sub-nav bar + page title section
   }
 }
 
