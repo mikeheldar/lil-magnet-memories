@@ -280,11 +280,12 @@
                   @click.stop="selectPhoto(page[gridIndex])"
                 >
                   <img
-                    :src="page[gridIndex].url"
+                    :src="getImageSource(page[gridIndex])"
                     :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
                     class="print-image"
                     draggable="false"
                     @load="handleImageLoad($event, page[gridIndex])"
+                    @error="handleImageError($event, page[gridIndex])"
                   />
                 </div>
               </div>
@@ -353,6 +354,80 @@ export default {
       const scaleY = containerSize / imgHeight;
       // Use larger scale to ensure image touches all four sides of the blue inner square
       return Math.max(scaleX, scaleY);
+    };
+
+    // Get image source with proper fallback handling
+    const getImageSource = (photo) => {
+      if (!photo) return '';
+
+      // Filter out blob URLs - they're temporary and won't work
+      if (photo.url && photo.url.startsWith('blob:')) {
+        console.warn('⚠️ Photo has blob URL (temporary, will not work):', {
+          name: photo.name,
+          blobUrl: photo.url,
+          hasPreview: !!photo.preview,
+        });
+        // Try preview if available
+        if (photo.preview && !photo.preview.startsWith('blob:')) {
+          return photo.preview;
+        }
+        // Return empty to trigger error handler
+        return '';
+      }
+
+      // Prefer Firebase Storage URL, fallback to preview
+      if (photo.url && photo.url.startsWith('http')) {
+        try {
+          // Verify URL is valid
+          new URL(photo.url);
+          return photo.url;
+        } catch (e) {
+          console.warn('⚠️ Invalid URL format:', photo.url, e);
+          // Try preview as fallback
+          if (photo.preview && !photo.preview.startsWith('blob:')) {
+            return photo.preview;
+          }
+          return '';
+        }
+      }
+
+      // Fallback to preview if available
+      if (photo.preview && !photo.preview.startsWith('blob:')) {
+        return photo.preview;
+      }
+
+      return photo.url || photo.preview || '';
+    };
+
+    // Handle image loading errors
+    const handleImageError = (event, photo) => {
+      const failedSrc = event.target.src;
+      const photoName = photo?.name || 'Unknown';
+
+      console.error('❌ Failed to load photo in PrintTemplate:', {
+        name: photoName,
+        failedSource: failedSrc,
+        hasUrl: !!photo?.url,
+        url: photo?.url,
+        hasPreview: !!photo?.preview,
+        isBlobUrl: failedSrc.startsWith('blob:'),
+      });
+
+      // Try fallback if available
+      if (photo?.url && photo.url !== failedSrc && !photo.url.startsWith('blob:')) {
+        console.log('⚠️ Trying fallback URL for:', photoName);
+        event.target.src = photo.url;
+      } else if (
+        photo?.preview &&
+        photo.preview !== failedSrc &&
+        !photo.preview.startsWith('blob:')
+      ) {
+        console.log('⚠️ Trying fallback preview for:', photoName);
+        event.target.src = photo.preview;
+      } else {
+        console.error('❌ All image sources failed for photo:', photoName);
+        // Image will show broken image icon
+      }
     };
 
     // Handle image load to set initial scale and store dimensions
@@ -913,6 +988,8 @@ export default {
       updateColorSettings,
       resetColorSettings,
       handlePrint,
+      getImageSource,
+      handleImageError,
       handleImageLoad,
       autoZoom,
       isTestEnvironment, // Computed property for test environment check
