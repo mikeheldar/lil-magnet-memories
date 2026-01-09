@@ -1347,7 +1347,7 @@ export default {
   margin: 0 auto; // Center the container
   display: flex;
   flex-direction: column; // Stack content vertically (text, then easel)
-  gap: 40px; // Spacing between hero-text and hero-images
+  gap: 0; // Removed 40px spacing between hero-text and hero-images
   align-items: center; // Center all content
   z-index: 2;
   box-sizing: border-box;
@@ -1359,7 +1359,7 @@ export default {
   display: flex;
   flex-direction: column; // Always stack vertically
   align-items: center; // Always center content
-  gap: 40px;
+  gap: 0; // Removed 40px spacing
 }
 
 .hero-text {
@@ -1384,13 +1384,13 @@ export default {
   width: 100%;
   max-width: 1200px; // Constrain text width for readability
   margin: 0 auto; // Center the text content
-  padding: 1rem 20px; // Reduced from 2rem to 1rem - half the padding
+  padding: 0 20px; // Removed vertical padding (was 1rem)
   overflow: visible;
   margin-bottom: 0;
   margin-top: 0;
   display: flex;
   flex-direction: column;
-  gap: 1rem; // Reduced from 2rem to 1rem - half the gap
+  gap: 0; // Removed gap (was 1rem)
   align-items: center; // Always center content
   align-content: center;
   justify-content: center;
@@ -1985,7 +1985,7 @@ export default {
 @media (max-width: 768px) {
   .hero-content {
     grid-template-columns: 1fr;
-    gap: 40px; // Increased spacing between stacked elements on medium screens
+    gap: 0; // Removed 40px spacing
     text-align: center;
     padding: 0 15px;
     width: 100%;
@@ -1997,7 +1997,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem; // Reduced from 1.5rem to 0.75rem - half the gap
+    gap: 0; // Removed gap (was 0.75rem)
     width: 100%;
     max-width: 100%;
   }
@@ -2054,7 +2054,7 @@ export default {
   .hero-text {
     width: 100%;
     max-width: 100%;
-    padding: 0.75rem 10px; // Reduced from 1.5rem to 0.75rem - half the padding
+    padding: 0 10px; // Removed vertical padding (was 0.75rem)
   }
 
   .hero-actions {
