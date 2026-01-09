@@ -1043,6 +1043,22 @@ export default {
       }
     };
 
+    // Helper function to group products by collection (must be defined before use)
+    const groupProductsByCollection = (productList) => {
+      if (!productList || !Array.isArray(productList)) {
+        return {};
+      }
+      const grouped = {};
+      productList.forEach((product) => {
+        const collection = product.collection || 'Uncategorized';
+        if (!grouped[collection]) {
+          grouped[collection] = [];
+        }
+        grouped[collection].push(product);
+      });
+      return grouped;
+    };
+
     // Separate products by category
     const customProducts = computed(() => {
       return products.value.filter((p) => p.category === 'custom');
@@ -1068,19 +1084,6 @@ export default {
     const specialtyProductsByCollection = computed(() => {
       return groupProductsByCollection(specialtyProducts.value);
     });
-
-    // Helper function to group products by collection
-    const groupProductsByCollection = (productList) => {
-      const grouped = {};
-      productList.forEach((product) => {
-        const collection = product.collection || 'Uncategorized';
-        if (!grouped[collection]) {
-          grouped[collection] = [];
-        }
-        grouped[collection].push(product);
-      });
-      return grouped;
-    };
 
     // Reactive ref to trigger updates when market events change
     const marketEventCheckTrigger = ref(0);
