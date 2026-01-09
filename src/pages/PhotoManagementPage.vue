@@ -320,6 +320,13 @@ export default {
     // Get photo URL
     const getPhotoUrl = (photo) => {
       if (!photo) return '';
+      
+      // Check if we have a refreshed URL cached
+      const cacheKey = photo.url || photo.fullPath || photo.name;
+      if (cacheKey && refreshedUrls.has(cacheKey)) {
+        return refreshedUrls.get(cacheKey);
+      }
+      
       if (photo.url && photo.url.startsWith('http')) {
         return photo.url;
       }
@@ -329,9 +336,92 @@ export default {
       return photo.url || photo.preview || '';
     };
 
-    // Handle image errors
-    const handleImageError = (event, photo) => {
-      console.warn('Failed to load photo:', photo.name, photo.url);
+    // Cache for refreshed URLs to avoid multiple requests
+    const refreshedUrls = new Map();
+
+    // Extract storage path from Firebase Storage URL
+    const extractStoragePath = (url) => {
+      try {
+        const urlObj = new URL(url);
+        // Firebase Storage URLs have format: /v0/b/{bucket}/o/{path}?alt=media&token=...
+        // The path is URL-encoded, so we need to decode it
+        const match = urlObj.pathname.match(/\/o\/(.+?)(?:\?|$)/);
+        if (match && match[1]) {
+          // Decode the path (handles %2F for slashes, etc.)
+          const decodedPath = decodeURIComponent(match[1]);
+          return decodedPath;
+        }
+      } catch (e) {
+        console.warn('Failed to extract path from URL:', url, e);
+      }
+      return null;
+    };
+
+    // Refresh expired Firebase Storage URL
+    const refreshPhotoUrl = async (photo) => {
+      const cacheKey = photo.url || photo.fullPath || photo.name;
+      
+      // Check cache first
+      if (cacheKey && refreshedUrls.has(cacheKey)) {
+        return refreshedUrls.get(cacheKey);
+      }
+
+      try {
+        // Try to get path from photo.fullPath first, then extract from URL
+        let path = photo.fullPath;
+        if (!path && photo.url) {
+          path = extractStoragePath(photo.url);
+        }
+
+        if (!path) {
+          console.warn('⚠️ Cannot refresh URL: no path available for photo:', photo.name);
+          return null;
+        }
+
+        // Ensure storage is initialized by getting the instance
+        const { getStorage: getStorageInstance, ref: storageRef, getDownloadURL } = await import('firebase/storage');
+        const { default: getApp } = await import('../firebase/config.js');
+        const storageInstance = getStorageInstance(getApp());
+        
+        // Get fresh download URL from Firebase Storage
+        const fileRef = storageRef(storageInstance, path);
+        
+        if (!fileRef) {
+          console.error('❌ Failed to create storage reference for path:', path);
+          return null;
+        }
+        
+        const freshUrl = await getDownloadURL(fileRef);
+        
+        // Cache the refreshed URL
+        if (cacheKey) {
+          refreshedUrls.set(cacheKey, freshUrl);
+        }
+        
+        console.log('✅ Refreshed URL for photo:', photo.name);
+        return freshUrl;
+      } catch (error) {
+        console.error('❌ Failed to refresh URL for photo:', photo.name, error);
+        if (error.code) {
+          console.error('Error code:', error.code);
+        }
+        return null;
+      }
+    };
+
+    // Handle image errors - try to refresh expired URLs
+    const handleImageError = async (event, photo) => {
+      const failedSrc = event.target.src;
+      console.warn('Failed to load photo:', photo.name, failedSrc);
+      
+      // Try to refresh the URL if it's a Firebase Storage URL
+      if (failedSrc && failedSrc.includes('firebasestorage.googleapis.com')) {
+        const freshUrl = await refreshPhotoUrl(photo);
+        if (freshUrl && event.target) {
+          // Update the image source with the fresh URL
+          event.target.src = freshUrl;
+        }
+      }
     };
 
     // Check if photo is selected
