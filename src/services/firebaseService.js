@@ -367,11 +367,37 @@ class FirebaseService {
                 }
               },
               (err) => {
-                // Check if it's a 412 Precondition Failed error
-                if (err?.code === 'storage/unknown' && err?.serverResponse?.includes('412')) {
-                  console.warn(`⚠️ 412 Precondition Failed for photo ${i + 1}, will retry...`);
-                  // Reject with a special error that we can catch and retry
-                  reject({ ...err, isPreconditionFailed: true });
+                // Check for 412 Precondition Failed or other retryable errors
+                const errorMessage = err?.message?.toLowerCase() || '';
+                const errorCode = err?.code || '';
+                const serverResponse = err?.serverResponse?.toString() || '';
+                
+                // Check for 412 errors - look in multiple places since Firebase wraps the error
+                const is412Error = 
+                  errorMessage.includes('412') ||
+                  errorMessage.includes('precondition failed') ||
+                  serverResponse.includes('412') ||
+                  errorCode === 'storage/unknown'; // storage/unknown often indicates 412
+                
+                const shouldRetry = is412Error && retryCount < 2;
+                
+                if (shouldRetry) {
+                  console.warn(`⚠️ Upload error for photo ${i + 1} (attempt ${retryCount + 1}), will retry with fresh session...`);
+                  console.warn('Error details:', {
+                    code: errorCode,
+                    message: errorMessage.substring(0, 200),
+                    serverResponse: serverResponse.substring(0, 200)
+                  });
+                  
+                  // Cancel current upload task to release resources
+                  try {
+                    uploadTask.cancel();
+                  } catch (cancelError) {
+                    // Ignore cancel errors - task might already be in error state
+                  }
+                  
+                  // Reject with a special flag that we can catch and retry
+                  reject({ ...err, shouldRetry: true, isPreconditionFailed: true });
                 } else {
                   reject(err);
                 }
@@ -416,27 +442,45 @@ class FirebaseService {
           };
         } catch (error) {
           // Check if it's a 412 Precondition Failed error that we should retry
-          const isPreconditionFailed = error?.isPreconditionFailed || 
-            (error?.code === 'storage/unknown' && 
-             (error?.message?.includes('412') || 
-              error?.serverResponse?.includes('412') ||
+          const errorMessage = error?.message?.toLowerCase() || '';
+          const errorCode = error?.code || '';
+          const serverResponse = error?.serverResponse?.toString() || '';
+          
+          const isPreconditionFailed = 
+            error?.isPreconditionFailed || 
+            error?.shouldRetry ||
+            errorMessage.includes('412') ||
+            errorMessage.includes('precondition failed') ||
+            (errorCode === 'storage/unknown' && 
+             (errorMessage.includes('412') || 
+              serverResponse.includes('412') ||
               error?.serverResponseCode === 412));
           
           if (isPreconditionFailed && retryCount < 2) {
-            // Wait a bit before retrying (exponential backoff)
+            // Log detailed error information for debugging
+            console.warn('⚠️ 412 Precondition Failed detected:', {
+              code: errorCode,
+              message: errorMessage.substring(0, 200),
+              serverResponse: serverResponse.substring(0, 200),
+              statusCode: error?.serverResponseCode || error?.statusCode,
+              retryCount: retryCount + 1
+            });
+            
+            // Wait before retrying (exponential backoff)
             const waitTime = 1000 * Math.pow(2, retryCount); // 1s, 2s
-            console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+            console.log(`⏳ Waiting ${waitTime}ms before retry with fresh session...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
             
             // Reset progress tracking for retry
             const photoProgress = progressMap.get(i);
             if (photoProgress) {
               photoProgress.uploaded = 0;
+              photoProgress.completed = false;
             }
             lastProgressUpdate = Date.now();
             lastBytesTransferred = 0;
             
-            // Retry with a new upload session
+            // Retry with a completely fresh upload session (new filename prevents conflicts)
             return performUpload(retryCount + 1);
           }
           

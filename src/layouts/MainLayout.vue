@@ -610,16 +610,6 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple @click="navigateTo('/look-and-feel')">
-                <q-item-section avatar>
-                  <q-icon name="palette" color="primary" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Look and Feel</q-item-label>
-                  <q-item-label caption>Manage site themes</q-item-label>
-                </q-item-section>
-              </q-item>
-
               <q-item clickable v-ripple @click="navigateTo('/email-test')">
                 <q-item-section avatar>
                   <q-icon name="email" color="purple" />
@@ -726,7 +716,6 @@
 
 <script>
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { themeService } from '../services/themeService.js';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
@@ -1067,34 +1056,6 @@ export default {
       }
     };
 
-    // Track active theme for header styling - get from cache immediately (synchronous)
-    // Try to get theme name from cache immediately (synchronous, no async)
-    let initialThemeName = null;
-    try {
-      const storedTheme = localStorage.getItem('activeTheme');
-      if (storedTheme) {
-        const theme = JSON.parse(storedTheme);
-        initialThemeName = theme?.name || null;
-      }
-    } catch (e) {
-      // Ignore errors
-    }
-    const activeThemeName = ref(initialThemeName);
-
-    // Check active theme from Firebase in background (non-blocking)
-    const checkActiveTheme = async () => {
-      try {
-        const theme = await themeService.getActiveTheme();
-        if (theme?.name) {
-          activeThemeName.value = theme.name;
-        }
-      } catch (error) {
-        // Ignore errors, use cached theme
-      }
-    };
-
-    // Check theme from Firebase in background (non-blocking)
-    checkActiveTheme();
     // Watch for drawer opening and scroll menu to top, reset scroll position
     watch(leftDrawerOpen, (isOpen) => {
       if (isOpen && drawerMenuContainerRef.value) {
@@ -1109,9 +1070,6 @@ export default {
     });
 
     onMounted(() => {
-      checkActiveTheme();
-      // Real-time listener in themeService handles theme changes automatically
-
       // Ensure header is visible on initial page load
       const initialScrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const isSmallScreen = window.innerWidth <= 599;
@@ -1155,167 +1113,52 @@ export default {
       document.documentElement.style.overflow = '';
     });
 
-    // Listen for theme changes and reapply to ensure persistence
-    let themeChangeHandler = null;
-    onMounted(() => {
-      themeChangeHandler = async (event) => {
-        if (event.detail && event.detail.themeName) {
-          activeThemeName.value = event.detail.themeName;
-          // Reapply theme to ensure header styles persist
-          try {
-            const theme = await themeService.getActiveTheme();
-            if (theme) {
-              themeService.applyTheme(theme);
-            }
-          } catch (error) {
-            console.error('Error reapplying theme after change:', error);
-          }
-        }
-      };
-      window.addEventListener('theme-changed', themeChangeHandler);
-    });
-
-    onUnmounted(() => {
-      if (themeChangeHandler) {
-        window.removeEventListener('theme-changed', themeChangeHandler);
-      }
-    });
-
-    // Reapply theme on route changes to ensure header styles persist across navigation
-    // Apply immediately (synchronously) to prevent flash of wrong color
-    watch(() => route.path, async () => {
-      try {
-        const theme = await themeService.getActiveTheme();
-        if (theme) {
-          // Apply immediately without delay to prevent flash of wrong color
-          themeService.applyTheme(theme);
-
-          // Also apply header styles immediately after a microtask to ensure DOM is ready
-          await new Promise(resolve => setTimeout(resolve, 0));
-          const header = document.querySelector('.q-header');
-          if (header) {
-            const isWhiteLattus = theme.name && theme.name.includes('White Lattus');
-            const isSilverCrisCross = theme.name && theme.name.includes('Silver Cris-Cross');
-            if (isWhiteLattus || isSilverCrisCross) {
-              const buttonGradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-              header.style.setProperty('background', buttonGradient, 'important');
-              header.style.setProperty('background-image', buttonGradient, 'important');
-              header.style.setProperty('background-color', '#667eea', 'important');
-              header.style.setProperty('opacity', '1', 'important');
-              header.setAttribute('data-theme-override', 'purple-gradient');
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error reapplying theme on route change:', error);
-      }
-    });
-
-    // Computed classes for header - conditionally apply bg-primary only if not LineA Modern theme
+    // Computed classes for header - hardcoded to LineA Modern Black Header
+    // Styles are defined in app.scss, these classes just ensure proper base styling
     const headerClasses = computed(() => {
-      const isLineAModern = activeThemeName.value &&
-        (activeThemeName.value.includes('LineA Modern Black Header') ||
-         activeThemeName.value.includes('LineA Modern White Header'));
-
-      if (isLineAModern) {
-        // Don't use bg-primary for LineA Modern themes - we'll style it ourselves
-        return 'text-white';
-      }
-      // Default: use bg-primary for other themes
-      return 'bg-primary text-white';
+      // LineA Modern Black Header - don't use bg-primary, styles are in app.scss
+      return 'text-white';
     });
 
-    // Computed inline style for header - apply theme background immediately
+    // Computed inline style for header - hardcoded to black header gradient
     const headerInlineStyle = computed(() => {
-      const isWhiteHeader = activeThemeName.value &&
-        activeThemeName.value.includes('LineA Modern White Header');
-      const isBlackHeader = activeThemeName.value &&
-        activeThemeName.value.includes('LineA Modern Black Header');
-
-      if (isWhiteHeader) {
-        return {
-          background: '#ffffff',
-          backgroundColor: '#ffffff',
-          backgroundImage: 'none',
-        };
-      } else if (isBlackHeader) {
-        return {
-          background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
-          backgroundColor: '#000000',
-          backgroundImage: 'none',
-        };
-      }
-      return {};
+      // Always use black header styles (hardcoded)
+      return {
+        background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
+        backgroundColor: '#000000',
+        backgroundImage: 'none',
+      };
     });
 
-    // Computed styles for header title based on active theme
+    // Computed styles for header title - hardcoded to LineA Modern Black Header
     const headerTitleStyle = computed(() => {
       return {};
     });
 
     const headerTitleSpanStyle = computed(() => {
-      const isLineAModern = activeThemeName.value &&
-        (activeThemeName.value.includes('LineA Modern Black Header') ||
-         activeThemeName.value.includes('LineA Modern White Header'));
-
-      // Don't set fontSize inline - let CSS media queries handle responsive sizing
-      // CSS will set 1.5rem by default and shrink below 405px
-
-      if (isLineAModern) {
-        const isWhiteHeader = activeThemeName.value.includes('White Header');
-        return {
-          fontFamily: "'Times New Roman', 'Times', serif",
-          fontWeight: '400',
-          fontStyle: 'italic',
-          // fontSize removed - let CSS media queries handle responsive sizing
-          letterSpacing: '0.05em',
-          textTransform: 'none',
-          color: isWhiteHeader ? '#1a1a1a' : '#ffffff',
-        };
-      }
-      return {};
+      // Always use LineA Modern Black Header styles (hardcoded)
+      return {
+        fontFamily: "'Times New Roman', 'Times', serif",
+        fontWeight: '400',
+        fontStyle: 'italic',
+        letterSpacing: '0.05em',
+        textTransform: 'none',
+        color: '#ffffff', // White text on black header
+      };
     });
 
-    // Computed style for user name - changes based on theme
+    // Computed style for user name - hardcoded to white for black header
     const userNameStyle = computed(() => {
-      const isWhiteHeader = activeThemeName.value &&
-        activeThemeName.value.includes('LineA Modern White Header');
-      const isWhiteLattus = activeThemeName.value &&
-        activeThemeName.value.includes('White Lattus');
-      const isSilverCrisCross = activeThemeName.value &&
-        activeThemeName.value.includes('Silver Cris-Cross');
-
-      if (isWhiteHeader) {
-        return {
-          color: '#1a1a1a', // Black on white header
-        };
-      } else if (isWhiteLattus || isSilverCrisCross) {
-        return {
-          color: '#ffffff', // White on purple header
-        };
-      }
-      return {};
+      return {
+        color: '#ffffff', // White text on black header
+      };
     });
 
-    // Computed style for header buttons (About, dropdowns, etc.) - changes based on theme
+    // Computed style for header buttons - hardcoded to white for black header
     const headerButtonStyle = computed(() => {
-      const isWhiteHeader = activeThemeName.value &&
-        activeThemeName.value.includes('LineA Modern White Header');
-      const isWhiteLattus = activeThemeName.value &&
-        activeThemeName.value.includes('White Lattus');
-      const isSilverCrisCross = activeThemeName.value &&
-        activeThemeName.value.includes('Silver Cris-Cross');
-
-      if (isWhiteHeader) {
-        return {
-          color: '#1a1a1a', // Black on white header
-        };
-      } else if (isWhiteLattus || isSilverCrisCross) {
-        return {
-          color: '#ffffff', // White on purple header
-        };
-      }
-      return {};
+      return {
+        color: '#ffffff', // White text on black header
+      };
     });
 
     // Header always shows "Lil Magnet Memories"
@@ -1361,8 +1204,6 @@ export default {
           return 'Print Template';
         case '/photo-management':
           return 'Photo Management';
-        case '/look-and-feel':
-          return 'Look and Feel';
         case '/cart':
           return 'Cart';
         case '/checkout':
