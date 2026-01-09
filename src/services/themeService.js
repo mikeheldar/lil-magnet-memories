@@ -273,12 +273,27 @@ export const themeService = {
    */
   async updateThemeStyles(themeId, newStyles) {
     try {
+      // Check if styles exceed Firestore's 1MB limit (1048487 bytes)
+      const stylesSize = new Blob([newStyles]).size;
+      const FIRESTORE_MAX_SIZE = 1048487; // 1MB - 1 byte
+      
+      if (stylesSize > FIRESTORE_MAX_SIZE) {
+        themeLog(`[ThemeService] Skipping style update for theme ${themeId}: styles too large (${stylesSize} bytes > ${FIRESTORE_MAX_SIZE} bytes). Styles are hard-coded in app.scss.`);
+        return; // Silently skip - styles are hard-coded in app.scss anyway
+      }
+      
       const themeRef = doc(db, THEMES_COLLECTION, themeId);
       await updateDoc(themeRef, {
         styles: newStyles,
         updatedAt: serverTimestamp(),
       });
     } catch (error) {
+      // If error is due to size limit, log and continue (styles are hard-coded)
+      if (error?.message?.includes('longer than 1048487 bytes') || 
+          error?.message?.includes('longer than') && error?.message?.includes('bytes')) {
+        themeLog(`[ThemeService] Skipping style update for theme ${themeId}: styles exceed Firestore size limit. Styles are hard-coded in app.scss.`);
+        return; // Don't throw - styles are hard-coded anyway
+      }
       console.error('Error updating theme styles:', error);
       throw error;
     }

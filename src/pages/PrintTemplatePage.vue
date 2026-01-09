@@ -301,6 +301,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { config } from '../config/environment.js';
+import { ref as storageRef, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase/config.js';
 
 export default {
   name: 'PrintTemplatePage',
@@ -354,6 +356,47 @@ export default {
       const scaleY = containerSize / imgHeight;
       // Use larger scale to ensure image touches all four sides of the blue inner square
       return Math.max(scaleX, scaleY);
+    };
+
+    // Extract storage path from Firebase Storage URL
+    const extractStoragePath = (url) => {
+      try {
+        const urlObj = new URL(url);
+        // Firebase Storage URLs have format: /v0/b/{bucket}/o/{path}?alt=media&token=...
+        const match = urlObj.pathname.match(/\/o\/(.+)$/);
+        if (match) {
+          return decodeURIComponent(match[1]);
+        }
+      } catch (e) {
+        console.warn('Failed to extract path from URL:', url, e);
+      }
+      return null;
+    };
+
+    // Refresh expired Firebase Storage URL
+    const refreshPhotoUrl = async (photo) => {
+      try {
+        // Try to get path from photo.fullPath first, then extract from URL
+        let path = photo.fullPath;
+        if (!path && photo.url) {
+          path = extractStoragePath(photo.url);
+        }
+
+        if (!path) {
+          console.warn('⚠️ Cannot refresh URL: no path available for photo:', photo?.name);
+          return null;
+        }
+
+        // Get fresh download URL from Firebase Storage
+        const fileRef = storageRef(storage, path);
+        const freshUrl = await getDownloadURL(fileRef);
+        
+        console.log('✅ Refreshed URL for photo:', photo?.name);
+        return freshUrl;
+      } catch (error) {
+        console.error('❌ Failed to refresh URL for photo:', photo?.name, error);
+        return null;
+      }
     };
 
     // Get image source with proper fallback handling

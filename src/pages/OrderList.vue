@@ -570,6 +570,8 @@ import { useQuasar } from 'quasar';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import { config } from '../config/environment.js';
+import { ref as storageRef, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase/config.js';
 
 export default {
   name: 'OrderList',
@@ -1222,6 +1224,47 @@ export default {
       // }
     };
 
+    // Extract storage path from Firebase Storage URL
+    const extractStoragePath = (url) => {
+      try {
+        const urlObj = new URL(url);
+        // Firebase Storage URLs have format: /v0/b/{bucket}/o/{path}?alt=media&token=...
+        const match = urlObj.pathname.match(/\/o\/(.+)$/);
+        if (match) {
+          return decodeURIComponent(match[1]);
+        }
+      } catch (e) {
+        console.warn('Failed to extract path from URL:', url, e);
+      }
+      return null;
+    };
+
+    // Refresh expired Firebase Storage URL
+    const refreshPhotoUrl = async (photo) => {
+      try {
+        // Try to get path from photo.fullPath first, then extract from URL
+        let path = photo.fullPath;
+        if (!path && photo.url) {
+          path = extractStoragePath(photo.url);
+        }
+
+        if (!path) {
+          console.warn('⚠️ Cannot refresh URL: no path available for photo:', photo?.name);
+          return null;
+        }
+
+        // Get fresh download URL from Firebase Storage
+        const fileRef = storageRef(storage, path);
+        const freshUrl = await getDownloadURL(fileRef);
+        
+        console.log('✅ Refreshed URL for photo:', photo?.name);
+        return freshUrl;
+      } catch (error) {
+        console.error('❌ Failed to refresh URL for photo:', photo?.name, error);
+        return null;
+      }
+    };
+
     // Get photo URL, filtering out blob URLs (which don't persist)
     const getPhotoUrl = (photo, order = null, photoIndex = null) => {
       if (!photo) return '';
@@ -1273,7 +1316,7 @@ export default {
     };
 
     // Handle photo loading errors
-    const handlePhotoError = (event, photo) => {
+    const handlePhotoError = async (event, photo) => {
       const failedSrc = event.target.src;
       const photoName = photo?.name || 'Unknown';
 
@@ -1310,6 +1353,15 @@ export default {
           storedFileName: photo?.fileName,
           fullPhotoObject: JSON.stringify(photo, null, 2),
         });
+      }
+
+      // Try to refresh expired Firebase Storage URL first
+      if (failedSrc && failedSrc.includes('firebasestorage.googleapis.com')) {
+        const freshUrl = await refreshPhotoUrl(photo);
+        if (freshUrl && event.target) {
+          event.target.src = freshUrl;
+          return; // Successfully refreshed, exit early
+        }
       }
 
       // Try fallback if available
