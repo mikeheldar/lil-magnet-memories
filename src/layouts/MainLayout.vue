@@ -704,7 +704,7 @@
       </q-list>
     </div>
 
-    <q-page-container>
+    <q-page-container :class="{ 'has-page-title': getPageTitle($route.path) }">
       <!-- Page Title Section (below header, above page content) -->
       <div v-if="getPageTitle($route.path)" class="page-title-section">
         <div class="page-title-text">{{ getPageTitle($route.path) }}</div>
@@ -1592,12 +1592,21 @@ html body .q-layout .q-drawer.drawer-under-header {
   // Allow content to scroll under fixed drawer
   position: relative;
   z-index: 1;
-  // Add padding at top to account for fixed header (84px) + sub-nav bar (48px on medium+ screens) + page title (57px)
-  padding-top: calc(84px + 57px) !important; // Header height + page title section
+  // Landing page and pages without titles: header (84px) + 20px spacing
+  padding-top: calc(84px + 20px) !important; // Header height + 20px spacing
 
   // On medium+ screens, add extra padding for sub-navigation bar
   @media (min-width: 768px) {
-    padding-top: calc(84px + 48px + 57px) !important; // Header + sub-nav bar + page title section
+    padding-top: calc(84px + 48px + 20px) !important; // Header + sub-nav bar + 20px spacing
+  }
+
+  // Pages with page title section: add page title height (57px)
+  &.has-page-title {
+    padding-top: calc(84px + 57px + 20px) !important; // Header + page title + 20px spacing
+
+    @media (min-width: 768px) {
+      padding-top: calc(84px + 48px + 57px + 20px) !important; // Header + sub-nav + page title + 20px spacing
+    }
   }
 }
 

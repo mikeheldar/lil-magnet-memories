@@ -814,6 +814,12 @@ export default {
       resetPanningAnimation();
     };
 
+    // Watch for image index changes to restart panning animation
+    watch(easelImageIndex, () => {
+      // Reset and restart panning when image changes
+      resetPanningAnimation();
+    });
+
     const handleGoogleSignIn = async () => {
       signingIn.value = true;
 
@@ -1314,18 +1320,19 @@ export default {
   flex-direction: column; // Stack logo container and hero-content vertically
   align-items: stretch; // Stretch children to full width
   justify-content: flex-start;
-  padding: 0px 10px 40px 10px; // Reduced top padding by 20px (was 20px, now 0px)
+  padding: 0 10px 40px 10px; // No top padding - spacing comes from .q-page-container
+  padding-top: 0 !important; // Ensure no top padding on any screen size
 
-  // Add extra 10px padding in test environment
+  // Remove test environment top padding override
   &.test-environment {
-    padding-top: 10px !important; // Reduced from 30px by 20px
+    padding-top: 0 !important;
   }
 
-  // Reduce whitespace on small screens
+  // No top padding on any screen size
   @media (max-width: 600px) {
-    padding-top: 0px !important; // Reduced from 10px by 20px (clamped to 0)
+    padding-top: 0 !important;
     &.test-environment {
-      padding-top: 0px !important; // Reduced from 15px by 20px (clamped to 0)
+      padding-top: 0 !important;
     }
   }
 
@@ -1416,10 +1423,9 @@ export default {
   text-align: center;
   width: 100%;
   max-width: 1200px; // Constrain text width for readability
-  margin: 0 auto; // Center the text content
+  margin: 0 auto 20px auto; // Center the text content, 20px bottom margin
   padding: 0 20px; // Removed vertical padding (was 1rem)
   overflow: visible;
-  margin-bottom: 0;
   margin-top: 0;
   display: flex;
   flex-direction: column;
