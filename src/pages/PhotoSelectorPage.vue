@@ -437,8 +437,7 @@ export default {
         }
 
         // Ensure storage is initialized by getting the instance
-        // Import getStorage to ensure proper initialization
-        const { getStorage: getStorageInstance } = await import('firebase/storage');
+        const { getStorage: getStorageInstance, ref: storageRef, getDownloadURL } = await import('firebase/storage');
         const { default: getApp } = await import('../firebase/config.js');
         const storageInstance = getStorageInstance(getApp());
         
