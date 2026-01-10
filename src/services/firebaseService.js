@@ -372,18 +372,21 @@ class FirebaseService {
                   updateOverallProgress();
                 }
               },
-              (err) => {
+              async (err) => {
                 // Check for 412 Precondition Failed or other retryable errors
                 const errorMessage = err?.message?.toLowerCase() || '';
                 const errorCode = err?.code || '';
                 const serverResponse = err?.serverResponse?.toString() || '';
                 
-                // Check for 412 errors - look in multiple places since Firebase wraps the error
+                // Check for 412 errors - be more specific about actual 412 errors
+                // Only treat storage/unknown as 412 if the HTTP status or message indicates 412
+                const httpStatus = err?.serverResponseCode || err?.statusCode || (serverResponse.match(/412/) ? 412 : null);
                 const is412Error = 
+                  httpStatus === 412 ||
                   errorMessage.includes('412') ||
                   errorMessage.includes('precondition failed') ||
                   serverResponse.includes('412') ||
-                  errorCode === 'storage/unknown'; // storage/unknown often indicates 412
+                  (errorCode === 'storage/unknown' && (httpStatus === 412 || errorMessage.includes('412') || serverResponse.includes('412')));
                 
                 const shouldRetry = is412Error && retryCount < 2;
                 
@@ -391,8 +394,10 @@ class FirebaseService {
                   console.warn(`⚠️ Upload error for photo ${i + 1} (attempt ${retryCount + 1}), will retry with fresh session...`);
                   console.warn('Error details:', {
                     code: errorCode,
+                    httpStatus: httpStatus,
                     message: errorMessage.substring(0, 200),
-                    serverResponse: serverResponse.substring(0, 200)
+                    serverResponse: serverResponse.substring(0, 200),
+                    fullError: err
                   });
                   
                   // Cancel current upload task to release resources
@@ -402,8 +407,19 @@ class FirebaseService {
                     // Ignore cancel errors - task might already be in error state
                   }
                   
+                  // Refresh auth token before retry to ensure we have a valid token
+                  try {
+                    const currentUser = auth?.currentUser;
+                    if (currentUser && currentUser.getIdToken) {
+                      await currentUser.getIdToken(true); // Force refresh
+                      console.log('✅ Auth token refreshed before retry');
+                    }
+                  } catch (tokenError) {
+                    console.warn('⚠️ Failed to refresh auth token, proceeding with retry anyway:', tokenError);
+                  }
+                  
                   // Reject with a special flag that we can catch and retry
-                  reject({ ...err, shouldRetry: true, isPreconditionFailed: true });
+                  reject({ ...err, shouldRetry: true, isPreconditionFailed: true, httpStatus: httpStatus });
                 } else {
                   reject(err);
                 }
@@ -451,31 +467,48 @@ class FirebaseService {
           const errorMessage = error?.message?.toLowerCase() || '';
           const errorCode = error?.code || '';
           const serverResponse = error?.serverResponse?.toString() || '';
+          const httpStatus = error?.httpStatus || error?.serverResponseCode || error?.statusCode || (serverResponse.match(/412/) ? 412 : null);
           
+          // Be more specific about 412 errors - only retry on actual 412 status
           const isPreconditionFailed = 
             error?.isPreconditionFailed || 
             error?.shouldRetry ||
+            httpStatus === 412 ||
             errorMessage.includes('412') ||
             errorMessage.includes('precondition failed') ||
-            (errorCode === 'storage/unknown' && 
-             (errorMessage.includes('412') || 
-              serverResponse.includes('412') ||
-              error?.serverResponseCode === 412));
+            (errorCode === 'storage/unknown' && httpStatus === 412);
           
           if (isPreconditionFailed && retryCount < 2) {
             // Log detailed error information for debugging
             console.warn('⚠️ 412 Precondition Failed detected:', {
               code: errorCode,
+              httpStatus: httpStatus,
               message: errorMessage.substring(0, 200),
               serverResponse: serverResponse.substring(0, 200),
-              statusCode: error?.serverResponseCode || error?.statusCode,
-              retryCount: retryCount + 1
+              retryCount: retryCount + 1,
+              fullError: error
             });
             
-            // Wait before retrying (exponential backoff)
+            // Wait before retrying (exponential backoff with longer delay)
             const waitTime = 1000 * Math.pow(2, retryCount); // 1s, 2s
             console.log(`⏳ Waiting ${waitTime}ms before retry with fresh session...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
+            
+            // Refresh auth token before retry to ensure we have a valid token
+            try {
+              const currentUser = auth?.currentUser;
+              if (currentUser && currentUser.getIdToken) {
+                await currentUser.getIdToken(true); // Force refresh
+                console.log('✅ Auth token refreshed before retry');
+              } else if (!currentUser || currentUser.isAnonymous) {
+                // Re-authenticate if no user or anonymous
+                await signInAnonymously(auth);
+                await new Promise(resolve => setTimeout(resolve, 100));
+                console.log('✅ Re-authenticated before retry');
+              }
+            } catch (tokenError) {
+              console.warn('⚠️ Failed to refresh auth token, proceeding with retry anyway:', tokenError);
+            }
             
             // Reset progress tracking for retry
             const photoProgress = progressMap.get(i);
