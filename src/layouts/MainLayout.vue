@@ -330,6 +330,22 @@
       <!-- Drawer background only - menu is in fixed container outside drawer -->
     </q-drawer>
 
+    <!-- Drawer header fill - fixed at top, always visible when drawer is open -->
+    <div
+      v-show="leftDrawerOpen"
+      class="drawer-header-fill"
+      :class="{ 'header-hidden': !headerVisible }"
+    >
+      <q-btn
+        flat
+        dense
+        icon="menu"
+        @click="toggleLeftDrawer"
+        aria-label="Close Menu"
+        class="drawer-close-btn hamburger-menu-btn"
+      />
+    </div>
+
     <!-- Floating menu container that stays fixed when scrolling main page - outside drawer to avoid transform context -->
     <div
       ref="drawerMenuContainerRef"
@@ -337,17 +353,6 @@
       :class="{ 'header-hidden': !headerVisible }"
       v-show="leftDrawerOpen"
     >
-      <!-- Drawer header - shows when drawer is open to fill header space -->
-      <div class="drawer-header-fill">
-        <q-btn
-          flat
-          dense
-          icon="menu"
-          @click="toggleLeftDrawer"
-          aria-label="Close Menu"
-          class="drawer-close-btn hamburger-menu-btn"
-        />
-      </div>
       <q-list>
         <q-item-label header class="text-grey-8"> Navigation </q-item-label>
 
@@ -1453,15 +1458,16 @@ export default {
 // Floating menu container - stays fixed in place when scrolling main page
 // When drawer is open, this container stays fixed and scrolls independently
 // Positioned outside drawer to avoid transform context issues
+// Starts below drawer-header-fill (84px on small, 64px on medium+)
 .drawer-menu-container {
   position: fixed !important; // Fixed to viewport, not sticky to page scroll
-  top: 84px !important; // Position below header (84px on small screens)
+  top: 168px !important; // Position below header (84px) + drawer header fill (84px) on small screens
   left: 0 !important; // Align with drawer
   width: 300px !important; // Default width for medium+ screens
-  max-height: calc(100vh - 84px) !important;
+  max-height: calc(100vh - 168px) !important; // Full height minus header + drawer header fill
   overflow-y: auto !important; // Allow scrolling within menu if content is long
   overflow-x: hidden !important;
-  z-index: 2001 !important; // Above drawer background but below header
+  z-index: 2001 !important; // Above drawer background but below drawer header fill
   background: #FAFAFF !important; // Ghost White from design system - match drawer background
   // Always visible when drawer is open - no header synchronization
   transform: translateY(0) !important;
@@ -1473,51 +1479,77 @@ export default {
   // Don't force visibility - let v-show control it
   visibility: visible;
 
-  // When header is hidden, extend to top of viewport and account for header fill
+  // When header is hidden, drawer header fill is at top (0), so menu starts at drawer header fill height
   &.header-hidden {
-    top: 0 !important;
-    max-height: 100vh !important;
+    top: 84px !important; // Below drawer header fill (84px on small)
+    max-height: calc(100vh - 84px) !important;
   }
 
-  // Ensure the q-list inside always starts at the top (after header fill if present)
+  // Ensure the q-list inside always starts at the top
   .q-list {
     margin-top: 0 !important;
     padding-top: 0 !important;
   }
 
-  // On medium+ screens, header is 64px + sub-nav
+  // On medium+ screens, header is 64px, drawer header fill is 64px
   @media (min-width: 768px) {
     &:not(.header-hidden) {
-      top: calc(64px + 48px) !important; // Header (64px on medium+) + sub-nav
-      max-height: calc(100vh - 64px - 48px) !important;
+      top: 128px !important; // Header (64px) + drawer header fill (64px)
+      max-height: calc(100vh - 128px) !important;
+    }
+    
+    &.header-hidden {
+      top: 64px !important; // Below drawer header fill (64px on medium+)
+      max-height: calc(100vh - 64px) !important;
     }
   }
 
   // Full width and full height on small screens - extend to bottom
   @media (max-width: 599px) {
     width: 100vw !important;
-    height: calc(100vh - 84px) !important; // Full height minus header (84px on small)
-    max-height: calc(100vh - 84px) !important;
+    height: calc(100vh - 168px) !important; // Full height minus header + drawer header fill
+    max-height: calc(100vh - 168px) !important;
     bottom: 0 !important; // Ensure it extends to bottom
+    
+    &.header-hidden {
+      height: calc(100vh - 84px) !important; // Full height minus drawer header fill only
+      max-height: calc(100vh - 84px) !important;
+    }
   }
 }
 
-// Drawer header fill - appears when main header is hidden
-// Matches main header + sub-nav height (84px + 48px = 132px on small, 64px + 48px = 112px on medium+)
+// Drawer header fill - fixed at top, always visible when drawer is open
+// Positioned below header (84px on small, 64px on medium+)
 .drawer-header-fill {
+  position: fixed !important;
+  top: 84px !important; // Position below header (84px on small screens)
+  left: 0 !important;
+  width: 300px !important; // Match drawer width
   height: 84px !important; // Match header height exactly (84px on small screens)
-  width: 100% !important;
   background: #FAFAFF !important; // Ghost White from design system
   display: flex !important;
   align-items: center !important;
   padding-left: 16px !important;
+  z-index: 2002 !important; // Above drawer menu container
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator
+  flex-shrink: 0 !important; // Don't shrink
 
   // On medium+ screens, header is 64px
   @media (min-width: 768px) {
+    top: 64px !important; // Position below header (64px on medium+ screens)
     height: 64px !important; // Match header height exactly (64px on medium+ screens)
   }
-  flex-shrink: 0 !important; // Don't shrink
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator for light background
+
+  // When header is hidden, position at top of viewport
+  &.header-hidden {
+    top: 0 !important;
+  }
+
+  // Full width on small screens
+  @media (max-width: 599px) {
+    width: 100vw !important;
+>>>>>>> 85ac5a7 (fix: make drawer header fill fixed at top, always visible, positioned below header)
+  }
 }
 
 .drawer-close-btn {
