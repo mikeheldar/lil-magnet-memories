@@ -2077,8 +2077,6 @@ export default {
   align-items: center;
   width: 100%;
   aspect-ratio: 1 / 1;
-  max-width: 400px;
-  max-height: 400px;
   margin-bottom: 16px;
   overflow: hidden;
   background: #f5f5f5;
@@ -2088,8 +2086,6 @@ export default {
 .product-image {
   width: 100%;
   height: 100%;
-  max-width: 400px;
-  max-height: 400px;
   object-fit: cover;
   border-radius: 6px;
 }
