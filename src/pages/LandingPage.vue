@@ -1813,7 +1813,7 @@ export default {
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
   overflow: visible !important; // Allow dots to be visible below
-  padding-bottom: 40px !important; // Minimal padding for dots (dots are absolutely positioned 20px below)
+  padding-bottom: 0 !important; // No padding needed - dots are absolutely positioned 20px below image
 }
 
 // Small screens: maintain wide format but ensure it fits
@@ -1825,14 +1825,14 @@ export default {
     margin-right: calc(-50vw + 50%) !important;
     aspect-ratio: 16 / 9 !important;
     overflow: visible !important; // Allow dots to be visible below
-    padding-bottom: 40px !important; // Minimal padding for dots (dots are absolutely positioned 20px below)
+    padding-bottom: 0 !important; // No padding needed - dots are absolutely positioned 20px below image
   }
 }
 
 // Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
-  top: calc(100% + 20px) !important; // Position 20px below the image
+  top: calc(100% + 20px) !important; // Position exactly 20px below the easel gallery picture
   left: 50%;
   transform: translateX(-50%);
   display: flex !important;
