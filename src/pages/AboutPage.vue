@@ -1,6 +1,6 @@
 <template>
-  <q-page padding class="about-page">
-    <div class="q-pa-lg q-gutter-y-xl">
+  <q-page class="about-page">
+    <div class="page-container q-pa-lg q-gutter-y-xl">
       <section class="hero-section q-pt-xl q-pb-lg text-center">
         <img
           src="/assets/lil-magnet-memories-logo.png"
@@ -242,8 +242,13 @@ export default {
 
 <style scoped>
 .about-page {
-  background: linear-gradient(135deg, #f7f9fc 0%, #e3ecff 100%);
+  background: white;
   min-height: 100vh;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .hero-section {
