@@ -1718,7 +1718,7 @@ export default {
 }
 
 // Slide animation - both images slide simultaneously for continuous effect
-// With no mode specified, Vue allows both elements to be present during transition
+// Using default mode (no mode specified) allows both elements to be present during transition
 .slide-enter-active,
 .slide-leave-active {
   transition: transform 1s ease-in-out;
@@ -1729,29 +1729,29 @@ export default {
   height: 100%;
 }
 
-// New image enters from right while old image exits to left - both visible simultaneously
+// New image enters from right while old image exits to left - both visible and sliding simultaneously
 .slide-enter-active {
-  z-index: 2; // New image on top
+  z-index: 2; // New image on top, slides over the old image
 }
 
 .slide-leave-active {
-  z-index: 1; // Old image below, visible during transition
+  z-index: 1; // Old image below, but visible during transition - slides out simultaneously
 }
 
 .slide-enter-from {
-  transform: translateX(100%); // New image starts from right (off-screen)
+  transform: translateX(100%); // New image starts from right (off-screen to the right)
 }
 
 .slide-enter-to {
-  transform: translateX(0); // New image slides in to center
+  transform: translateX(0); // New image slides in to center position
 }
 
 .slide-leave-from {
-  transform: translateX(0); // Old image starts at center
+  transform: translateX(0); // Old image starts at center position
 }
 
 .slide-leave-to {
-  transform: translateX(-100%); // Old image slides out to left (off-screen) simultaneously
+  transform: translateX(-100%); // Old image slides out to left (off-screen to the left) at the same time
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
