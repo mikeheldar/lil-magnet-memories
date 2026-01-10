@@ -84,7 +84,7 @@ function main() {
   }
   
   // Read test rules
-  const testRulesPath = join(__dirname, '..', 'test-firestore-rules.txt');
+  const testRulesPath = join(__dirname, '..', 'tests', 'test-firestore-rules.txt');
   try {
     const testRules = readFileSync(testRulesPath, 'utf8');
     analyzeRules(testRules, 'TEST');

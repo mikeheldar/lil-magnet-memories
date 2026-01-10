@@ -21,7 +21,7 @@ A Cloudflare Worker is a JavaScript function that runs at Cloudflare's edge (clo
 ### Step 3: Replace the Default Code
 
 1. In the code editor, delete all the default code
-2. Copy the entire contents of `cloudflare-worker-apple-pay.js` from this project
+2. Copy the entire contents of `api/cloudflare-worker-apple-pay.js` from this project
 3. Paste it into the editor
 4. Click **Save and deploy**
 

@@ -1788,28 +1788,54 @@ html, body {
   margin-left: 8px; /* Small gap from menus */
   position: relative;
   
-  // Ensure dropdown icon (triangle) is visible
+  // Ensure dropdown icon (triangle) is visible and uses Material Icons font
   .q-btn-dropdown__arrow {
     color: white !important;
     opacity: 1 !important;
   }
   
-  // Style the dropdown arrow icon specifically
+  // Style the dropdown arrow icon specifically - MUST use Material Icons font
   .q-icon[name="arrow_drop_down"],
-  .q-btn-dropdown__arrow .q-icon {
+  .q-btn-dropdown__arrow .q-icon,
+  .q-btn-dropdown__arrow {
+    font-family: 'Material Icons' !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-size: 24px !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    display: inline-block !important;
+    white-space: nowrap !important;
+    word-wrap: normal !important;
+    direction: ltr !important;
+    -webkit-font-feature-settings: 'liga' !important;
+    -webkit-font-smoothing: antialiased !important;
     color: white !important;
     opacity: 1 !important;
   }
 }
 
-// Ensure hamburger menu icon is visible and correct
+// Ensure hamburger menu icon is visible and uses Material Icons font
 .hamburger-menu-btn {
   .q-icon[name="menu"],
-  .q-btn__content .q-icon {
+  .q-btn__content .q-icon,
+  .q-icon {
+    font-family: 'Material Icons' !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-size: 24px !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    display: inline-block !important;
+    white-space: nowrap !important;
+    word-wrap: normal !important;
+    direction: ltr !important;
+    -webkit-font-feature-settings: 'liga' !important;
+    -webkit-font-smoothing: antialiased !important;
     color: white !important;
     opacity: 1 !important;
-    // Ensure it shows as hamburger (three horizontal lines)
-    font-size: 24px !important;
   }
 }
 

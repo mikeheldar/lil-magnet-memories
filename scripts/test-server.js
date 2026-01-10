@@ -18,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 // Import the test runner API
-const runTestsHandler = require('./api/run-tests');
+const runTestsHandler = require('../api/run-tests');
 
 // Mount the test runner endpoint
 app.post('/api/run-tests', runTestsHandler);

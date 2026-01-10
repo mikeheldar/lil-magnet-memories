@@ -25,7 +25,7 @@ The Lil Magnet Memories test harness is a comprehensive end-to-end testing syste
                      ▼
 ┌─────────────────────────────────────────────────────────┐
 │              Test API Server (Express)                   │
-│                  (test-server.js)                        │
+│              (scripts/test-server.js)                    │
 │  - Receives test execution requests                     │
 │  - Spawns Playwright processes                          │
 │  - Returns JSON results                                 │
@@ -141,7 +141,7 @@ src/
 └── services/
     └── testHistoryService.js    # Test history persistence
 
-test-server.js                    # Local Express server
+scripts/test-server.js            # Local Express server
 playwright.config.ts             # Playwright configuration
 ```
 
@@ -529,7 +529,7 @@ jobs:
 
 ### Vercel Deployment
 
-**Note**: The test API server (`test-server.js`) is designed for **local development only**. For production/CI:
+**Note**: The test API server (`scripts/test-server.js`) is designed for **local development only**. For production/CI:
 
 1. Use GitHub Actions or similar CI/CD
 2. Or deploy test server to a separate Node.js hosting service

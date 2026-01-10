@@ -19,7 +19,7 @@ echo "5. Get your keys"
 echo "6. Update .env file"
 echo ""
 
-echo "📖 Detailed instructions: EMAIL_SETUP_INSTRUCTIONS.md"
+echo "📖 Detailed instructions: docs/EMAIL_SETUP_GUIDE.md"
 echo ""
 
 echo "🧪 Test your setup:"

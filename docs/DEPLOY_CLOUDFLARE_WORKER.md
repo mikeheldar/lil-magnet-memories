@@ -13,7 +13,7 @@ Cloudflare Page Rules cannot disable Brotli compression. We need a Worker to int
    - Name: `apple-pay-fix`
 
 3. **Paste the Worker Code:**
-   - Copy the contents of `cloudflare-worker-apple-pay.js`
+   - Copy the contents of `api/cloudflare-worker-apple-pay.js`
    - Paste into the Worker editor
    - Click "Save and Deploy"
 
@@ -30,7 +30,7 @@ Cloudflare Page Rules cannot disable Brotli compression. We need a Worker to int
 curl -X PUT "https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/workers/scripts/apple-pay-fix" \
   -H "Authorization: Bearer YOUR_API_TOKEN" \
   -H "Content-Type: application/javascript" \
-  --data-binary @cloudflare-worker-apple-pay.js
+  --data-binary @api/cloudflare-worker-apple-pay.js
 
 # 2. Add route (you'll need your Account ID)
 curl -X POST "https://api.cloudflare.com/client/v4/zones/YOUR_ZONE_ID/workers/routes" \

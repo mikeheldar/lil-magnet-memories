@@ -156,12 +156,12 @@ The app automatically detects the environment based on `window.location.hostname
 4. **Cloud Functions**: Backend API endpoints (if used)
 
 ### Security Rules
-- **Firestore Rules**: Located in `production-firestore-rules.txt` and `test-firestore-rules.txt`
+- **Firestore Rules**: Located in `production-firestore-rules.txt` and `tests/test-firestore-rules.txt`
 - **Storage Rules**: Configured in Firebase Console
 - **CORS**: Configured for Storage bucket access
 
 ### Known Issues
-- **Production Firestore**: Has had "client is offline" issues (see `SYSTEM_ARCHITECTURE_DIAGRAM.md`)
+- **Production Firestore**: Has had "client is offline" issues (see `docs/SYSTEM_ARCHITECTURE_DIAGRAM.md`)
 - **Authentication**: Anonymous auth required for public access
 - **CORS**: Storage CORS has been fixed, but Firestore doesn't use CORS
 
@@ -211,33 +211,33 @@ The app automatically detects the environment based on `window.location.hostname
 - **Environment Variables**: Configured in Vercel dashboard
 
 ### Deployment Scripts
-- `deploy.sh` - Deployment script
+- `scripts/deploy.sh` - Deployment script
 - `vercel.json` - Vercel configuration
 
 ### Cloudflare Workers
 - Apple Pay support via Cloudflare Workers
-- Worker code in `cloudflare-worker-apple-pay.js`
-- Deployment guide in `DEPLOY_CLOUDFLARE_WORKER.md`
+- Worker code in `api/cloudflare-worker-apple-pay.js`
+- Deployment guide in `docs/DEPLOY_CLOUDFLARE_WORKER.md`
 
 ## 📚 Key Documentation Files
 
 ### Setup & Configuration
-- `FIREBASE_SETUP.md` - Firebase configuration guide
-- `SQUARE_SETUP_INSTRUCTIONS.md` - Square payment setup
-- `EMAIL_SETUP_GUIDE.md` - Email service configuration
-- `GOOGLE_AUTH_SETUP.md` - Google OAuth setup
+- `docs/FIREBASE_SETUP.md` - Firebase configuration guide
+- `docs/SQUARE_SETUP_INSTRUCTIONS.md` - Square payment setup
+- `docs/EMAIL_SETUP_GUIDE.md` - Email service configuration
+- `docs/GOOGLE_AUTH_SETUP.md` - Google OAuth setup
 
 ### Troubleshooting
-- `FIREBASE_TROUBLESHOOTING.md` - Firebase issues and solutions
-- `APPLE_PAY_TROUBLESHOOTING.md` - Apple Pay issues
-- `FIRESTORE_TIMEOUT_DIAGNOSIS.md` - Firestore connection issues
-- `SYSTEM_ARCHITECTURE_DIAGRAM.md` - Environment comparison
+- `docs/FIREBASE_TROUBLESHOOTING.md` - Firebase issues and solutions
+- `docs/APPLE_PAY_TROUBLESHOOTING.md` - Apple Pay issues
+- `docs/FIRESTORE_TIMEOUT_DIAGNOSIS.md` - Firestore connection issues
+- `docs/SYSTEM_ARCHITECTURE_DIAGRAM.md` - Environment comparison
 
 ### Feature Documentation
 - `PROJECT_SUMMARY.md` - High-level project overview
-- `RECENT_UPDATES_SUMMARY.md` - Recent changes and improvements
-- `NAVIGATION_CHANGES.md` - Navigation structure
-- `BEFORE_AND_AFTER.md` - UI/UX improvements
+- `docs/RECENT_UPDATES_SUMMARY.md` - Recent changes and improvements
+- `docs/NAVIGATION_CHANGES.md` - Navigation structure
+- `docs/BEFORE_AND_AFTER.md` - UI/UX improvements
 
 ## 🔄 Development Workflow
 
@@ -284,12 +284,12 @@ The app automatically detects the environment based on `window.location.hostname
 ### CORS Issues
 - **Storage**: CORS configured via Firebase Console
 - **Firestore**: Doesn't use CORS (uses WebSocket/HTTP)
-- **See**: `FIREBASE_STORAGE_CORS_FIX.md`
+- **See**: `docs/FIREBASE_STORAGE_CORS_FIX.md`
 
 ### Apple Pay Issues
-- **Cache Issues**: See `APPLE_PAY_CACHE_FIX.md`
-- **Troubleshooting**: See `APPLE_PAY_TROUBLESHOOTING.md`
-- **Status**: See `APPLE_PAY_STATUS.md`
+- **Cache Issues**: See `docs/APPLE_PAY_CACHE_FIX.md`
+- **Troubleshooting**: See `docs/APPLE_PAY_TROUBLESHOOTING.md`
+- **Status**: See `docs/APPLE_PAY_STATUS.md`
 
 ## 📝 Important Notes
 

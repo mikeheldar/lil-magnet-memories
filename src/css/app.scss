@@ -91,9 +91,34 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
   }
 }
 
-/* Default header buttons and icons - white, use design system sans font */
-.q-header .q-btn,
+/* Default header buttons - white, use design system sans font for text */
+.q-header .q-btn {
+  color: #ffffff !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans - same as sub-nav
+  font-weight: 500 !important; // foundation.typography.fontWeight.medium
+  font-style: normal !important; // foundation.typography.fontStyle.normal
+  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+}
+
+/* Icons in header buttons must use Material Icons font - override sans-serif */
 .q-header .q-btn .q-icon,
+.q-header .q-icon {
+  font-family: 'Material Icons' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-feature-settings: 'liga' !important;
+  -webkit-font-smoothing: antialiased !important;
+  color: #ffffff !important;
+}
+
 .q-header .q-chip:not(.test-environment-chip) {
   color: #ffffff !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans - same as sub-nav
@@ -102,19 +127,19 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
   letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
 }
 
-/* About button specifically - ensure it uses sans font */
+/* About button specifically - ensure it uses sans font for text (not icons) */
 body .q-header .q-toolbar .q-btn[label="About"],
-body .q-header .q-toolbar .q-btn[label="About"] *,
+body .q-header .q-toolbar .q-btn[label="About"] *:not(.q-icon),
 body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
-body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
+body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *:not(.q-icon),
 .q-header .q-toolbar .q-btn[label="About"],
-.q-header .q-toolbar .q-btn[label="About"] *,
+.q-header .q-toolbar .q-btn[label="About"] *:not(.q-icon),
 .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
-.q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
+.q-header .q-toolbar .q-btn[label="About"] .q-btn__content *:not(.q-icon),
 .about-header-btn,
-.about-header-btn *,
+.about-header-btn *:not(.q-icon),
 .about-header-btn .q-btn__content,
-.about-header-btn .q-btn__content * {
+.about-header-btn .q-btn__content *:not(.q-icon) {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
   font-weight: 500 !important; // foundation.typography.fontWeight.medium
   font-style: normal !important; // foundation.typography.fontStyle.normal
@@ -239,53 +264,81 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 
 /* Ensure all header text stays white - use design system sans font for consistency */
 body .q-header .q-toolbar-title,
-body .q-header .q-toolbar-title *,
+body .q-header .q-toolbar-title *:not(.q-icon),
 body .q-header .q-toolbar-title span,
 body .q-header .q-toolbar__title,
-body .q-header .q-toolbar__title *,
+body .q-header .q-toolbar__title *:not(.q-icon),
 body .q-header .q-toolbar__title span,
 body .q-header .q-btn:not(.test-environment-chip),
 body .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
-body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
+body .q-header .q-btn:not(.test-environment-chip) .q-btn__content *:not(.q-icon),
 body .q-header .q-chip:not(.test-environment-chip),
-body .q-header .q-btn:not(.test-environment-chip) .q-icon,
 body .q-header .shop-header-btn,
-body .q-header .shop-header-btn *,
+body .q-header .shop-header-btn *:not(.q-icon),
 body .q-header .shop-header-btn .q-btn__content,
-body .q-header .shop-header-btn .q-btn__content *,
+body .q-header .shop-header-btn .q-btn__content *:not(.q-icon),
 body .q-header .shop-header-dropdowns .q-btn,
-body .q-header .shop-header-dropdowns .q-btn *,
+body .q-header .shop-header-dropdowns .q-btn *:not(.q-icon),
 body .q-header .shop-header-dropdowns .q-btn .q-btn__content,
-body .q-header .shop-header-dropdowns .q-btn .q-btn__content *,
+body .q-header .shop-header-dropdowns .q-btn .q-btn__content *:not(.q-icon),
 body .q-header .user-profile-dropdown .q-btn,
-body .q-header .user-profile-dropdown .q-btn *,
+body .q-header .user-profile-dropdown .q-btn *:not(.q-icon),
 body .q-header .user-profile-dropdown .q-btn .q-btn__content,
-body .q-header .user-profile-dropdown .q-btn .q-btn__content *,
+body .q-header .user-profile-dropdown .q-btn .q-btn__content *:not(.q-icon),
 body .q-header .user-name,
-body .q-header .user-name *,
+body .q-header .user-name *:not(.q-icon),
 body .q-header .q-toolbar .q-btn[label="About"],
-body .q-header .q-toolbar .q-btn[label="About"] *,
+body .q-header .q-toolbar .q-btn[label="About"] *:not(.q-icon),
 body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
-body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
+body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *:not(.q-icon),
 .q-layout .q-header .q-toolbar-title,
-.q-layout .q-header .q-toolbar-title *,
+.q-layout .q-header .q-toolbar-title *:not(.q-icon),
 .q-header .q-toolbar-title,
-.q-header .q-toolbar-title *,
+.q-header .q-toolbar-title *:not(.q-icon),
 .q-header .q-toolbar-title span,
 .q-header .q-toolbar__title,
-.q-header .q-toolbar__title *,
+.q-header .q-toolbar__title *:not(.q-icon),
 .q-header .q-toolbar__title span,
 .q-header .q-btn:not(.test-environment-chip),
 .q-header .q-btn:not(.test-environment-chip) .q-btn__content,
-.q-header .q-btn:not(.test-environment-chip) .q-btn__content *,
-.q-header .q-chip:not(.test-environment-chip),
-.q-header .q-btn:not(.test-environment-chip) .q-icon {
+.q-header .q-btn:not(.test-environment-chip) .q-btn__content *:not(.q-icon),
+.q-header .q-chip:not(.test-environment-chip) {
   color: #ffffff !important;
-  // Standardize font - use design system sans font for header elements (same as sub-nav)
+  // Standardize font - use design system sans font for header text elements (same as sub-nav)
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
   font-weight: 500 !important; // foundation.typography.fontWeight.medium
   font-style: normal !important; // foundation.typography.fontStyle.normal
   letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+}
+
+/* Icons MUST use Material Icons font - override ALL sans-serif rules with highest specificity */
+body .q-header .q-btn:not(.test-environment-chip) .q-icon,
+body .q-header .q-icon,
+body .q-header .shop-header-btn .q-icon,
+body .q-header .shop-header-dropdowns .q-btn .q-icon,
+body .q-header .user-profile-dropdown .q-btn .q-icon,
+body .q-header .q-toolbar .q-btn[label="About"] .q-icon,
+.q-header .q-btn:not(.test-environment-chip) .q-icon,
+.q-header .q-icon,
+.q-header .q-btn .q-icon,
+.hamburger-menu-btn .q-icon,
+.user-profile-dropdown .q-icon,
+.user-profile-dropdown .q-btn-dropdown__arrow,
+.user-profile-dropdown .q-btn-dropdown__arrow .q-icon {
+  font-family: 'Material Icons' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-feature-settings: 'liga' !important;
+  -webkit-font-smoothing: antialiased !important;
+  color: #ffffff !important;
 }
 
 // ============================================================================

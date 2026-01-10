@@ -75,7 +75,7 @@ A simple, mobile-friendly photo upload form for your Lil Magnet Memories busines
 - Update the `sendViaBackend` method
 - Deploy backend and update endpoint
 
-See `EMAIL_SETUP_GUIDE.md` for detailed instructions.
+See `docs/EMAIL_SETUP_GUIDE.md` for detailed instructions.
 
 ## 🏪 Usage at Farmers Markets
 
@@ -119,7 +119,8 @@ lil-magnet-memories/
 │   └── router/
 │       └── routes.ts           # App routing
 ├── dist/                       # Built files for deployment
-├── EMAIL_SETUP_GUIDE.md        # Email configuration guide
+├── docs/                       # Documentation files
+│   └── EMAIL_SETUP_GUIDE.md    # Email configuration guide
 ├── PROJECT_SUMMARY.md          # This file
 └── README.md                   # Basic project info
 ```
