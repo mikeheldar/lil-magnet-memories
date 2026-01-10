@@ -2035,6 +2035,8 @@ export default {
 .product-card {
   height: 100%;
   min-height: 500px;
+  max-width: 400px;
+  margin: 0 auto; // Center the card when it's constrained
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
