@@ -1120,11 +1120,11 @@ export default {
       return 'text-white';
     });
 
-    // Computed inline style for header - hardcoded to black header gradient
+    // Computed inline style for header - hardcoded to pure black
     const headerInlineStyle = computed(() => {
-      // Always use black header styles (hardcoded)
+      // Always use pure black header (hardcoded)
       return {
-        background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
+        background: '#000000',
         backgroundColor: '#000000',
         backgroundImage: 'none',
       };
@@ -1161,9 +1161,9 @@ export default {
       };
     });
 
-    // Header always shows "Lil Magnet Memories"
+    // Header always shows "Lil' Magnet Memories"
     const pageTitle = computed(() => {
-      return 'Lil Magnet Memories';
+      return "Lil' Magnet Memories";
     });
 
     // Get page title for display below header (on the page itself)

@@ -52,19 +52,17 @@
             @touchmove="handleTouchMove"
             @touchend="handleTouchEnd"
           >
-            <div class="easel-image-container">
-              <transition name="slide" mode="out-in">
-                <img
-                  :key="easelImageIndex"
-                  :src="currentEaselImage"
-                  alt="Custom photo magnets on easel display"
-                  class="easel-image"
-                  :class="{ 'image-panning': isImagePanning }"
-                  @load="handleImageLoad"
-                  ref="easelImageRef"
-                />
-              </transition>
-            </div>
+            <transition name="slide" mode="in-out">
+              <img
+                :key="easelImageIndex"
+                :src="currentEaselImage"
+                alt="Custom photo magnets on easel display"
+                class="easel-image"
+                :class="{ 'image-panning': isImagePanning }"
+                @load="handleImageLoad"
+                ref="easelImageRef"
+              />
+            </transition>
             <!-- Image carousel dots (only show if more than 1 image) -->
             <div v-if="easelImages.length > 1" class="easel-carousel-dots">
               <button
@@ -1551,7 +1549,7 @@ export default {
 }
 
 .hero-title {
-  font-size: clamp(1.2rem, 3vw, 2rem); // Responsive size
+  font-size: clamp(1.2rem, 3vw, 1.75rem); // Reduced max size from 2rem to 1.75rem (a few points smaller)
   font-weight: 500 !important; // Lighter weight
   font-family: 'Georgia', 'Times New Roman', serif !important; // Elegant serif font - consistent across all devices
   margin-top: 0; // No top margin to align with easel container
@@ -1648,24 +1646,17 @@ export default {
   margin-top: 0;
   position: relative; // Ensure dots can be positioned relative to container
   padding-top: 0;
-  padding-bottom: 0;
+  padding-bottom: 60px; // Add padding at bottom to make room for dots
   margin-bottom: 0;
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: hidden; // Hide overflow for panning animation
+  overflow: visible; // Allow dots to be visible below container
 
   img {
     display: block;
     pointer-events: none; // Prevent image from blocking container clicks
   }
-}
-
-.easel-image-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
 }
 
 .easel-image-wrapper {
@@ -1683,7 +1674,7 @@ export default {
   }
 
   .easel-image {
-    object-position: top right !important; // Start at top-right for panning animation
+    object-position: top left !important; // Start at top-left for panning animation
   }
 }
 
@@ -1692,7 +1683,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover; // Fill container, crop to fit
-  object-position: top right; // Start at top-right for panning
+  object-position: top left; // Start at top-left for panning
   display: block;
   border-radius: 0; // No border radius for edge-to-edge
   border: none; // No border for edge-to-edge
@@ -1708,57 +1699,60 @@ export default {
   left: 0;
 }
 
-// Panning animation - slowly move from top-right to bottom-right
+// Panning animation - slowly move from top-left down and to the right
 .easel-image.image-panning {
   animation: panImage 7s ease-in-out forwards;
 }
 
 @keyframes panImage {
   0% {
-    object-position: top right; // Start at top-right
+    object-position: top left; // Start at top-left
   }
   100% {
-    object-position: bottom right; // End at bottom-right
+    object-position: bottom right; // End at bottom-right (down and to the right)
   }
 }
 
-// Slide animation when changing images (Vue transition)
+// Slide animation when changing images - continuous sliding with no whitespace (in-out mode)
+// New image enters from right while old image exits to left simultaneously
 .slide-enter-active {
-  transition: transform 1s ease-in-out, opacity 0.3s ease;
+  transition: transform 1s ease-in-out;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 2; // New image on top
 }
 
 .slide-leave-active {
-  transition: transform 1s ease-in-out, opacity 0.3s ease;
+  transition: transform 1s ease-in-out;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1; // Old image below (slides out first, then new enters)
 }
 
 .slide-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
+  transform: translateX(100%); // New image starts from right (off-screen)
+  opacity: 1; // Fully opaque - no fade
 }
 
 .slide-enter-to {
-  transform: translateX(0);
+  transform: translateX(0); // New image slides in to center
   opacity: 1;
 }
 
 .slide-leave-from {
-  transform: translateX(0);
+  transform: translateX(0); // Old image starts at center
   opacity: 1;
 }
 
 .slide-leave-to {
-  transform: translateX(-100%);
-  opacity: 0;
+  transform: translateX(-100%); // Old image slides out to left (off-screen)
+  opacity: 1; // Fully opaque - no fade
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
@@ -1769,6 +1763,8 @@ export default {
   margin-left: calc(-50vw + 50%) !important; // Break out of container to be edge-to-edge
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
+  overflow: visible !important; // Allow dots to be visible below
+  padding-bottom: 60px !important; // Add padding at bottom to make room for dots
 }
 
 // Small screens: maintain wide format but ensure it fits
@@ -1779,6 +1775,8 @@ export default {
     margin-left: calc(-50vw + 50%) !important;
     margin-right: calc(-50vw + 50%) !important;
     aspect-ratio: 16 / 9 !important;
+    overflow: visible !important; // Allow dots to be visible below
+    padding-bottom: 60px !important; // Add padding at bottom to make room for dots
   }
 }
 
@@ -2122,7 +2120,7 @@ export default {
   }
 
   .hero-title {
-    font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+    font-size: clamp(1.4rem, 3.5vw, 1.75rem); // Reduced max size from 2.2rem to 1.75rem (a few points smaller)
     font-family: 'Georgia', 'Times New Roman', serif !important; // Ensure same font on medium screens
     font-weight: 500 !important; // Same weight
     font-style: italic !important; // Same style
@@ -2177,7 +2175,7 @@ export default {
   }
 
   .hero-title {
-    font-size: clamp(1.2rem, 5vw, 1.8rem);
+    font-size: clamp(1.2rem, 5vw, 1.65rem); // Reduced max size from 1.8rem to 1.65rem (a few points smaller)
     font-family: 'Georgia', 'Times New Roman', serif !important; // Ensure same font on mobile
     font-weight: 500 !important; // Same weight
     font-style: italic !important; // Same style
@@ -2256,7 +2254,7 @@ export default {
   // Ensure dots are visible below the photo on small screens
   .easel-carousel-dots {
     position: absolute !important;
-    top: calc(100% + 20px) !important; // Position 20px below the image
+    top: 100% !important; // Position directly below the easel container
     left: 50% !important;
     transform: translateX(-50%) !important;
     display: flex !important;
@@ -2264,10 +2262,11 @@ export default {
     gap: 12px !important;
     z-index: 10 !important;
     width: fit-content !important;
-    padding: 8px 16px !important; // Add padding for better visibility
-    background: rgba(255, 255, 255, 0.9) !important; // Light background to make dots stand out
+    padding: 12px 16px !important; // Add padding for better visibility
+    margin-top: 12px !important; // Small margin below easel for spacing
+    background: rgba(255, 255, 255, 0.95) !important; // More opaque background for visibility
     border-radius: 20px !important; // Rounded background
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important; // Subtle shadow for visibility
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important; // Stronger shadow for visibility
   }
 }
 </style>

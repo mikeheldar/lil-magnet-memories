@@ -5,9 +5,9 @@
 // These styles ensure the site looks correct on initial load before theme loads
 // ============================================================================
 
-/* Default header - black gradient matching LineA Modern Black Header */
+/* Default header - pure black matching LineA Modern Black Header */
 .q-header {
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
+  background: #000000 !important; /* Pure black background */
   background-color: #000000 !important;
   min-height: 84px !important; /* 20px thicker than default (64px) */
 }
@@ -63,12 +63,12 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
   background: #ffffff !important;
 }
 
-/* Default buttons - black matching LineA Modern Black Header */
+/* Default buttons - pure black matching LineA Modern Black Header */
 body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #1a1a1a !important;
+  background: #000000 !important; /* Pure black */
   color: #ffffff !important;
-  border: 1px solid #1a1a1a !important;
+  border: 1px solid #000000 !important;
   border-radius: 10px !important;
 }
 
@@ -114,9 +114,9 @@ body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-but
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #1a1a1a !important;
+  background: #000000 !important; /* Pure black */
   color: #ffffff !important;
-  border: 1px solid #1a1a1a !important;
+  border: 1px solid #000000 !important;
   border-radius: 10px !important;
   filter: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -129,8 +129,8 @@ body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-but
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover {
-  background: #2a2a2a !important;
-  border-color: #2a2a2a !important;
+  background: #1a1a1a !important; /* Slightly lighter black on hover */
+  border-color: #1a1a1a !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   filter: none !important;
@@ -139,9 +139,9 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 /* Clean q-file buttons */
 .q-file .q-field__control .q-btn,
 .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-  background: #1a1a1a !important;
+  background: #000000 !important; /* Pure black */
   color: #ffffff !important;
-  border: 1px solid #1a1a1a !important;
+  border: 1px solid #000000 !important;
   border-radius: 10px !important;
   filter: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -149,8 +149,8 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 
 .q-file .q-field__control .q-btn:hover,
 .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):hover {
-  background: #2a2a2a !important;
-  border-color: #2a2a2a !important;
+  background: #1a1a1a !important; /* Slightly lighter black on hover */
+  border-color: #1a1a1a !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   filter: none !important;
