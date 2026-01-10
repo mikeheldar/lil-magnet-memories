@@ -41,6 +41,10 @@
           "value": "#819595",
           "description": "Cool Steel - cool, steely blue with a hint of mist, conjuring high-tech chic, creative clarity and contemplative moods."
         },
+        "starYellow": {
+          "value": "#FFB800",
+          "description": "Star Yellow - warm, vibrant golden yellow perfect for star ratings, conveying excellence, positivity, and premium quality."
+        },
         "white": {
           "value": "#ffffff",
           "description": "Pure white - clean, bright background for pages and text color on dark surfaces"

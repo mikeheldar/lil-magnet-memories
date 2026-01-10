@@ -37,12 +37,14 @@
               color="primary"
               class="q-mb-md"
             />
-            <q-btn
-              type="submit"
-              color="primary"
-              label="Add Review"
-              :loading="addingReview"
-            />
+            <div class="q-mt-md">
+              <q-btn
+                type="submit"
+                color="primary"
+                label="Add Review"
+                :loading="addingReview"
+              />
+            </div>
           </q-form>
         </q-card-section>
       </q-card>

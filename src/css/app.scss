@@ -1,5 +1,25 @@
 // app global css in SCSS form
 
+// Import design system colors
+@import '../css/quasar.variables.scss';
+
+// Star rating color - use design system token
+.q-rating {
+  color: $star-yellow !important;
+  
+  .q-rating__icon {
+    color: $star-yellow !important;
+  }
+  
+  .q-rating__icon--active {
+    color: $star-yellow !important;
+  }
+  
+  .q-rating__icon--inactive {
+    color: rgba($star-yellow, 0.3) !important;
+  }
+}
+
 // ============================================================================
 // Material Icons font - Loaded via Google Fonts CDN in index.html
 // CSS rules to ensure icons render correctly
