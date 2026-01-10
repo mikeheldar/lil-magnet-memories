@@ -2051,6 +2051,8 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
+  max-width: 400px;
+  margin: 0 auto; // Center the content when it's constrained
 }
 
 .product-card-actions {
