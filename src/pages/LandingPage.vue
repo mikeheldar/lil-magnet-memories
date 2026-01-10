@@ -52,17 +52,19 @@
             @touchmove="handleTouchMove"
             @touchend="handleTouchEnd"
           >
-            <transition name="slide" mode="in-out">
-              <img
-                :key="easelImageIndex"
-                :src="currentEaselImage"
-                alt="Custom photo magnets on easel display"
-                class="easel-image"
-                :class="{ 'image-panning': isImagePanning }"
-                @load="handleImageLoad"
-                ref="easelImageRef"
-              />
-            </transition>
+            <div class="easel-image-wrapper">
+              <transition name="slide" mode="">
+                <img
+                  :key="easelImageIndex"
+                  :src="currentEaselImage"
+                  alt="Custom photo magnets on easel display"
+                  class="easel-image"
+                  :class="{ 'image-panning': isImagePanning }"
+                  @load="handleImageLoad"
+                  ref="easelImageRef"
+                />
+              </transition>
+            </div>
             <!-- Image carousel dots (only show if more than 1 image) -->
             <div v-if="easelImages.length > 1" class="easel-carousel-dots">
               <button
@@ -1713,18 +1715,9 @@ export default {
   }
 }
 
-// Slide animation when changing images - continuous sliding with no whitespace (in-out mode)
-// New image enters from right while old image exits to left simultaneously
-.slide-enter-active {
-  transition: transform 1s ease-in-out;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2; // New image on top
-}
-
+// Slide animation - both images slide simultaneously for continuous effect
+// With no mode specified, Vue allows both elements to be present during transition
+.slide-enter-active,
 .slide-leave-active {
   transition: transform 1s ease-in-out;
   position: absolute;
@@ -1732,27 +1725,31 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1; // Old image below (slides out first, then new enters)
+}
+
+// New image enters from right while old image exits to left - both visible simultaneously
+.slide-enter-active {
+  z-index: 2; // New image on top
+}
+
+.slide-leave-active {
+  z-index: 1; // Old image below, visible during transition
 }
 
 .slide-enter-from {
   transform: translateX(100%); // New image starts from right (off-screen)
-  opacity: 1; // Fully opaque - no fade
 }
 
 .slide-enter-to {
   transform: translateX(0); // New image slides in to center
-  opacity: 1;
 }
 
 .slide-leave-from {
   transform: translateX(0); // Old image starts at center
-  opacity: 1;
 }
 
 .slide-leave-to {
-  transform: translateX(-100%); // Old image slides out to left (off-screen)
-  opacity: 1; // Fully opaque - no fade
+  transform: translateX(-100%); // Old image slides out to left (off-screen) simultaneously
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
