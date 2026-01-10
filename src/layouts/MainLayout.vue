@@ -1536,10 +1536,21 @@ export default {
   
   .q-icon {
     font-size: 28px !important; // Match main header hamburger size
+    color: #30343F !important; // Jet Black - ensure icon color is set
   }
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05) !important; // Light hover for light background
+  }
+}
+
+// Ensure drawer header fill hamburger is Jet Black even with hamburger-menu-btn class
+.drawer-header-fill .drawer-close-btn,
+.drawer-header-fill .hamburger-menu-btn {
+  color: #30343F !important; // Jet Black
+  
+  .q-icon {
+    color: #30343F !important; // Jet Black
   }
 }
 
