@@ -324,8 +324,56 @@ class FirebaseService {
             })
           };
 
-          // Create completely fresh upload task - don't try to resume any previous session
-          const uploadTask = uploadBytesResumable(storageRef, fileToUpload, metadata);
+          // For files under 5MB, use uploadBytes to avoid resumable session timeout issues (412 errors)
+          // For larger files, use uploadBytesResumable for progress tracking and resumability
+          const FILE_SIZE_THRESHOLD = 5 * 1024 * 1024; // 5MB
+          const useResumable = fileToUpload.size > FILE_SIZE_THRESHOLD;
+          
+          let uploadTask;
+          if (!useResumable) {
+            // For smaller files, use uploadBytes which is more reliable and doesn't have session timeout issues
+            // This avoids 412 Precondition Failed errors for files that upload quickly anyway
+            try {
+              await uploadBytes(storageRef, fileToUpload, metadata);
+              // Update progress to 100% for small files
+              const photoProgress = progressMap.get(i);
+              if (photoProgress) {
+                photoProgress.uploaded = fileToUpload.size;
+                photoProgress.total = fileToUpload.size;
+                photoProgress.completed = true;
+                updateOverallProgress();
+              }
+              const downloadURL = await getDownloadURL(storageRef);
+              console.log(`Photo ${i + 1} uploaded successfully (non-resumable)`);
+              return {
+                name: fileToUpload.name,
+                url: downloadURL,
+                fileName: fileName,
+                size: fileToUpload.size,
+                type: fileToUpload.type,
+              };
+            } catch (uploadError) {
+              // If uploadBytes fails, check if it's retryable
+              const errorMessage = uploadError?.message?.toLowerCase() || '';
+              const errorCode = uploadError?.code || '';
+              const httpStatus = uploadError?.httpStatus || uploadError?.serverResponseCode || null;
+              
+              const isRetryable = 
+                httpStatus === 412 ||
+                errorMessage.includes('412') ||
+                errorMessage.includes('precondition failed') ||
+                (errorCode === 'storage/unknown' && retryCount < 3);
+              
+              if (isRetryable && retryCount < 3) {
+                // Retry logic will be handled below
+                throw { ...uploadError, shouldRetry: true, httpStatus: httpStatus || 412 };
+              }
+              throw uploadError;
+            }
+          }
+          
+          // For larger files, use resumable upload
+          uploadTask = uploadBytesResumable(storageRef, fileToUpload, metadata);
 
           // Initialize progress tracking for this photo
           progressMap.set(i, {
