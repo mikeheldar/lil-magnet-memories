@@ -1,6 +1,6 @@
 <template>
   <q-page class="row justify-center">
-    <div class="col-12 col-md-8 col-lg-6 q-pa-md">
+    <div class="col-12 col-md-8 col-lg-6 q-pa-md" style="padding-top: 0;">
       <!-- Compact Login Section for Non-Authenticated Users -->
       <div v-if="!isAuthenticated" class="q-mb-sm compact-sign-in">
         <q-card class="q-pa-xs bg-blue-1">

@@ -704,11 +704,8 @@
       </q-list>
     </div>
 
-    <q-page-container :class="{ 'has-page-title': getPageTitle($route.path) }">
-      <!-- Page Title Section (below header, above page content) -->
-      <div v-if="getPageTitle($route.path)" class="page-title-section">
-        <div class="page-title-text">{{ getPageTitle($route.path) }}</div>
-      </div>
+    <q-page-container>
+      <!-- Page Title Section removed - no headers on non-landing pages -->
       <router-view />
     </q-page-container>
   </q-layout>
@@ -1168,54 +1165,12 @@ export default {
 
     // Get page title for display below header (on the page itself)
     const getPageTitle = (path) => {
-      switch (path) {
-        case '/orders':
-          return 'Order List';
-        case '/customers':
-          return 'Customer List';
-        case '/upload':
-        case '/photo-upload':
-          return 'Upload Photos';
-        case '/my-orders':
-          return 'My Orders';
-        case '/thank-you':
-          return 'Order Confirmation';
-        case '/firebase-test':
-          return 'Firebase Diagnostic';
-        case '/admin':
-          return 'Admin Settings';
-        case '/email-test':
-          return 'Email Test';
-        case '/test-runner':
-          return 'Test Runner';
-        case '/errored-transactions':
-          return 'Errored Transactions';
-        case '/market-events':
-          return 'Market Events';
-        case '/magnet-studio':
-          return 'Magnet Studio';
-        case '/magnet-studio-select':
-          return 'Magnet Studio';
-        case '/pricing':
-          return 'Manage Products';
-        case '/photo-selector':
-          return 'Print Template';
-        case '/print-template':
-          return 'Print Template';
-        case '/photo-management':
-          return 'Photo Management';
-        case '/cart':
-          return 'Cart';
-        case '/checkout':
-          return 'Checkout';
-        case '/online-order':
-          return 'Online Order';
-        case '/about':
-          return 'About';
-        case '/':
-        default:
-          return null; // No page title for landing page
+      // Remove page titles from all pages except landing page
+      // Keep only landing page without title
+      if (path === '/') {
+        return null; // Landing page - no title
       }
+      return null; // All other pages - no page title header
     };
 
     const isTestEnvironment = computed(() => config.isTest);
@@ -1603,21 +1558,13 @@ html body .q-layout .q-drawer.drawer-under-header {
   // Allow content to scroll under fixed drawer
   position: relative;
   z-index: 1;
-  // Landing page and pages without titles: header (84px on small, 64px on medium+) + 20px spacing
-  padding-top: calc(84px + 20px) !important; // Header height (84px on small screens) + 20px spacing
+  // Minimal padding - just enough to clear header (no extra empty space)
+  // Small screens: just header height (84px)
+  padding-top: 84px !important;
 
-  // On medium+ screens, header is 64px + sub-nav + spacing
+  // Medium+ screens: header (64px) + sub-nav (48px) - no extra spacing
   @media (min-width: 768px) {
-    padding-top: calc(64px + 48px + 20px) !important; // Header (64px on medium+) + sub-nav bar + 20px spacing
-  }
-
-  // Pages with page title section: add page title height (57px)
-  &.has-page-title {
-    padding-top: calc(84px + 57px + 20px) !important; // Header (84px on small) + page title + 20px spacing
-
-    @media (min-width: 768px) {
-      padding-top: calc(64px + 48px + 57px + 20px) !important; // Header (64px on medium+) + sub-nav + page title + 20px spacing
-    }
+    padding-top: calc(64px + 48px) !important;
   }
 }
 
