@@ -1765,20 +1765,21 @@ export default {
 
 // New image starts from right with Ken Burns starting transform (centered, slightly zoomed)
 .slide-enter-from {
-  transform: translate(-50%, -50%) scale(1.1) translate(100%, 0%); // Start centered and zoomed, off-screen to right
+  transform: translate(-50%, -50%) scale(1.1) translate(100%, 0%) !important; // Start centered and zoomed, off-screen to right
 }
 
 .slide-enter-to {
-  transform: translate(-50%, -50%) scale(1.1) translate(0%, 0%); // Slide in to center with Ken Burns starting position
+  transform: translate(-50%, -50%) scale(1.1) translate(0%, 0%) !important; // Slide in to center with Ken Burns starting position
 }
 
-// Old image starts from Ken Burns end position (zoomed and panned), slides out to left
+// Old image starts from Ken Burns end position (zoomed and panned), slides out to left smoothly
+// Note: Ken Burns animation ends with forwards, so this state should already be applied
 .slide-leave-from {
-  transform: translate(-50%, -50%) scale(1.25) translate(-10%, -8%); // Start from Ken Burns end position
+  transform: translate(-50%, -50%) scale(1.25) translate(-10%, -8%) !important; // Start from Ken Burns end position - matches animation final state
 }
 
 .slide-leave-to {
-  transform: translate(-50%, -50%) scale(1.25) translate(-110%, -8%); // Slide out to left while maintaining Ken Burns zoom/pan
+  transform: translate(-50%, -50%) scale(1.25) translate(-110%, -8%) !important; // Slide out to left while maintaining Ken Burns zoom/pan state
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
