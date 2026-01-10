@@ -6,7 +6,7 @@
       :style="headerInlineStyle"
     >
       <q-toolbar :class="{ 'drawer-open': leftDrawerOpen }">
-        <!-- Menu button (always visible) -->
+        <!-- Menu button (always visible) - hamburger icon -->
         <q-btn
           flat
           dense
@@ -92,9 +92,16 @@
         </q-btn>
 
 
-        <!-- User Profile Dropdown (only when authenticated) -->
+        <!-- User Profile Dropdown (only when authenticated) - triangle dropdown icon -->
         <template v-if="isAuthenticated">
-          <q-btn-dropdown flat dense no-caps class="user-profile-dropdown" :style="headerButtonStyle">
+          <q-btn-dropdown 
+            flat 
+            dense 
+            no-caps 
+            class="user-profile-dropdown" 
+            :style="headerButtonStyle"
+            dropdown-icon="arrow_drop_down"
+          >
             <q-tooltip class="lt-md">User Profile</q-tooltip>
             <template v-slot:label>
               <div class="row items-center no-wrap">
@@ -1779,6 +1786,30 @@ html, body {
   z-index: 100 !important; /* Above menus but below title */
   margin-left: 8px; /* Small gap from menus */
   position: relative;
+  
+  // Ensure dropdown icon (triangle) is visible
+  .q-btn-dropdown__arrow {
+    color: white !important;
+    opacity: 1 !important;
+  }
+  
+  // Style the dropdown arrow icon specifically
+  .q-icon[name="arrow_drop_down"],
+  .q-btn-dropdown__arrow .q-icon {
+    color: white !important;
+    opacity: 1 !important;
+  }
+}
+
+// Ensure hamburger menu icon is visible and correct
+.hamburger-menu-btn {
+  .q-icon[name="menu"],
+  .q-btn__content .q-icon {
+    color: white !important;
+    opacity: 1 !important;
+    // Ensure it shows as hamburger (three horizontal lines)
+    font-size: 24px !important;
+  }
 }
 
 // Ensure About button doesn't get overlapped
@@ -1847,9 +1878,9 @@ html, body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  // Use lighter color from design system - Dim Grey (#696773)
-  background: #696773 !important; // Dim Grey from design system (lighter than Jet Black)
-  background-color: #696773 !important;
+  // Use Cool Steel from design system (#819595)
+  background: #819595 !important; // Cool Steel from design system
+  background-color: #819595 !important;
   background-image: none !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1); // Subtle border to separate from header
   padding: 8px 20px;

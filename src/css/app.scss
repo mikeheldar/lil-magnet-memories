@@ -7,7 +7,7 @@
 
 /* Default header - Jet Black from design system */
 .q-header {
-  background: #363946 !important; /* Jet Black from design system */
+  background: #363946 !important; /* Jet Black from design system (header stays Jet Black) */
   background-color: #363946 !important;
   min-height: 84px !important; /* Default 84px for small screens */
 
@@ -103,12 +103,12 @@ body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
   background: #ffffff !important;
 }
 
-/* Default buttons - Jet Black from design system */
+/* Default buttons - Cool Steel from design system */
 body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #363946 !important; /* Jet Black from design system */
+  background: #819595 !important; /* Cool Steel from design system */
   color: #ffffff !important;
-  border: 1px solid #363946 !important;
+  border: 1px solid #819595 !important;
   border-radius: 10px !important;
 }
 
@@ -147,16 +147,16 @@ a.text-primary,
   letter-spacing: -0.02em !important;
 }
 
-/* Clean, elegant buttons - neutral colors, no purple */
+/* Clean, elegant buttons - Cool Steel from design system */
 body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #363946 !important; /* Jet Black from design system */
+  background: #819595 !important; /* Cool Steel from design system */
   color: #ffffff !important;
-  border: 1px solid #363946 !important;
+  border: 1px solid #819595 !important;
   border-radius: 10px !important;
   filter: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -176,12 +176,12 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   filter: none !important;
 }
 
-/* Clean q-file buttons - Jet Black from design system */
+/* Clean q-file buttons - Cool Steel from design system */
 .q-file .q-field__control .q-btn,
 .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-  background: #363946 !important; /* Jet Black from design system */
+  background: #819595 !important; /* Cool Steel from design system */
   color: #ffffff !important;
-  border: 1px solid #363946 !important;
+  border: 1px solid #819595 !important;
   border-radius: 10px !important;
   filter: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -283,10 +283,10 @@ body .q-btn {
     border-radius: 30px !important; // Override Quasar's default rounded border-radius (typically 28px) - very rounded for testing
   }
 
-  // Primary buttons - Jet Black from design system
+  // Primary buttons - Cool Steel from design system
   &[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
   &.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-    background: #363946 !important; // Jet Black from design system
+    background: #819595 !important; // Cool Steel from design system
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
@@ -311,10 +311,10 @@ body .q-btn {
     }
   }
 
-  // Secondary buttons - Jet Black from design system
+  // Secondary buttons - Cool Steel from design system
   &[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
   &.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-    background: #363946 !important; // Jet Black from design system
+    background: #819595 !important; // Cool Steel from design system
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
@@ -343,7 +343,7 @@ body .q-btn {
 // Also target buttons using Quasar's internal color classes with higher specificity
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #363946 !important; // Jet Black from design system
+  background: #819595 !important; // Cool Steel from design system
   color: white !important;
   border: 3px solid white !important; // Consistent white border
   border-radius: 30px !important; // Very rounded corners for testing
@@ -368,7 +368,7 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
 
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #363946 !important; // Jet Black from design system
+  background: #819595 !important; // Cool Steel from design system
   color: white !important;
   border: 3px solid white !important; // Consistent white border
   border-radius: 30px !important; // Very rounded corners for testing
@@ -396,7 +396,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   .q-field__control {
     .q-btn {
       // Style the upload button inside q-file
-      background: #363946 !important; // Jet Black from design system
+      background: #819595 !important; // Cool Steel from design system
       color: white !important;
       border: 3px solid white !important; // Consistent white border
       border-radius: 30px !important; // Very rounded corners for testing
@@ -421,9 +421,9 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
     }
   }
 
-  // Also target primary colored buttons in file inputs
+  // Also target primary colored buttons in file inputs - Cool Steel from design system
   .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-    background: #363946 !important; // Jet Black from design system
+    background: #819595 !important; // Cool Steel from design system
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
