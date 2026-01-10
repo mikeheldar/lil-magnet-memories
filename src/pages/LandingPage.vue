@@ -1245,15 +1245,15 @@ export default {
       // Start panning animation for initial image
       resetPanningAnimation();
 
-      // Rotate easel images every 8 seconds
-      // 6s for Ken Burns zoom/pan effect + 2s for slower slide transition
+      // Rotate easel images every 9 seconds
+      // 6s for Ken Burns zoom/pan effect + 3s for slower slide transition
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
           // Ken Burns animation will restart automatically via watch when image changes
-        }, 8000); // 8 seconds total: 6s Ken Burns + 2s slide transition
+        }, 9000); // 9 seconds total: 6s Ken Burns + 3s slide transition
       }
     });
 
@@ -1715,6 +1715,9 @@ export default {
   left: 50%;
   transform: translateX(-50%) translateY(-50%) scale(1.1); // Center image and start slightly zoomed for Ken Burns (base state)
   transform-origin: center center; // Scale from center
+  
+  // During Vue transitions, transition classes override base transform
+  // Base transform is only for initial state before Ken Burns or transition
 }
 
 // Ken Burns effect - very slow, smooth, gradual zoom and pan animation over 6 seconds
@@ -1754,7 +1757,7 @@ export default {
 // New image enters from right with its Ken Burns starting position, sliding in simultaneously
 // Slower, smoother transition - both images visible and moving at same time
 .slide-enter-active {
-  transition: transform 2s ease-in-out !important;
+  transition: transform 3s ease-in-out !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1765,7 +1768,7 @@ export default {
 }
 
 .slide-leave-active {
-  transition: transform 2s ease-in-out !important;
+  transition: transform 3s ease-in-out !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
