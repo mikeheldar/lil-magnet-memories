@@ -53,9 +53,9 @@
             @touchend="handleTouchEnd"
           >
             <div class="easel-image-wrapper">
-              <transition name="slide" mode="" @after-enter="handleImageEnter">
+              <transition name="slide" @after-enter="handleImageEnter">
                 <img
-                  :key="easelImageIndex"
+                  :key="`easel-${easelImageIndex}`"
                   :src="currentEaselImage"
                   alt="Custom photo magnets on easel display"
                   class="easel-image"
@@ -1694,6 +1694,7 @@ export default {
 }
 
 // Image fills the wide rectangular container
+// Base transform centers and slightly zooms - will be animated by Ken Burns and transition
 .easel-image {
   width: 100%;
   height: 100%;
@@ -1712,8 +1713,18 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(1.1); // Center image and start slightly zoomed for Ken Burns
+  transform: translateX(-50%) translateY(-50%) scale(1.1); // Center image and start slightly zoomed for Ken Burns
   transform-origin: center center; // Scale from center
+  
+  // During transitions, transition transforms override this
+  &.slide-enter-active,
+  &.slide-leave-active,
+  &.slide-enter-from,
+  &.slide-enter-to,
+  &.slide-leave-from,
+  &.slide-leave-to {
+    // Transition classes will override base transform
+  }
 }
 
 // Ken Burns effect - very slow, smooth, gradual zoom and pan animation over 6 seconds
