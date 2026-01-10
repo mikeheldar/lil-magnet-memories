@@ -372,15 +372,21 @@ class FirebaseService {
                   updateOverallProgress();
                 }
               },
-              async (err) => {
+              (err) => {
                 // Check for 412 Precondition Failed or other retryable errors
                 const errorMessage = err?.message?.toLowerCase() || '';
                 const errorCode = err?.code || '';
                 const serverResponse = err?.serverResponse?.toString() || '';
                 
                 // Check for 412 errors - be more specific about actual 412 errors
-                // Only treat storage/unknown as 412 if the HTTP status or message indicates 412
-                const httpStatus = err?.serverResponseCode || err?.statusCode || (serverResponse.match(/412/) ? 412 : null);
+                // Extract HTTP status from error or server response
+                let httpStatus = err?.serverResponseCode || err?.statusCode || null;
+                if (!httpStatus && serverResponse) {
+                  const statusMatch = serverResponse.match(/412|Precondition Failed/i);
+                  if (statusMatch) httpStatus = 412;
+                }
+                
+                // Only treat storage/unknown as 412 if we have evidence of 412 status
                 const is412Error = 
                   httpStatus === 412 ||
                   errorMessage.includes('412') ||
@@ -407,16 +413,24 @@ class FirebaseService {
                     // Ignore cancel errors - task might already be in error state
                   }
                   
-                  // Refresh auth token before retry to ensure we have a valid token
-                  try {
-                    const currentUser = auth?.currentUser;
-                    if (currentUser && currentUser.getIdToken) {
-                      await currentUser.getIdToken(true); // Force refresh
-                      console.log('✅ Auth token refreshed before retry');
+                  // Refresh auth token before retry (fire and forget - don't await in callback)
+                  const refreshToken = async () => {
+                    try {
+                      const currentUser = auth?.currentUser;
+                      if (currentUser && currentUser.getIdToken) {
+                        await currentUser.getIdToken(true); // Force refresh
+                        console.log('✅ Auth token refreshed before retry');
+                      } else if (!currentUser || (currentUser && currentUser.isAnonymous)) {
+                        // Re-authenticate if no user or anonymous
+                        await signInAnonymously(auth);
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        console.log('✅ Re-authenticated before retry');
+                      }
+                    } catch (tokenError) {
+                      console.warn('⚠️ Failed to refresh auth token, proceeding with retry anyway:', tokenError);
                     }
-                  } catch (tokenError) {
-                    console.warn('⚠️ Failed to refresh auth token, proceeding with retry anyway:', tokenError);
-                  }
+                  };
+                  refreshToken(); // Fire and forget - don't await in callback
                   
                   // Reject with a special flag that we can catch and retry
                   reject({ ...err, shouldRetry: true, isPreconditionFailed: true, httpStatus: httpStatus });
