@@ -1721,15 +1721,16 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translateX(-50%) translateY(-50%); // Center image (matches slide-enter-to exactly)
+  transform: translateX(-50%) translateY(-50%) scale(1.1); // Start zoomed in to prevent edges showing during Ken Burns pan
   transform-origin: center center; // Scale from center
   
   // During Vue transitions, transition classes override base transform
   // Base transform is only for initial state before Ken Burns or transition
 }
 
-// Ken Burns effect - slow, smooth pan only (no zoom/scale)
-// Pans slowly up and left - so focus appears to move down and right
+// Ken Burns effect - slow, smooth pan only (no zoom during animation)
+// Starts zoomed in (scale 1.1) and pans slowly up and left - so focus appears to move down and right
+// Zoom ensures edges never show during pan
 .easel-image.image-panning {
   animation: kenBurns 8s linear forwards !important;
   will-change: transform; // Optimize animation performance
@@ -1737,10 +1738,10 @@ export default {
 
 @keyframes kenBurns {
   0% {
-    transform: translateX(-50%) translateY(-50%); // Start centered
+    transform: translateX(-50%) translateY(-50%) scale(1.1); // Start centered, zoomed in
   }
   100% {
-    transform: translateX(calc(-50% - 3%)) translateY(calc(-50% - 2%)); // End position - pan up and left (focus moves down and right)
+    transform: translateX(calc(-50% - 3%)) translateY(calc(-50% - 2%)) scale(1.1); // End position - pan up and left, maintaining zoom
   }
 }
 
@@ -1770,31 +1771,31 @@ export default {
   z-index: 1 !important;
 }
 
-// New image starts off-screen to the right (at Ken Burns start position - centered)
+// New image starts off-screen to the right (at Ken Burns start position - centered, zoomed)
 .slide-enter-from {
   animation: none !important;
-  transform: translateX(calc(-50% + 100vw)) translateY(-50%) !important;
+  transform: translateX(calc(-50% + 100vw)) translateY(-50%) scale(1.1) !important;
   opacity: 1 !important;
 }
 
 // New image slides to center (Ken Burns start position - matches base transform exactly)
 .slide-enter-to {
   animation: none !important;
-  transform: translateX(-50%) translateY(-50%) !important;
+  transform: translateX(-50%) translateY(-50%) scale(1.1) !important;
   opacity: 1 !important;
 }
 
-// Old image starts from Ken Burns end position (panned up and left, no scale)
+// Old image starts from Ken Burns end position (panned up and left, maintaining zoom)
 .slide-leave-from {
   animation: none !important;
-  transform: translateX(calc(-50% - 3%)) translateY(calc(-50% - 2%)) !important;
+  transform: translateX(calc(-50% - 3%)) translateY(calc(-50% - 2%)) scale(1.1) !important;
   opacity: 1 !important;
 }
 
-// Old image slides completely off-screen to the left (maintaining Ken Burns pan position)
+// Old image slides completely off-screen to the left (maintaining Ken Burns pan position and zoom)
 .slide-leave-to {
   animation: none !important;
-  transform: translateX(calc(-50% - 3% - 120vw)) translateY(calc(-50% - 2%)) !important;
+  transform: translateX(calc(-50% - 3% - 120vw)) translateY(calc(-50% - 2%)) scale(1.1) !important;
   opacity: 1 !important;
 }
 
