@@ -1778,20 +1778,23 @@ export default {
 // New image starts from right with Ken Burns starting transform (centered, slightly zoomed)
 // Positioned completely off-screen to the right - using viewport width to ensure fully off-screen
 .slide-enter-from {
+  animation: none !important; // Ensure no Ken Burns animation starts during transition
   transform: translateX(calc(-50% + 100vw)) translateY(-50%) scale(1.1) !important; // Start off-screen to the right, centered vertically, Ken Burns start zoom
   opacity: 1 !important; // Fully visible during transition (no fade)
 }
 
 // New image slides in to center with Ken Burns starting position
 .slide-enter-to {
+  animation: none !important; // No animation during transition
   transform: translateX(-50%) translateY(-50%) scale(1.1) !important; // Slide in smoothly to center position with Ken Burns start zoom
   opacity: 1 !important;
 }
 
 // Old image starts from Ken Burns end position (zoomed and panned)
-// Matches the final state of the Ken Burns animation exactly (translateX calc(-50% - 4%), translateY calc(-50% - 2.5%), scale 1.16)
-// Ken Burns animation ends with forwards, so this state should already be applied when transition starts
+// CRITICAL: Stop Ken Burns animation before transition starts - animation forwards state conflicts with transition
+// Match the final state of the Ken Burns animation exactly (translateX calc(-50% - 4%), translateY calc(-50% - 2.5%), scale 1.16)
 .slide-leave-from {
+  animation: none !important; // Stop any running Ken Burns animation
   transform: translateX(calc(-50% - 4%)) translateY(calc(-50% - 2.5%)) scale(1.16) !important; // Start from Ken Burns end position
   opacity: 1 !important; // Fully visible during transition
 }
@@ -1799,6 +1802,7 @@ export default {
 // Old image slides out smoothly to the left while maintaining Ken Burns zoom/pan state
 // Slides 100vw to the left from its Ken Burns end position
 .slide-leave-to {
+  animation: none !important; // Ensure no animation interferes
   transform: translateX(calc(-50% - 4% - 100vw)) translateY(calc(-50% - 2.5%)) scale(1.16) !important; // Slide out completely to the left, maintaining zoom and pan
   opacity: 1 !important; // Fully visible during transition (no fade, just slide)
 }
