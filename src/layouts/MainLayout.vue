@@ -342,6 +342,7 @@
         @click="toggleLeftDrawer"
         aria-label="Close Menu"
         class="drawer-close-btn hamburger-menu-btn"
+        :style="{ color: '#30343F' }"
       />
     </div>
 
