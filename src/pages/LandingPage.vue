@@ -1355,6 +1355,12 @@ export default {
       padding-top: 0 !important;
     }
   }
+  
+  // Add 20px margin-top on medium+ screens when subheader is present
+  // Subheader is visible on gt-sm (medium+), so add spacing to prevent text from touching subheader
+  @media (min-width: 768px) {
+    margin-top: 20px;
+  }
 
   width: 100%;
   max-width: 100%;
