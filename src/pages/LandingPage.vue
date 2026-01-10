@@ -1753,8 +1753,17 @@ export default {
 // Old image slides out from its Ken Burns end position (zoomed and panned) to the left
 // New image enters from right with its Ken Burns starting position, sliding in simultaneously
 // Slower, smoother transition - both images visible and moving at same time
-// Using same transition timing ensures synchronized sliding
-.slide-enter-active,
+.slide-enter-active {
+  transition: transform 2s ease-in-out !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform-origin: center center !important;
+  z-index: 2 !important; // New image on top, slides over the old image
+}
+
 .slide-leave-active {
   transition: transform 2s ease-in-out !important;
   position: absolute !important;
@@ -1763,14 +1772,6 @@ export default {
   width: 100% !important;
   height: 100% !important;
   transform-origin: center center !important;
-}
-
-// New image enters from right while old image exits to left - both visible and sliding simultaneously
-.slide-enter-active {
-  z-index: 2 !important; // New image on top, slides over the old image
-}
-
-.slide-leave-active {
   z-index: 1 !important; // Old image below, but visible during transition - slides out from Ken Burns end position
 }
 
