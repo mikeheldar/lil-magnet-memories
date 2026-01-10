@@ -1249,15 +1249,15 @@ export default {
       resetPanningAnimation();
 
       // Rotate easel images with simple cycle:
-      // 5s Ken Burns (gentle effect) → pause at end position → slide transition (1s) → 1s pause → repeat
-      // Total cycle: 5s Ken Burns + 1s pause + 1s slide + 1s pause = 8s
+      // 5s Ken Burns (gentle effect) → pause at end position → slide transition (2s) → 1s pause → repeat
+      // Total cycle: 5s Ken Burns + 1s pause + 2s slide + 1s pause = 9s
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
           // Ken Burns animation will restart automatically via watch when image changes
-        }, 8000); // 8 seconds: 5s Ken Burns + 1s pause + 1s slide + 1s pause
+        }, 9000); // 9 seconds: 5s Ken Burns + 1s pause + 2s slide + 1s pause
       }
     });
 
@@ -1754,8 +1754,9 @@ export default {
 // Slide animation - simple stitched together effect
 // Both images move simultaneously: old slides left off-screen, new slides in from right
 // Images appear stitched together (no gap between them during transition)
+// Slower transition for smoother joint slide effect
 .slide-enter-active {
-  transition: transform 1s ease-in-out !important;
+  transition: transform 2s ease-in-out !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1766,7 +1767,7 @@ export default {
 }
 
 .slide-leave-active {
-  transition: transform 1s ease-in-out !important;
+  transition: transform 2s ease-in-out !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1797,10 +1798,10 @@ export default {
   opacity: 1 !important;
 }
 
-// Old image slides completely off-screen to the left (maintaining its Ken Burns end state)
+// Old image slides completely off-screen to the left - removed 2.5% offset to ensure it fully exits
 .slide-leave-to {
   animation: none !important;
-  transform: translateX(calc(-50% + 2.5% - 100vw)) translateY(calc(-50% + 2%)) scale(1.12) !important;
+  transform: translateX(calc(-50% - 100vw)) translateY(calc(-50% + 2%)) scale(1.12) !important;
   opacity: 1 !important;
 }
 
