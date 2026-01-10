@@ -1509,7 +1509,7 @@ export default {
   width: 300px !important; // Match drawer width
   height: 84px !important; // Match header height exactly (84px on small screens)
   background: #FAFAFF !important; // Ghost White from design system
-  display: flex !important;
+  display: flex; // Don't use !important so v-show can override with display: none
   align-items: center !important;
   padding-left: 16px !important;
   z-index: 2002 !important; // Below header (3000) but above drawer menu container
