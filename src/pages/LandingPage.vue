@@ -1661,11 +1661,13 @@ export default {
   }
 }
 
+// Easel image wrapper - clips overflow for smooth simultaneous sliding
 .easel-image-wrapper {
+  position: relative;
   width: 100%;
   height: 100%;
-  position: relative;
-  overflow: hidden;
+  overflow: hidden; // Clip images during transition for clean sliding
+  flex: 1; // Take up available space in flex container
 }
 
 // On medium and large screens, ensure easel aligns properly
