@@ -27,17 +27,18 @@
   }
 }
 
-/* Default header text - white, professional serif that fits in header */
+/* Default header text - use design system sans font (same as sub-nav items) */
 .q-header .q-toolbar-title span,
 .q-header .q-toolbar__title span {
-  font-family: 'Times New Roman', 'Times', serif !important; // Compact, professional serif font
-  font-weight: 400 !important;
-  font-style: italic !important; // Professional italic style
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
+  font-weight: 500 !important; // foundation.typography.fontWeight.medium
+  font-style: normal !important; // foundation.typography.fontStyle.normal
   font-size: 1.5rem !important; // Default larger size
+  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
   color: #ffffff !important;
 }
 
-/* Responsive header title - target .header-title-clickable specifically to override .text-h5 and theme CSS */
+/* Responsive header title - use design system sans font (same as sub-nav items) */
 /* Use very high specificity to override injected theme styles */
 body .q-layout .q-header .q-toolbar .q-toolbar-title.text-center .header-title-clickable.text-h5.text-weight-bold,
 body .q-layout .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-weight-bold,
@@ -46,6 +47,12 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
 .q-header .q-toolbar-title .header-title-clickable.text-h5.text-weight-bold,
 .q-header .q-toolbar__title .header-title-clickable.text-h5.text-weight-bold,
 .header-title-clickable.text-h5 {
+  // Use design system sans font - same as sub-nav items
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
+  font-weight: 500 !important; // foundation.typography.fontWeight.medium
+  font-style: normal !important; // foundation.typography.fontStyle.normal
+  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  
   // Responsive font size on small screens to prevent text cutoff
   // Font size stays at 1.5rem (24px) above 405px, reduces to 1.2rem (19.2px) below 405px - just a few points smaller
   @media (max-width: 405px) {
@@ -61,11 +68,34 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
   }
 }
 
-/* Default header buttons and icons - white */
+/* Default header buttons and icons - white, use design system sans font */
 .q-header .q-btn,
 .q-header .q-btn .q-icon,
 .q-header .q-chip:not(.test-environment-chip) {
   color: #ffffff !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans - same as sub-nav
+  font-weight: 500 !important; // foundation.typography.fontWeight.medium
+  font-style: normal !important; // foundation.typography.fontStyle.normal
+  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+}
+
+/* About button specifically - ensure it uses sans font */
+body .q-header .q-toolbar .q-btn[label="About"],
+body .q-header .q-toolbar .q-btn[label="About"] *,
+body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
+.q-header .q-toolbar .q-btn[label="About"],
+.q-header .q-toolbar .q-btn[label="About"] *,
+.q-header .q-toolbar .q-btn[label="About"] .q-btn__content,
+.q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
+.about-header-btn,
+.about-header-btn *,
+.about-header-btn .q-btn__content,
+.about-header-btn .q-btn__content * {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
+  font-weight: 500 !important; // foundation.typography.fontWeight.medium
+  font-style: normal !important; // foundation.typography.fontStyle.normal
+  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
 }
 
 /* Default page background - clean white */
@@ -184,7 +214,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   box-shadow: none !important;
 }
 
-/* Ensure all header text stays white - comprehensive selectors */
+/* Ensure all header text stays white - use design system sans font for consistency */
 body .q-header .q-toolbar-title,
 body .q-header .q-toolbar-title *,
 body .q-header .q-toolbar-title span,
@@ -228,6 +258,11 @@ body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
 .q-header .q-chip:not(.test-environment-chip),
 .q-header .q-btn:not(.test-environment-chip) .q-icon {
   color: #ffffff !important;
+  // Standardize font - use design system sans font for header elements (same as sub-nav)
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
+  font-weight: 500 !important; // foundation.typography.fontWeight.medium
+  font-style: normal !important; // foundation.typography.fontStyle.normal
+  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
 }
 
 // ============================================================================

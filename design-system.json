@@ -190,7 +190,7 @@
           "drawer": "{foundation.color.grey.50}",
           "pageTitle": "{foundation.color.grey.50}",
           "header": "{foundation.color.jetBlack}",
-          "subNav": "{foundation.color.jetBlack}"
+          "subNav": "{foundation.color.dimGrey}"
         },
         "text": {
           "primary": "{foundation.color.black}",
@@ -322,10 +322,11 @@
           "transition": "transform {foundation.motion.duration.slow} {foundation.motion.easing.cubicBezier}, opacity {foundation.motion.duration.slow} {foundation.motion.easing.cubicBezier}"
         },
         "title": {
-          "fontFamily": "{foundation.typography.fontFamily.serif}",
+          "fontFamily": "{foundation.typography.fontFamily.sans}",
           "fontSize": "{foundation.typography.fontSize.header.default}",
-          "fontWeight": "{foundation.typography.fontWeight.regular}",
-          "fontStyle": "{foundation.typography.fontStyle.italic}",
+          "fontWeight": "{foundation.typography.fontWeight.medium}",
+          "fontStyle": "{foundation.typography.fontStyle.normal}",
+          "letterSpacing": "{foundation.typography.letterSpacing.wide}",
           "color": "{semantic.color.text.inverse}",
           "responsive": {
             "sm": "{foundation.typography.fontSize.header.small}",
@@ -333,15 +334,30 @@
           }
         },
         "button": {
+          "fontFamily": "{foundation.typography.fontFamily.sans}",
+          "fontWeight": "{foundation.typography.fontWeight.medium}",
+          "fontStyle": "{foundation.typography.fontStyle.normal}",
+          "letterSpacing": "{foundation.typography.letterSpacing.wide}",
           "color": "{semantic.color.text.inverse}",
           "hover": "rgba(255, 255, 255, 0.8)"
         }
       },
       "subNav": {
         "base": {
-          "bg": "{semantic.color.bg.subNav}",
+          "bg": "{foundation.color.dimGrey}",
           "height": "{foundation.layout.subNavHeight}",
-          "borderBottom": "1px solid {semantic.color.border.default}"
+          "borderBottom": "1px solid {semantic.color.border.default}",
+          "fontFamily": "{foundation.typography.fontFamily.sans}",
+          "fontWeight": "{foundation.typography.fontWeight.medium}",
+          "fontStyle": "{foundation.typography.fontStyle.normal}",
+          "letterSpacing": "{foundation.typography.letterSpacing.wide}",
+          "color": "{semantic.color.text.inverse}"
+        },
+        "item": {
+          "fontFamily": "{foundation.typography.fontFamily.sans}",
+          "fontWeight": "{foundation.typography.fontWeight.medium}",
+          "fontStyle": "{foundation.typography.fontStyle.normal}",
+          "letterSpacing": "{foundation.typography.letterSpacing.wide}"
         }
       },
       "pageTitle": {

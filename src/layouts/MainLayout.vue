@@ -178,7 +178,7 @@
     </q-header>
 
     <!-- Sub-Navigation Bar (below header, medium to large screens only) -->
-    <div class="sub-navigation-bar gt-sm" :class="[headerClasses, { 'header-hidden': !headerVisible }]" :style="headerInlineStyle">
+    <div class="sub-navigation-bar gt-sm" :class="[headerClasses, { 'header-hidden': !headerVisible }]">
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
@@ -1133,12 +1133,12 @@ export default {
     });
 
     const headerTitleSpanStyle = computed(() => {
-      // Always use LineA Modern Black Header styles (hardcoded)
+      // Use design system sans font - same as sub-nav items
       return {
-        fontFamily: "'Times New Roman', 'Times', serif",
-        fontWeight: '400',
-        fontStyle: 'italic',
-        letterSpacing: '0.05em',
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif", // foundation.typography.fontFamily.sans
+        fontWeight: '500', // foundation.typography.fontWeight.medium
+        fontStyle: 'normal', // foundation.typography.fontStyle.normal
+        letterSpacing: '0.01em', // foundation.typography.letterSpacing.wide
         textTransform: 'none',
         color: '#ffffff', // White text on black header
       };
@@ -1151,9 +1151,13 @@ export default {
       };
     });
 
-    // Computed style for header buttons - hardcoded to white for black header
+    // Computed style for header buttons - use design system sans font, white text
     const headerButtonStyle = computed(() => {
       return {
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif", // foundation.typography.fontFamily.sans - same as sub-nav
+        fontWeight: '500', // foundation.typography.fontWeight.medium
+        fontStyle: 'normal', // foundation.typography.fontStyle.normal
+        letterSpacing: '0.01em', // foundation.typography.letterSpacing.wide
         color: '#ffffff', // White text on black header
       };
     });
@@ -1637,6 +1641,7 @@ html, body {
 }
 
 // Make header title clickable to go home
+// Use design system sans font - same as sub-nav items and About button
 .header-title-clickable {
   cursor: pointer;
   user-select: none;
@@ -1646,6 +1651,11 @@ html, body {
   max-width: 100% !important; // Ensure it doesn't exceed container, but container allows fit-content
   white-space: nowrap !important; // Prevent text wrapping
   overflow: visible !important; // Allow text to be fully visible
+  // Standardized font from design system - same as sub-nav items
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
+  font-weight: 500 !important; // foundation.typography.fontWeight.medium
+  font-style: normal !important; // foundation.typography.fontStyle.normal
+  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
 
   &:hover {
     opacity: 0.8;
@@ -1837,9 +1847,9 @@ html, body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  // Match header background - Jet Black from design system
-  background: #363946 !important; // Jet Black from design system
-  background-color: #363946 !important;
+  // Use lighter color from design system - Dim Grey (#696773)
+  background: #696773 !important; // Dim Grey from design system (lighter than Jet Black)
+  background-color: #696773 !important;
   background-image: none !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1); // Subtle border to separate from header
   padding: 8px 20px;
@@ -1911,10 +1921,19 @@ html, body {
 .sub-nav-btn {
   min-width: auto;
   position: relative;
+  // Use design system sans font - standardized across navigation
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
+  font-weight: 500 !important; // foundation.typography.fontWeight.medium
+  font-style: normal !important; // foundation.typography.fontStyle.normal
+  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
 
   .q-btn__content {
     padding: 0 12px;
-    color: inherit; // Inherit text color from header theme
+    color: inherit; // Inherit text color from header theme (white)
+    font-family: inherit !important; // Inherit from parent
+    font-weight: inherit !important;
+    font-style: inherit !important;
+    letter-spacing: inherit !important;
   }
 
   // Ensure dropdown menu appears below the button
