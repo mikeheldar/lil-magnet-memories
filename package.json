@@ -19,7 +19,8 @@
     "test:server": "node scripts/test-server.js",
     "test:setup": "npx playwright install --with-deps",
     "seed-test": "node scripts/seed-test-database.js",
-    "init-test": "node scripts/init-test-database.js"
+    "init-test": "node scripts/init-test-database.js",
+    "seed-reviews": "node scripts/seed-reviews.js"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
