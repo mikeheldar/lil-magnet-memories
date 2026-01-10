@@ -1545,13 +1545,19 @@ export default {
 }
 
 // Ensure drawer header fill hamburger is Jet Black even with hamburger-menu-btn class
+// Use maximum specificity to override Quasar defaults
 .drawer-header-fill .drawer-close-btn,
-.drawer-header-fill .hamburger-menu-btn {
+.drawer-header-fill .hamburger-menu-btn,
+.drawer-header-fill .q-btn,
+.drawer-header-fill .q-btn .q-icon,
+.drawer-header-fill .q-btn__content,
+.drawer-header-fill .q-btn__content .q-icon {
+  color: #30343F !important; // Jet Black - override all Quasar defaults
+}
+
+// Also target the icon directly with Material Icons class
+.drawer-header-fill .material-icons {
   color: #30343F !important; // Jet Black
-  
-  .q-icon {
-    color: #30343F !important; // Jet Black
-  }
 }
 
 // Ensure drawer content is scrollable and takes full height
