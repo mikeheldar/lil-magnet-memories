@@ -322,7 +322,7 @@
     <q-drawer
       v-model="leftDrawerOpen"
       bordered
-      class="bg-grey-1 drawer-under-header"
+      class="drawer-under-header"
       :overlay="false"
       :breakpoint="0"
       :width="300"
@@ -337,15 +337,15 @@
       :class="{ 'header-hidden': !headerVisible }"
       v-show="leftDrawerOpen"
     >
-      <!-- Drawer header - shows when main header is hidden (scrolled down) -->
-      <div v-if="!headerVisible" class="drawer-header-fill">
+      <!-- Drawer header - shows when drawer is open to fill header space -->
+      <div class="drawer-header-fill">
         <q-btn
           flat
           dense
           icon="menu"
           @click="toggleLeftDrawer"
           aria-label="Close Menu"
-          class="drawer-close-btn"
+          class="drawer-close-btn hamburger-menu-btn"
         />
       </div>
       <q-list>
@@ -1419,6 +1419,7 @@ export default {
   height: auto !important; // Let bottom handle height
   max-height: calc(100vh - 84px) !important;
   z-index: 2000 !important; // Below header but above content
+  background: #FAFAFF !important; // Ghost White from design system
   overflow: hidden !important; // Don't allow drawer itself to scroll - menu container handles it
   overflow-y: hidden !important;
   overflow-x: hidden !important;
@@ -1461,7 +1462,7 @@ export default {
   overflow-y: auto !important; // Allow scrolling within menu if content is long
   overflow-x: hidden !important;
   z-index: 2001 !important; // Above drawer background but below header
-  background: #f5f5f5 !important; // Match drawer background
+  background: #FAFAFF !important; // Ghost White from design system - match drawer background
   // Always visible when drawer is open - no header synchronization
   transform: translateY(0) !important;
   opacity: 1 !important;
@@ -1504,27 +1505,30 @@ export default {
 // Drawer header fill - appears when main header is hidden
 // Matches main header + sub-nav height (84px + 48px = 132px on small, 64px + 48px = 112px on medium+)
 .drawer-header-fill {
-  height: 132px !important; // Match header (84px on small) + sub-nav (48px) height
+  height: 84px !important; // Match header height exactly (84px on small screens)
   width: 100% !important;
-  background: #f5f5f5 !important; // Match drawer grey background (bg-grey-1)
+  background: #FAFAFF !important; // Ghost White from design system
   display: flex !important;
   align-items: center !important;
   padding-left: 16px !important;
 
   // On medium+ screens, header is 64px
   @media (min-width: 768px) {
-    height: 112px !important; // Match header (64px on medium+) + sub-nav (48px) height
+    height: 64px !important; // Match header height exactly (64px on medium+ screens)
   }
   flex-shrink: 0 !important; // Don't shrink
   border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator for light background
 }
 
 .drawer-close-btn {
-  color: #424242 !important; // Dark hamburger icon for light grey background
-  font-size: 28px !important; // Match main header hamburger size
-
+  // Match header hamburger button styling exactly
+  position: relative !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  color: #30343F !important; // Jet Black from design system to match header icon color
+  
   .q-icon {
-    font-size: 28px !important; // Ensure icon size matches
+    font-size: 28px !important; // Match main header hamburger size
   }
 
   &:hover {
