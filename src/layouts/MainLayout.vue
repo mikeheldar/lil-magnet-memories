@@ -455,7 +455,7 @@
               class="shop-category-item"
             >
               <q-item-section avatar>
-                <q-icon name="star" color="amber" />
+                <q-icon name="card_giftcard" color="specialty" />
               </q-item-section>
               <q-item-section>
                 <q-item-label>Specialty Products</q-item-label>
@@ -501,6 +501,7 @@
         <template v-else>
           <!-- Operator section (collapsible, default collapsed) -->
           <template v-if="isAdmin">
+            <q-separator class="q-my-md" />
             <q-expansion-item
               icon="work"
               label="Operator"
@@ -1043,7 +1044,7 @@ export default {
 
     // Header always shows "Lil' Magnet Memories"
     const pageTitle = computed(() => {
-      return "Lil' Magnet Memories";
+      return "Li'l Magnet Memories";
     });
 
     // Get page title for display below header (on the page itself)

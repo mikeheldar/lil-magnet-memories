@@ -192,7 +192,7 @@
           <div class="col-12 col-md-4">
             <q-card class="product-link-card" @click="$router.push('/products/specialty')">
               <q-card-section class="text-center">
-                <q-icon name="star" size="64px" color="primary" class="q-mb-md" />
+                <q-icon name="card_giftcard" size="64px" color="primary" class="q-mb-md" />
                 <div class="text-h6 q-mb-sm">Specialty Products</div>
                 <div class="text-body2 text-grey-7 q-mb-md">
                   Discover our unique specialty magnet products
