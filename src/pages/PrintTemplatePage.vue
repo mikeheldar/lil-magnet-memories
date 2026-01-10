@@ -1664,6 +1664,11 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    
+    // Add 20px spacing above on medium+ screens to move it down from subheader
+    @media (min-width: 768px) {
+      margin-top: 20px;
+    }
   }
 
   .controls-row {
