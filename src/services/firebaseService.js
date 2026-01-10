@@ -2199,6 +2199,73 @@ class FirebaseService {
       throw error;
     }
   }
+
+  // Reviews Management Methods
+  // Get all reviews (ordered by created date, most recent first)
+  async getReviews() {
+    try {
+      const reviewsCollection = collection(db, 'reviews');
+      const q = query(reviewsCollection, orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+
+      const reviews = [];
+      querySnapshot.forEach((doc) => {
+        reviews.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      return reviews;
+    } catch (error) {
+      console.error('Error getting reviews:', error);
+      throw error;
+    }
+  }
+
+  // Add a new review
+  async addReview(reviewData) {
+    try {
+      const reviewsCollection = collection(db, 'reviews');
+      const docRef = await addDoc(reviewsCollection, {
+        customerName: reviewData.customerName,
+        reviewText: reviewData.reviewText,
+        rating: reviewData.rating || 5, // Default to 5 stars
+        profilePicture: reviewData.profilePicture || null,
+        isVerified: reviewData.isVerified !== undefined ? reviewData.isVerified : true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error('Error adding review:', error);
+      throw error;
+    }
+  }
+
+  // Update an existing review
+  async updateReview(reviewId, reviewData) {
+    try {
+      const reviewDoc = doc(db, 'reviews', reviewId);
+      await updateDoc(reviewDoc, {
+        ...reviewData,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error updating review:', error);
+      throw error;
+    }
+  }
+
+  // Delete a review
+  async deleteReview(reviewId) {
+    try {
+      await deleteDoc(doc(db, 'reviews', reviewId));
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      throw error;
+    }
+  }
 }
 
 export const firebaseService = new FirebaseService();

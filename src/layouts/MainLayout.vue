@@ -196,23 +196,23 @@
           label="Custom Photo Magnets"
           class="sub-nav-btn sub-nav-btn-custom"
         >
-          <q-list v-if="customCollections.length > 0">
+          <q-list v-if="customProductsList.length > 0">
             <q-item
-              v-for="collection in customCollections"
-              :key="collection"
+              v-for="product in customProductsList"
+              :key="product.id"
               clickable
               v-close-popup
-              @click="scrollToSection('custom-products-section', collection)"
+              @click="$router.push(`/product/custom/${product.id}`)"
             >
               <q-item-section>
-                <q-item-label>{{ collection }}</q-item-label>
+                <q-item-label>{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
           <q-list v-else>
-            <q-item clickable v-close-popup @click="scrollToSection('custom-products-section')">
+            <q-item clickable v-close-popup @click="$router.push('/products/custom')">
               <q-item-section>
-                <q-item-label>Shop Products</q-item-label>
+                <q-item-label>View All Products</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -226,23 +226,23 @@
           label="Designer Magnets"
           class="sub-nav-btn sub-nav-btn-designer"
         >
-          <q-list v-if="designerCollections.length > 0">
+          <q-list v-if="designerProductsList.length > 0">
             <q-item
-              v-for="collection in designerCollections"
-              :key="collection"
+              v-for="product in designerProductsList"
+              :key="product.id"
               clickable
               v-close-popup
-              @click="scrollToSection('designer-products-section', collection)"
+              @click="$router.push(`/product/designer/${product.id}`)"
             >
               <q-item-section>
-                <q-item-label>{{ collection }}</q-item-label>
+                <q-item-label>{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
           <q-list v-else>
-            <q-item clickable v-close-popup @click="scrollToSection('designer-products-section')">
+            <q-item clickable v-close-popup @click="$router.push('/products/designer')">
               <q-item-section>
-                <q-item-label>Shop Products</q-item-label>
+                <q-item-label>View All Products</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -256,23 +256,23 @@
           label="Specialty Products"
           class="sub-nav-btn sub-nav-btn-specialty"
         >
-          <q-list v-if="specialtyCollections.length > 0">
+          <q-list v-if="specialtyProductsList.length > 0">
             <q-item
-              v-for="collection in specialtyCollections"
-              :key="collection"
+              v-for="product in specialtyProductsList"
+              :key="product.id"
               clickable
               v-close-popup
-              @click="scrollToSection('specialty-products-section', collection)"
+              @click="$router.push(`/product/specialty/${product.id}`)"
             >
               <q-item-section>
-                <q-item-label>{{ collection }}</q-item-label>
+                <q-item-label>{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
           <q-list v-else>
-            <q-item clickable v-close-popup @click="scrollToSection('specialty-products-section')">
+            <q-item clickable v-close-popup @click="$router.push('/products/specialty')">
               <q-item-section>
-                <q-item-label>Shop Products</q-item-label>
+                <q-item-label>View All Products</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -380,9 +380,7 @@
           <q-item
             clickable
             v-ripple
-            @click="scrollToSection('custom-products-section')"
-            @mouseenter="hoveredCategory = 'custom'"
-            @mouseleave="hoveredCategory = null"
+            @click="$router.push('/products/custom')"
             class="shop-category-item"
           >
             <q-item-section avatar>
@@ -394,22 +392,19 @@
             </q-item-section>
           </q-item>
 
-          <!-- Show collections on hover for Custom (only if collections exist) -->
-          <div
-            v-if="hoveredCategory === 'custom' && customCollections.length > 0"
-            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
-          >
+          <!-- Show products for Custom -->
+          <div v-if="customProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
             <q-item
-              v-for="collection in customCollections"
-              :key="collection"
+              v-for="product in customProductsList"
+              :key="product.id"
               clickable
               v-ripple
               dense
-              @click.stop="scrollToSection('custom-products-section', collection)"
-              class="collection-item"
+              @click.stop="$router.push(`/product/custom/${product.id}`)"
+              class="product-item"
             >
               <q-item-section>
-                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+                <q-item-label class="text-caption">{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
           </div>
@@ -418,9 +413,7 @@
           <q-item
             clickable
             v-ripple
-            @click="scrollToSection('designer-products-section')"
-            @mouseenter="hoveredCategory = 'designer'"
-            @mouseleave="hoveredCategory = null"
+            @click="$router.push('/products/designer')"
             class="shop-category-item"
           >
             <q-item-section avatar>
@@ -432,22 +425,19 @@
             </q-item-section>
           </q-item>
 
-          <!-- Show collections on hover for Designer (only if collections exist) -->
-          <div
-            v-if="hoveredCategory === 'designer' && designerCollections.length > 0"
-            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
-          >
+          <!-- Show products for Designer -->
+          <div v-if="designerProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
             <q-item
-              v-for="collection in designerCollections"
-              :key="collection"
+              v-for="product in designerProductsList"
+              :key="product.id"
               clickable
               v-ripple
               dense
-              @click.stop="scrollToSection('designer-products-section', collection)"
-              class="collection-item"
+              @click.stop="$router.push(`/product/designer/${product.id}`)"
+              class="product-item"
             >
               <q-item-section>
-                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+                <q-item-label class="text-caption">{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
           </div>
@@ -456,9 +446,7 @@
           <q-item
             clickable
             v-ripple
-            @click="scrollToSection('specialty-products-section')"
-            @mouseenter="hoveredCategory = 'specialty'"
-            @mouseleave="hoveredCategory = null"
+            @click="$router.push('/products/specialty')"
             class="shop-category-item"
           >
             <q-item-section avatar>
@@ -470,22 +458,19 @@
             </q-item-section>
           </q-item>
 
-          <!-- Show collections on hover for Specialty (only if collections exist) -->
-          <div
-            v-if="hoveredCategory === 'specialty' && specialtyCollections.length > 0"
-            class="collection-submenu q-pl-xl q-pr-md q-pb-sm"
-          >
+          <!-- Show products for Specialty -->
+          <div v-if="specialtyProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
             <q-item
-              v-for="collection in specialtyCollections"
-              :key="collection"
+              v-for="product in specialtyProductsList"
+              :key="product.id"
               clickable
               v-ripple
               dense
-              @click.stop="scrollToSection('specialty-products-section', collection)"
-              class="collection-item"
+              @click.stop="$router.push(`/product/specialty/${product.id}`)"
+              class="product-item"
             >
               <q-item-section>
-                <q-item-label class="text-caption">{{ collection }}</q-item-label>
+                <q-item-label class="text-caption">{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
           </div>
@@ -801,155 +786,20 @@ export default {
 
     // Shop section state
     const products = ref([]);
-    const hoveredCategory = ref(null);
 
-    // Helper function to group products by collection
-    const groupProductsByCollection = (productList) => {
-      const grouped = {};
-      productList.forEach((product) => {
-        const collection = product.collection || 'Uncategorized';
-        if (!grouped[collection]) {
-          grouped[collection] = [];
-        }
-        grouped[collection].push(product);
-      });
-      return grouped;
-    };
-
-    // Computed collections for each category
-    // Returns collections, but filters out "Uncategorized" from the list
-    // If only "Uncategorized" exists (or no collections), return empty array (will show "Shop Products" instead)
-    const customCollections = computed(() => {
-      const customProducts = products.value.filter((p) => p.category === 'custom');
-      const grouped = groupProductsByCollection(customProducts);
-      const allCollections = Object.keys(grouped).sort();
-      // Filter out "Uncategorized" - only return actual named collections
-      const collections = allCollections.filter(c => c !== 'Uncategorized');
-      return collections;
+    // Computed product lists for each category
+    const customProductsList = computed(() => {
+      return products.value.filter((p) => p.category === 'custom');
     });
 
-    const designerCollections = computed(() => {
-      const designerProducts = products.value.filter((p) => p.category === 'designer');
-      const grouped = groupProductsByCollection(designerProducts);
-      const allCollections = Object.keys(grouped).sort();
-      // Filter out "Uncategorized" - only return actual named collections
-      const collections = allCollections.filter(c => c !== 'Uncategorized');
-      return collections;
+    const designerProductsList = computed(() => {
+      return products.value.filter((p) => p.category === 'designer');
     });
 
-    const specialtyCollections = computed(() => {
-      const specialtyProducts = products.value.filter((p) => p.category === 'specialty');
-      const grouped = groupProductsByCollection(specialtyProducts);
-      const allCollections = Object.keys(grouped).sort();
-      // Filter out "Uncategorized" - only return actual named collections
-      const collections = allCollections.filter(c => c !== 'Uncategorized');
-      return collections;
+    const specialtyProductsList = computed(() => {
+      return products.value.filter((p) => p.category === 'specialty');
     });
 
-    // Function to scroll to section on landing page, optionally to a specific collection
-    const scrollToSection = (sectionId, collectionName = null) => {
-      // Close drawer on mobile
-      leftDrawerOpen.value = false;
-
-      // Navigate to home page if not already there
-      if (route.path !== '/') {
-        router.push('/').then(() => {
-          // Wait for page to load and Vue to render, then scroll with retry
-          let attempts = 0;
-          const maxAttempts = 10;
-          const tryScroll = () => {
-            attempts++;
-            const element = findScrollTarget(sectionId, collectionName);
-            if (element || attempts >= maxAttempts) {
-              if (element) {
-                performScroll(element);
-              } else if (attempts >= maxAttempts) {
-                console.warn(`Could not find scroll target: ${sectionId}${collectionName ? ` - ${collectionName}` : ''}`);
-              }
-            } else {
-              // Retry after a short delay
-              setTimeout(tryScroll, 100);
-            }
-          };
-          setTimeout(tryScroll, 200);
-        });
-      } else {
-        // Already on home page, scroll with retry
-        let attempts = 0;
-        const maxAttempts = 10;
-        const tryScroll = () => {
-          attempts++;
-          const element = findScrollTarget(sectionId, collectionName);
-          if (element || attempts >= maxAttempts) {
-            if (element) {
-              performScroll(element);
-            } else if (attempts >= maxAttempts) {
-              console.warn(`Could not find scroll target: ${sectionId}${collectionName ? ` - ${collectionName}` : ''}`);
-            }
-          } else {
-            // Retry after a short delay
-            setTimeout(tryScroll, 50);
-          }
-        };
-        setTimeout(tryScroll, 50);
-      }
-    };
-
-    // Helper function to find the scroll target element
-    const findScrollTarget = (sectionId, collectionName = null) => {
-      if (collectionName) {
-        // Try to find the collection by data attribute
-        let element = document.querySelector(`[data-collection="${collectionName}"]`);
-
-        // If not found, try to find within the section by matching label text
-        if (!element) {
-          const section = document.querySelector(`.${sectionId}`);
-          if (section) {
-            // Look for q-expansion-item with matching label text
-            const expansionItems = section.querySelectorAll('.collection-group');
-            expansionItems.forEach((item) => {
-              // Try multiple selectors to find the label
-              const label = item.querySelector('.q-item__label, .q-expansion-item__header .q-item__label, [class*="q-expansion-item"] .q-item__label');
-              if (label && label.textContent.trim() === collectionName) {
-                element = item;
-              }
-            });
-          }
-        }
-        return element;
-      }
-
-      // If no collection specified, find section heading
-      const section = document.querySelector(`.${sectionId}`);
-      if (section) {
-        // Find the heading div (the one with text-h4 class containing the section title)
-        const heading = section.querySelector('.text-h4');
-        if (heading) {
-          return heading;
-        }
-        // Fallback to section itself
-        return section;
-      }
-      return null;
-    };
-
-    // Helper function to perform the actual scroll
-    const performScroll = (element) => {
-      if (!element) return;
-
-      // Calculate offset for fixed header (header is typically ~64px)
-      const headerOffset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-      // Ensure we can scroll to top (offsetPosition can be 0 or negative)
-      const finalPosition = Math.max(0, offsetPosition);
-
-      window.scrollTo({
-        top: finalPosition,
-        behavior: 'smooth'
-      });
-    };
 
 
     // Load products
@@ -1384,11 +1234,9 @@ export default {
       goToOnlineOrder,
       toggleCustomerMode,
       // Shop section
-      hoveredCategory,
-      customCollections,
-      designerCollections,
-      specialtyCollections,
-      scrollToSection,
+      customProductsList,
+      designerProductsList,
+      specialtyProductsList,
     };
   },
 };

@@ -19,6 +19,47 @@ const routes: RouteRecordRaw[] = [
       { path: 'thank-you', component: () => import('pages/ThankYouPage.vue') },
       { path: 'about', component: () => import('pages/AboutPage.vue') },
       {
+        path: 'products/custom',
+        component: () => import('pages/CustomProductsPage.vue'),
+      },
+      {
+        path: 'products/designer',
+        component: () => import('pages/DesignerProductsPage.vue'),
+      },
+      {
+        path: 'products/specialty',
+        component: () => import('pages/SpecialtyProductsPage.vue'),
+      },
+      {
+        path: 'product/:productType/:productId',
+        component: () => import('pages/ProductDetailPage.vue'),
+      },
+      {
+        path: 'contact-us',
+        component: () => import('pages/ContactUsPage.vue'),
+      },
+      {
+        path: 'shipping-info',
+        component: () => import('pages/ShippingInfoPage.vue'),
+      },
+      {
+        path: 'returns',
+        component: () => import('pages/ReturnsPage.vue'),
+      },
+      {
+        path: 'faq',
+        component: () => import('pages/FAQPage.vue'),
+      },
+      {
+        path: 'event-calendar',
+        component: () => import('pages/EventCalendarPage.vue'),
+      },
+      {
+        path: 'reviews-management',
+        component: () => import('pages/ReviewsManagementPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
         path: 'firebase-test',
         component: () => import('pages/FirebaseDiagnostic.vue'),
       },

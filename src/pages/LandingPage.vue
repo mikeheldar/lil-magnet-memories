@@ -159,480 +159,209 @@
         </div>
       </div>
 
-      <!-- Custom Products Section -->
-      <div class="custom-products-section q-mb-xl">
+      <!-- Product Type Links Section -->
+      <div class="product-links-section q-mb-xl">
         <div class="text-h4 text-center q-mb-lg text-primary">
-          Custom Photo Magnets
+          Shop Our Products
         </div>
-        <div class="text-body1 text-center text-grey-7 q-mb-xl">
-          Create personalized magnets from your own photos
-        </div>
-
-        <!-- Custom Products List -->
-        <div v-if="customProducts.length > 0" class="q-mb-xl">
-          <!-- Multiple collections: show in collapsible groups -->
-          <template v-if="Object.keys(customProductsByCollection).length > 1">
-            <q-expansion-item
-              v-for="(
-                productsInCollection, collectionName
-              ) in customProductsByCollection"
-              :key="collectionName"
-              :label="collectionName"
-              :caption="`${productsInCollection.length} product${
-                productsInCollection.length !== 1 ? 's' : ''
-              }`"
-              default-opened
-              class="collection-group q-mb-md"
-              :data-collection="collectionName"
-            >
-              <div class="q-col-gutter-md q-pt-md">
-                <div
-                  v-for="product in productsInCollection"
-                  :key="product.id"
-                  class="q-mb-md"
-                >
-                  <q-card class="product-card-row">
-                    <q-card-section class="row items-center q-gutter-md">
-                      <!-- Product Image (Left Side) -->
-                      <div class="col-auto">
-                        <div
-                          v-if="product.imageUrl"
-                          class="product-image-wrapper-small"
-                        >
-                          <img
-                            :src="product.imageUrl"
-                            :alt="product.description"
-                            class="product-image-small"
-                          />
-                        </div>
-                        <div v-else class="product-image-placeholder-small">
-                          <q-icon name="image" size="48px" color="grey-4" />
-                        </div>
-                      </div>
-
-                      <!-- Product Info (Right Side) -->
-                      <div class="col">
-                        <div class="text-h6 q-mb-sm">
-                          {{ product.description }}
-                        </div>
-
-                        <div
-                          v-if="product.detailedDescription"
-                          class="text-body2 text-grey-7 q-mb-sm"
-                        >
-                          {{ product.detailedDescription }}
-                        </div>
-
-                        <div class="product-pricing-inline q-mb-md">
-                          <div class="text-caption text-grey-8 q-mb-xs">
-                            Pricing:
-                          </div>
-                          <div
-                            v-for="(price, qty) in product.pricing"
-                            :key="qty"
-                            class="text-body2 q-mb-xs"
-                          >
-                            <strong>{{ qty }}x</strong> for
-                            <strong class="text-primary"
-                              >${{ price.toFixed(2) }}</strong
-                            >
-                          </div>
-                        </div>
-
-                        <q-btn
-                          color="primary"
-                          label="Start Creating Magnets"
-                          icon="camera_alt"
-                          @click="() => goToUpload(product)"
-                        />
-                      </div>
-                    </q-card-section>
-                  </q-card>
+        <div class="row q-col-gutter-md">
+          <div class="col-12 col-md-4">
+            <q-card class="product-link-card" @click="$router.push('/products/custom')">
+              <q-card-section class="text-center">
+                <q-icon name="camera_alt" size="64px" color="primary" class="q-mb-md" />
+                <div class="text-h6 q-mb-sm">Custom Photo Magnets</div>
+                <div class="text-body2 text-grey-7 q-mb-md">
+                  Create personalized magnets from your own photos
                 </div>
-              </div>
-            </q-expansion-item>
-          </template>
-          <!-- Single collection: show products directly -->
-          <div v-else class="q-col-gutter-md">
-            <div
-              v-for="product in customProducts"
-              :key="product.id"
-              class="q-mb-md"
-            >
-              <q-card class="product-card-row">
-                <q-card-section class="row items-center q-gutter-md">
-                  <!-- Product Image (Left Side) -->
-                  <div class="col-auto">
-                    <div
-                      v-if="product.imageUrl"
-                      class="product-image-wrapper-small"
-                    >
-                      <img
-                        :src="product.imageUrl"
-                        :alt="product.description"
-                        class="product-image-small"
-                      />
-                    </div>
-                    <div v-else class="product-image-placeholder-small">
-                      <q-icon name="image" size="48px" color="grey-4" />
-                    </div>
-                  </div>
-
-                  <!-- Product Info (Right Side) -->
-                  <div class="col">
-                    <div class="text-h6 q-mb-sm">
-                      {{ product.description }}
-                    </div>
-
-                    <div
-                      v-if="product.detailedDescription"
-                      class="text-body2 text-grey-7 q-mb-sm"
-                    >
-                      {{ product.detailedDescription }}
-                    </div>
-
-                    <div class="product-pricing-inline q-mb-md">
-                      <div class="text-caption text-grey-8 q-mb-xs">
-                        Pricing:
-                      </div>
-                      <div
-                        v-for="(price, qty) in product.pricing"
-                        :key="qty"
-                        class="text-body2 q-mb-xs"
-                      >
-                        <strong>{{ qty }}x</strong> for
-                        <strong class="text-primary"
-                          >${{ price.toFixed(2) }}</strong
-                        >
-                      </div>
-                    </div>
-
-                    <q-btn
-                      color="primary"
-                      label="Start Creating Magnets"
-                      icon="camera_alt"
-                      @click="() => goToUpload(product)"
-                    />
-                  </div>
-                </q-card-section>
-              </q-card>
-            </div>
+                <q-btn color="primary" label="Shop Now" outline />
+              </q-card-section>
+            </q-card>
+          </div>
+          <div class="col-12 col-md-4">
+            <q-card class="product-link-card" @click="$router.push('/products/designer')">
+              <q-card-section class="text-center">
+                <q-icon name="brush" size="64px" color="primary" class="q-mb-md" />
+                <div class="text-h6 q-mb-sm">Designer Magnets</div>
+                <div class="text-body2 text-grey-7 q-mb-md">
+                  Shop our collection of beautifully designed ready-made magnets
+                </div>
+                <q-btn color="primary" label="Shop Now" outline />
+              </q-card-section>
+            </q-card>
+          </div>
+          <div class="col-12 col-md-4">
+            <q-card class="product-link-card" @click="$router.push('/products/specialty')">
+              <q-card-section class="text-center">
+                <q-icon name="star" size="64px" color="primary" class="q-mb-md" />
+                <div class="text-h6 q-mb-sm">Specialty Products</div>
+                <div class="text-body2 text-grey-7 q-mb-md">
+                  Discover our unique specialty magnet products
+                </div>
+                <q-btn color="primary" label="Shop Now" outline />
+              </q-card-section>
+            </q-card>
           </div>
         </div>
       </div>
 
-      <!-- Designer Magnets Section -->
-      <div class="designer-products-section q-mb-xl">
+      <!-- Reviews Section -->
+      <div class="reviews-section q-mb-xl">
         <div class="text-h4 text-center q-mb-lg text-primary">
-          Designer Magnets
+          What Our Customers Say
         </div>
-        <div class="text-body1 text-center text-grey-7 q-mb-lg">
-          Shop our collection of beautifully designed ready-made magnets
+        <div v-if="loadingReviews" class="text-center q-pa-lg">
+          <q-spinner-dots size="40px" color="primary" />
+          <div class="q-mt-md text-grey-6">Loading reviews...</div>
         </div>
-
-        <div v-if="designerProducts.length > 0" class="q-mb-xl">
-          <!-- Multiple collections: show in collapsible groups -->
-          <template v-if="Object.keys(designerProductsByCollection).length > 1">
-            <q-expansion-item
-              v-for="(
-                productsInCollection, collectionName
-              ) in designerProductsByCollection"
-              :key="collectionName"
-              :label="collectionName"
-              :caption="`${productsInCollection.length} product${
-                productsInCollection.length !== 1 ? 's' : ''
-              }`"
-              default-opened
-              class="collection-group q-mb-md"
-              :data-collection="collectionName"
-            >
-              <div class="row q-col-gutter-md q-pt-md">
-                <div
-                  v-for="product in productsInCollection"
-                  :key="product.id"
-                  class="col-12 col-md-6 col-lg-4"
-                >
-                  <q-card class="product-card">
-                    <q-card-section class="product-card-content text-center">
-                      <div
-                        v-if="product.imageUrl"
-                        class="product-image-wrapper"
-                      >
-                        <img
-                          :src="product.imageUrl"
-                          :alt="product.description"
-                          class="product-image"
-                        />
-                      </div>
-                      <div v-else class="product-image-placeholder">
-                        <q-icon name="image" size="64px" color="grey-4" />
-                      </div>
-                      <div class="text-h6 q-mt-md q-mb-sm">
-                        {{ product.description }}
-                      </div>
-
-                      <div
-                        v-if="product.detailedDescription"
-                        class="product-description"
-                      >
-                        <div class="text-body2 text-grey-7">
-                          {{ product.detailedDescription }}
-                        </div>
-                      </div>
-
-                      <div class="product-pricing">
-                        <div class="text-caption text-grey-8 q-mb-sm">
-                          Pricing:
-                        </div>
-                        <div
-                          v-for="(price, qty) in product.pricing"
-                          :key="qty"
-                          class="text-body2 q-mb-xs"
-                        >
-                          <strong>{{ qty }}x</strong> for
-                          <strong class="text-primary"
-                            >${{ price.toFixed(2) }}</strong
-                          >
-                        </div>
-                      </div>
-                    </q-card-section>
-
-                    <q-card-actions class="product-card-actions q-pa-md">
-                      <q-btn
-                        color="secondary"
-                        label="Add to Cart"
-                        icon="add_shopping_cart"
-                        class="full-width"
-                        @click="addProductToCart(product)"
-                      />
-                    </q-card-actions>
-                  </q-card>
-                </div>
-              </div>
-            </q-expansion-item>
-          </template>
-          <!-- Single collection: show products directly -->
-          <div v-else class="row q-col-gutter-md">
-            <div
-              v-for="product in designerProducts"
-              :key="product.id"
-              class="col-12 col-md-6 col-lg-4"
-            >
-              <q-card class="product-card">
-                <q-card-section class="product-card-content text-center">
-                  <div v-if="product.imageUrl" class="product-image-wrapper">
-                    <img
-                      :src="product.imageUrl"
-                      :alt="product.description"
-                      class="product-image"
-                    />
-                  </div>
-                  <div v-else class="product-image-placeholder">
-                    <q-icon name="image" size="64px" color="grey-4" />
-                  </div>
-                  <div class="text-h6 q-mt-md q-mb-sm">
-                    {{ product.description }}
-                  </div>
-
-                  <div
-                    v-if="product.detailedDescription"
-                    class="product-description"
-                  >
-                    <div class="text-body2 text-grey-7">
-                      {{ product.detailedDescription }}
-                    </div>
-                  </div>
-
-                  <div class="product-pricing">
-                    <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                    <div
-                      v-for="(price, qty) in product.pricing"
-                      :key="qty"
-                      class="text-body2 q-mb-xs"
-                    >
-                      <strong>{{ qty }}x</strong> for
-                      <strong class="text-primary"
-                        >${{ price.toFixed(2) }}</strong
-                      >
-                    </div>
-                  </div>
-                </q-card-section>
-
-                <q-card-actions class="product-card-actions q-pa-md">
-                  <q-btn
-                    color="secondary"
-                    label="Add to Cart"
-                    icon="add_shopping_cart"
-                    class="full-width"
-                    @click="addProductToCart(product)"
-                  />
-                </q-card-actions>
-              </q-card>
-            </div>
-          </div>
-        </div>
-        <div v-else class="text-center text-grey-6 q-mb-xl">
-          No designer magnets available at this time.
-        </div>
-      </div>
-
-      <!-- Specialty Products Section -->
-      <div class="specialty-products-section q-mb-xl">
-        <div class="text-h4 text-center q-mb-lg text-primary">
-          Specialty Products
-        </div>
-        <div class="text-body1 text-center text-grey-7 q-mb-lg">
-          Discover our unique specialty magnet products
-        </div>
-
-        <div v-if="specialtyProducts.length > 0" class="q-mb-xl">
-          <!-- Multiple collections: show in collapsible groups -->
-          <template
-            v-if="Object.keys(specialtyProductsByCollection).length > 1"
+        <div v-else-if="reviews.length > 0" class="row q-col-gutter-md">
+          <div
+            v-for="review in reviews"
+            :key="review.id"
+            class="col-12 col-sm-6 col-md-4 col-lg-3"
           >
-            <q-expansion-item
-              v-for="(
-                productsInCollection, collectionName
-              ) in specialtyProductsByCollection"
-              :key="collectionName"
-              :label="collectionName"
-              :caption="`${productsInCollection.length} product${
-                productsInCollection.length !== 1 ? 's' : ''
-              }`"
-              default-opened
-              class="collection-group q-mb-md"
-              :data-collection="collectionName"
-            >
-              <div class="row q-col-gutter-md q-pt-md">
-                <div
-                  v-for="product in productsInCollection"
-                  :key="product.id"
-                  class="col-12 col-md-6 col-lg-4"
-                >
-                  <q-card class="product-card">
-                    <q-card-section class="text-center">
-                      <div
-                        v-if="product.imageUrl"
-                        class="product-image-wrapper"
-                      >
-                        <img
-                          :src="product.imageUrl"
-                          :alt="product.description"
-                          class="product-image"
-                        />
-                      </div>
-                      <div v-else class="product-image-placeholder">
-                        <q-icon name="image" size="64px" color="grey-4" />
-                      </div>
-                      <div class="text-h6 q-mt-md q-mb-sm">
-                        {{ product.description }}
-                      </div>
-                    </q-card-section>
-
-                    <q-card-section
-                      v-if="product.detailedDescription"
-                      class="product-description"
-                    >
-                      <div class="text-body2 text-grey-7">
-                        {{ product.detailedDescription }}
-                      </div>
-                    </q-card-section>
-
-                    <q-card-section class="product-pricing">
-                      <div class="text-caption text-grey-8 q-mb-sm">
-                        Pricing:
-                      </div>
-                      <div
-                        v-for="(price, qty) in product.pricing"
-                        :key="qty"
-                        class="text-body2 q-mb-xs"
-                      >
-                        <strong>{{ qty }}x</strong> for
-                        <strong class="text-primary"
-                          >${{ price.toFixed(2) }}</strong
-                        >
-                      </div>
-                    </q-card-section>
-
-                    <q-card-actions class="q-pa-md">
-                      <q-btn
-                        color="primary"
-                        label="Add to Cart"
-                        icon="add_shopping_cart"
-                        class="full-width"
-                        @click="addProductToCart(product)"
-                      />
-                    </q-card-actions>
-                  </q-card>
-                </div>
-              </div>
-            </q-expansion-item>
-          </template>
-          <!-- Single collection: show products directly -->
-          <div v-else class="row q-col-gutter-md">
-            <div
-              v-for="product in specialtyProducts"
-              :key="product.id"
-              class="col-12 col-md-6 col-lg-4"
-            >
-              <q-card class="product-card">
-                <q-card-section class="text-center">
-                  <div v-if="product.imageUrl" class="product-image-wrapper">
-                    <img
-                      :src="product.imageUrl"
-                      :alt="product.description"
-                      class="product-image"
+            <q-card class="review-card">
+              <q-card-section>
+                <div class="row items-center q-mb-sm">
+                  <q-avatar
+                    v-if="review.profilePicture"
+                    :src="review.profilePicture"
+                    size="48px"
+                    class="q-mr-sm"
+                  />
+                  <q-avatar
+                    v-else
+                    color="primary"
+                    text-color="white"
+                    size="48px"
+                    class="q-mr-sm"
+                  >
+                    {{ review.customerName.charAt(0).toUpperCase() }}
+                  </q-avatar>
+                  <div class="col">
+                    <div class="text-weight-bold">{{ review.customerName }}</div>
+                    <q-rating
+                      :model-value="review.rating || 5"
+                      :max="5"
+                      size="16px"
+                      readonly
+                      color="primary"
                     />
                   </div>
-                  <div v-else class="product-image-placeholder">
-                    <q-icon name="image" size="64px" color="grey-4" />
-                  </div>
-                  <div class="text-h6 q-mt-md q-mb-sm">
-                    {{ product.description }}
-                  </div>
-                </q-card-section>
-
-                <q-card-section
-                  v-if="product.detailedDescription"
-                  class="product-description"
+                </div>
+                <div class="text-body2 text-grey-8 q-mb-sm">
+                  {{ review.reviewText }}
+                </div>
+                <q-chip
+                  v-if="review.isVerified"
+                  color="green"
+                  text-color="white"
+                  size="sm"
+                  icon="verified"
                 >
-                  <div class="text-body2 text-grey-7">
-                    {{ product.detailedDescription }}
-                  </div>
-                </q-card-section>
-
-                <q-card-section class="product-pricing">
-                  <div class="text-caption text-grey-8 q-mb-sm">Pricing:</div>
-                  <div
-                    v-for="(price, qty) in product.pricing"
-                    :key="qty"
-                    class="text-body2 q-mb-xs"
-                  >
-                    <strong>{{ qty }}x</strong> for
-                    <strong class="text-primary"
-                      >${{ price.toFixed(2) }}</strong
-                    >
-                  </div>
-                </q-card-section>
-
-                <q-card-actions class="q-pa-md">
-                  <q-btn
-                    color="primary"
-                    label="Add to Cart"
-                    icon="add_shopping_cart"
-                    class="full-width"
-                    @click="addProductToCart(product)"
-                  />
-                </q-card-actions>
-              </q-card>
-            </div>
+                  Verified Customer
+                </q-chip>
+              </q-card-section>
+            </q-card>
           </div>
         </div>
-        <div v-else class="text-center text-grey-6 q-mb-xl">
-          No specialty products available at this time.
+        <div v-else class="text-center text-grey-6 q-pa-xl">
+          No reviews yet. Be the first to leave a review!
         </div>
       </div>
     </div>
+
+    <!-- Footer Section -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        <div class="row q-col-gutter-lg">
+          <!-- Brand Column -->
+          <div class="col-12 col-md-3">
+            <img
+              src="/assets/lil-magnet-memories-logo.png"
+              alt="Li'l Magnet Memories Logo"
+              class="footer-logo q-mb-md"
+            />
+            <div class="text-h6 text-white q-mb-sm">Li'l Magnet Memories</div>
+            <div class="text-body2 text-grey-3">
+              Turning your precious moments into beautiful, lasting memories
+              since 2025
+            </div>
+          </div>
+
+          <!-- Shop Column -->
+          <div class="col-12 col-md-3">
+            <div class="text-h6 text-white q-mb-md">Shop</div>
+            <div class="q-gutter-sm">
+              <div>
+                <router-link to="/products/custom" class="footer-link"
+                  >Custom Photo Magnets</router-link
+                >
+              </div>
+              <div>
+                <router-link to="/products/designer" class="footer-link"
+                  >Designer Magnets</router-link
+                >
+              </div>
+              <div>
+                <router-link to="/products/specialty" class="footer-link"
+                  >Specialty Products</router-link
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Support Column -->
+          <div class="col-12 col-md-3">
+            <div class="text-h6 text-white q-mb-md">Support</div>
+            <div class="q-gutter-sm">
+              <div>
+                <router-link to="/contact-us" class="footer-link"
+                  >Contact Us</router-link
+                >
+              </div>
+              <div>
+                <router-link to="/shipping-info" class="footer-link"
+                  >Shipping Info</router-link
+                >
+              </div>
+              <div>
+                <router-link to="/returns" class="footer-link">Returns</router-link>
+              </div>
+              <div>
+                <router-link to="/faq" class="footer-link">FAQ</router-link>
+              </div>
+            </div>
+          </div>
+
+          <!-- Follow Us Column -->
+          <div class="col-12 col-md-3">
+            <div class="text-h6 text-white q-mb-md">Follow Us</div>
+            <div class="q-gutter-sm q-mb-md">
+              <a
+                href="https://www.instagram.com/lilmagnetmemories"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="footer-social-link"
+              >
+                <q-icon name="camera_alt" size="24px" />
+                <span class="q-ml-sm">Instagram</span>
+              </a>
+              <a href="mailto:info@lilmagnetmemories.com" class="footer-social-link">
+                <q-icon name="email" size="24px" />
+                <span class="q-ml-sm">Email</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="footer-bottom q-mt-lg q-pt-lg">
+          <div class="text-body2 text-grey-4 text-center">
+            © 2025 Li'l Magnet Memories. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <!-- Market Event Dialog -->
     <q-dialog v-model="showMarketEventDialog" persistent>
@@ -677,7 +406,6 @@ import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
-import { useCart } from '../composables/useCart.js';
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { userPreferencesService } from '../services/userPreferencesService.js';
@@ -693,8 +421,8 @@ export default {
     const signingIn = ref(false);
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
-    const products = ref([]);
-    const { addToCart } = useCart();
+    const reviews = ref([]);
+    const loadingReviews = ref(true);
     const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
       useCustomerType();
 
@@ -998,106 +726,18 @@ export default {
       pendingProduct.value = null;
     };
 
-    const addProductToCart = (product) => {
-      addToCart(product, 1);
-      safeNotify({
-        type: 'positive',
-        message: 'Added to cart!',
-        caption: product.description,
-        position: 'top',
-        icon: 'add_shopping_cart',
-        timeout: 2000,
-      });
-    };
-
-    const loadProducts = async (retryCount = 0) => {
-      const maxRetries = 3;
+    const loadReviews = async () => {
+      loadingReviews.value = true;
       try {
-        // Non-admins should not see testing products
-        const isAdmin = authService.isAdmin();
-        const productsData = await firebaseService.getProducts(isAdmin);
-
-        if (productsData && productsData.length > 0) {
-          products.value = productsData;
-          console.log(`✅ Loaded ${productsData.length} products`);
-        } else {
-          // If no products returned, retry if we haven't exceeded max retries
-          if (retryCount < maxRetries) {
-            console.log(
-              `⚠️ No products returned, retrying (${
-                retryCount + 1
-              }/${maxRetries})...`
-            );
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000 * (retryCount + 1))
-            );
-            return loadProducts(retryCount + 1);
-          } else {
-            console.warn('⚠️ No products found after retries');
-            products.value = [];
-          }
-        }
+        const reviewsData = await firebaseService.getReviews();
+        reviews.value = reviewsData || [];
       } catch (error) {
-        console.error('Error loading products:', error);
-        // Retry on error if we haven't exceeded max retries
-        if (retryCount < maxRetries) {
-          console.log(
-            `⚠️ Error loading products, retrying (${
-              retryCount + 1
-            }/${maxRetries})...`
-          );
-          await new Promise((resolve) =>
-            setTimeout(resolve, 1000 * (retryCount + 1))
-          );
-          return loadProducts(retryCount + 1);
-        } else {
-          console.error('❌ Failed to load products after retries');
-          products.value = [];
-        }
+        console.error('Error loading reviews:', error);
+        reviews.value = [];
+      } finally {
+        loadingReviews.value = false;
       }
     };
-
-    // Helper function to group products by collection (must be defined before use)
-    const groupProductsByCollection = (productList) => {
-      if (!productList || !Array.isArray(productList)) {
-        return {};
-      }
-      const grouped = {};
-      productList.forEach((product) => {
-        const collection = product.collection || 'Uncategorized';
-        if (!grouped[collection]) {
-          grouped[collection] = [];
-        }
-        grouped[collection].push(product);
-      });
-      return grouped;
-    };
-
-    // Separate products by category
-    const customProducts = computed(() => {
-      return products.value.filter((p) => p.category === 'custom');
-    });
-
-    const designerProducts = computed(() => {
-      return products.value.filter((p) => p.category === 'designer');
-    });
-
-    const specialtyProducts = computed(() => {
-      return products.value.filter((p) => p.category === 'specialty');
-    });
-
-    // Group products by collection for each category
-    const customProductsByCollection = computed(() => {
-      return groupProductsByCollection(customProducts.value);
-    });
-
-    const designerProductsByCollection = computed(() => {
-      return groupProductsByCollection(designerProducts.value);
-    });
-
-    const specialtyProductsByCollection = computed(() => {
-      return groupProductsByCollection(specialtyProducts.value);
-    });
 
     // Reactive ref to trigger updates when market events change
     const marketEventCheckTrigger = ref(0);
@@ -1207,10 +847,8 @@ export default {
         }
       });
 
-      // Load products with retry logic
-      loadProducts().catch((err) => {
-        console.error('Failed to load products:', err);
-      });
+      // Load reviews
+      loadReviews();
 
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
@@ -1268,13 +906,8 @@ export default {
       signingIn,
       isAuthenticated,
       isAdmin,
-      products,
-      customProducts,
-      designerProducts,
-      specialtyProducts,
-      customProductsByCollection,
-      designerProductsByCollection,
-      specialtyProductsByCollection,
+      reviews,
+      loadingReviews,
       hasActiveEvent,
       activeMarketEventName,
       activeMarketEventLink,
@@ -1291,7 +924,6 @@ export default {
       goToOrdersList,
       goToMyOrders,
       goToUpload,
-      addProductToCart,
       confirmAtMarketEvent,
       goToOnlineOrder,
       goToImage,
@@ -2319,5 +1951,80 @@ export default {
     border-radius: 20px !important; // Rounded background
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important; // Stronger shadow for visibility
   }
+}
+
+// Product Links Section
+.product-links-section {
+  margin-top: 3rem;
+}
+
+.product-link-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 100%;
+}
+
+.product-link-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+// Reviews Section
+.reviews-section {
+  margin-top: 3rem;
+}
+
+.review-card {
+  background: #f3e5f5;
+  height: 100%;
+  border-radius: 12px;
+}
+
+// Footer Section
+.site-footer {
+  background: #30343f;
+  color: white;
+  margin-top: 4rem;
+  padding: 3rem 0 1.5rem;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.footer-logo {
+  height: 50px;
+  width: auto;
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: white;
+}
+
+.footer-social-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s;
+}
+
+.footer-social-link:hover {
+  color: white;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 </style>
