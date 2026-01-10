@@ -1798,10 +1798,11 @@ export default {
   opacity: 1 !important;
 }
 
-// Old image slides completely off-screen to the left - removed 2.5% offset to ensure it fully exits
+// Old image slides completely off-screen to the left (maintaining its Ken Burns end state)
+// Account for Ken Burns pan (+2.5%) and scale (1.12) - need extra distance to fully exit
 .slide-leave-to {
   animation: none !important;
-  transform: translateX(calc(-50% - 100vw)) translateY(calc(-50% + 2%)) scale(1.12) !important;
+  transform: translateX(calc(-50% - 120vw)) translateY(calc(-50% + 2%)) scale(1.12) !important;
   opacity: 1 !important;
 }
 
