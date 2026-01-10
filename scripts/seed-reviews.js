@@ -1,23 +1,41 @@
+#!/usr/bin/env node
+
 /**
  * Script to seed initial customer reviews into Firebase Firestore
  * Run with: node scripts/seed-reviews.js
+ * 
+ * Set TEST_SERVICE_ACCOUNT_PATH environment variable to use service account,
+ * or use default credentials (gcloud auth application-default login)
  */
 
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
-import { config } from '../src/config/environment.js';
+const admin = require('firebase-admin');
+const fs = require('fs');
 
-const firebaseConfig = {
-  apiKey: config.firebase.apiKey,
-  authDomain: config.firebase.authDomain,
-  projectId: config.firebase.projectId,
-  storageBucket: config.firebase.storageBucket,
-  messagingSenderId: config.firebase.messagingSenderId,
-  appId: config.firebase.appId,
-};
+// Project ID - defaults to test, can be overridden with PROJECT_ID env var
+const PROJECT_ID = process.env.PROJECT_ID || 'lil-magnet-memories-test';
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Initialize Firebase Admin
+function initAdmin() {
+  // Try to use service account if available
+  const serviceAccountPath = process.env.SERVICE_ACCOUNT_PATH || process.env.TEST_SERVICE_ACCOUNT_PATH;
+  
+  if (serviceAccountPath && fs.existsSync(serviceAccountPath)) {
+    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    return admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: PROJECT_ID,
+    });
+  } else {
+    // Use default credentials (for local development with gcloud auth)
+    console.log('Using default credentials (gcloud auth application-default login)');
+    return admin.initializeApp({
+      projectId: PROJECT_ID,
+    });
+  }
+}
+
+const app = initAdmin();
+const db = app.firestore();
 
 const reviews = [
   {
@@ -45,48 +63,46 @@ async function seedReviews() {
     console.log('Starting to seed reviews...');
 
     // Check if reviews already exist
-    const reviewsCollection = collection(db, 'reviews');
-    const existingReviews = await getDocs(reviewsCollection);
+    const reviewsCollection = db.collection('reviews');
+    const existingReviewsSnapshot = await reviewsCollection.get();
     
-    if (existingReviews.size > 0) {
-      console.log(`Found ${existingReviews.size} existing reviews. Checking for duplicates...`);
+    if (existingReviewsSnapshot.size > 0) {
+      console.log(`Found ${existingReviewsSnapshot.size} existing reviews. Checking for duplicates...`);
       
       // Check each review to see if it already exists
       for (const review of reviews) {
-        const existingQuery = query(
-          reviewsCollection,
-          where('customerName', '==', review.customerName),
-          where('reviewText', '==', review.reviewText)
-        );
-        const existing = await getDocs(existingQuery);
+        const existingQuery = await reviewsCollection
+          .where('customerName', '==', review.customerName)
+          .where('reviewText', '==', review.reviewText)
+          .get();
         
-        if (existing.size > 0) {
+        if (existingQuery.size > 0) {
           console.log(`Review from ${review.customerName} already exists, skipping...`);
         } else {
-          const docRef = await addDoc(reviewsCollection, {
+          const docRef = await reviewsCollection.add({
             ...review,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
-          console.log(`Added review from ${review.customerName} with ID: ${docRef.id}`);
+          console.log(`✅ Added review from ${review.customerName} with ID: ${docRef.id}`);
         }
       }
     } else {
       // No reviews exist, add all of them
       for (const review of reviews) {
-        const docRef = await addDoc(reviewsCollection, {
+        const docRef = await reviewsCollection.add({
           ...review,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
-        console.log(`Added review from ${review.customerName} with ID: ${docRef.id}`);
+        console.log(`✅ Added review from ${review.customerName} with ID: ${docRef.id}`);
       }
     }
 
-    console.log('Reviews seeding completed successfully!');
+    console.log('✅ Reviews seeding completed successfully!');
     process.exit(0);
   } catch (error) {
-    console.error('Error seeding reviews:', error);
+    console.error('❌ Error seeding reviews:', error);
     process.exit(1);
   }
 }
