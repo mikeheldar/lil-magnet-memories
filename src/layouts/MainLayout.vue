@@ -1478,13 +1478,6 @@ export default {
   // Don't force visibility - let v-show control it
   visibility: visible;
 
-<<<<<<< HEAD
-  // When header is hidden, drawer header fill is at top (0), so menu starts at drawer header fill height
-  &.header-hidden {
-    top: 84px !important; // Below drawer header fill (84px on small)
-    max-height: calc(100vh - 84px) !important;
-  }
-
   // Ensure the q-list inside always starts at the top
   .q-list {
     margin-top: 0 !important;
