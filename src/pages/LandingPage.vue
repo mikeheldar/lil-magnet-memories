@@ -2075,6 +2075,8 @@ export default {
   align-items: center;
   width: 100%;
   aspect-ratio: 1 / 1;
+  max-width: 400px;
+  max-height: 400px;
   margin-bottom: 16px;
   overflow: hidden;
   background: #f5f5f5;
