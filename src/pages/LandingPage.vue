@@ -761,14 +761,16 @@ export default {
       }
     };
 
-    // Reset and start panning animation when image changes
+    // Reset and start Ken Burns panning animation when image changes
     const resetPanningAnimation = () => {
+      // Reset the panning state first
       isImagePanning.value = false;
       // Use nextTick to ensure DOM update before starting animation
       nextTick(() => {
+        // Small delay to ensure image is fully loaded and rendered
         setTimeout(() => {
-          isImagePanning.value = true;
-        }, 100); // Small delay to ensure image is loaded
+          isImagePanning.value = true; // Start the Ken Burns panning effect
+        }, 150); // Slightly longer delay to ensure image is ready
       });
     };
 
@@ -1236,14 +1238,15 @@ export default {
       // Start panning animation for initial image
       resetPanningAnimation();
 
-      // Rotate easel images every 8 seconds (longer to allow panning animation to complete)
+      // Rotate easel images every 8 seconds
+      // 7s for Ken Burns panning effect + 1s for slide transition
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
-          // Panning animation will restart automatically via watch
-        }, 8000); // 8 seconds to allow 7s panning + 1s transition
+          // Ken Burns panning animation will restart automatically via watch when image changes
+        }, 8000); // 8 seconds total: 7s panning + 1s slide transition
       }
     });
 
@@ -1703,17 +1706,28 @@ export default {
   left: 0;
 }
 
-// Panning animation - slowly move from top-left down and to the right
+// Ken Burns effect - smooth panning animation while image is displayed
+// Pans down and to the right gradually before the next slide transition
 .easel-image.image-panning {
   animation: panImage 7s ease-in-out forwards;
+  will-change: object-position; // Optimize animation performance
 }
 
 @keyframes panImage {
   0% {
-    object-position: top left; // Start at top-left
+    object-position: 0% 0%; // Start at top-left (beginning of image)
+  }
+  25% {
+    object-position: 10% 10%; // Gradual movement down and right
+  }
+  50% {
+    object-position: 18% 20%; // Continue panning down and right
+  }
+  75% {
+    object-position: 25% 28%; // More pronounced movement
   }
   100% {
-    object-position: bottom right; // End at bottom-right (down and to the right)
+    object-position: 30% 35%; // End down and to the right (noticeable Ken Burns effect)
   }
 }
 
