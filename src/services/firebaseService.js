@@ -284,10 +284,13 @@ class FirebaseService {
         let lastProgressUpdate = Date.now();
         let lastBytesTransferred = 0;
         
+        // On retry, get a fresh storage instance to ensure clean session
+        const currentStorageInstance = retryCount > 0 ? getStorage(getApp()) : storageInstance;
+        
         // Add a small random suffix on retry to avoid conflicts
         const fileNameSuffix = retryCount > 0 ? `_retry${retryCount}_${Math.random().toString(36).substring(2, 8)}` : '';
         const fileName = `orders/${timestamp}_${i}_${sanitizedName}${fileNameSuffix}`;
-        const storageRef = ref(storageInstance, fileName);
+        const storageRef = ref(currentStorageInstance, fileName);
 
         try {
           if (retryCount > 0) {
@@ -413,26 +416,8 @@ class FirebaseService {
                     // Ignore cancel errors - task might already be in error state
                   }
                   
-                  // Refresh auth token before retry (fire and forget - don't await in callback)
-                  const refreshToken = async () => {
-                    try {
-                      const currentUser = auth?.currentUser;
-                      if (currentUser && currentUser.getIdToken) {
-                        await currentUser.getIdToken(true); // Force refresh
-                        console.log('✅ Auth token refreshed before retry');
-                      } else if (!currentUser || (currentUser && currentUser.isAnonymous)) {
-                        // Re-authenticate if no user or anonymous
-                        await signInAnonymously(auth);
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        console.log('✅ Re-authenticated before retry');
-                      }
-                    } catch (tokenError) {
-                      console.warn('⚠️ Failed to refresh auth token, proceeding with retry anyway:', tokenError);
-                    }
-                  };
-                  refreshToken(); // Fire and forget - don't await in callback
-                  
                   // Reject with a special flag that we can catch and retry
+                  // Token refresh will happen in catch block where we can await it
                   reject({ ...err, shouldRetry: true, isPreconditionFailed: true, httpStatus: httpStatus });
                 } else {
                   reject(err);
@@ -512,17 +497,20 @@ class FirebaseService {
             try {
               const currentUser = auth?.currentUser;
               if (currentUser && currentUser.getIdToken) {
-                await currentUser.getIdToken(true); // Force refresh
-                console.log('✅ Auth token refreshed before retry');
-              } else if (!currentUser || currentUser.isAnonymous) {
+                const token = await currentUser.getIdToken(true); // Force refresh
+                console.log('✅ Auth token refreshed before retry', token ? 'token obtained' : 'no token');
+              } else if (!currentUser || (currentUser && currentUser.isAnonymous)) {
                 // Re-authenticate if no user or anonymous
-                await signInAnonymously(auth);
-                await new Promise(resolve => setTimeout(resolve, 100));
-                console.log('✅ Re-authenticated before retry');
+                const userCredential = await signInAnonymously(auth);
+                await new Promise(resolve => setTimeout(resolve, 200)); // Wait longer for auth to propagate
+                console.log('✅ Re-authenticated before retry, new user:', userCredential?.user?.uid);
               }
             } catch (tokenError) {
               console.warn('⚠️ Failed to refresh auth token, proceeding with retry anyway:', tokenError);
             }
+            
+            // Get a fresh storage instance after token refresh to ensure clean session
+            const freshStorageInstance = getStorage(getApp());
             
             // Reset progress tracking for retry
             const photoProgress = progressMap.get(i);
