@@ -1786,11 +1786,7 @@ export default {
   opacity: 1 !important;
 }
 
-<<<<<<< HEAD
-// New image slides to center (Ken Burns start position - matches exactly)
-=======
 // New image slides to center (Ken Burns start position - matches base transform exactly)
->>>>>>> 26aebb3 (fix: prevent jump after slide transition by matching transforms and avoiding state toggle)
 .slide-enter-to {
   animation: none !important;
   transform: translateX(-50%) translateY(-50%) !important;
