@@ -7,8 +7,8 @@
 
 /* Default header - Jet Black from design system */
 .q-header {
-  background: #363946 !important; /* Jet Black from design system (header stays Jet Black) */
-  background-color: #363946 !important;
+  background: #30343F !important; /* Jet Black from Moonlight Glow palette */
+  background-color: #30343F !important;
   min-height: 84px !important; /* Default 84px for small screens */
 
   // On medium+ screens, reduce height to 64px
@@ -103,12 +103,12 @@ body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *,
   background: #ffffff !important;
 }
 
-/* Default buttons - Cool Steel from design system */
+/* Default buttons - Jet Black from Moonlight Glow palette */
 body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #819595 !important; /* Cool Steel from design system */
+  background: #30343F !important; /* Jet Black from Moonlight Glow palette */
   color: #ffffff !important;
-  border: 1px solid #819595 !important;
+  border: 1px solid #30343F !important;
   border-radius: 10px !important;
 }
 
@@ -147,16 +147,16 @@ a.text-primary,
   letter-spacing: -0.02em !important;
 }
 
-/* Clean, elegant buttons - Cool Steel from design system */
+/* Clean, elegant buttons - Jet Black from Moonlight Glow palette */
 body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #819595 !important; /* Cool Steel from design system */
+  background: #30343F !important; /* Jet Black from Moonlight Glow palette */
   color: #ffffff !important;
-  border: 1px solid #819595 !important;
+  border: 1px solid #30343F !important;
   border-radius: 10px !important;
   filter: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -169,19 +169,19 @@ body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-but
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover {
-  background: #696773 !important; /* Dim Grey (darker) from design system on hover */
-  border-color: #696773 !important;
+  background: #273469 !important; /* Twilight Indigo from Moonlight Glow palette on hover */
+  border-color: #273469 !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   filter: none !important;
 }
 
-/* Clean q-file buttons - Cool Steel from design system */
+/* Clean q-file buttons - Jet Black from Moonlight Glow palette */
 .q-file .q-field__control .q-btn,
 .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-  background: #819595 !important; /* Cool Steel from design system */
+  background: #30343F !important; /* Jet Black from Moonlight Glow palette */
   color: #ffffff !important;
-  border: 1px solid #819595 !important;
+  border: 1px solid #30343F !important;
   border-radius: 10px !important;
   filter: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -189,8 +189,8 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 
 .q-file .q-field__control .q-btn:hover,
 .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):hover {
-  background: #696773 !important; /* Dim Grey from design system on hover */
-  border-color: #696773 !important;
+  background: #273469 !important; /* Twilight Indigo from Moonlight Glow palette on hover */
+  border-color: #273469 !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   filter: none !important;
@@ -209,8 +209,8 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 }
 
 .carousel-dot.dot-active {
-  background: #363946 !important; /* Jet Black from design system */
-  border-color: #363946 !important;
+  background: #30343F !important; /* Jet Black from Moonlight Glow palette */
+  border-color: #30343F !important;
   box-shadow: none !important;
 }
 
@@ -283,10 +283,10 @@ body .q-btn {
     border-radius: 30px !important; // Override Quasar's default rounded border-radius (typically 28px) - very rounded for testing
   }
 
-  // Primary buttons - Cool Steel from design system
+  // Primary buttons - Jet Black from Moonlight Glow palette
   &[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
   &.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-    background: #819595 !important; // Cool Steel from design system
+    background: #30343F !important; // Jet Black from Moonlight Glow palette
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
@@ -299,7 +299,7 @@ body .q-btn {
     transition: all 0.2s ease !important; // Smooth transitions
 
     &:hover {
-      background: #696773 !important; // Dim Grey from design system on hover
+      background: #273469 !important; // Twilight Indigo from Moonlight Glow palette on hover
       opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important; // Slightly transparent border on hover
       transform: translateY(-2px);
@@ -311,10 +311,10 @@ body .q-btn {
     }
   }
 
-  // Secondary buttons - Cool Steel from design system
+  // Secondary buttons - Jet Black from Moonlight Glow palette
   &[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
   &.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-    background: #819595 !important; // Cool Steel from design system
+    background: #30343F !important; // Jet Black from Moonlight Glow palette
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
@@ -327,7 +327,7 @@ body .q-btn {
     transition: all 0.2s ease !important; // Smooth transitions
 
     &:hover {
-      background: #696773 !important; // Dim Grey from design system on hover
+      background: #273469 !important; // Twilight Indigo from Moonlight Glow palette on hover
       opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important; // Slightly transparent border on hover
       transform: translateY(-2px);
@@ -343,7 +343,7 @@ body .q-btn {
 // Also target buttons using Quasar's internal color classes with higher specificity
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #819595 !important; // Cool Steel from design system
+  background: #30343F !important; // Jet Black from Moonlight Glow palette
   color: white !important;
   border: 3px solid white !important; // Consistent white border
   border-radius: 30px !important; // Very rounded corners for testing
@@ -355,7 +355,7 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
   transition: all 0.2s ease !important;
 
   &:hover {
-    background: #696773 !important; // Dim Grey from design system on hover
+    background: #273469 !important; // Twilight Indigo from Moonlight Glow palette on hover
     opacity: 0.9 !important; // Slightly transparent on hover
     border-color: rgba(255, 255, 255, 0.9) !important;
     transform: translateY(-2px);
@@ -368,7 +368,7 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
 
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #819595 !important; // Cool Steel from design system
+  background: #30343F !important; // Jet Black from Moonlight Glow palette
   color: white !important;
   border: 3px solid white !important; // Consistent white border
   border-radius: 30px !important; // Very rounded corners for testing
@@ -380,7 +380,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   transition: all 0.2s ease !important;
 
   &:hover {
-    background: #696773 !important; // Dim Grey from design system on hover
+    background: #273469 !important; // Twilight Indigo from Moonlight Glow palette on hover
     opacity: 0.9 !important; // Slightly transparent on hover
     border-color: rgba(255, 255, 255, 0.9) !important;
     transform: translateY(-2px);
@@ -396,7 +396,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   .q-field__control {
     .q-btn {
       // Style the upload button inside q-file
-      background: #819595 !important; // Cool Steel from design system
+      background: #30343F !important; // Jet Black from Moonlight Glow palette
       color: white !important;
       border: 3px solid white !important; // Consistent white border
       border-radius: 30px !important; // Very rounded corners for testing
@@ -409,7 +409,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
       transition: all 0.2s ease !important;
 
       &:hover {
-        background: #696773 !important; // Dim Grey from design system on hover
+        background: #273469 !important; // Twilight Indigo from Moonlight Glow palette on hover
         opacity: 0.9 !important; // Slightly transparent on hover
         border-color: rgba(255, 255, 255, 0.9) !important;
         transform: translateY(-2px);
@@ -421,9 +421,9 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
     }
   }
 
-  // Also target primary colored buttons in file inputs - Cool Steel from design system
+  // Also target primary colored buttons in file inputs - Jet Black from Moonlight Glow palette
   .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-    background: #819595 !important; // Cool Steel from design system
+    background: #30343F !important; // Jet Black from Moonlight Glow palette
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
@@ -435,7 +435,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
     transition: all 0.2s ease !important;
 
     &:hover {
-      background: #696773 !important; // Dim Grey from design system on hover
+      background: #273469 !important; // Twilight Indigo from Moonlight Glow palette on hover
       opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important;
       transform: translateY(-2px);

@@ -1126,10 +1126,10 @@ export default {
 
     // Computed inline style for header - Jet Black from design system
     const headerInlineStyle = computed(() => {
-      // Use Jet Black (#363946) from design system
+      // Use Jet Black (#30343F) from Moonlight Glow palette
       return {
-        background: '#363946',
-        backgroundColor: '#363946',
+        background: '#30343F',
+        backgroundColor: '#30343F',
         backgroundImage: 'none',
       };
     });
@@ -1631,10 +1631,10 @@ html, body {
   }
 }
 
-// Default header - Jet Black from design system (will be overridden by inline styles)
+// Default header - Jet Black from Moonlight Glow palette (will be overridden by inline styles)
 .q-header:not([data-theme-override]) {
-  background: #363946 !important; /* Jet Black from design system */
-  background-color: #363946 !important;
+  background: #30343F !important; /* Jet Black from Moonlight Glow palette */
+  background-color: #30343F !important;
   background-image: none !important;
 }
 
@@ -1878,11 +1878,12 @@ html, body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  // Use Cool Steel from design system (#819595)
-  background: #819595 !important; // Cool Steel from design system
-  background-color: #819595 !important;
+  // Use Ghost White from Moonlight Glow palette (#FAFAFF)
+  background: #FAFAFF !important; // Ghost White from Moonlight Glow palette
+  background-color: #FAFAFF !important;
   background-image: none !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.1); // Subtle border to separate from header
+  border-top: 1px solid rgba(0, 0, 0, 0.1); // Subtle border to separate from header (dark border on light background)
+  // Text color is Jet Black (#30343F) from Moonlight Glow palette
   padding: 8px 20px;
   box-sizing: border-box;
   z-index: 2999; // Just below header but above content
@@ -1957,14 +1958,22 @@ html, body {
   font-weight: 500 !important; // foundation.typography.fontWeight.medium
   font-style: normal !important; // foundation.typography.fontStyle.normal
   letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  // Text color is Jet Black (#30343F) from Moonlight Glow palette (sub-nav has Ghost White background)
+  color: #30343F !important; // Jet Black text on Ghost White background
 
   .q-btn__content {
     padding: 0 12px;
-    color: inherit; // Inherit text color from header theme (white)
+    color: #30343F !important; // Jet Black text from Moonlight Glow palette
     font-family: inherit !important; // Inherit from parent
     font-weight: inherit !important;
     font-style: inherit !important;
     letter-spacing: inherit !important;
+  }
+  
+  // Ensure text and icons are Jet Black
+  .q-icon,
+  .q-btn__content * {
+    color: #30343F !important; // Jet Black from Moonlight Glow palette
   }
 
   // Ensure dropdown menu appears below the button

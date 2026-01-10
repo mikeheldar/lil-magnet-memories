@@ -11,11 +11,27 @@
       "color": {
         "black": {
           "value": "#000000",
-          "description": "Pure black - complete absorption of light radiates unmatched sophistication and strength, symbolizing authority, depth and formality. Used for headers, buttons, and primary UI elements."
+          "description": "Pure black - complete absorption of light radiates unmatched sophistication and strength, symbolizing authority, depth and formality."
         },
         "jetBlack": {
-          "value": "#363946",
-          "description": "Jet Black - intense darkness with an enigmatic appeal, infusing compositions with drama, mystery and unyielding strength."
+          "value": "#30343F",
+          "description": "Jet Black - intense darkness with an enigmatic appeal, infusing compositions with drama, mystery and unyielding strength. Moonlight Glow palette."
+        },
+        "ghostWhite": {
+          "value": "#FAFAFF",
+          "description": "Ghost White - ethereal icy blue-white, like early dawn fog, hinting at purity, pristine simplicity, and sparkling clean feels. Moonlight Glow palette."
+        },
+        "periwinkle": {
+          "value": "#E4D9FF",
+          "description": "Periwinkle - delicate, dreamy light blue-lavender embodies tranquility, creativity and a whimsical, youthful serenity. Moonlight Glow palette."
+        },
+        "twilightIndigo": {
+          "value": "#273469",
+          "description": "Twilight Indigo - evokes twilight's serene embrace, blending night's depth with a touch of anticipation for stories yet to unfold. Moonlight Glow palette."
+        },
+        "spaceIndigo": {
+          "value": "#1E2749",
+          "description": "Space Indigo - deep, rich indigo blue from Moonlight Glow palette."
         },
         "dimGrey": {
           "value": "#696773",
@@ -190,7 +206,7 @@
           "drawer": "{foundation.color.grey.50}",
           "pageTitle": "{foundation.color.grey.50}",
           "header": "{foundation.color.jetBlack}",
-          "subNav": "{foundation.color.dimGrey}"
+          "subNav": "{foundation.color.ghostWhite}"
         },
         "text": {
           "primary": "{foundation.color.black}",
@@ -199,7 +215,8 @@
           "muted": "{foundation.color.grey.400}",
           "inverse": "{foundation.color.white}",
           "hero": "{foundation.color.grey.300}",
-          "pageTitle": "{foundation.color.grey.200}"
+          "pageTitle": "{foundation.color.grey.200}",
+          "subNav": "{foundation.color.jetBlack}"
         },
         "border": {
           "default": "rgba(0, 0, 0, 0.1)",
@@ -209,13 +226,13 @@
         },
         "primary": {
           "base": "{foundation.color.jetBlack}",
-          "hover": "{foundation.color.dimGrey}",
+          "hover": "{foundation.color.twilightIndigo}",
           "text": "{foundation.color.white}",
           "border": "{foundation.color.white}"
         },
         "secondary": {
           "base": "{foundation.color.jetBlack}",
-          "hover": "{foundation.color.dimGrey}",
+          "hover": "{foundation.color.twilightIndigo}",
           "text": "{foundation.color.white}"
         },
         "accent": {

@@ -1683,6 +1683,8 @@ export default {
   height: 100%;
   overflow: hidden !important; // Clip images during transition AND Ken Burns zoom (critical for Ken Burns)
   flex: 1; // Take up available space in flex container
+  // Ensure no image parts are visible outside the wrapper
+  clip-path: inset(0);
 }
 
 // On medium and large screens, ensure easel aligns properly
