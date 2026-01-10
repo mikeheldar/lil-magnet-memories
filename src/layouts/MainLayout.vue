@@ -1555,19 +1555,43 @@ export default {
 }
 
 // Ensure drawer header fill hamburger is Jet Black even with hamburger-menu-btn class
-// Use maximum specificity to override Quasar defaults
+// Use maximum specificity to override Quasar defaults and any other CSS
+body .drawer-header-fill .drawer-close-btn,
+body .drawer-header-fill .hamburger-menu-btn,
+body .drawer-header-fill .q-btn,
+body .drawer-header-fill .q-btn.q-btn--flat,
+body .drawer-header-fill .q-btn .q-icon,
+body .drawer-header-fill .q-btn__content,
+body .drawer-header-fill .q-btn__content .q-icon,
 .drawer-header-fill .drawer-close-btn,
 .drawer-header-fill .hamburger-menu-btn,
 .drawer-header-fill .q-btn,
+.drawer-header-fill .q-btn.q-btn--flat,
 .drawer-header-fill .q-btn .q-icon,
 .drawer-header-fill .q-btn__content,
 .drawer-header-fill .q-btn__content .q-icon {
   color: #30343F !important; // Jet Black - override all Quasar defaults
 }
 
-// Also target the icon directly with Material Icons class
-.drawer-header-fill .material-icons {
+// Also target the icon directly with Material Icons class and all possible selectors
+body .drawer-header-fill .material-icons,
+.drawer-header-fill .material-icons,
+.drawer-header-fill .q-icon.material-icons,
+.drawer-header-fill .q-btn .material-icons,
+.drawer-header-fill .q-btn__content .material-icons {
   color: #30343F !important; // Jet Black
+  fill: #30343F !important; // Jet Black (for SVG icons)
+}
+
+// Override any text color inheritance
+.drawer-header-fill * {
+  color: #30343F !important; // Jet Black - catch-all for any child elements
+}
+
+// But allow text content to use default colors (only target icons/buttons)
+.drawer-header-fill .q-item-label,
+.drawer-header-fill .q-item-label * {
+  color: inherit !important; // Allow text to use default colors
 }
 
 // Ensure drawer content is scrollable and takes full height
