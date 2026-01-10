@@ -53,7 +53,7 @@
             @touchend="handleTouchEnd"
           >
             <div class="easel-image-wrapper">
-              <transition name="slide" mode="">
+              <transition name="slide" mode="" @after-enter="handleImageEnter">
                 <img
                   :key="easelImageIndex"
                   :src="currentEaselImage"
@@ -767,11 +767,17 @@ export default {
       isImagePanning.value = false;
       // Use nextTick to ensure DOM update before starting animation
       nextTick(() => {
-        // Small delay to ensure image is fully loaded and rendered
+        // Small delay to ensure image is fully loaded and rendered before starting animation
         setTimeout(() => {
           isImagePanning.value = true; // Start the Ken Burns panning effect
-        }, 150); // Slightly longer delay to ensure image is ready
+        }, 200); // Delay to ensure image is fully rendered
       });
+    };
+
+    // Handle when image transition enters (after slide-in completes)
+    const handleImageEnter = () => {
+      // Start Ken Burns panning animation after the slide transition completes
+      resetPanningAnimation();
     };
 
     // Touch/swipe handling for mobile
@@ -1289,6 +1295,7 @@ export default {
       handleTouchMove,
       handleTouchEnd,
       handleImageLoad,
+      handleImageEnter,
     };
   },
 };
@@ -1651,7 +1658,7 @@ export default {
   margin-top: 0;
   position: relative; // Ensure dots can be positioned relative to container
   padding-top: 0;
-  padding-bottom: 60px; // Add padding at bottom to make room for dots
+  padding-bottom: 60px; // Add padding at bottom to make room for dots (20px gap + 40px for dot height/padding)
   margin-bottom: 0;
   cursor: pointer;
   -webkit-user-select: none;
@@ -1681,7 +1688,7 @@ export default {
   }
 
   .easel-image {
-    object-position: top left !important; // Start at top-left for panning animation
+    object-position: 0% 0% !important; // Start at top-left (0% 0%) for Ken Burns panning animation
   }
 }
 
@@ -1690,7 +1697,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover; // Fill container, crop to fit
-  object-position: top left; // Start at top-left for panning
+  object-position: 0% 0% !important; // Start at top-left for Ken Burns effect (0% horizontal, 0% vertical)
   display: block;
   border-radius: 0; // No border radius for edge-to-edge
   border: none; // No border for edge-to-edge
@@ -1709,25 +1716,25 @@ export default {
 // Ken Burns effect - smooth panning animation while image is displayed
 // Pans down and to the right gradually before the next slide transition
 .easel-image.image-panning {
-  animation: panImage 7s ease-in-out forwards;
+  animation: panImage 7s ease-in-out forwards !important;
   will-change: object-position; // Optimize animation performance
 }
 
 @keyframes panImage {
   0% {
-    object-position: 0% 0%; // Start at top-left (beginning of image)
+    object-position: 0% 0% !important; // Start at top-left (beginning of image)
   }
   25% {
-    object-position: 10% 10%; // Gradual movement down and right
+    object-position: 10% 10% !important; // Gradual movement down and right
   }
   50% {
-    object-position: 18% 20%; // Continue panning down and right
+    object-position: 18% 20% !important; // Continue panning down and right
   }
   75% {
-    object-position: 25% 28%; // More pronounced movement
+    object-position: 25% 28% !important; // More pronounced movement
   }
   100% {
-    object-position: 30% 35%; // End down and to the right (noticeable Ken Burns effect)
+    object-position: 30% 35% !important; // End down and to the right (noticeable Ken Burns effect)
   }
 }
 
@@ -2264,10 +2271,10 @@ export default {
     object-position: top right !important; // Start at top-right for panning animation
   }
 
-  // Ensure dots are visible below the photo on small screens
+  // Ensure dots are visible 20px below the image on small screens
   .easel-carousel-dots {
     position: absolute !important;
-    top: 100% !important; // Position directly below the easel container
+    top: calc(100% - 40px) !important; // Position 20px below image wrapper (100% - 60px padding + 20px gap)
     left: 50% !important;
     transform: translateX(-50%) !important;
     display: flex !important;
@@ -2276,7 +2283,6 @@ export default {
     z-index: 10 !important;
     width: fit-content !important;
     padding: 12px 16px !important; // Add padding for better visibility
-    margin-top: 12px !important; // Small margin below easel for spacing
     background: rgba(255, 255, 255, 0.95) !important; // More opaque background for visibility
     border-radius: 20px !important; // Rounded background
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important; // Stronger shadow for visibility
