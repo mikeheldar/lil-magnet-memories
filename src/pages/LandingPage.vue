@@ -1713,18 +1713,8 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translateX(-50%) translateY(-50%) scale(1.1); // Center image and start slightly zoomed for Ken Burns
+  transform: translateX(-50%) translateY(-50%) scale(1.1); // Center image and start slightly zoomed for Ken Burns (base state)
   transform-origin: center center; // Scale from center
-  
-  // During transitions, transition transforms override this
-  &.slide-enter-active,
-  &.slide-leave-active,
-  &.slide-enter-from,
-  &.slide-enter-to,
-  &.slide-leave-from,
-  &.slide-leave-to {
-    // Transition classes will override base transform
-  }
 }
 
 // Ken Burns effect - very slow, smooth, gradual zoom and pan animation over 6 seconds
