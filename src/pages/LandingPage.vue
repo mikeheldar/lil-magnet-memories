@@ -53,7 +53,7 @@
             @touchend="handleTouchEnd"
           >
             <div class="easel-image-wrapper">
-              <transition name="slide" mode="" @after-enter="handleImageEnter">
+              <transition name="slide" @after-enter="handleImageEnter">
                 <img
                   :key="easelImageIndex"
                   :src="currentEaselImage"
@@ -1244,15 +1244,15 @@ export default {
       // Start panning animation for initial image
       resetPanningAnimation();
 
-      // Rotate easel images every 6 seconds
-      // 5s for Ken Burns zoom/pan effect + 1s for slide transition
+      // Rotate easel images every 9.2 seconds
+      // 8s for Ken Burns zoom/pan effect + 1.2s for slide transition
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
           // Ken Burns animation will restart automatically via watch when image changes
-        }, 6000); // 6 seconds total: 5s Ken Burns + 1s slide transition
+        }, 9200); // 9.2 seconds total: 8s Ken Burns + 1.2s slide transition
       }
     });
 
@@ -1715,10 +1715,10 @@ export default {
   transform-origin: center center; // Scale from center
 }
 
-// Ken Burns effect - smooth zoom and pan animation for 5 seconds
-// Scales image larger and pans down and to the right, then transitions smoothly to slide
+// Ken Burns effect - smooth, slow, consistent zoom and pan animation
+// Scales image larger and pans down and to the right gradually and smoothly
 .easel-image.image-panning {
-  animation: kenBurns 5s ease-in-out forwards !important;
+  animation: kenBurns 8s ease-in-out forwards !important;
   will-change: transform; // Optimize animation performance
 }
 
@@ -1726,26 +1726,29 @@ export default {
   0% {
     transform: translate(-50%, -50%) scale(1.1) translate(0%, 0%); // Start centered, slightly zoomed
   }
-  25% {
-    transform: translate(-50%, -50%) scale(1.15) translate(-4%, -2%); // Zoom in more, pan down and right
+  20% {
+    transform: translate(-50%, -50%) scale(1.125) translate(-2%, -1%); // Slow, gradual zoom and pan
   }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2) translate(-6%, -4%); // Continue zooming and panning
+  40% {
+    transform: translate(-50%, -50%) scale(1.15) translate(-4%, -2.5%); // Continue gradual movement
   }
-  75% {
-    transform: translate(-50%, -50%) scale(1.22) translate(-8%, -6%); // More pronounced zoom and pan
+  60% {
+    transform: translate(-50%, -50%) scale(1.175) translate(-6%, -4%); // Smooth progression
+  }
+  80% {
+    transform: translate(-50%, -50%) scale(1.2) translate(-7.5%, -5.5%); // Continued smooth movement
   }
   100% {
-    transform: translate(-50%, -50%) scale(1.25) translate(-10%, -8%); // End zoomed in and panned down-right
+    transform: translate(-50%, -50%) scale(1.22) translate(-9%, -7%); // End zoomed in and panned down-right (smooth finish)
   }
 }
 
-// Slide animation - both images slide simultaneously for continuous effect
-// Old image slides out from its Ken Burns end position (zoomed and panned)
-// New image enters from right with its Ken Burns starting position
+// Slide animation - both images slide simultaneously for smooth continuous effect
+// Old image slides out from its Ken Burns end position (zoomed and panned) to the left
+// New image enters from right with its Ken Burns starting position, sliding in simultaneously
 .slide-enter-active,
 .slide-leave-active {
-  transition: transform 1s ease-in-out;
+  transition: transform 1.2s ease-in-out;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1760,26 +1763,26 @@ export default {
 }
 
 .slide-leave-active {
-  z-index: 1; // Old image below, but visible during transition - slides out from Ken Burns position
+  z-index: 1; // Old image below, but visible during transition - slides out from Ken Burns end position
 }
 
 // New image starts from right with Ken Burns starting transform (centered, slightly zoomed)
 .slide-enter-from {
-  transform: translate(-50%, -50%) scale(1.1) translate(100%, 0%) !important; // Start centered and zoomed, off-screen to right
+  transform: translate(-50%, -50%) scale(1.1) translate(100%, 0%) !important; // Start centered and zoomed, completely off-screen to right
 }
 
 .slide-enter-to {
-  transform: translate(-50%, -50%) scale(1.1) translate(0%, 0%) !important; // Slide in to center with Ken Burns starting position
+  transform: translate(-50%, -50%) scale(1.1) translate(0%, 0%) !important; // Slide in smoothly to center with Ken Burns starting position
 }
 
 // Old image starts from Ken Burns end position (zoomed and panned), slides out to left smoothly
-// Note: Ken Burns animation ends with forwards, so this state should already be applied
+// Matches the final state of the Ken Burns animation (scale 1.22, translate -9% -7%)
 .slide-leave-from {
-  transform: translate(-50%, -50%) scale(1.25) translate(-10%, -8%) !important; // Start from Ken Burns end position - matches animation final state
+  transform: translate(-50%, -50%) scale(1.22) translate(-9%, -7%) !important; // Start from Ken Burns end position
 }
 
 .slide-leave-to {
-  transform: translate(-50%, -50%) scale(1.25) translate(-110%, -8%) !important; // Slide out to left while maintaining Ken Burns zoom/pan state
+  transform: translate(-50%, -50%) scale(1.22) translate(-109%, -7%) !important; // Slide out smoothly to left while maintaining Ken Burns zoom/pan state
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
