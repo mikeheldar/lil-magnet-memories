@@ -377,23 +377,24 @@
           header-class="text-grey-8"
         >
           <!-- Custom Photo Magnets -->
-          <q-item
-            clickable
-            v-ripple
-            @click="$router.push('/products/custom')"
-            class="shop-category-item"
-          >
-            <q-item-section avatar>
-              <q-icon name="camera_alt" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Custom Photo Magnets</q-item-label>
-              <q-item-label caption>Create personalized magnets</q-item-label>
-            </q-item-section>
-          </q-item>
+          <div class="shop-category-wrapper">
+            <q-item
+              clickable
+              v-ripple
+              @click="$router.push('/products/custom')"
+              class="shop-category-item"
+            >
+              <q-item-section avatar>
+                <q-icon name="camera_alt" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Custom Photo Magnets</q-item-label>
+                <q-item-label caption>Create personalized magnets</q-item-label>
+              </q-item-section>
+            </q-item>
 
-          <!-- Show products for Custom -->
-          <div v-if="customProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
+            <!-- Show products for Custom (only on hover) -->
+            <div v-if="customProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
             <q-item
               v-for="product in customProductsList"
               :key="product.id"
@@ -407,26 +408,28 @@
                 <q-item-label class="text-caption">{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
+            </div>
           </div>
 
           <!-- Designer Magnets -->
-          <q-item
-            clickable
-            v-ripple
-            @click="$router.push('/products/designer')"
-            class="shop-category-item"
-          >
-            <q-item-section avatar>
-              <q-icon name="palette" color="secondary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Designer Magnets</q-item-label>
-              <q-item-label caption>Ready-made designs</q-item-label>
-            </q-item-section>
-          </q-item>
+          <div class="shop-category-wrapper">
+            <q-item
+              clickable
+              v-ripple
+              @click="$router.push('/products/designer')"
+              class="shop-category-item"
+            >
+              <q-item-section avatar>
+                <q-icon name="palette" color="secondary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Designer Magnets</q-item-label>
+                <q-item-label caption>Ready-made designs</q-item-label>
+              </q-item-section>
+            </q-item>
 
-          <!-- Show products for Designer -->
-          <div v-if="designerProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
+            <!-- Show products for Designer (only on hover) -->
+            <div v-if="designerProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
             <q-item
               v-for="product in designerProductsList"
               :key="product.id"
@@ -440,26 +443,28 @@
                 <q-item-label class="text-caption">{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
+            </div>
           </div>
 
           <!-- Specialty Products -->
-          <q-item
-            clickable
-            v-ripple
-            @click="$router.push('/products/specialty')"
-            class="shop-category-item"
-          >
-            <q-item-section avatar>
-              <q-icon name="star" color="amber" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Specialty Products</q-item-label>
-              <q-item-label caption>Unique specialty items</q-item-label>
-            </q-item-section>
-          </q-item>
+          <div class="shop-category-wrapper">
+            <q-item
+              clickable
+              v-ripple
+              @click="$router.push('/products/specialty')"
+              class="shop-category-item"
+            >
+              <q-item-section avatar>
+                <q-icon name="star" color="amber" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Specialty Products</q-item-label>
+                <q-item-label caption>Unique specialty items</q-item-label>
+              </q-item-section>
+            </q-item>
 
-          <!-- Show products for Specialty -->
-          <div v-if="specialtyProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
+            <!-- Show products for Specialty (only on hover) -->
+            <div v-if="specialtyProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
             <q-item
               v-for="product in specialtyProductsList"
               :key="product.id"
@@ -473,6 +478,7 @@
                 <q-item-label class="text-caption">{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
+            </div>
           </div>
 
           <!-- Start Creating Now (last item in Shop section) -->
