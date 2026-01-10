@@ -5,16 +5,26 @@
 // These styles ensure the site looks correct on initial load before theme loads
 // ============================================================================
 
-/* Default header - pure black matching LineA Modern Black Header */
+/* Default header - Jet Black from design system */
 .q-header {
-  background: #000000 !important; /* Pure black background */
-  background-color: #000000 !important;
-  min-height: 84px !important; /* 20px thicker than default (64px) */
+  background: #363946 !important; /* Jet Black from design system */
+  background-color: #363946 !important;
+  min-height: 84px !important; /* Default 84px for small screens */
+
+  // On medium+ screens, reduce height to 64px
+  @media (min-width: 768px) {
+    min-height: 64px !important;
+  }
 }
 
 .q-header .q-toolbar {
   background: transparent !important;
-  min-height: 84px !important;
+  min-height: 84px !important; /* Default 84px for small screens */
+
+  // On medium+ screens, reduce height to 64px
+  @media (min-width: 768px) {
+    min-height: 64px !important;
+  }
 }
 
 /* Default header text - white, professional serif that fits in header */
@@ -63,12 +73,12 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
   background: #ffffff !important;
 }
 
-/* Default buttons - pure black matching LineA Modern Black Header */
+/* Default buttons - Jet Black from design system */
 body .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #000000 !important; /* Pure black */
+  background: #363946 !important; /* Jet Black from design system */
   color: #ffffff !important;
-  border: 1px solid #000000 !important;
+  border: 1px solid #363946 !important;
   border-radius: 10px !important;
 }
 
@@ -114,9 +124,9 @@ body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-but
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: #000000 !important; /* Pure black */
+  background: #363946 !important; /* Jet Black from design system */
   color: #ffffff !important;
-  border: 1px solid #000000 !important;
+  border: 1px solid #363946 !important;
   border-radius: 10px !important;
   filter: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -129,19 +139,19 @@ body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-but
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover,
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning):hover {
-  background: #1a1a1a !important; /* Slightly lighter black on hover */
-  border-color: #1a1a1a !important;
+  background: #696773 !important; /* Dim Grey (darker) from design system on hover */
+  border-color: #696773 !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   filter: none !important;
 }
 
-/* Clean q-file buttons */
+/* Clean q-file buttons - Jet Black from design system */
 .q-file .q-field__control .q-btn,
 .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-  background: #000000 !important; /* Pure black */
+  background: #363946 !important; /* Jet Black from design system */
   color: #ffffff !important;
-  border: 1px solid #000000 !important;
+  border: 1px solid #363946 !important;
   border-radius: 10px !important;
   filter: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
@@ -149,8 +159,8 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 
 .q-file .q-field__control .q-btn:hover,
 .q-file .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):hover {
-  background: #1a1a1a !important; /* Slightly lighter black on hover */
-  border-color: #1a1a1a !important;
+  background: #696773 !important; /* Dim Grey from design system on hover */
+  border-color: #696773 !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   filter: none !important;
@@ -169,8 +179,8 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 }
 
 .carousel-dot.dot-active {
-  background: #1a1a1a !important;
-  border-color: #1a1a1a !important;
+  background: #363946 !important; /* Jet Black from design system */
+  border-color: #363946 !important;
   box-shadow: none !important;
 }
 
@@ -238,10 +248,10 @@ body .q-btn {
     border-radius: 30px !important; // Override Quasar's default rounded border-radius (typically 28px) - very rounded for testing
   }
 
-  // Primary buttons - target by color attribute AND bg-primary class
+  // Primary buttons - Jet Black from design system
   &[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
   &.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-    background: var(--q-primary, #000000) !important; // Use theme primary color (defaults to black)
+    background: #363946 !important; // Jet Black from design system
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
@@ -254,7 +264,7 @@ body .q-btn {
     transition: all 0.2s ease !important; // Smooth transitions
 
     &:hover {
-      background: var(--q-primary, #000000) !important; // Use theme primary color on hover
+      background: #696773 !important; // Dim Grey from design system on hover
       opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important; // Slightly transparent border on hover
       transform: translateY(-2px);
@@ -266,10 +276,10 @@ body .q-btn {
     }
   }
 
-  // Secondary buttons - use theme secondary color
+  // Secondary buttons - Jet Black from design system
   &[color='secondary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
   &.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-    background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme secondary or primary color
+    background: #363946 !important; // Jet Black from design system
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
@@ -282,7 +292,7 @@ body .q-btn {
     transition: all 0.2s ease !important; // Smooth transitions
 
     &:hover {
-      background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme color on hover
+      background: #696773 !important; // Dim Grey from design system on hover
       opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important; // Slightly transparent border on hover
       transform: translateY(-2px);
@@ -298,7 +308,7 @@ body .q-btn {
 // Also target buttons using Quasar's internal color classes with higher specificity
 body .q-btn.bg-primary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: var(--q-primary, #000000) !important; // Use theme primary color
+  background: #363946 !important; // Jet Black from design system
   color: white !important;
   border: 3px solid white !important; // Consistent white border
   border-radius: 30px !important; // Very rounded corners for testing
@@ -310,7 +320,7 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
   transition: all 0.2s ease !important;
 
   &:hover {
-    background: var(--q-primary, #000000) !important; // Use theme primary color on hover
+    background: #696773 !important; // Dim Grey from design system on hover
     opacity: 0.9 !important; // Slightly transparent on hover
     border-color: rgba(255, 255, 255, 0.9) !important;
     transform: translateY(-2px);
@@ -323,7 +333,7 @@ body .q-btn[class*="bg-primary"]:not(.q-btn--flat):not(.q-btn--outline):not(.app
 
 body .q-btn.bg-secondary:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning),
 body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button):not(.q-btn--negative):not(.q-btn--warning) {
-  background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme secondary or primary color
+  background: #363946 !important; // Jet Black from design system
   color: white !important;
   border: 3px solid white !important; // Consistent white border
   border-radius: 30px !important; // Very rounded corners for testing
@@ -335,7 +345,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   transition: all 0.2s ease !important;
 
   &:hover {
-    background: var(--q-secondary, var(--q-primary, #000000)) !important; // Use theme color on hover
+    background: #696773 !important; // Dim Grey from design system on hover
     opacity: 0.9 !important; // Slightly transparent on hover
     border-color: rgba(255, 255, 255, 0.9) !important;
     transform: translateY(-2px);
@@ -346,12 +356,12 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
   }
 }
 
-// Style q-file upload buttons to match theme color
+// Style q-file upload buttons - Jet Black from design system
 .q-file {
   .q-field__control {
     .q-btn {
       // Style the upload button inside q-file
-      background: var(--q-primary, #000000) !important; // Use theme primary color
+      background: #363946 !important; // Jet Black from design system
       color: white !important;
       border: 3px solid white !important; // Consistent white border
       border-radius: 30px !important; // Very rounded corners for testing
@@ -364,7 +374,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
       transition: all 0.2s ease !important;
 
       &:hover {
-        background: var(--q-primary, #000000) !important; // Use theme primary color on hover
+        background: #696773 !important; // Dim Grey from design system on hover
         opacity: 0.9 !important; // Slightly transparent on hover
         border-color: rgba(255, 255, 255, 0.9) !important;
         transform: translateY(-2px);
@@ -378,7 +388,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
 
   // Also target primary colored buttons in file inputs
   .q-btn[color='primary']:not(.q-btn--flat):not(.q-btn--outline):not(.apple-pay-button) {
-    background: var(--q-primary, #000000) !important; // Use theme primary color
+    background: #363946 !important; // Jet Black from design system
     color: white !important;
     border: 3px solid white !important; // Consistent white border
     border-radius: 30px !important; // Very rounded corners for testing
@@ -390,7 +400,7 @@ body .q-btn[class*="bg-secondary"]:not(.q-btn--flat):not(.q-btn--outline):not(.a
     transition: all 0.2s ease !important;
 
     &:hover {
-      background: var(--q-primary, #000000) !important; // Use theme primary color on hover
+      background: #696773 !important; // Dim Grey from design system on hover
       opacity: 0.9 !important; // Slightly transparent on hover
       border-color: rgba(255, 255, 255, 0.9) !important;
       transform: translateY(-2px);

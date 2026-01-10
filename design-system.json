@@ -168,10 +168,18 @@
         "drawer": 3100
       },
       "layout": {
-        "headerHeight": "84px",
+        "headerHeight": {
+          "small": "84px",
+          "mediumPlus": "64px",
+          "description": "Header height: 84px on small screens (<768px), 64px on medium+ screens (>=768px)"
+        },
         "subNavHeight": "48px",
         "pageTitleHeight": "57px",
-        "combinedHeaderHeight": "132px"
+        "combinedHeaderHeight": {
+          "small": "132px",
+          "mediumPlus": "112px",
+          "description": "Combined header + sub-nav: 132px (84px + 48px) on small, 112px (64px + 48px) on medium+"
+        }
       }
     },
     "semantic": {
@@ -181,8 +189,8 @@
           "page": "{foundation.color.white}",
           "drawer": "{foundation.color.grey.50}",
           "pageTitle": "{foundation.color.grey.50}",
-          "header": "{foundation.color.black}",
-          "subNav": "{foundation.color.grey.50}"
+          "header": "{foundation.color.jetBlack}",
+          "subNav": "{foundation.color.jetBlack}"
         },
         "text": {
           "primary": "{foundation.color.black}",
@@ -200,8 +208,8 @@
           "carouselDot": "rgba(0, 0, 0, 0.3)"
         },
         "primary": {
-          "base": "{foundation.color.black}",
-          "hover": "{foundation.color.grey.100}",
+          "base": "{foundation.color.jetBlack}",
+          "hover": "{foundation.color.dimGrey}",
           "text": "{foundation.color.white}",
           "border": "{foundation.color.white}"
         },
@@ -304,7 +312,10 @@
       "header": {
         "base": {
           "bg": "{semantic.color.bg.header}",
-          "height": "{foundation.layout.headerHeight}",
+          "height": {
+            "small": "{foundation.layout.headerHeight.small}",
+            "mediumPlus": "{foundation.layout.headerHeight.mediumPlus}"
+          },
           "color": "{semantic.color.text.inverse}",
           "zIndex": "{foundation.zIndex.header}",
           "position": "fixed",
@@ -384,10 +395,10 @@
         },
         "dots": {
           "position": "{foundation.space.5} below",
-          "active": {
-            "bg": "{semantic.color.primary.hover}",
-            "border": "{semantic.color.primary.hover}"
-          },
+        "active": {
+          "bg": "{semantic.color.primary.base}",
+          "border": "{semantic.color.primary.base}"
+        },
           "inactive": {
             "bg": "transparent",
             "border": "{semantic.color.border.carouselDot}"

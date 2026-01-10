@@ -1120,12 +1120,12 @@ export default {
       return 'text-white';
     });
 
-    // Computed inline style for header - hardcoded to pure black
+    // Computed inline style for header - Jet Black from design system
     const headerInlineStyle = computed(() => {
-      // Always use pure black header (hardcoded)
+      // Use Jet Black (#363946) from design system
       return {
-        background: '#000000',
-        backgroundColor: '#000000',
+        background: '#363946',
+        backgroundColor: '#363946',
         backgroundImage: 'none',
       };
     });
@@ -1446,7 +1446,7 @@ export default {
 // The drawer should move up/down with the header when scrolling
 .q-drawer.drawer-under-header {
   position: fixed !important;
-  top: 84px !important; // Position below header (header height)
+  top: 84px !important; // Position below header (84px on small screens)
   left: 0 !important;
   bottom: 0 !important; // Extend to bottom of viewport
   height: auto !important; // Let bottom handle height
@@ -1467,10 +1467,16 @@ export default {
     max-height: 100vh !important;
   }
 
+  // On medium+ screens, header is 64px
+  @media (min-width: 768px) {
+    top: 64px !important; // Position below header (64px on medium+ screens)
+    max-height: calc(100vh - 64px) !important;
+  }
+
   // Full width and full height on small screens - extend to bottom
   @media (max-width: 599px) {
     width: 100vw !important;
-    height: calc(100vh - 84px) !important; // Full height minus header
+    height: calc(100vh - 84px) !important; // Full height minus header (84px on small)
     max-height: calc(100vh - 84px) !important;
     bottom: 0 !important; // Ensure it extends to bottom
   }
@@ -1481,7 +1487,7 @@ export default {
 // Positioned outside drawer to avoid transform context issues
 .drawer-menu-container {
   position: fixed !important; // Fixed to viewport, not sticky to page scroll
-  top: 84px !important; // Position below header (or at top when header hidden)
+  top: 84px !important; // Position below header (84px on small screens)
   left: 0 !important; // Align with drawer
   width: 300px !important; // Default width for medium+ screens
   max-height: calc(100vh - 84px) !important;
@@ -1511,32 +1517,37 @@ export default {
     padding-top: 0 !important;
   }
 
-  // On medium+ screens, account for sub-nav bar when header is visible
+  // On medium+ screens, header is 64px + sub-nav
   @media (min-width: 768px) {
     &:not(.header-hidden) {
-      top: calc(84px + 48px) !important; // Header + sub-nav
-      max-height: calc(100vh - 84px - 48px) !important;
+      top: calc(64px + 48px) !important; // Header (64px on medium+) + sub-nav
+      max-height: calc(100vh - 64px - 48px) !important;
     }
   }
 
   // Full width and full height on small screens - extend to bottom
   @media (max-width: 599px) {
     width: 100vw !important;
-    height: calc(100vh - 84px) !important; // Full height minus header
+    height: calc(100vh - 84px) !important; // Full height minus header (84px on small)
     max-height: calc(100vh - 84px) !important;
     bottom: 0 !important; // Ensure it extends to bottom
   }
 }
 
 // Drawer header fill - appears when main header is hidden
-// Matches main header + sub-nav height (84px + 48px = 132px)
+// Matches main header + sub-nav height (84px + 48px = 132px on small, 64px + 48px = 112px on medium+)
 .drawer-header-fill {
-  height: 132px !important; // Match header (84px) + sub-nav (48px) height
+  height: 132px !important; // Match header (84px on small) + sub-nav (48px) height
   width: 100% !important;
   background: #f5f5f5 !important; // Match drawer grey background (bg-grey-1)
   display: flex !important;
   align-items: center !important;
   padding-left: 16px !important;
+
+  // On medium+ screens, header is 64px
+  @media (min-width: 768px) {
+    height: 112px !important; // Match header (64px on medium+) + sub-nav (48px) height
+  }
   flex-shrink: 0 !important; // Don't shrink
   border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator for light background
 }
@@ -1592,20 +1603,20 @@ html body .q-layout .q-drawer.drawer-under-header {
   // Allow content to scroll under fixed drawer
   position: relative;
   z-index: 1;
-  // Landing page and pages without titles: header (84px) + 20px spacing
-  padding-top: calc(84px + 20px) !important; // Header height + 20px spacing
+  // Landing page and pages without titles: header (84px on small, 64px on medium+) + 20px spacing
+  padding-top: calc(84px + 20px) !important; // Header height (84px on small screens) + 20px spacing
 
-  // On medium+ screens, add extra padding for sub-navigation bar
+  // On medium+ screens, header is 64px + sub-nav + spacing
   @media (min-width: 768px) {
-    padding-top: calc(84px + 48px + 20px) !important; // Header + sub-nav bar + 20px spacing
+    padding-top: calc(64px + 48px + 20px) !important; // Header (64px on medium+) + sub-nav bar + 20px spacing
   }
 
   // Pages with page title section: add page title height (57px)
   &.has-page-title {
-    padding-top: calc(84px + 57px + 20px) !important; // Header + page title + 20px spacing
+    padding-top: calc(84px + 57px + 20px) !important; // Header (84px on small) + page title + 20px spacing
 
     @media (min-width: 768px) {
-      padding-top: calc(84px + 48px + 57px + 20px) !important; // Header + sub-nav + page title + 20px spacing
+      padding-top: calc(64px + 48px + 57px + 20px) !important; // Header (64px on medium+) + sub-nav + page title + 20px spacing
     }
   }
 }
@@ -1642,10 +1653,15 @@ html, body {
   }
 
   &.header-hidden {
-    // Move up by combined height (132px = 84px header + 48px sub-nav) so both slide up together
-    transform: translateY(-132px) !important;
+    // Move up by combined height (132px = 84px header + 48px sub-nav on small, 112px = 64px + 48px on medium+)
+    transform: translateY(-132px) !important; // Default for small screens (84px header + 48px sub-nav)
     opacity: 0 !important;
     pointer-events: none !important;
+
+    // On medium+ screens, header is 64px
+    @media (min-width: 768px) {
+      transform: translateY(-112px) !important; // Header (64px on medium+) + sub-nav (48px)
+    }
   }
 
   // When visible, ensure it's at the top of viewport
@@ -1657,9 +1673,11 @@ html, body {
   }
 }
 
-// Default header gradient - will be overridden by theme styles
+// Default header - Jet Black from design system (will be overridden by inline styles)
 .q-header:not([data-theme-override]) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: #363946 !important; /* Jet Black from design system */
+  background-color: #363946 !important;
+  background-image: none !important;
 }
 
 // Ensure toolbar title stays centered
@@ -1872,15 +1890,16 @@ html, body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  // Match header background - will be overridden by inline styles from headerInlineStyle
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-  background-color: #000000;
+  // Match header background - Jet Black from design system
+  background: #363946 !important; // Jet Black from design system
+  background-color: #363946 !important;
+  background-image: none !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1); // Subtle border to separate from header
   padding: 8px 20px;
   box-sizing: border-box;
   z-index: 2999; // Just below header but above content
   position: fixed !important;
-  top: 84px !important; // Position below header (header height)
+  top: 84px !important; // Position below header (84px on small screens)
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
@@ -1894,17 +1913,26 @@ html, body {
   visibility: visible !important;
   will-change: transform !important; // Optimize for transform animations
 
+  // On medium+ screens, header is 64px
+  @media (min-width: 768px) {
+    top: 64px !important; // Position below header (64px on medium+ screens)
+  }
+
   // When hiding, use faster transition so sub-nav disappears before header
   &.header-hidden {
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
 
   &.header-hidden {
-    // Move up by combined height (132px = 84px header + 48px sub-nav) so both slide up together
-    // Sub-nav is at top: 84px, so moving up 132px hides both header and sub-nav together
-    transform: translateY(-132px) !important;
+    // Move up by combined height (132px = 84px header + 48px sub-nav on small, 112px = 64px + 48px on medium+)
+    transform: translateY(-132px) !important; // Default for small screens (84px header + 48px sub-nav)
     opacity: 0 !important;
     pointer-events: none !important;
+
+    // On medium+ screens, header is 64px
+    @media (min-width: 768px) {
+      transform: translateY(-112px) !important; // Header (64px on medium+) + sub-nav (48px)
+    }
   }
 
   // When visible, ensure it's positioned correctly
