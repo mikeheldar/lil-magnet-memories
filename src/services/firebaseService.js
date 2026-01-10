@@ -284,12 +284,14 @@ class FirebaseService {
         let lastProgressUpdate = Date.now();
         let lastBytesTransferred = 0;
         
-        // On retry, get a fresh storage instance to ensure clean session
+        // On retry, get a completely fresh storage instance to ensure clean session
         const currentStorageInstance = retryCount > 0 ? getStorage(getApp()) : storageInstance;
         
-        // Add a small random suffix on retry to avoid conflicts
+        // Generate completely fresh filename on retry to avoid any stale session conflicts
+        // Use new timestamp on retry to ensure completely new upload session
+        const currentTimestamp = retryCount > 0 ? Date.now() : timestamp;
         const fileNameSuffix = retryCount > 0 ? `_retry${retryCount}_${Math.random().toString(36).substring(2, 8)}` : '';
-        const fileName = `orders/${timestamp}_${i}_${sanitizedName}${fileNameSuffix}`;
+        const fileName = `orders/${currentTimestamp}_${i}_${sanitizedName}${fileNameSuffix}`;
         const storageRef = ref(currentStorageInstance, fileName);
 
         try {
@@ -309,11 +311,20 @@ class FirebaseService {
           const uploadStartTime = Date.now();
 
           // Provide metadata to avoid multipart quirks and ensure proper Content-Type
+          // On retry, ensure we have completely fresh metadata to avoid session conflicts
           const metadata = {
             contentType: fileToUpload.type || 'image/jpeg',
             cacheControl: 'public,max-age=3600',
+            // Add custom metadata on retry to ensure fresh upload session
+            ...(retryCount > 0 && { 
+              customMetadata: { 
+                retryAttempt: retryCount.toString(),
+                retryTimestamp: Date.now().toString()
+              }
+            })
           };
 
+          // Create completely fresh upload task - don't try to resume any previous session
           const uploadTask = uploadBytesResumable(storageRef, fileToUpload, metadata);
 
           // Initialize progress tracking for this photo
@@ -397,7 +408,7 @@ class FirebaseService {
                   serverResponse.includes('412') ||
                   (errorCode === 'storage/unknown' && (httpStatus === 412 || errorMessage.includes('412') || serverResponse.includes('412')));
                 
-                const shouldRetry = is412Error && retryCount < 2;
+                const shouldRetry = is412Error && retryCount < 3;
                 
                 if (shouldRetry) {
                   console.warn(`⚠️ Upload error for photo ${i + 1} (attempt ${retryCount + 1}), will retry with fresh session...`);
@@ -477,20 +488,22 @@ class FirebaseService {
             errorMessage.includes('precondition failed') ||
             (errorCode === 'storage/unknown' && httpStatus === 412);
           
-          if (isPreconditionFailed && retryCount < 2) {
+          if (isPreconditionFailed && retryCount < 3) {
             // Log detailed error information for debugging
-            console.warn('⚠️ 412 Precondition Failed detected:', {
+            console.warn('⚠️ 412 Precondition Failed detected - upload session expired:', {
               code: errorCode,
               httpStatus: httpStatus,
               message: errorMessage.substring(0, 200),
               serverResponse: serverResponse.substring(0, 200),
               retryCount: retryCount + 1,
-              fullError: error
+              maxRetries: 3
             });
             
-            // Wait before retrying (exponential backoff with longer delay)
-            const waitTime = 1000 * Math.pow(2, retryCount); // 1s, 2s
-            console.log(`⏳ Waiting ${waitTime}ms before retry with fresh session...`);
+            // Wait longer before retrying to ensure stale session state clears
+            // Exponential backoff: 2s, 3s, 5s for retries
+            const waitTimes = [2000, 3000, 5000];
+            const waitTime = waitTimes[retryCount] || 5000;
+            console.log(`⏳ Waiting ${waitTime}ms before retry with completely fresh upload session...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
             
             // Refresh auth token before retry to ensure we have a valid token
@@ -498,21 +511,18 @@ class FirebaseService {
               const currentUser = auth?.currentUser;
               if (currentUser && currentUser.getIdToken) {
                 const token = await currentUser.getIdToken(true); // Force refresh
-                console.log('✅ Auth token refreshed before retry', token ? 'token obtained' : 'no token');
+                console.log('✅ Auth token refreshed before retry', token ? 'fresh token obtained' : 'no token');
               } else if (!currentUser || (currentUser && currentUser.isAnonymous)) {
-                // Re-authenticate if no user or anonymous
-                const userCredential = await signInAnonymously(auth);
-                await new Promise(resolve => setTimeout(resolve, 200)); // Wait longer for auth to propagate
-                console.log('✅ Re-authenticated before retry, new user:', userCredential?.user?.uid);
+                // Re-authenticate if no user or anonymous - get completely fresh auth
+                await signInAnonymously(auth);
+                await new Promise(resolve => setTimeout(resolve, 300)); // Wait longer for auth to fully propagate
+                console.log('✅ Re-authenticated before retry, user:', auth?.currentUser?.uid);
               }
             } catch (tokenError) {
               console.warn('⚠️ Failed to refresh auth token, proceeding with retry anyway:', tokenError);
             }
             
-            // Get a fresh storage instance after token refresh to ensure clean session
-            const freshStorageInstance = getStorage(getApp());
-            
-            // Reset progress tracking for retry
+            // Reset progress tracking for retry - start completely fresh
             const photoProgress = progressMap.get(i);
             if (photoProgress) {
               photoProgress.uploaded = 0;
@@ -521,7 +531,16 @@ class FirebaseService {
             lastProgressUpdate = Date.now();
             lastBytesTransferred = 0;
             
-            // Retry with a completely fresh upload session (new filename prevents conflicts)
+            // IMPORTANT: Generate a completely new timestamp for the retry to ensure fresh filename
+            // This prevents any potential conflicts with stale upload sessions
+            const retryTimestamp = Date.now();
+            const retryFileNameSuffix = retryCount > 0 ? `_retry${retryCount}_${Math.random().toString(36).substring(2, 8)}` : '';
+            const retryFileName = `orders/${retryTimestamp}_${i}_${sanitizedName}${retryFileNameSuffix}`;
+            
+            console.log(`🔄 Retrying upload with completely fresh session: ${retryFileName}`);
+            
+            // Retry with a completely fresh upload session
+            // Pass retry info so we can use fresh filename
             return performUpload(retryCount + 1);
           }
           
