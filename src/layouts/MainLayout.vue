@@ -1501,6 +1501,7 @@ export default {
 
 // Drawer header fill - always at top (0,0), behind header when visible
 // Only visible when drawer is open, positioned behind header (z-index below header)
+// v-show="leftDrawerOpen" controls visibility - this ensures it's hidden when drawer closes
 .drawer-header-fill {
   position: fixed !important;
   top: 0 !important; // Always at very top of screen
@@ -1514,6 +1515,8 @@ export default {
   z-index: 2002 !important; // Below header (3000) but above drawer menu container
   border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator
   flex-shrink: 0 !important; // Don't shrink
+  // Ensure v-show can hide this element
+  visibility: visible !important;
 
   // On medium+ screens, header is 64px
   @media (min-width: 768px) {
@@ -1524,6 +1527,13 @@ export default {
   @media (max-width: 599px) {
     width: 100vw !important;
   }
+}
+
+// Ensure drawer header fill is hidden when drawer is closed (v-show sets display: none)
+.drawer-header-fill[style*="display: none"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 .drawer-close-btn {
