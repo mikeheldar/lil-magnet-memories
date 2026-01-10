@@ -1548,7 +1548,6 @@ export default {
   // Full width on small screens
   @media (max-width: 599px) {
     width: 100vw !important;
->>>>>>> 85ac5a7 (fix: make drawer header fill fixed at top, always visible, positioned below header)
   }
 }
 
