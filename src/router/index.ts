@@ -8,7 +8,6 @@ import {
 
 import routes from './routes';
 import { authService } from '../services/authService';
-import { marketEventService } from '../services/marketEventService';
 
 /*
  * If not building with SSR mode, you can
