@@ -10,11 +10,12 @@
         <q-btn
           flat
           dense
-          icon="menu"
           @click="toggleLeftDrawer"
           aria-label="Menu"
           class="q-mr-sm hamburger-menu-btn"
-        />
+        >
+          <q-icon name="menu" />
+        </q-btn>
 
         <!-- Logo on the left -->
         <q-btn flat dense @click="$router.push('/')" class="q-mr-md header-element-responsive logo-header-btn">

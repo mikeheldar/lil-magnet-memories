@@ -5,6 +5,24 @@
 // These styles ensure the site looks correct on initial load before theme loads
 // ============================================================================
 
+// Ensure Material Icons font is loaded and icons render correctly
+.q-icon,
+.material-icons {
+  font-family: 'Material Icons' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
 /* Default header - Jet Black from design system */
 .q-header {
   background: #30343F !important; /* Jet Black from Moonlight Glow palette */
