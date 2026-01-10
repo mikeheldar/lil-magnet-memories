@@ -1754,9 +1754,9 @@ export default {
 // Slide animation - simple stitched together effect
 // Both images move simultaneously: old slides left off-screen, new slides in from right
 // Images appear stitched together (no gap between them during transition)
-// Slower transition for smoother joint slide effect
+// Smooth swipe-like easing for consistent velocity throughout transition
 .slide-enter-active {
-  transition: transform 2s ease-in-out !important;
+  transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1767,7 +1767,7 @@ export default {
 }
 
 .slide-leave-active {
-  transition: transform 2s ease-in-out !important;
+  transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
