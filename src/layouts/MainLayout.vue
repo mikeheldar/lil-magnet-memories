@@ -1521,7 +1521,6 @@ export default {
   display: flex !important;
   align-items: center !important;
   padding-left: 16px !important;
-<<<<<<< HEAD
   z-index: 2002 !important; // Below header (3000) but above drawer menu container
   border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; // Subtle separator
   flex-shrink: 0 !important; // Don't shrink
@@ -1531,7 +1530,6 @@ export default {
     height: 64px !important; // Match header height exactly (64px on medium+ screens)
   }
 
->>>>>>> da50d12 (fix: drawer header fill always at top (0,0), behind header when visible)
   // Full width on small screens
   @media (max-width: 599px) {
     width: 100vw !important;
@@ -1540,10 +1538,11 @@ export default {
 
 .drawer-close-btn {
   // Match header hamburger button styling exactly
+  // Use Jet Black from design system (primary/base color) for visibility on light background
   position: relative !important;
   min-width: 48px !important;
   min-height: 48px !important;
-  color: #30343F !important; // Jet Black from design system to match header icon color
+  color: #30343F !important; // Jet Black - semantic.color.primary.base / semantic.color.bg.header
   
   .q-icon {
     font-size: 28px !important; // Match main header hamburger size
