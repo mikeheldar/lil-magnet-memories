@@ -1245,15 +1245,15 @@ export default {
       // Start panning animation for initial image
       resetPanningAnimation();
 
-      // Rotate easel images every 9 seconds
-      // 6s for Ken Burns zoom/pan effect + 3s for slower slide transition
+      // Rotate easel images every 10.5 seconds
+      // 6s for Ken Burns zoom/pan effect + 4.5s for slower slide transition
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
           // Ken Burns animation will restart automatically via watch when image changes
-        }, 9000); // 9 seconds total: 6s Ken Burns + 3s slide transition
+        }, 10500); // 10.5 seconds total: 6s Ken Burns + 4.5s slide transition
       }
     });
 
@@ -1757,7 +1757,7 @@ export default {
 // New image enters from right with its Ken Burns starting position, sliding in simultaneously
 // Slower, smoother transition - both images visible and moving at same time
 .slide-enter-active {
-  transition: transform 3s ease-in-out !important;
+  transition: transform 4.5s ease-in-out !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1768,7 +1768,7 @@ export default {
 }
 
 .slide-leave-active {
-  transition: transform 3s ease-in-out !important;
+  transition: transform 4.5s ease-in-out !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1819,7 +1819,7 @@ export default {
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
   overflow: visible !important; // Allow dots to be visible below
-  padding-bottom: 60px !important; // Add padding at bottom to make room for dots
+  padding-bottom: 40px !important; // Minimal padding for dots (dots are absolutely positioned 20px below)
 }
 
 // Small screens: maintain wide format but ensure it fits
@@ -1831,7 +1831,7 @@ export default {
     margin-right: calc(-50vw + 50%) !important;
     aspect-ratio: 16 / 9 !important;
     overflow: visible !important; // Allow dots to be visible below
-    padding-bottom: 60px !important; // Add padding at bottom to make room for dots
+    padding-bottom: 40px !important; // Minimal padding for dots (dots are absolutely positioned 20px below)
   }
 }
 

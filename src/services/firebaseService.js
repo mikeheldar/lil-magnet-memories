@@ -280,6 +280,10 @@ class FirebaseService {
       
       // Helper function to perform upload with retry logic for 412 errors
       const performUpload = async (retryCount = 0) => {
+        // Initialize progress tracking variables at function scope for access in try and catch blocks
+        let lastProgressUpdate = Date.now();
+        let lastBytesTransferred = 0;
+        
         // Add a small random suffix on retry to avoid conflicts
         const fileNameSuffix = retryCount > 0 ? `_retry${retryCount}_${Math.random().toString(36).substring(2, 8)}` : '';
         const fileName = `orders/${timestamp}_${i}_${sanitizedName}${fileNameSuffix}`;
@@ -309,14 +313,16 @@ class FirebaseService {
 
           const uploadTask = uploadBytesResumable(storageRef, fileToUpload, metadata);
 
-        // Initialize progress tracking for this photo
-        progressMap.set(i, {
-          uploaded: 0,
-          total: fileToUpload.size || 0,
-          completed: false,
-        });
-        let lastProgressUpdate = Date.now();
-        let lastBytesTransferred = 0;
+          // Initialize progress tracking for this photo
+          progressMap.set(i, {
+            uploaded: 0,
+            total: fileToUpload.size || 0,
+            completed: false,
+          });
+          
+          // Reset progress tracking variables for this upload attempt
+          lastProgressUpdate = Date.now();
+          lastBytesTransferred = 0;
 
           await new Promise((resolve, reject) => {
             uploadTask.on(

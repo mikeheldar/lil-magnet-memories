@@ -1592,20 +1592,20 @@ html body .q-layout .q-drawer.drawer-under-header {
   // Allow content to scroll under fixed drawer
   position: relative;
   z-index: 1;
-  // Landing page and pages without titles: header (84px) + 20px spacing
-  padding-top: calc(84px + 20px) !important; // Header height + 20px spacing
+  // Landing page and pages without titles: no gap - content starts immediately after sub-header
+  padding-top: 0 !important; // No gap - remove all 84px padding
 
-  // On medium+ screens, add extra padding for sub-navigation bar
+  // On medium+ screens, sub-nav bar is visible but no extra padding needed
   @media (min-width: 768px) {
-    padding-top: calc(84px + 48px + 20px) !important; // Header + sub-nav bar + 20px spacing
+    padding-top: 0 !important; // No gap - remove all padding
   }
 
-  // Pages with page title section: add page title height (57px)
+  // Pages with page title section: content starts immediately after page title
   &.has-page-title {
-    padding-top: calc(84px + 57px + 20px) !important; // Header + page title + 20px spacing
+    padding-top: 0 !important; // No gap - remove all padding
 
     @media (min-width: 768px) {
-      padding-top: calc(84px + 48px + 57px + 20px) !important; // Header + sub-nav + page title + 20px spacing
+      padding-top: 0 !important; // No gap - remove all padding
     }
   }
 }
