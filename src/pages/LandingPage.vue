@@ -1763,18 +1763,8 @@ export default {
 // Old image slides out from its Ken Burns end position (zoomed and panned) to the left
 // New image enters from right with its Ken Burns starting position, sliding in simultaneously
 // Slower, smoother transition - both images visible and moving at same time
-// Both elements must use same transition timing for synchronized sliding
-.slide-enter-active {
-  transition: transform 2s ease-in-out !important;
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  width: 100% !important;
-  height: 100% !important;
-  transform-origin: center center !important;
-  z-index: 2 !important; // New image on top, slides over the old image
-}
-
+// Using same transition timing ensures synchronized sliding
+.slide-enter-active,
 .slide-leave-active {
   transition: transform 2s ease-in-out !important;
   position: absolute !important;
@@ -1783,6 +1773,14 @@ export default {
   width: 100% !important;
   height: 100% !important;
   transform-origin: center center !important;
+}
+
+// New image enters from right while old image exits to left - both visible and sliding simultaneously
+.slide-enter-active {
+  z-index: 2 !important; // New image on top, slides over the old image
+}
+
+.slide-leave-active {
   z-index: 1 !important; // Old image below, but visible during transition - slides out from Ken Burns end position
 }
 
@@ -1790,23 +1788,28 @@ export default {
 // Positioned completely off-screen to the right - using viewport width to ensure fully off-screen
 .slide-enter-from {
   transform: translateX(calc(-50% + 100vw)) translateY(-50%) scale(1.1) !important; // Start off-screen to the right, centered vertically, Ken Burns start zoom
+  opacity: 1 !important; // Fully visible during transition (no fade)
 }
 
 // New image slides in to center with Ken Burns starting position
 .slide-enter-to {
   transform: translateX(-50%) translateY(-50%) scale(1.1) !important; // Slide in smoothly to center position with Ken Burns start zoom
+  opacity: 1 !important;
 }
 
 // Old image starts from Ken Burns end position (zoomed and panned)
 // Matches the final state of the Ken Burns animation exactly (translateX calc(-50% - 4%), translateY calc(-50% - 2.5%), scale 1.16)
+// Ken Burns animation ends with forwards, so this state should already be applied when transition starts
 .slide-leave-from {
   transform: translateX(calc(-50% - 4%)) translateY(calc(-50% - 2.5%)) scale(1.16) !important; // Start from Ken Burns end position
+  opacity: 1 !important; // Fully visible during transition
 }
 
 // Old image slides out smoothly to the left while maintaining Ken Burns zoom/pan state
 // Slides 100vw to the left from its Ken Burns end position
 .slide-leave-to {
   transform: translateX(calc(-50% - 4% - 100vw)) translateY(calc(-50% - 2.5%)) scale(1.16) !important; // Slide out completely to the left, maintaining zoom and pan
+  opacity: 1 !important; // Fully visible during transition (no fade, just slide)
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
