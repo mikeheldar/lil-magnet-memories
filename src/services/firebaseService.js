@@ -2266,6 +2266,37 @@ class FirebaseService {
       throw error;
     }
   }
+
+  // Upload a review profile picture
+  async uploadReviewProfilePicture(file) {
+    try {
+      // Ensure auth context and handle anonymous sign-in if needed
+      if (!authStateWaitCompleted) {
+        await new Promise((resolve) => setTimeout(resolve, AUTH_STATE_WAIT_TIME));
+        authStateWaitCompleted = true;
+      }
+      const currentUser = auth?.currentUser;
+      if (!currentUser || currentUser.isAnonymous) {
+        try {
+          await signInAnonymously(auth);
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        } catch (e) {
+          console.warn('Anonymous sign-in failed for review profile picture upload:', e);
+        }
+      }
+
+      const storageInstance = getStorage(getApp());
+      const fileName = `reviews/${Date.now()}_${file.name}`;
+      const storageRef = ref(storageInstance, fileName);
+
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
+    } catch (error) {
+      console.error('Error uploading review profile picture:', error);
+      throw error;
+    }
+  }
 }
 
 export const firebaseService = new FirebaseService();

@@ -1,220 +1,260 @@
 <template>
-  <q-page class="event-calendar-page q-pa-lg">
-    <div class="page-container">
-      <div class="text-h4 text-center q-mb-md text-primary">
-        <q-icon name="event" size="32px" class="q-mr-sm" />
-        Event Calendar
-      </div>
-      <div class="text-body1 text-center text-grey-7 q-mb-xl">
-        Find us at local farmers markets and events. Click on any event for
-        more details!
+  <q-page class="event-calendar-page">
+    <div class="page-container q-pa-lg">
+      <div class="text-center q-mb-xl">
+        <div class="text-h4 text-weight-bold text-primary q-mb-sm">
+          <q-icon name="event" size="32px" class="q-mr-sm" />
+          Market Events Calendar
+        </div>
+        <div class="text-body1 text-grey-7">
+          Find us at local markets and events near you!
+        </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loadingEvents" class="text-center q-pa-lg">
+      <div v-if="loading" class="text-center q-pa-xl">
         <q-spinner-dots size="40px" color="primary" />
         <div class="q-mt-md text-grey-6">Loading events...</div>
       </div>
 
       <!-- No Events -->
       <div
-        v-else-if="displayEvents.length === 0"
-        class="text-center q-pa-lg text-grey-6"
+        v-else-if="publicEvents.length === 0"
+        class="text-center q-pa-xl"
       >
-        <q-icon name="event_busy" size="48px" class="q-mb-sm" />
-        <div>No upcoming or recent events to display.</div>
+        <q-icon name="event_busy" size="64px" color="grey-5" />
+        <div class="text-h6 text-grey-6 q-mt-md">
+          No upcoming events scheduled
+        </div>
+        <div class="text-body2 text-grey-5 q-mt-sm">
+          Check back soon for our next market appearance!
+        </div>
       </div>
 
       <!-- Events List -->
-      <div v-else class="events-list">
-        <q-card
-          v-for="event in displayEvents"
+      <div v-else class="row q-col-gutter-md">
+        <div
+          v-for="event in publicEvents"
           :key="event.id"
-          flat
-          bordered
-          class="event-card q-mb-md"
+          class="col-12 col-md-6 col-lg-4"
         >
-          <q-card-section>
-            <div class="row items-center">
-              <div class="col">
-                <div class="text-h6 text-primary text-weight-medium q-mb-xs">
-                  {{ event.name }}
+          <q-card class="event-card" flat bordered>
+            <q-card-section>
+              <div class="row items-center q-mb-sm">
+                <div class="col">
+                  <div class="text-h6 text-weight-bold text-primary">
+                    {{ event.name }}
+                  </div>
                 </div>
-                <div class="text-body2 text-grey-7 q-mb-xs">
-                  <q-icon name="place" size="16px" class="q-mr-xs" />
-                  {{ event.location }}
-                </div>
-                <div class="text-body2 text-grey-6">
-                  <q-icon name="schedule" size="16px" class="q-mr-xs" />
-                  {{ formatEventDate(event) }}
-                </div>
-              </div>
-              <div class="col-auto">
                 <q-chip
-                  :color="getEventStatusColor(event)"
+                  :color="getEventStatusColor(getEventStatus(event))"
                   text-color="white"
                   size="sm"
-                  class="q-mb-xs"
                 >
-                  {{ getEventStatusText(event) }}
+                  {{ getEventStatusText(getEventStatus(event)) }}
                 </q-chip>
-                <div v-if="event.eventLink" class="q-mt-sm">
-                  <q-btn
-                    :href="event.eventLink"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    color="primary"
-                    size="sm"
-                    outline
-                    icon="link"
-                    label="Event Details"
-                  />
+              </div>
+
+              <div class="event-details q-mb-md">
+                <div class="row q-gutter-md">
+                  <div class="col-12">
+                    <q-icon
+                      name="place"
+                      color="grey-6"
+                      size="sm"
+                      class="q-mr-xs"
+                    />
+                    <span class="text-body2">{{ event.location }}</span>
+                  </div>
+                  <div v-if="event.eventLink" class="col-12">
+                    <q-icon
+                      name="link"
+                      color="grey-6"
+                      size="sm"
+                      class="q-mr-xs"
+                    />
+                    <a
+                      :href="event.eventLink"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-body2 text-primary text-weight-medium"
+                      style="text-decoration: none;"
+                    >
+                      Event Details
+                      <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+                    </a>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <q-icon
+                      name="schedule"
+                      color="grey-6"
+                      size="sm"
+                      class="q-mr-xs"
+                    />
+                    <span class="text-body2">{{
+                      formatDateTime(event.startDateTime)
+                    }}</span>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <q-icon
+                      name="schedule"
+                      color="grey-6"
+                      size="sm"
+                      class="q-mr-xs"
+                    />
+                    <span class="text-body2">{{
+                      formatDateTime(event.endDateTime)
+                    }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </q-card-section>
-        </q-card>
+
+              <q-btn
+                v-if="getEventStatus(event) === 'active'"
+                color="primary"
+                label="Shop at Event"
+                icon="store"
+                class="full-width"
+                @click="goToMarketEventUpload"
+              />
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
     </div>
   </q-page>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { marketEventService } from '../services/marketEventService.js';
 
-export default {
-  name: 'EventCalendarPage',
-  setup() {
-    const events = ref([]);
-    const loadingEvents = ref(true);
+const router = useRouter();
+const loading = ref(true);
+const events = ref([]);
 
-    // Get events to display (upcoming and recent past events)
-    const displayEvents = computed(() => {
-      const now = new Date();
-      const threeMonthsAgo = new Date(now);
-      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-
-      return events.value
-        .filter((event) => {
-          const endDate = new Date(event.endDateTime);
-          // Show events that are upcoming or ended within the last 3 months
-          return endDate >= threeMonthsAgo;
-        })
-        .sort((a, b) => {
-          // Sort by start date, upcoming first
-          const dateA = new Date(a.startDateTime);
-          const dateB = new Date(b.startDateTime);
-          return dateB - dateA; // Most recent/upcoming first
-        });
-    });
-
-    // Format event date for display
-    const formatEventDate = (event) => {
-      try {
-        const startDate = new Date(event.startDateTime);
-        const endDate = new Date(event.endDateTime);
-        const startStr = startDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-        });
-        const endStr = endDate.toLocaleDateString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-        });
-        return `${startStr} - ${endStr}`;
-      } catch (error) {
-        return event.startDateTime;
-      }
-    };
-
-    // Get event status color
-    const getEventStatusColor = (event) => {
-      const now = new Date();
-      const startTime = new Date(event.startDateTime);
-      const endTime = new Date(event.endDateTime);
-
-      if (now < startTime) {
-        return 'blue';
-      } else if (now >= startTime && now <= endTime) {
-        return 'green';
-      } else {
-        return 'grey-6';
-      }
-    };
-
-    // Get event status text
-    const getEventStatusText = (event) => {
-      const now = new Date();
-      const startTime = new Date(event.startDateTime);
-      const endTime = new Date(event.endDateTime);
-
-      if (now < startTime) {
-        return 'Upcoming';
-      } else if (now >= startTime && now <= endTime) {
-        return 'Live Now';
-      } else {
-        return 'Past Event';
-      }
-    };
-
-    // Load events
-    const loadEvents = async () => {
-      loadingEvents.value = true;
-      try {
-        const allEvents = await marketEventService.getEvents();
-        events.value = allEvents;
-      } catch (error) {
-        console.error('Error loading events:', error);
-        events.value = [];
-      } finally {
-        loadingEvents.value = false;
-      }
-    };
-
-    // Set up listener for real-time updates
-    onMounted(() => {
-      loadEvents();
-      // Subscribe to real-time updates
-      marketEventService.addListener(() => {
-        loadEvents();
-      });
-    });
-
-    return {
-      events,
-      displayEvents,
-      loadingEvents,
-      formatEventDate,
-      getEventStatusColor,
-      getEventStatusText,
-    };
-  },
+const loadEvents = async () => {
+  try {
+    loading.value = true;
+    const allEvents = await marketEventService.getMarketEvents();
+    // Filter out testing events and only show public events
+    events.value = allEvents.filter((event) => !event.isTesting);
+  } catch (error) {
+    console.error('Error loading events:', error);
+    events.value = [];
+  } finally {
+    loading.value = false;
+  }
 };
+
+// Filter to only show upcoming and active events
+const publicEvents = computed(() => {
+  const now = new Date();
+  return events.value
+    .filter((event) => {
+      const endDate = event.endDateTime?.toDate
+        ? event.endDateTime.toDate()
+        : new Date(event.endDateTime);
+      return endDate >= now;
+    })
+    .sort((a, b) => {
+      const dateA = a.startDateTime?.toDate
+        ? a.startDateTime.toDate()
+        : new Date(a.startDateTime);
+      const dateB = b.startDateTime?.toDate
+        ? b.startDateTime.toDate()
+        : new Date(b.startDateTime);
+      return dateA - dateB;
+    });
+});
+
+const getEventStatus = (event) => {
+  const now = new Date();
+  const startDate = event.startDateTime?.toDate
+    ? event.startDateTime.toDate()
+    : new Date(event.startDateTime);
+  const endDate = event.endDateTime?.toDate
+    ? event.endDateTime.toDate()
+    : new Date(event.endDateTime);
+
+  if (now < startDate) {
+    return 'upcoming';
+  } else if (now >= startDate && now <= endDate) {
+    return 'active';
+  } else {
+    return 'past';
+  }
+};
+
+const getEventStatusColor = (status) => {
+  switch (status) {
+    case 'active':
+      return 'green';
+    case 'upcoming':
+      return 'blue';
+    case 'past':
+      return 'grey';
+    default:
+      return 'grey';
+  }
+};
+
+const getEventStatusText = (status) => {
+  switch (status) {
+    case 'active':
+      return 'Live Now';
+    case 'upcoming':
+      return 'Upcoming';
+    case 'past':
+      return 'Past';
+    default:
+      return 'Unknown';
+  }
+};
+
+const formatDateTime = (timestamp) => {
+  if (!timestamp) return 'TBD';
+  try {
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  } catch (error) {
+    return 'Invalid date';
+  }
+};
+
+const goToMarketEventUpload = () => {
+  router.push('/photo-upload');
+};
+
+onMounted(() => {
+  loadEvents();
+});
 </script>
 
-<style scoped>
-.page-container {
-  max-width: 900px;
+<style lang="scss" scoped>
+.event-calendar-page {
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.events-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
 .event-card {
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
 }
 
-.event-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.event-details {
+  margin-top: 12px;
 }
 </style>
