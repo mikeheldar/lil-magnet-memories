@@ -387,28 +387,63 @@ class FirebaseService {
                 }
               },
               (err) => {
-                // Check for 412 Precondition Failed or other retryable errors
+                // Comprehensive error inspection for debugging
                 const errorMessage = err?.message?.toLowerCase() || '';
                 const errorCode = err?.code || '';
                 const serverResponse = err?.serverResponse?.toString() || '';
                 
-                // Check for 412 errors - be more specific about actual 412 errors
-                // Extract HTTP status from error or server response
-                let httpStatus = err?.serverResponseCode || err?.statusCode || null;
+                // Log full error object for debugging - check all possible places for 412
+                console.warn('📋 Full error object inspection:', {
+                  code: errorCode,
+                  message: errorMessage,
+                  serverResponse: serverResponse,
+                  serverResponseCode: err?.serverResponseCode,
+                  statusCode: err?.statusCode,
+                  httpStatus: err?.httpStatus,
+                  // Check nested properties
+                  _delegate: err?._delegate,
+                  // Check if error has a cause
+                  cause: err?.cause,
+                  // Stringify the whole error to find 412 anywhere
+                  errorString: JSON.stringify(err),
+                  // Check stack trace
+                  stack: err?.stack?.substring(0, 500)
+                });
+                
+                // Extract HTTP status from multiple possible locations
+                let httpStatus = 
+                  err?.serverResponseCode || 
+                  err?.statusCode || 
+                  err?.httpStatus ||
+                  err?._delegate?.serverResponseCode ||
+                  err?._delegate?.statusCode ||
+                  null;
+                
+                // Also check in server response string
                 if (!httpStatus && serverResponse) {
                   const statusMatch = serverResponse.match(/412|Precondition Failed/i);
                   if (statusMatch) httpStatus = 412;
                 }
                 
-                // Only treat storage/unknown as 412 if we have evidence of 412 status
-                const is412Error = 
+                // Check error string representation for 412
+                if (!httpStatus) {
+                  const errorString = JSON.stringify(err);
+                  if (errorString.includes('412') || errorString.includes('Precondition Failed')) {
+                    httpStatus = 412;
+                  }
+                }
+                
+                // AGGRESSIVE 412 detection: If it's storage/unknown during upload and we're uploading bytes,
+                // treat it as potentially a 412 (common pattern we're seeing)
+                // This handles cases where Firebase wraps the 412 as storage/unknown
+                const isLikely412 = 
                   httpStatus === 412 ||
                   errorMessage.includes('412') ||
                   errorMessage.includes('precondition failed') ||
                   serverResponse.includes('412') ||
-                  (errorCode === 'storage/unknown' && (httpStatus === 412 || errorMessage.includes('412') || serverResponse.includes('412')));
+                  (errorCode === 'storage/unknown' && retryCount < 3); // Treat storage/unknown as potentially retryable
                 
-                const shouldRetry = is412Error && retryCount < 3;
+                const shouldRetry = isLikely412 && retryCount < 3;
                 
                 if (shouldRetry) {
                   console.warn(`⚠️ Upload error for photo ${i + 1} (attempt ${retryCount + 1}), will retry with fresh session...`);
@@ -477,16 +512,24 @@ class FirebaseService {
           const errorMessage = error?.message?.toLowerCase() || '';
           const errorCode = error?.code || '';
           const serverResponse = error?.serverResponse?.toString() || '';
-          const httpStatus = error?.httpStatus || error?.serverResponseCode || error?.statusCode || (serverResponse.match(/412/) ? 412 : null);
           
-          // Be more specific about 412 errors - only retry on actual 412 status
+          // Extract HTTP status from multiple possible locations
+          const httpStatus = 
+            error?.httpStatus || 
+            error?.serverResponseCode || 
+            error?.statusCode || 
+            (serverResponse.match(/412/) ? 412 : null);
+          
+          // Check if error was marked as retryable by error handler
+          const isRetryableError = error?.shouldRetry || error?.retryable || error?.isPreconditionFailed || error?.isLikely412;
+          
+          // Be aggressive about detecting 412: storage/unknown during upload is often 412
           const isPreconditionFailed = 
-            error?.isPreconditionFailed || 
-            error?.shouldRetry ||
+            isRetryableError ||
             httpStatus === 412 ||
             errorMessage.includes('412') ||
             errorMessage.includes('precondition failed') ||
-            (errorCode === 'storage/unknown' && httpStatus === 412);
+            (errorCode === 'storage/unknown' && retryCount < 3); // Treat storage/unknown as potentially retryable
           
           if (isPreconditionFailed && retryCount < 3) {
             // Log detailed error information for debugging
