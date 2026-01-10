@@ -185,8 +185,8 @@
       </q-toolbar>
     </q-header>
 
-    <!-- Sub-Navigation Bar (below header, medium to large screens only) -->
-    <div class="sub-navigation-bar gt-sm" :class="[headerClasses, { 'header-hidden': !headerVisible }]">
+    <!-- Sub-Navigation Bar (below header, small screens and up - includes medium) -->
+    <div class="sub-navigation-bar gt-xs" :class="[headerClasses, { 'header-hidden': !headerVisible }]">
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
