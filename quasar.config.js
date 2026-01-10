@@ -71,6 +71,33 @@ module.exports = configure(function (/* ctx */) {
       extendViteConf (viteConf) {
         // Copy public directory including .well-known
         viteConf.publicDir = 'public';
+        
+        // Ensure proper chunk splitting and generation
+        viteConf.build = viteConf.build || {};
+        viteConf.build.rollupOptions = viteConf.build.rollupOptions || {};
+        viteConf.build.rollupOptions.output = viteConf.build.rollupOptions.output || {};
+        
+        // Ensure chunks are generated with consistent hashing
+        viteConf.build.rollupOptions.output.manualChunks = (id) => {
+          // Keep vendor chunks separate
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('vue-router')) {
+              return 'vendor-vue';
+            }
+            if (id.includes('quasar')) {
+              return 'vendor-quasar';
+            }
+            if (id.includes('firebase')) {
+              return 'vendor-firebase';
+            }
+            return 'vendor';
+          }
+        };
+        
+        // Ensure chunk file names are consistent
+        viteConf.build.rollupOptions.output.chunkFileNames = 'assets/[name]-[hash].js';
+        viteConf.build.rollupOptions.output.entryFileNames = 'assets/[name]-[hash].js';
+        viteConf.build.rollupOptions.output.assetFileNames = 'assets/[name]-[hash].[ext]';
       },
       // viteVuePluginOptions: {},
 
