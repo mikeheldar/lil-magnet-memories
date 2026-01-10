@@ -776,10 +776,12 @@ export default {
 
     // Handle when image transition enters (after slide-in completes)
     const handleImageEnter = () => {
-      // Brief pause after slide completes, then start Ken Burns panning animation
-      // This ensures smooth transition without jump - Ken Burns starts from same position slide ended
+      // Brief pause after slide completes, then start Ken Burns panning animation directly
+      // Don't toggle isImagePanning off/on to avoid visual jump - start animation directly
       setTimeout(() => {
-        resetPanningAnimation();
+        // Start Ken Burns animation directly without resetting state
+        // The image is already at the correct position from slide-enter-to
+        isImagePanning.value = true;
       }, 500); // Brief pause to ensure transition is fully settled
     };
 
@@ -1728,7 +1730,7 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translateX(-50%) translateY(-50%); // Center image (Ken Burns will pan from here)
+  transform: translateX(-50%) translateY(-50%); // Center image (matches slide-enter-to exactly)
   transform-origin: center center; // Scale from center
   
   // During Vue transitions, transition classes override base transform
@@ -1784,7 +1786,11 @@ export default {
   opacity: 1 !important;
 }
 
+<<<<<<< HEAD
 // New image slides to center (Ken Burns start position - matches exactly)
+=======
+// New image slides to center (Ken Burns start position - matches base transform exactly)
+>>>>>>> 26aebb3 (fix: prevent jump after slide transition by matching transforms and avoiding state toggle)
 .slide-enter-to {
   animation: none !important;
   transform: translateX(-50%) translateY(-50%) !important;
