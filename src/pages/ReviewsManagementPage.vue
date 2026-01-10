@@ -28,8 +28,7 @@
               v-model="newReview.rating"
               :max="5"
               size="32px"
-              color="primary"
-              class="q-mb-md"
+              class="q-mb-md star-rating"
             />
             <q-toggle
               v-model="newReview.isVerified"
@@ -90,7 +89,7 @@
                     :max="5"
                     size="16px"
                     readonly
-                    color="primary"
+                    class="star-rating"
                   />
                 </div>
                 <q-chip
@@ -164,8 +163,7 @@
                 v-model="editingReview.rating"
                 :max="5"
                 size="32px"
-                color="primary"
-                class="q-mb-md"
+                class="q-mb-md star-rating"
               />
               <q-toggle
                 v-model="editingReview.isVerified"

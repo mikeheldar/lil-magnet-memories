@@ -244,7 +244,7 @@
                       :max="5"
                       size="16px"
                       readonly
-                      color="primary"
+                      class="star-rating"
                     />
                   </div>
                 </div>
