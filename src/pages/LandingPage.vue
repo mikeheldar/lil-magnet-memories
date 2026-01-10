@@ -1671,12 +1671,12 @@ export default {
   }
 }
 
-// Easel image wrapper - clips overflow for smooth simultaneous sliding
+// Easel image wrapper - clips overflow for smooth simultaneous sliding and Ken Burns zoom
 .easel-image-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden; // Clip images during transition for clean sliding
+  overflow: hidden !important; // Clip images during transition AND Ken Burns zoom (critical for Ken Burns)
   flex: 1; // Take up available space in flex container
 }
 
@@ -1688,7 +1688,7 @@ export default {
   }
 
   .easel-image {
-    object-position: 0% 0% !important; // Start at top-left (0% 0%) for Ken Burns panning animation
+    // Transform-based Ken Burns animation (no need to change object-position)
   }
 }
 
@@ -1697,7 +1697,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover; // Fill container, crop to fit
-  object-position: 0% 0% !important; // Start at top-left for Ken Burns effect (0% horizontal, 0% vertical)
+  object-position: center center; // Center as default
   display: block;
   border-radius: 0; // No border radius for edge-to-edge
   border: none; // No border for edge-to-edge
@@ -1709,32 +1709,34 @@ export default {
           drop-shadow(0 2px 15px rgba(0, 0, 0, 0.1));
   background: transparent;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.1); // Center image and start slightly zoomed for Ken Burns
+  transform-origin: center center; // Scale from center
 }
 
-// Ken Burns effect - smooth panning animation while image is displayed
-// Pans down and to the right gradually before the next slide transition
+// Ken Burns effect - smooth zoom and pan animation while image is displayed
+// Scales image larger and pans down and to the right gradually before the next slide transition
 .easel-image.image-panning {
-  animation: panImage 7s ease-in-out forwards !important;
-  will-change: object-position; // Optimize animation performance
+  animation: kenBurns 7s ease-in-out forwards !important;
+  will-change: transform; // Optimize animation performance
 }
 
-@keyframes panImage {
+@keyframes kenBurns {
   0% {
-    object-position: 0% 0% !important; // Start at top-left (beginning of image)
+    transform: translate(-50%, -50%) scale(1.1) translate(0%, 0%); // Start centered, slightly zoomed, at original position
   }
   25% {
-    object-position: 10% 10% !important; // Gradual movement down and right
+    transform: translate(-50%, -50%) scale(1.15) translate(-4%, -2%); // Zoom in more, pan down and right
   }
   50% {
-    object-position: 18% 20% !important; // Continue panning down and right
+    transform: translate(-50%, -50%) scale(1.2) translate(-6%, -4%); // Continue zooming and panning
   }
   75% {
-    object-position: 25% 28% !important; // More pronounced movement
+    transform: translate(-50%, -50%) scale(1.22) translate(-8%, -6%); // More pronounced zoom and pan
   }
   100% {
-    object-position: 30% 35% !important; // End down and to the right (noticeable Ken Burns effect)
+    transform: translate(-50%, -50%) scale(1.25) translate(-10%, -8%); // End zoomed in and panned down-right (visible Ken Burns effect)
   }
 }
 
