@@ -1791,11 +1791,29 @@ html, body {
 }
 
 // Shop section styles
+.shop-category-wrapper {
+  position: relative;
+}
+
 .shop-category-item {
   transition: background-color 0.2s ease;
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.product-submenu {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-left: 2px solid rgba(0, 0, 0, 0.1);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  
+  .shop-category-wrapper:hover & {
+    max-height: 500px;
+    opacity: 1;
   }
 }
 
