@@ -2274,7 +2274,7 @@ export default {
   // Ensure dots are visible 20px below the image on small screens
   .easel-carousel-dots {
     position: absolute !important;
-    top: calc(100% - 40px) !important; // Position 20px below image wrapper (100% - 60px padding + 20px gap)
+    top: calc(100% + 20px) !important; // Position exactly 20px below the image wrapper
     left: 50% !important;
     transform: translateX(-50%) !important;
     display: flex !important;
