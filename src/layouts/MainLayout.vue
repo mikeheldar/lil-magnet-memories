@@ -1506,9 +1506,6 @@ export default {
   }
 }
 
-<<<<<<< HEAD
-// Drawer header fill - fixed at top, always visible when drawer is open
-// Positioned below header (84px on small, 64px on medium+)
 // Drawer header fill - always at top (0,0), behind header when visible
 // Only visible when drawer is open, positioned behind header (z-index below header)
 .drawer-header-fill {
