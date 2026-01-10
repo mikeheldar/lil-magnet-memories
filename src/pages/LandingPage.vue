@@ -1251,24 +1251,15 @@ export default {
       resetPanningAnimation();
 
       // Rotate easel images with simple cycle:
-<<<<<<< HEAD
-      // 5s Ken Burns (gentle effect) → pause at end position → slide transition (2s) → 1s pause → repeat
-      // Total cycle: 5s Ken Burns + 1s pause + 2s slide + 1s pause = 9s
-=======
       // 8s Ken Burns (slow pan) → pause at end position → slide transition (3s) → 1s pause → repeat
       // Total cycle: 8s Ken Burns + 1s pause + 3s slide + 1s pause = 13s
->>>>>>> 4fa07cb (fix: smooth easel transitions - remove scale from Ken Burns, use slow linear slide, prevent jump)
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
           // Ken Burns animation will restart automatically via watch when image changes
-<<<<<<< HEAD
-        }, 9000); // 9 seconds: 5s Ken Burns + 1s pause + 2s slide + 1s pause
-=======
         }, 13000); // 13 seconds: 8s Ken Burns + 1s pause + 3s slide + 1s pause
->>>>>>> 4fa07cb (fix: smooth easel transitions - remove scale from Ken Burns, use slow linear slide, prevent jump)
       }
     });
 
@@ -1800,18 +1791,10 @@ export default {
   opacity: 1 !important;
 }
 
-<<<<<<< HEAD
-// Old image slides completely off-screen to the left (maintaining its Ken Burns end state)
-// Account for Ken Burns pan (+2.5%) and scale (1.12) - need extra distance to fully exit
-.slide-leave-to {
-  animation: none !important;
-  transform: translateX(calc(-50% - 120vw)) translateY(calc(-50% + 2%)) scale(1.12) !important;
-=======
 // Old image slides completely off-screen to the left (maintaining Ken Burns pan position)
 .slide-leave-to {
   animation: none !important;
   transform: translateX(calc(-50% + 3% - 120vw)) translateY(calc(-50% + 2%)) !important;
->>>>>>> 4fa07cb (fix: smooth easel transitions - remove scale from Ken Burns, use slow linear slide, prevent jump)
   opacity: 1 !important;
 }
 
