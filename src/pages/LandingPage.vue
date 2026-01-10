@@ -1251,15 +1251,15 @@ export default {
       resetPanningAnimation();
 
       // Rotate easel images with simple cycle:
-      // 8s Ken Burns (slow pan) → pause at end position → slide transition (3s) → 1s pause → repeat
-      // Total cycle: 8s Ken Burns + 1s pause + 3s slide + 1s pause = 13s
+      // 8s Ken Burns (pan up and left) → pause at end position → slide transition (5s) → repeat
+      // Total cycle: 8s Ken Burns + 5s slide = 13s
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
           // Ken Burns animation will restart automatically via watch when image changes
-        }, 13000); // 13 seconds: 8s Ken Burns + 1s pause + 3s slide + 1s pause
+        }, 13000); // 13 seconds: 8s Ken Burns + 5s slide
       }
     });
 
@@ -1729,7 +1729,7 @@ export default {
 }
 
 // Ken Burns effect - slow, smooth pan only (no zoom/scale)
-// Pans slowly right and down - then pauses at end position
+// Pans slowly up and left - so focus appears to move down and right
 .easel-image.image-panning {
   animation: kenBurns 8s linear forwards !important;
   will-change: transform; // Optimize animation performance
@@ -1740,7 +1740,7 @@ export default {
     transform: translateX(-50%) translateY(-50%); // Start centered
   }
   100% {
-    transform: translateX(calc(-50% + 3%)) translateY(calc(-50% + 2%)); // End position - slow pan right and down
+    transform: translateX(calc(-50% - 3%)) translateY(calc(-50% - 2%)); // End position - pan up and left (focus moves down and right)
   }
 }
 
@@ -1749,7 +1749,7 @@ export default {
 // Images appear stitched together (no gap between them during transition)
 // Slow, smooth linear transition for consistent velocity
 .slide-enter-active {
-  transition: transform 3s linear !important;
+  transition: transform 5s linear !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1760,7 +1760,7 @@ export default {
 }
 
 .slide-leave-active {
-  transition: transform 3s linear !important;
+  transition: transform 5s linear !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1784,17 +1784,17 @@ export default {
   opacity: 1 !important;
 }
 
-// Old image starts from Ken Burns end position (panned right and down, no scale)
+// Old image starts from Ken Burns end position (panned up and left, no scale)
 .slide-leave-from {
   animation: none !important;
-  transform: translateX(calc(-50% + 3%)) translateY(calc(-50% + 2%)) !important;
+  transform: translateX(calc(-50% - 3%)) translateY(calc(-50% - 2%)) !important;
   opacity: 1 !important;
 }
 
 // Old image slides completely off-screen to the left (maintaining Ken Burns pan position)
 .slide-leave-to {
   animation: none !important;
-  transform: translateX(calc(-50% + 3% - 120vw)) translateY(calc(-50% + 2%)) !important;
+  transform: translateX(calc(-50% - 3% - 120vw)) translateY(calc(-50% - 2%)) !important;
   opacity: 1 !important;
 }
 
