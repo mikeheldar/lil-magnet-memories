@@ -372,14 +372,7 @@
               @click="$router.push('/products/custom')"
               class="shop-category-item"
             >
-              <q-item-section avatar>
-                <q-icon name="camera_alt" color="primary" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Custom Photo Magnets</q-item-label>
-                <q-item-label caption>Create personalized magnets</q-item-label>
-              </q-item-section>
-              <q-item-section side="right" v-if="customProductsList.length > 0">
+              <q-item-section avatar v-if="customProductsList.length > 0" class="category-expand-section">
                 <q-btn
                   flat
                   dense
@@ -389,6 +382,13 @@
                   :icon="customProductsExpanded ? 'expand_less' : 'expand_more'"
                   class="category-expand-btn"
                 />
+              </q-item-section>
+              <q-item-section avatar>
+                <q-icon name="camera_alt" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Custom Photo Magnets</q-item-label>
+                <q-item-label caption>Create personalized magnets</q-item-label>
               </q-item-section>
             </q-item>
 
@@ -418,14 +418,7 @@
               @click="$router.push('/products/designer')"
               class="shop-category-item"
             >
-              <q-item-section avatar>
-                <q-icon name="palette" color="secondary" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Designer Magnets</q-item-label>
-                <q-item-label caption>Ready-made designs</q-item-label>
-              </q-item-section>
-              <q-item-section side="right" v-if="designerProductsList.length > 0">
+              <q-item-section avatar v-if="designerProductsList.length > 0" class="category-expand-section">
                 <q-btn
                   flat
                   dense
@@ -435,6 +428,13 @@
                   :icon="designerProductsExpanded ? 'expand_less' : 'expand_more'"
                   class="category-expand-btn"
                 />
+              </q-item-section>
+              <q-item-section avatar>
+                <q-icon name="palette" color="secondary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Designer Magnets</q-item-label>
+                <q-item-label caption>Ready-made designs</q-item-label>
               </q-item-section>
             </q-item>
 
@@ -464,14 +464,7 @@
               @click="$router.push('/products/specialty')"
               class="shop-category-item"
             >
-              <q-item-section avatar>
-                <q-icon name="card_giftcard" color="specialty" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Specialty Products</q-item-label>
-                <q-item-label caption>Unique specialty items</q-item-label>
-              </q-item-section>
-              <q-item-section side="right" v-if="specialtyProductsList.length > 0">
+              <q-item-section avatar v-if="specialtyProductsList.length > 0" class="category-expand-section">
                 <q-btn
                   flat
                   dense
@@ -481,6 +474,13 @@
                   :icon="specialtyProductsExpanded ? 'expand_less' : 'expand_more'"
                   class="category-expand-btn"
                 />
+              </q-item-section>
+              <q-item-section avatar>
+                <q-icon name="card_giftcard" color="specialty" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Specialty Products</q-item-label>
+                <q-item-label caption>Unique specialty items</q-item-label>
               </q-item-section>
             </q-item>
 
@@ -1842,6 +1842,15 @@ html, body {
     max-height: 500px;
     opacity: 1;
   }
+}
+
+.category-expand-section {
+  min-width: 40px !important;
+  width: 40px !important;
+  padding-right: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .category-expand-btn {
