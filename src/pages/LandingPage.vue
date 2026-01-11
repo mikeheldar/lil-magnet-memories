@@ -209,11 +209,11 @@
         <div class="text-h4 text-center q-mb-lg text-primary">
           What Our Customers Say
         </div>
-        <div v-if="loadingReviews" class="text-center q-pa-lg">
+        <div v-if="loadingReviews || !reviewsLoaded" class="text-center q-pa-lg">
           <q-spinner-dots size="40px" color="primary" />
           <div class="q-mt-md text-grey-6">Loading reviews...</div>
         </div>
-        <div v-else-if="verifiedReviews && verifiedReviews.length > 0" class="row q-col-gutter-md justify-center" :key="`reviews-${reviews.length}`">
+        <div v-else-if="reviewsLoaded && verifiedReviews && verifiedReviews.length > 0" class="row q-col-gutter-md justify-center" :key="`reviews-${reviews.length}`">
           <div
             v-for="review in verifiedReviews"
             :key="review.id"
@@ -286,7 +286,7 @@
             </q-card>
           </div>
         </div>
-        <div v-else class="text-center q-pa-xl">
+        <div v-else-if="reviewsLoaded && (!verifiedReviews || verifiedReviews.length === 0)" class="text-center q-pa-xl">
           <div class="text-grey-6 q-mb-md">No verified reviews yet.</div>
           <!-- Leave Your Review Card (shown when no reviews) -->
           <div class="row justify-center">
@@ -680,17 +680,27 @@ export default {
 
     const loadReviews = async () => {
       loadingReviews.value = true;
+      reviewsLoaded.value = false;
       try {
         const reviewsData = await firebaseService.getReviews();
         // Use a new array reference to ensure reactivity
         reviews.value = Array.isArray(reviewsData) ? [...reviewsData] : [];
         console.log('✅ Reviews loaded:', reviews.value.length, 'total reviews');
+        
+        // Wait for computed to update
+        await nextTick();
+        
         const verifiedCount = verifiedReviews.value.length;
         console.log('✅ Verified reviews:', verifiedCount);
         console.log('✅ Reviews data:', reviews.value);
+        
+        // Mark as loaded after a brief delay to ensure reactivity
+        await nextTick();
+        reviewsLoaded.value = true;
       } catch (error) {
         console.error('Error loading reviews:', error);
         reviews.value = [];
+        reviewsLoaded.value = true; // Still mark as loaded even on error
       } finally {
         loadingReviews.value = false;
         // Force reactivity update
