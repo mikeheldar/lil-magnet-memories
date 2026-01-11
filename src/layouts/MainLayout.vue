@@ -268,6 +268,17 @@
             </q-item>
           </q-list>
         </q-btn-dropdown>
+
+        <!-- Event Calendar Link -->
+        <q-btn
+          flat
+          dense
+          no-caps
+          label="Event Calendar"
+          icon="event"
+          class="sub-nav-btn"
+          @click="$router.push('/event-calendar')"
+        />
       </div>
     </div>
 
@@ -747,6 +758,99 @@
       <!-- Page Title Section removed - no headers on non-landing pages -->
       <router-view />
     </q-page-container>
+
+    <!-- Footer Section -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        <div class="row q-col-gutter-lg">
+          <!-- Brand Column -->
+          <div class="col-12 col-md-3">
+            <img
+              src="/assets/lil-magnet-memories-logo.png"
+              alt="Li'l Magnet Memories Logo"
+              class="footer-logo q-mb-md"
+            />
+            <div class="text-h6 text-white q-mb-sm">Li'l Magnet Memories</div>
+            <div class="text-body2 text-grey-3">
+              Turning your precious moments into beautiful, lasting memories
+              since 2025
+            </div>
+          </div>
+
+          <!-- Shop Column -->
+          <div class="col-12 col-md-3">
+            <div class="text-h6 text-white q-mb-md">Shop</div>
+            <div class="q-gutter-sm">
+              <div>
+                <router-link to="/products/custom" class="footer-link"
+                  >Custom Photo Magnets</router-link
+                >
+              </div>
+              <div>
+                <router-link to="/products/designer" class="footer-link"
+                  >Designer Magnets</router-link
+                >
+              </div>
+              <div>
+                <router-link to="/products/specialty" class="footer-link"
+                  >Specialty Products</router-link
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Support Column -->
+          <div class="col-12 col-md-3">
+            <div class="text-h6 text-white q-mb-md">Support</div>
+            <div class="q-gutter-sm">
+              <div>
+                <router-link to="/contact-us" class="footer-link"
+                  >Contact Us</router-link
+                >
+              </div>
+              <div>
+                <router-link to="/shipping-info" class="footer-link"
+                  >Shipping Info</router-link
+                >
+              </div>
+              <div>
+                <router-link to="/returns" class="footer-link">Returns</router-link>
+              </div>
+              <div>
+                <router-link to="/faq" class="footer-link">FAQ</router-link>
+              </div>
+            </div>
+          </div>
+
+          <!-- Follow Us Column -->
+          <div class="col-12 col-md-3">
+            <div class="text-h6 text-white q-mb-md">Follow Us</div>
+            <div class="q-gutter-sm q-mb-md">
+              <a
+                href="https://www.instagram.com/lilmagnetmemories"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="footer-social-link"
+              >
+                <q-icon name="camera_alt" size="24px" />
+                <span class="q-ml-sm">Instagram</span>
+              </a>
+              <a href="mailto:info@lilmagnetmemories.com" class="footer-social-link">
+                <q-icon name="email" size="24px" />
+                <span class="q-ml-sm">Email</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="footer-bottom q-mt-lg q-pt-lg">
+          <div class="text-body2 text-grey-4 text-center">
+            © 2025 Li'l Magnet Memories. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
   </q-layout>
 </template>
 
@@ -1062,12 +1166,12 @@ export default {
     });
 
     const headerTitleSpanStyle = computed(() => {
-      // Use design system sans font - same as sub-nav items
+      // Use Josefin Sans for headings
       return {
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif", // foundation.typography.fontFamily.sans
-        fontWeight: '500', // foundation.typography.fontWeight.medium
-        fontStyle: 'normal', // foundation.typography.fontStyle.normal
-        letterSpacing: '0.01em', // foundation.typography.letterSpacing.wide
+        fontFamily: "'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+        fontWeight: '600', // Semi-bold for headings
+        fontStyle: 'normal',
+        letterSpacing: '0.01em',
         textTransform: 'none',
         color: '#ffffff', // White text on black header
       };
@@ -1080,13 +1184,13 @@ export default {
       };
     });
 
-    // Computed style for header buttons - use design system sans font, white text
+    // Computed style for header buttons - use Lato for body text
     const headerButtonStyle = computed(() => {
       return {
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif", // foundation.typography.fontFamily.sans - same as sub-nav
-        fontWeight: '500', // foundation.typography.fontWeight.medium
-        fontStyle: 'normal', // foundation.typography.fontStyle.normal
-        letterSpacing: '0.01em', // foundation.typography.letterSpacing.wide
+        fontFamily: "'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+        fontWeight: '400', // Regular weight for body text
+        fontStyle: 'normal',
+        letterSpacing: '0.01em',
         color: '#ffffff', // White text on black header
       };
     });
@@ -1540,9 +1644,9 @@ html body .q-layout .q-drawer.drawer-under-header {
 
 .page-title-text {
   font-size: 1.5rem;
-  font-weight: 500;
+  font-weight: 600; // Semi-bold for headings
   color: #424242; // Dark grey text
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   letter-spacing: 0.01em;
 }
 
@@ -1639,11 +1743,11 @@ html, body {
   max-width: 100% !important; // Ensure it doesn't exceed container, but container allows fit-content
   white-space: nowrap !important; // Prevent text wrapping
   overflow: visible !important; // Allow text to be fully visible
-  // Standardized font from design system - same as sub-nav items
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
-  font-weight: 500 !important; // foundation.typography.fontWeight.medium
-  font-style: normal !important; // foundation.typography.fontStyle.normal
-  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  // Use Josefin Sans for headings
+  font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 600 !important; // Semi-bold for headings
+  font-style: normal !important;
+  letter-spacing: 0.01em !important;
 
   &:hover {
     opacity: 0.8;
@@ -2016,11 +2120,11 @@ html, body {
 .sub-nav-btn {
   min-width: auto;
   position: relative;
-  // Use design system sans font - standardized across navigation
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
-  font-weight: 500 !important; // foundation.typography.fontWeight.medium
-  font-style: normal !important; // foundation.typography.fontStyle.normal
-  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  // Use Lato for body text in navigation
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 400 !important; // Regular weight for body text
+  font-style: normal !important;
+  letter-spacing: 0.01em !important;
   // Text color is Jet Black (#30343F) from Moonlight Glow palette (sub-nav has Ghost White background)
   color: #30343F !important; // Jet Black text on Ghost White background
 
@@ -2189,5 +2293,53 @@ html, body {
     width: 28px !important;
     height: 28px !important;
   }
+}
+
+// Footer Section
+.site-footer {
+  background: #30343f;
+  color: white;
+  margin-top: 4rem;
+  padding: 3rem 0 1.5rem;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.footer-logo {
+  height: 50px;
+  width: auto;
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: white;
+}
+
+.footer-social-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s;
+}
+
+.footer-social-link:hover {
+  color: white;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 </style>

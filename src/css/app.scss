@@ -3,6 +3,48 @@
 // Import design system colors
 @import '../css/quasar.variables.scss';
 
+// ============================================================================
+// DESIGN SYSTEM TYPOGRAPHY
+// Josefin Sans for headings, Lato for body text
+// ============================================================================
+
+// Base body font - Lato
+body,
+html {
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+// All headings use Josefin Sans
+h1, h2, h3, h4, h5, h6,
+.text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6,
+[class*="text-h1"], [class*="text-h2"], [class*="text-h3"], [class*="text-h4"], [class*="text-h5"], [class*="text-h6"],
+.q-card .text-h1, .q-card .text-h2, .q-card .text-h3, .q-card .text-h4, .q-card .text-h5, .q-card .text-h6,
+.q-item-label, .q-item-label-header {
+  font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+// Body text uses Lato
+p, span, div, a, li, td, th,
+.text-body1, .text-body2, .text-caption,
+[class*="text-body1"], [class*="text-body2"], [class*="text-caption"],
+.q-card-section, .q-item-section, .q-field__label, .q-input, .q-select,
+.q-btn:not(.q-btn--round):not(.q-btn--fab) .q-btn__content,
+.q-list, .q-item, .q-item-section .q-item-label {
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+// Buttons use Lato (body text)
+.q-btn:not(.q-btn--round):not(.q-btn--fab),
+.q-btn .q-btn__content {
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+// Inputs and form elements use Lato
+.q-input, .q-select, .q-field, .q-field__native,
+.q-field__label, .q-field__messages, .q-field__hint {
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
 // Star rating color - use design system token
 .q-rating {
   color: $star-yellow !important;
@@ -70,14 +112,14 @@
   }
 }
 
-/* Default header text - use design system sans font (same as sub-nav items) */
+/* Default header text - use Josefin Sans for headings */
 .q-header .q-toolbar-title span,
 .q-header .q-toolbar__title span {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
-  font-weight: 500 !important; // foundation.typography.fontWeight.medium
-  font-style: normal !important; // foundation.typography.fontStyle.normal
+  font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 600 !important; // Semi-bold for headings
+  font-style: normal !important;
   font-size: 1.5rem !important; // Default larger size
-  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  letter-spacing: 0.01em !important;
   color: #ffffff !important;
 }
 
@@ -90,11 +132,11 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
 .q-header .q-toolbar-title .header-title-clickable.text-h5.text-weight-bold,
 .q-header .q-toolbar__title .header-title-clickable.text-h5.text-weight-bold,
 .header-title-clickable.text-h5 {
-  // Use design system sans font - same as sub-nav items
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
-  font-weight: 500 !important; // foundation.typography.fontWeight.medium
-  font-style: normal !important; // foundation.typography.fontStyle.normal
-  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  // Use Josefin Sans for headings
+  font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 600 !important; // Semi-bold for headings
+  font-style: normal !important;
+  letter-spacing: 0.01em !important;
   
   // Responsive font size on small screens to prevent text cutoff
   // Font size stays at 1.5rem (24px) above 405px, reduces to 1.2rem (19.2px) below 405px - just a few points smaller
@@ -111,13 +153,13 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
   }
 }
 
-/* Default header buttons - white, use design system sans font for text */
+/* Default header buttons - white, use Lato for body text */
 .q-header .q-btn {
   color: #ffffff !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans - same as sub-nav
-  font-weight: 500 !important; // foundation.typography.fontWeight.medium
-  font-style: normal !important; // foundation.typography.fontStyle.normal
-  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 400 !important; // Regular weight for body text
+  font-style: normal !important;
+  letter-spacing: 0.01em !important;
 }
 
 /* Icons in header buttons must use Material Icons font - override sans-serif */
@@ -141,10 +183,10 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
 
 .q-header .q-chip:not(.test-environment-chip) {
   color: #ffffff !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans - same as sub-nav
-  font-weight: 500 !important; // foundation.typography.fontWeight.medium
-  font-style: normal !important; // foundation.typography.fontStyle.normal
-  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 400 !important; // Regular weight for body text
+  font-style: normal !important;
+  letter-spacing: 0.01em !important;
 }
 
 /* About button specifically - ensure it uses sans font for text (not icons) */
@@ -160,10 +202,10 @@ body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *:not(.q-icon),
 .about-header-btn *:not(.q-icon),
 .about-header-btn .q-btn__content,
 .about-header-btn .q-btn__content *:not(.q-icon) {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
-  font-weight: 500 !important; // foundation.typography.fontWeight.medium
-  font-style: normal !important; // foundation.typography.fontStyle.normal
-  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 400 !important; // Regular weight for body text
+  font-style: normal !important;
+  letter-spacing: 0.01em !important;
 }
 
 /* Default page background - clean white */
@@ -202,11 +244,11 @@ a.text-primary,
   background-image: none !important;
 }
 
-/* Modern, clean hero title - elegant typography */
+/* Modern, clean hero title - Josefin Sans for headings */
 .hero-title {
   color: #1a1a1a !important;
-  font-weight: 300 !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 600 !important; // Semi-bold for headings
+  font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
   font-style: normal !important;
   text-shadow: none !important;
   -webkit-text-stroke: none !important;
@@ -324,11 +366,11 @@ body .q-header .q-toolbar .q-btn[label="About"] .q-btn__content *:not(.q-icon),
 .q-header .q-btn:not(.test-environment-chip) .q-btn__content *:not(.q-icon),
 .q-header .q-chip:not(.test-environment-chip) {
   color: #ffffff !important;
-  // Standardize font - use design system sans font for header text elements (same as sub-nav)
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // foundation.typography.fontFamily.sans
-  font-weight: 500 !important; // foundation.typography.fontWeight.medium
-  font-style: normal !important; // foundation.typography.fontStyle.normal
-  letter-spacing: 0.01em !important; // foundation.typography.letterSpacing.wide
+  // Use Lato for body text in header
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 400 !important; // Regular weight for body text
+  font-style: normal !important;
+  letter-spacing: 0.01em !important;
 }
 
 /* Icons MUST use Material Icons font - override ALL sans-serif rules with highest specificity */

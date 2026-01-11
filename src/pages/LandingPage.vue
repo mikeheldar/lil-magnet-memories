@@ -213,9 +213,9 @@
           <q-spinner-dots size="40px" color="primary" />
           <div class="q-mt-md text-grey-6">Loading reviews...</div>
         </div>
-        <div v-else-if="reviews.length > 0" class="row q-col-gutter-md">
+        <div v-else-if="verifiedReviews.length > 0" class="row q-col-gutter-md">
           <div
-            v-for="review in reviews"
+            v-for="review in verifiedReviews"
             :key="review.id"
             class="col-12 col-sm-6 col-md-4 col-lg-3"
           >
@@ -263,105 +263,39 @@
               </q-card-section>
             </q-card>
           </div>
+          <!-- Leave Your Review Card -->
+          <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <q-card class="leave-review-card" @click="$router.push('/leave-review')">
+              <q-card-section class="text-center">
+                <q-icon name="rate_review" size="48px" color="primary" class="q-mb-md" />
+                <div class="text-h6 text-weight-bold q-mb-sm">Leave Your Review</div>
+                <div class="text-body2 text-grey-7">
+                  Share your experience with us!
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
         </div>
-        <div v-else class="text-center text-grey-6 q-pa-xl">
-          No reviews yet. Be the first to leave a review!
+        <div v-else class="text-center q-pa-xl">
+          <div class="text-grey-6 q-mb-md">No verified reviews yet.</div>
+          <!-- Leave Your Review Card (shown when no reviews) -->
+          <div class="row justify-center">
+            <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+              <q-card class="leave-review-card" @click="$router.push('/leave-review')">
+                <q-card-section class="text-center">
+                  <q-icon name="rate_review" size="64px" color="primary" class="q-mb-md" />
+                  <div class="text-h5 text-weight-bold q-mb-sm">Be the First to Review!</div>
+                  <div class="text-body1 text-grey-7 q-mb-md">
+                    Share your experience with us
+                  </div>
+                  <q-btn color="primary" label="Leave Your Review" icon="rate_review" />
+                </q-card-section>
+              </q-card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- Footer Section -->
-    <footer class="site-footer">
-      <div class="footer-container">
-        <div class="row q-col-gutter-lg">
-          <!-- Brand Column -->
-          <div class="col-12 col-md-3">
-            <img
-              src="/assets/lil-magnet-memories-logo.png"
-              alt="Li'l Magnet Memories Logo"
-              class="footer-logo q-mb-md"
-            />
-            <div class="text-h6 text-white q-mb-sm">Li'l Magnet Memories</div>
-            <div class="text-body2 text-grey-3">
-              Turning your precious moments into beautiful, lasting memories
-              since 2025
-            </div>
-          </div>
-
-          <!-- Shop Column -->
-          <div class="col-12 col-md-3">
-            <div class="text-h6 text-white q-mb-md">Shop</div>
-            <div class="q-gutter-sm">
-              <div>
-                <router-link to="/products/custom" class="footer-link"
-                  >Custom Photo Magnets</router-link
-                >
-              </div>
-              <div>
-                <router-link to="/products/designer" class="footer-link"
-                  >Designer Magnets</router-link
-                >
-              </div>
-              <div>
-                <router-link to="/products/specialty" class="footer-link"
-                  >Specialty Products</router-link
-                >
-              </div>
-            </div>
-          </div>
-
-          <!-- Support Column -->
-          <div class="col-12 col-md-3">
-            <div class="text-h6 text-white q-mb-md">Support</div>
-            <div class="q-gutter-sm">
-              <div>
-                <router-link to="/contact-us" class="footer-link"
-                  >Contact Us</router-link
-                >
-              </div>
-              <div>
-                <router-link to="/shipping-info" class="footer-link"
-                  >Shipping Info</router-link
-                >
-              </div>
-              <div>
-                <router-link to="/returns" class="footer-link">Returns</router-link>
-              </div>
-              <div>
-                <router-link to="/faq" class="footer-link">FAQ</router-link>
-              </div>
-            </div>
-          </div>
-
-          <!-- Follow Us Column -->
-          <div class="col-12 col-md-3">
-            <div class="text-h6 text-white q-mb-md">Follow Us</div>
-            <div class="q-gutter-sm q-mb-md">
-              <a
-                href="https://www.instagram.com/lilmagnetmemories"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="footer-social-link"
-              >
-                <q-icon name="camera_alt" size="24px" />
-                <span class="q-ml-sm">Instagram</span>
-              </a>
-              <a href="mailto:info@lilmagnetmemories.com" class="footer-social-link">
-                <q-icon name="email" size="24px" />
-                <span class="q-ml-sm">Email</span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom Section -->
-        <div class="footer-bottom q-mt-lg q-pt-lg">
-          <div class="text-body2 text-grey-4 text-center">
-            © 2025 Li'l Magnet Memories. All rights reserved.
-          </div>
-        </div>
-      </div>
-    </footer>
 
     <!-- Market Event Dialog -->
     <q-dialog v-model="showMarketEventDialog" persistent>
@@ -746,6 +680,11 @@ export default {
       }
     };
 
+    // Filter to only show verified reviews on landing page
+    const verifiedReviews = computed(() => {
+      return reviews.value.filter((review) => review.isVerified === true);
+    });
+
     // Load product type visibility settings
     const loadVisibilitySettings = async () => {
       try {
@@ -927,6 +866,7 @@ export default {
       isAdmin,
       reviews,
       loadingReviews,
+      verifiedReviews,
       hasActiveEvent,
       activeMarketEventName,
       activeMarketEventLink,
@@ -1226,12 +1166,12 @@ export default {
 
 .hero-title {
   font-size: clamp(1.2rem, 3vw, 1.75rem); // Reduced max size from 2rem to 1.75rem (a few points smaller)
-  font-weight: 500 !important; // Lighter weight
-  font-family: 'Georgia', 'Times New Roman', serif !important; // Elegant serif font - consistent across all devices
+  font-weight: 600 !important; // Semi-bold for headings
+  font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // Josefin Sans for headings
   margin-top: 0; // No top margin to align with easel container
   padding-top: 0; // No top padding
-  font-style: italic !important; // Keep italic
-  transform: skew(-2deg) !important; // Slight skew for subtle italic effect
+  font-style: normal !important; // Normal style (not italic)
+  transform: none !important; // No skew transform
   margin: 0; // Remove margins, let flex gap handle spacing
   line-height: 1.3;
   color: #2c3e50; // Dark grey-blue for better readability
@@ -1828,10 +1768,10 @@ export default {
 
   .hero-title {
     font-size: clamp(1.4rem, 3.5vw, 1.75rem); // Reduced max size from 2.2rem to 1.75rem (a few points smaller)
-    font-family: 'Georgia', 'Times New Roman', serif !important; // Ensure same font on medium screens
-    font-weight: 500 !important; // Same weight
-    font-style: italic !important; // Same style
-    transform: skew(-2deg) !important; // Same transform
+    font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // Josefin Sans for headings
+    font-weight: 600 !important; // Semi-bold for headings
+    font-style: normal !important; // Normal style
+    transform: none !important; // No skew transform
     white-space: normal;
     text-align: center;
     width: 100%;
@@ -1883,10 +1823,10 @@ export default {
 
   .hero-title {
     font-size: clamp(1.2rem, 5vw, 1.65rem); // Reduced max size from 1.8rem to 1.65rem (a few points smaller)
-    font-family: 'Georgia', 'Times New Roman', serif !important; // Ensure same font on mobile
-    font-weight: 500 !important; // Same weight
-    font-style: italic !important; // Same style
-    transform: skew(-2deg) !important; // Same transform
+    font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important; // Josefin Sans for headings
+    font-weight: 600 !important; // Semi-bold for headings
+    font-style: normal !important; // Normal style
+    transform: none !important; // No skew transform
     white-space: normal;
     text-align: center;
     width: 100%;
@@ -2003,51 +1943,19 @@ export default {
   border-radius: 12px;
 }
 
-// Footer Section
-.site-footer {
-  background: #30343f;
-  color: white;
-  margin-top: 4rem;
-  padding: 3rem 0 1.5rem;
+.leave-review-card {
+  background: #ffffff;
+  height: 100%;
+  border-radius: 12px;
+  border: 2px solid #f3e5f5;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(243, 229, 245, 0.4);
+    border-color: #e1bee7;
+  }
 }
 
-.footer-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-.footer-logo {
-  height: 50px;
-  width: auto;
-}
-
-.footer-link {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  display: block;
-  margin-bottom: 0.5rem;
-  transition: color 0.2s;
-}
-
-.footer-link:hover {
-  color: white;
-}
-
-.footer-social-link {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  transition: color 0.2s;
-}
-
-.footer-social-link:hover {
-  color: white;
-}
-
-.footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
 </style>
