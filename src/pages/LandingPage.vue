@@ -510,7 +510,7 @@ export default {
         // Start Ken Burns animation directly without resetting state
         // The image is already at the correct position from slide-enter-to
         isImagePanning.value = true;
-      }, 500); // Brief pause to ensure transition is fully settled
+      }, 100); // Reduced pause for faster start of Ken Burns effect
     };
 
     // Touch/swipe handling for mobile
@@ -1368,7 +1368,7 @@ export default {
 // Starts zoomed in (scale 1.1) and pans slowly up and left - so focus appears to move down and right
 // Zoom ensures edges never show during pan
 .easel-image.image-panning {
-  animation: kenBurns 8s linear forwards !important;
+  animation: kenBurns 8s ease-in-out forwards !important;
   will-change: transform; // Optimize animation performance
 }
 
@@ -1377,16 +1377,16 @@ export default {
     transform: translateX(-50%) translateY(-50%) scale(1.1); // Start centered, zoomed in
   }
   100% {
-    transform: translateX(calc(-50% - 3%)) translateY(calc(-50% - 2%)) scale(1.1); // End position - pan up and left, maintaining zoom
+    transform: translateX(calc(-50% - 5%)) translateY(calc(-50% - 4%)) scale(1.1); // End position - pan up and left more, maintaining zoom
   }
 }
 
 // Slide animation - smooth, slow swipe effect
 // Both images move simultaneously: old slides left off-screen, new slides in from right
 // Images appear stitched together (no gap between them during transition)
-// Slow, smooth linear transition for consistent velocity
+// Smooth ease-in-out transition for natural acceleration/deceleration
 .slide-enter-active {
-  transition: transform 5s linear !important;
+  transition: transform 5s ease-in-out !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1397,7 +1397,7 @@ export default {
 }
 
 .slide-leave-active {
-  transition: transform 5s linear !important;
+  transition: transform 5s ease-in-out !important;
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
@@ -1424,14 +1424,14 @@ export default {
 // Old image starts from Ken Burns end position (panned up and left, maintaining zoom)
 .slide-leave-from {
   animation: none !important;
-  transform: translateX(calc(-50% - 3%)) translateY(calc(-50% - 2%)) scale(1.1) !important;
+  transform: translateX(calc(-50% - 5%)) translateY(calc(-50% - 4%)) scale(1.1) !important;
   opacity: 1 !important;
 }
 
 // Old image slides completely off-screen to the left (maintaining Ken Burns pan position and zoom)
 .slide-leave-to {
   animation: none !important;
-  transform: translateX(calc(-50% - 3% - 120vw)) translateY(calc(-50% - 2%)) scale(1.1) !important;
+  transform: translateX(calc(-50% - 5% - 120vw)) translateY(calc(-50% - 4%)) scale(1.1) !important;
   opacity: 1 !important;
 }
 
@@ -1444,7 +1444,7 @@ export default {
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
   overflow: visible !important; // Allow dots to be visible below
-  padding-bottom: 0 !important; // No padding needed - dots are absolutely positioned 20px below image
+  padding-bottom: 50px !important; // Add padding to prevent dots from being cut off
 }
 
 // Small screens: maintain wide format but ensure it fits
@@ -1463,7 +1463,7 @@ export default {
 // Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
-  top: calc(100% + 20px) !important; // Position exactly 20px below the easel gallery picture
+  top: calc(100% + 18px) !important; // Move up 2px from 20px to 18px to prevent bottom cutoff
   left: 50%;
   transform: translateX(-50%);
   display: flex !important;
@@ -1473,6 +1473,7 @@ export default {
   z-index: 10 !important;
   width: fit-content; // Fit content width
   padding: 8px 16px; // Add padding for better visibility
+  padding-bottom: 10px !important; // Extra bottom padding to ensure dots aren't cut off
   box-sizing: border-box;
   white-space: nowrap; // Keep dots on one line
   pointer-events: auto; // Ensure dots are clickable
