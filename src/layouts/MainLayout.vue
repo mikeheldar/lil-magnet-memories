@@ -2121,20 +2121,6 @@ html, body {
   }
 }
 
-.test-environment-chip {
-  // Always ensure white text for test environment chip, regardless of theme
-  color: #ffffff !important;
-
-  span, .q-chip__content, * {
-    color: #ffffff !important;
-  }
-
-  @media (max-width: 600px) {
-    min-width: 24px !important;
-    width: 24px !important;
-    height: 24px !important;
-    padding: 0 !important;
-    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     border-radius: 50% !important;
