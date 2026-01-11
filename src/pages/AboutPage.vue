@@ -1,7 +1,7 @@
 <template>
   <q-page class="about-page">
     <div class="page-container q-pa-lg q-gutter-y-xl">
-      <section class="hero-section q-pt-lg q-pb-lg text-center">
+      <section class="hero-section text-center">
         <img
           src="/assets/lil-magnet-memories-logo.png"
           alt="Li'l Magnet Memories Logo"
@@ -21,7 +21,7 @@
             class="family-photo q-mb-md"
           />
         </div>
-        <div class="q-mt-md">
+        <div class="instagram-link-container">
           <a
             href="https://www.instagram.com/lilmagnetmemories"
             target="_blank"
@@ -240,7 +240,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .about-page {
   background: white;
   min-height: 100vh;
@@ -255,6 +255,15 @@ export default {
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
+  // Position logo 10px below header/subheader
+  // Small screens: 10px below header (84px header + 10px = 94px)
+  padding-top: 94px;
+  padding-bottom: 24px; // q-pb-lg equivalent
+  
+  // Medium+ screens: 10px below subheader (64px header + 48px subheader + 10px = 122px)
+  @media (min-width: 768px) {
+    padding-top: 122px;
+  }
 }
 
 .hero-subtitle {
@@ -308,6 +317,10 @@ export default {
 .event-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.instagram-link-container {
+  margin-top: 6px; // Reduced from q-mt-md (16px) by 10px
 }
 
 .instagram-link {
