@@ -165,7 +165,7 @@
           Shop Our Products
         </div>
         <div class="row q-col-gutter-md">
-          <div class="col-12 col-md-4">
+          <div v-if="productTypeVisibility.custom" class="col-12 col-md-4">
             <q-card class="product-link-card" @click="$router.push('/products/custom')">
               <q-card-section class="text-center">
                 <q-icon name="camera_alt" size="64px" color="primary" class="q-mb-md" />
@@ -177,7 +177,7 @@
               </q-card-section>
             </q-card>
           </div>
-          <div class="col-12 col-md-4">
+          <div v-if="productTypeVisibility.designer" class="col-12 col-md-4">
             <q-card class="product-link-card" @click="$router.push('/products/designer')">
               <q-card-section class="text-center">
                 <q-icon name="brush" size="64px" color="primary" class="q-mb-md" />
@@ -189,7 +189,7 @@
               </q-card-section>
             </q-card>
           </div>
-          <div class="col-12 col-md-4">
+          <div v-if="productTypeVisibility.specialty" class="col-12 col-md-4">
             <q-card class="product-link-card" @click="$router.push('/products/specialty')">
               <q-card-section class="text-center">
                 <q-icon name="card_giftcard" size="64px" color="primary" class="q-mb-md" />
@@ -425,6 +425,13 @@ export default {
     const loadingReviews = ref(true);
     const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
       useCustomerType();
+    
+    // Product type visibility settings
+    const productTypeVisibility = ref({
+      custom: true,
+      designer: true,
+      specialty: true,
+    });
 
     // Customer at event toggle - sync with customer type
     // Check if we're in test environment
@@ -739,6 +746,16 @@ export default {
       }
     };
 
+    // Load product type visibility settings
+    const loadVisibilitySettings = async () => {
+      try {
+        const visibility = await firebaseService.getProductTypeVisibility();
+        productTypeVisibility.value = visibility;
+      } catch (error) {
+        console.error('Error loading visibility settings:', error);
+      }
+    };
+
     // Reactive ref to trigger updates when market events change
     const marketEventCheckTrigger = ref(0);
     let marketEventUnsubscribe = null;
@@ -849,6 +866,8 @@ export default {
 
       // Load reviews
       loadReviews();
+      // Load visibility settings
+      loadVisibilitySettings();
 
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
@@ -935,6 +954,7 @@ export default {
       handleTouchEnd,
       handleImageLoad,
       handleImageEnter,
+      productTypeVisibility,
     };
   },
 };

@@ -2299,4 +2299,42 @@ class FirebaseService {
   }
 }
 
+  // Get product type visibility settings
+  async getProductTypeVisibility() {
+    try {
+      const adminConfigRef = doc(db, 'admin_config', 'settings');
+      const adminConfigSnap = await getDoc(adminConfigRef);
+      
+      if (adminConfigSnap.exists()) {
+        const data = adminConfigSnap.data();
+        return {
+          custom: data.productTypeVisibility?.custom !== false, // Default to true
+          designer: data.productTypeVisibility?.designer !== false,
+          specialty: data.productTypeVisibility?.specialty !== false,
+        };
+      }
+      // Default: all enabled
+      return { custom: true, designer: true, specialty: true };
+    } catch (error) {
+      console.error('Error getting product type visibility:', error);
+      // Default: all enabled on error
+      return { custom: true, designer: true, specialty: true };
+    }
+  }
+
+  // Update product type visibility settings
+  async updateProductTypeVisibility(visibility) {
+    try {
+      const adminConfigRef = doc(db, 'admin_config', 'settings');
+      await setDoc(adminConfigRef, {
+        productTypeVisibility: visibility,
+      }, { merge: true });
+      return true;
+    } catch (error) {
+      console.error('Error updating product type visibility:', error);
+      throw error;
+    }
+  }
+}
+
 export const firebaseService = new FirebaseService();

@@ -178,6 +178,7 @@
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
+          v-if="productTypeVisibility.custom"
           flat
           dense
           no-caps
@@ -208,6 +209,7 @@
 
         <!-- Designer Magnets Dropdown -->
         <q-btn-dropdown
+          v-if="productTypeVisibility.designer"
           flat
           dense
           no-caps
@@ -238,6 +240,7 @@
 
         <!-- Specialty Products Dropdown -->
         <q-btn-dropdown
+          v-if="productTypeVisibility.specialty"
           flat
           dense
           no-caps
@@ -365,7 +368,7 @@
           header-class="text-grey-8"
         >
           <!-- Custom Photo Magnets -->
-          <div class="shop-category-wrapper">
+          <div v-if="productTypeVisibility.custom" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -411,7 +414,7 @@
           </div>
 
           <!-- Designer Magnets -->
-          <div class="shop-category-wrapper">
+          <div v-if="productTypeVisibility.designer" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -457,7 +460,7 @@
           </div>
 
           <!-- Specialty Products -->
-          <div class="shop-category-wrapper">
+          <div v-if="productTypeVisibility.specialty" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -824,17 +827,27 @@ export default {
 
     // Shop section state
     const products = ref([]);
+    
+    // Product type visibility settings
+    const productTypeVisibility = ref({
+      custom: true,
+      designer: true,
+      specialty: true,
+    });
 
-    // Computed product lists for each category
+    // Computed product lists for each category (filtered by visibility)
     const customProductsList = computed(() => {
+      if (!productTypeVisibility.value.custom) return [];
       return products.value.filter((p) => p.category === 'custom');
     });
 
     const designerProductsList = computed(() => {
+      if (!productTypeVisibility.value.designer) return [];
       return products.value.filter((p) => p.category === 'designer');
     });
 
     const specialtyProductsList = computed(() => {
+      if (!productTypeVisibility.value.specialty) return [];
       return products.value.filter((p) => p.category === 'specialty');
     });
 
@@ -855,6 +868,16 @@ export default {
         }
       } catch (error) {
         console.error('Error loading products in MainLayout:', error);
+      }
+    };
+
+    // Load product type visibility settings
+    const loadVisibilitySettings = async () => {
+      try {
+        const visibility = await firebaseService.getProductTypeVisibility();
+        productTypeVisibility.value = visibility;
+      } catch (error) {
+        console.error('Error loading visibility settings:', error);
       }
     };
 
@@ -1191,6 +1214,8 @@ export default {
     onMounted(() => {
       // Load products for Shop section
       loadProducts();
+      // Load visibility settings
+      loadVisibilitySettings();
 
       // Listen for auth state changes
       authService.onAuthStateChanged((user) => {
@@ -1280,6 +1305,7 @@ export default {
       customProductsExpanded,
       designerProductsExpanded,
       specialtyProductsExpanded,
+      productTypeVisibility,
     };
   },
 };
