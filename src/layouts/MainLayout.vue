@@ -859,6 +859,7 @@ import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
+import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
 import { useQuasar } from 'quasar';
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
@@ -932,15 +933,8 @@ export default {
     // Shop section state
     const products = ref([]);
     
-    // Product type visibility settings - start as all false to prevent flash
-    const productTypeVisibility = ref({
-      custom: false,
-      designer: false,
-      specialty: false,
-    });
-    
-    // Track when visibility settings have been loaded
-    const visibilityLoaded = ref(false);
+    // Use global product type visibility composable
+    const { productTypeVisibility, visibilityLoaded, initializeVisibility } = useProductTypeVisibility();
 
     // Computed product lists for each category (filtered by visibility)
     const customProductsList = computed(() => {
@@ -978,18 +972,9 @@ export default {
       }
     };
 
-    // Load product type visibility settings
+    // Initialize visibility settings - uses global cached state
     const loadVisibilitySettings = async () => {
-      try {
-        const visibility = await firebaseService.getProductTypeVisibility();
-        productTypeVisibility.value = visibility;
-        visibilityLoaded.value = true; // Mark as loaded after settings are fetched
-      } catch (error) {
-        console.error('Error loading visibility settings:', error);
-        // On error, default to all enabled and mark as loaded to prevent infinite loading
-        productTypeVisibility.value = { custom: true, designer: true, specialty: true };
-        visibilityLoaded.value = true;
-      }
+      await initializeVisibility();
     };
 
     // Create a ref that gets updated periodically to trigger reactivity

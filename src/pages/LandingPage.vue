@@ -213,7 +213,7 @@
           <q-spinner-dots size="40px" color="primary" />
           <div class="q-mt-md text-grey-6">Loading reviews...</div>
         </div>
-        <div v-else-if="verifiedReviews.length > 0" class="row q-col-gutter-md">
+        <div v-else-if="!loadingReviews && verifiedReviews.length > 0" class="row q-col-gutter-md">
           <div
             v-for="review in verifiedReviews"
             :key="review.id"
@@ -355,6 +355,7 @@ import { marketEventService } from '../services/marketEventService.js';
 import { userPreferencesService } from '../services/userPreferencesService.js';
 import { useQuasar } from 'quasar';
 import { useCustomerType } from '../composables/useCustomerType.js';
+import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
 
 export default {
   name: 'LandingPage',
@@ -370,15 +371,8 @@ export default {
     const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
       useCustomerType();
     
-    // Product type visibility settings - start as all false to prevent flash
-    const productTypeVisibility = ref({
-      custom: false,
-      designer: false,
-      specialty: false,
-    });
-    
-    // Track when visibility settings have been loaded
-    const visibilityLoaded = ref(false);
+    // Use global product type visibility composable
+    const { productTypeVisibility, visibilityLoaded, initializeVisibility } = useProductTypeVisibility();
 
     // Customer at event toggle - sync with customer type
     // Check if we're in test environment
@@ -702,18 +696,9 @@ export default {
       return reviews.value.filter((review) => review.isVerified === true);
     });
 
-    // Load product type visibility settings
+    // Initialize visibility settings - uses global cached state
     const loadVisibilitySettings = async () => {
-      try {
-        const visibility = await firebaseService.getProductTypeVisibility();
-        productTypeVisibility.value = visibility;
-        visibilityLoaded.value = true; // Mark as loaded after settings are fetched
-      } catch (error) {
-        console.error('Error loading visibility settings:', error);
-        // On error, default to all enabled and mark as loaded to prevent infinite loading
-        productTypeVisibility.value = { custom: true, designer: true, specialty: true };
-        visibilityLoaded.value = true;
-      }
+      await initializeVisibility();
     };
 
     // Reactive ref to trigger updates when market events change
@@ -825,10 +810,10 @@ export default {
       });
 
       // Load reviews
-      loadReviews();
-      // Load visibility settings
       // Load visibility settings first to prevent menu flash
       await loadVisibilitySettings();
+      // Then load reviews to ensure they're ready before rendering
+      await loadReviews();
 
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();

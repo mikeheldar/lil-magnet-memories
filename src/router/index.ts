@@ -8,6 +8,7 @@ import {
 
 import routes from './routes';
 import { authService } from '../services/authService';
+import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
 
 /*
  * If not building with SSR mode, you can
@@ -37,6 +38,10 @@ export default route(function (/* { store, ssrContext } */) {
 
   // Initialize auth service
   authService.init();
+
+  // Initialize product type visibility settings early to prevent menu flash
+  const { initializeVisibility } = useProductTypeVisibility();
+  initializeVisibility();
 
   // Add authentication and admin guards
   Router.beforeEach(async (to, from, next) => {
