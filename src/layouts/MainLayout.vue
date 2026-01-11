@@ -1826,6 +1826,7 @@ html, body {
   transition: background-color 0.2s ease;
   width: 100% !important;
   padding-right: 16px !important; // Match q-expansion-item padding for chevron alignment
+  position: relative !important; // Needed for absolute positioning of expand button
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
