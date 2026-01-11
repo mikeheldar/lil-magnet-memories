@@ -1824,6 +1824,7 @@ html, body {
 
 .shop-category-item {
   transition: background-color 0.2s ease;
+  width: 100% !important;
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
@@ -1847,11 +1848,12 @@ html, body {
 .category-expand-section {
   min-width: auto !important;
   width: auto !important;
-  padding-left: 8px !important;
+  padding-left: 0 !important;
   padding-right: 0 !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: flex-end !important;
+  margin-left: auto !important;
 }
 
 .category-expand-btn {
