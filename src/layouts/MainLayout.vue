@@ -178,7 +178,7 @@
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
-          v-if="productTypeVisibility.custom"
+          v-if="visibilityLoaded && productTypeVisibility.custom"
           flat
           dense
           no-caps
@@ -209,7 +209,7 @@
 
         <!-- Designer Magnets Dropdown -->
         <q-btn-dropdown
-          v-if="productTypeVisibility.designer"
+          v-if="visibilityLoaded && productTypeVisibility.designer"
           flat
           dense
           no-caps
@@ -240,7 +240,7 @@
 
         <!-- Specialty Products Dropdown -->
         <q-btn-dropdown
-          v-if="productTypeVisibility.specialty"
+          v-if="visibilityLoaded && productTypeVisibility.specialty"
           flat
           dense
           no-caps
@@ -379,7 +379,7 @@
           header-class="text-grey-8"
         >
           <!-- Custom Photo Magnets -->
-          <div v-if="productTypeVisibility.custom" class="shop-category-wrapper">
+          <div v-if="visibilityLoaded && productTypeVisibility.custom" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -425,7 +425,7 @@
           </div>
 
           <!-- Designer Magnets -->
-          <div v-if="productTypeVisibility.designer" class="shop-category-wrapper">
+          <div v-if="visibilityLoaded && productTypeVisibility.designer" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -471,7 +471,7 @@
           </div>
 
           <!-- Specialty Products -->
-          <div v-if="productTypeVisibility.specialty" class="shop-category-wrapper">
+          <div v-if="visibilityLoaded && productTypeVisibility.specialty" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -932,12 +932,15 @@ export default {
     // Shop section state
     const products = ref([]);
     
-    // Product type visibility settings
+    // Product type visibility settings - start as all false to prevent flash
     const productTypeVisibility = ref({
-      custom: true,
-      designer: true,
-      specialty: true,
+      custom: false,
+      designer: false,
+      specialty: false,
     });
+    
+    // Track when visibility settings have been loaded
+    const visibilityLoaded = ref(false);
 
     // Computed product lists for each category (filtered by visibility)
     const customProductsList = computed(() => {
@@ -980,8 +983,12 @@ export default {
       try {
         const visibility = await firebaseService.getProductTypeVisibility();
         productTypeVisibility.value = visibility;
+        visibilityLoaded.value = true; // Mark as loaded after settings are fetched
       } catch (error) {
         console.error('Error loading visibility settings:', error);
+        // On error, default to all enabled and mark as loaded to prevent infinite loading
+        productTypeVisibility.value = { custom: true, designer: true, specialty: true };
+        visibilityLoaded.value = true;
       }
     };
 
@@ -1315,11 +1322,11 @@ export default {
       return user && user.providerId === 'firebase' && !user.email;
     };
 
-    onMounted(() => {
-      // Load products for Shop section
+    onMounted(async () => {
+      // Load visibility settings FIRST before loading products or rendering menus
+      await loadVisibilitySettings();
+      // Then load products for Shop section
       loadProducts();
-      // Load visibility settings
-      loadVisibilitySettings();
 
       // Listen for auth state changes
       authService.onAuthStateChanged((user) => {
@@ -1410,6 +1417,7 @@ export default {
       designerProductsExpanded,
       specialtyProductsExpanded,
       productTypeVisibility,
+      visibilityLoaded,
     };
   },
 };

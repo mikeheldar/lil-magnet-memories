@@ -165,7 +165,7 @@
           Shop Our Products
         </div>
         <div class="row q-col-gutter-md">
-          <div v-if="productTypeVisibility.custom" class="col-12 col-md-4">
+          <div v-if="visibilityLoaded && productTypeVisibility.custom" class="col-12 col-md-4">
             <q-card class="product-link-card" @click="$router.push('/products/custom')">
               <q-card-section class="text-center">
                 <q-icon name="camera_alt" size="64px" color="primary" class="q-mb-md" />
@@ -177,7 +177,7 @@
               </q-card-section>
             </q-card>
           </div>
-          <div v-if="productTypeVisibility.designer" class="col-12 col-md-4">
+          <div v-if="visibilityLoaded && productTypeVisibility.designer" class="col-12 col-md-4">
             <q-card class="product-link-card" @click="$router.push('/products/designer')">
               <q-card-section class="text-center">
                 <q-icon name="brush" size="64px" color="primary" class="q-mb-md" />
@@ -189,7 +189,7 @@
               </q-card-section>
             </q-card>
           </div>
-          <div v-if="productTypeVisibility.specialty" class="col-12 col-md-4">
+          <div v-if="visibilityLoaded && productTypeVisibility.specialty" class="col-12 col-md-4">
             <q-card class="product-link-card" @click="$router.push('/products/specialty')">
               <q-card-section class="text-center">
                 <q-icon name="card_giftcard" size="64px" color="primary" class="q-mb-md" />
@@ -370,12 +370,15 @@ export default {
     const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
       useCustomerType();
     
-    // Product type visibility settings
+    // Product type visibility settings - start as all false to prevent flash
     const productTypeVisibility = ref({
-      custom: true,
-      designer: true,
-      specialty: true,
+      custom: false,
+      designer: false,
+      specialty: false,
     });
+    
+    // Track when visibility settings have been loaded
+    const visibilityLoaded = ref(false);
 
     // Customer at event toggle - sync with customer type
     // Check if we're in test environment
@@ -704,8 +707,12 @@ export default {
       try {
         const visibility = await firebaseService.getProductTypeVisibility();
         productTypeVisibility.value = visibility;
+        visibilityLoaded.value = true; // Mark as loaded after settings are fetched
       } catch (error) {
         console.error('Error loading visibility settings:', error);
+        // On error, default to all enabled and mark as loaded to prevent infinite loading
+        productTypeVisibility.value = { custom: true, designer: true, specialty: true };
+        visibilityLoaded.value = true;
       }
     };
 
@@ -820,7 +827,8 @@ export default {
       // Load reviews
       loadReviews();
       // Load visibility settings
-      loadVisibilitySettings();
+      // Load visibility settings first to prevent menu flash
+      await loadVisibilitySettings();
 
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
@@ -910,6 +918,7 @@ export default {
       handleImageLoad,
       handleImageEnter,
       productTypeVisibility,
+      visibilityLoaded,
     };
   },
 };
