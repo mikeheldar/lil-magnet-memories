@@ -701,7 +701,6 @@ export default {
     // Filter to only show verified reviews on landing page
     const verifiedReviews = computed(() => {
       if (!reviews.value || !Array.isArray(reviews.value) || reviews.value.length === 0) {
-        console.log('🔍 Verified reviews computed: No reviews or empty array');
         return [];
       }
       // Filter for verified reviews, handling both boolean true and string 'true'
@@ -709,9 +708,17 @@ export default {
         const isVerified = review.isVerified === true || review.isVerified === 'true' || review.isVerified === 1;
         return isVerified;
       });
-      console.log('🔍 Verified reviews computed:', verified.length, 'out of', reviews.value.length);
       return verified;
     });
+
+    // Watch reviews to ensure reactivity and log changes
+    watch(reviews, (newReviews, oldReviews) => {
+      console.log('🔄 Reviews changed:', {
+        oldCount: oldReviews?.length || 0,
+        newCount: newReviews?.length || 0,
+        verifiedCount: verifiedReviews.value.length
+      });
+    }, { immediate: true, deep: true });
 
     // Initialize visibility settings - uses global cached state
     const loadVisibilitySettings = async () => {
@@ -830,13 +837,6 @@ export default {
       await loadVisibilitySettings();
       // Then load reviews to ensure they're ready before rendering
       await loadReviews();
-      
-      // Watch for reviews changes to ensure reactivity
-      watch(reviews, (newReviews) => {
-        console.log('🔄 Reviews changed:', newReviews.length);
-        console.log('🔄 Verified reviews:', verifiedReviews.value.length);
-      }, { immediate: true, deep: true });
-      
       // Force a reactivity update after reviews are loaded
       await nextTick();
       // Log the final state
