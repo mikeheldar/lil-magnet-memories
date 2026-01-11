@@ -1,7 +1,7 @@
 <template>
   <q-page class="about-page">
     <div class="page-container q-pa-lg q-gutter-y-xl">
-      <section class="hero-section q-pt-xl q-pb-lg text-center">
+      <section class="hero-section q-pt-lg q-pb-lg text-center">
         <img
           src="/assets/lil-magnet-memories-logo.png"
           alt="Li'l Magnet Memories Logo"
@@ -262,7 +262,7 @@ export default {
 }
 
 .about-logo {
-  height: 70px;
+  height: 140px;
   width: auto;
 }
 
