@@ -1463,7 +1463,7 @@ export default {
 // Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
-  top: calc(100% + 18px) !important; // Move up 2px from 20px to 18px to prevent bottom cutoff
+  top: calc(100% + 15px) !important; // Move up 3px more (from 18px to 15px) to prevent bottom cutoff
   left: 50%;
   transform: translateX(-50%);
   display: flex !important;
