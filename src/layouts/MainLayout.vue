@@ -27,18 +27,6 @@
           />
         </q-btn>
 
-        <!-- Test Environment Indicator -->
-        <q-chip
-          v-if="isTestEnvironment"
-          color="orange"
-          text-color="white"
-          size="sm"
-          class="q-mr-md test-environment-chip header-element-responsive"
-          icon="bug_report"
-        >
-          <span class="gt-xs">TEST</span>
-        </q-chip>
-
         <!-- Market Event Mode Toggle (only when event is live) -->
         <div v-if="hasActiveEvent" class="q-mr-md">
           <q-btn
@@ -1057,8 +1045,6 @@ export default {
       return null; // All other pages - no page title header
     };
 
-    const isTestEnvironment = computed(() => config.isTest);
-
     // Check if customer is at a market event (periodically refresh)
     const isAtMarketEvent = computed(() => {
       // This computed will re-run when marketEventCheckTrigger changes
@@ -1228,7 +1214,6 @@ export default {
       headerTitleSpanStyle,
       userNameStyle,
       headerButtonStyle,
-      isTestEnvironment,
       isAtMarketEvent,
       activeMarketEvent,
       hasActiveEvent,
@@ -1955,17 +1940,10 @@ html, body {
   }
 }
 
-// Responsive header element hiding - hide in order: test pill -> About -> logo -> (never title)
-// Priority order: Test chip (first to hide) -> About button -> Logo -> Title (never hidden)
+// Responsive header element hiding - hide in order: About -> logo -> (never title)
+// Priority order: About button -> Logo -> Title (never hidden)
 
-// Hide test environment chip first (smallest screen)
-@media (max-width: 1200px) {
-  .test-environment-chip.header-element-responsive {
-    display: none !important;
-  }
-}
-
-// Hide About button next
+// Hide About button first
 @media (max-width: 1000px) {
   .about-header-btn.header-element-responsive {
     display: none !important;
