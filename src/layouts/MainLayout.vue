@@ -55,17 +55,6 @@
           </span>
         </q-toolbar-title>
 
-
-        <!-- About Button (medium and large screens only) -->
-        <q-btn
-          flat
-          dense
-          class="gt-sm q-mr-sm header-element-responsive about-header-btn"
-          label="About"
-          :style="headerButtonStyle"
-          @click="$router.push('/about')"
-        />
-
         <!-- Shopping Cart Icon (only show if cart has items) -->
         <q-btn
           v-if="cartItemCount > 0"
@@ -107,10 +96,6 @@
                     color="white"
                   />
                 </q-avatar>
-                <!-- Show name only on larger screens -->
-                <span class="user-name gt-sm q-ml-sm" :style="userNameStyle">{{
-                  userProfile.displayName || 'User'
-                }}</span>
               </div>
             </template>
 
@@ -156,18 +141,6 @@
             aria-label="Start Creating Magnets"
           >
             <q-tooltip>Start Creating Magnets</q-tooltip>
-          </q-btn>
-          <!-- Info Icon (small screens only, hidden on medium+) -->
-          <q-btn
-            flat
-            dense
-            icon="info"
-            :style="headerButtonStyle"
-            @click="$router.push('/about')"
-            aria-label="About Li'l Magnet Memories"
-            class="q-ml-xs lt-md"
-          >
-            <q-tooltip>About Li'l Magnet Memories</q-tooltip>
           </q-btn>
         </template>
       </q-toolbar>
@@ -278,6 +251,17 @@
           icon="event"
           class="sub-nav-btn"
           @click="$router.push('/event-calendar')"
+        />
+
+        <!-- About Link -->
+        <q-btn
+          flat
+          dense
+          no-caps
+          label="About"
+          icon="info"
+          class="sub-nav-btn"
+          @click="$router.push('/about')"
         />
       </div>
     </div>
@@ -1169,13 +1153,6 @@ export default {
       };
     });
 
-    // Computed style for user name - hardcoded to white for black header
-    const userNameStyle = computed(() => {
-      return {
-        color: '#ffffff', // White text on black header
-      };
-    });
-
     // Computed style for header buttons - use Lato for body text
     const headerButtonStyle = computed(() => {
       return {
@@ -1371,7 +1348,6 @@ export default {
       headerVisible,
       headerTitleStyle,
       headerTitleSpanStyle,
-      userNameStyle,
       headerButtonStyle,
       isAtMarketEvent,
       activeMarketEvent,
@@ -2142,16 +2118,7 @@ html, body {
   }
 }
 
-// Responsive header element hiding - hide in order: About -> logo -> (never title)
-// Priority order: About button -> Logo -> Title (never hidden)
-
-// Hide About button first
-@media (max-width: 1000px) {
-  .about-header-btn.header-element-responsive {
-    display: none !important;
-  }
-}
-
+// Responsive header element hiding - hide logo before title (title never hidden)
 // Hide logo last (before title)
 @media (max-width: 800px) {
   .logo-header-btn.header-element-responsive {
@@ -2195,15 +2162,6 @@ html, body {
   &:after {
     display: none !important;
   }
-}
-
-.user-name {
-  color: white;
-  font-weight: 500;
-  white-space: nowrap;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .market-event-pill-link {
