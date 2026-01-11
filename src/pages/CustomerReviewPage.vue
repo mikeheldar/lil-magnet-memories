@@ -1,5 +1,5 @@
 <template>
-  <q-page class="customer-review-page">
+  <q-page class="customer-review-page" v-if="mounted">
     <div class="page-container q-pa-lg">
       <div class="text-center q-mb-xl">
         <div class="text-h4 text-weight-bold text-primary q-mb-sm">
@@ -84,13 +84,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 
 const router = useRouter();
 const $q = useQuasar();
+const mounted = ref(false);
+
+// Ensure page only renders after layout is ready
+onMounted(async () => {
+  await nextTick();
+  mounted.value = true;
+});
 
 const submitting = ref(false);
 const reviewForm = ref({

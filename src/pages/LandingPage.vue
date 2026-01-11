@@ -213,7 +213,7 @@
           <q-spinner-dots size="40px" color="primary" />
           <div class="q-mt-md text-grey-6">Loading reviews...</div>
         </div>
-        <div v-else-if="!loadingReviews && verifiedReviews.length > 0" class="row q-col-gutter-md">
+        <div v-else-if="verifiedReviews.length > 0" class="row q-col-gutter-md">
           <div
             v-for="review in verifiedReviews"
             :key="review.id"
@@ -683,6 +683,8 @@ export default {
       try {
         const reviewsData = await firebaseService.getReviews();
         reviews.value = reviewsData || [];
+        console.log('✅ Reviews loaded:', reviews.value.length, 'total reviews');
+        console.log('✅ Verified reviews:', reviews.value.filter(r => r.isVerified === true || r.isVerified === 'true' || r.isVerified === 1).length);
       } catch (error) {
         console.error('Error loading reviews:', error);
         reviews.value = [];
@@ -693,7 +695,13 @@ export default {
 
     // Filter to only show verified reviews on landing page
     const verifiedReviews = computed(() => {
-      return reviews.value.filter((review) => review.isVerified === true);
+      if (!reviews.value || reviews.value.length === 0) {
+        return [];
+      }
+      // Filter for verified reviews, handling both boolean true and string 'true'
+      return reviews.value.filter((review) => {
+        return review.isVerified === true || review.isVerified === 'true' || review.isVerified === 1;
+      });
     });
 
     // Initialize visibility settings - uses global cached state
@@ -809,11 +817,12 @@ export default {
         }
       });
 
-      // Load reviews
       // Load visibility settings first to prevent menu flash
       await loadVisibilitySettings();
       // Then load reviews to ensure they're ready before rendering
+      // Use nextTick to ensure DOM is ready before checking reviews
       await loadReviews();
+      await nextTick(); // Ensure reviews are rendered after loading
 
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
