@@ -356,6 +356,7 @@ import { userPreferencesService } from '../services/userPreferencesService.js';
 import { useQuasar } from 'quasar';
 import { useCustomerType } from '../composables/useCustomerType.js';
 import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
+import { ensureNetworkReady } from '../firebase/config.js';
 
 export default {
   name: 'LandingPage',
