@@ -684,6 +684,12 @@ export default {
       loadingReviews.value = true;
       reviewsLoaded.value = false;
       try {
+        // Ensure Firestore network is ready before loading reviews
+        // This prevents loading reviews before network is initialized on hard refresh
+        console.log('⏳ Waiting for Firestore network to be ready...');
+        await ensureNetworkReady();
+        console.log('✅ Firestore network ready, loading reviews...');
+        
         const reviewsData = await firebaseService.getReviews();
         // Use a new array reference to ensure reactivity
         reviews.value = Array.isArray(reviewsData) ? [...reviewsData] : [];
