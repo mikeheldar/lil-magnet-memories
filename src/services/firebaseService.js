@@ -2297,7 +2297,6 @@ class FirebaseService {
       throw error;
     }
   }
-}
 
   // Get product type visibility settings
   async getProductTypeVisibility() {
