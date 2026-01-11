@@ -265,11 +265,21 @@
           </div>
           <!-- Leave Your Review Card -->
           <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-            <q-card class="leave-review-card" @click="$router.push('/leave-review')">
-              <q-card-section class="text-center">
-                <q-icon name="rate_review" size="48px" color="primary" class="q-mb-md" />
-                <div class="text-h6 text-weight-bold q-mb-sm">Leave Your Review</div>
-                <div class="text-body2 text-grey-7">
+            <q-card class="leave-review-card" @click="goToLeaveReview">
+              <q-card-section>
+                <div class="row items-center q-mb-sm">
+                  <div class="col text-center">
+                    <div class="text-weight-bold text-grey-8 q-mb-xs">Leave Your Review</div>
+                    <q-rating
+                      :model-value="0"
+                      :max="5"
+                      size="16px"
+                      readonly
+                      class="leave-review-stars"
+                    />
+                  </div>
+                </div>
+                <div class="text-body2 text-grey-7 text-center">
                   Share your experience with us!
                 </div>
               </q-card-section>
@@ -281,7 +291,7 @@
           <!-- Leave Your Review Card (shown when no reviews) -->
           <div class="row justify-center">
             <div class="col-12 col-sm-8 col-md-6 col-lg-4">
-              <q-card class="leave-review-card" @click="$router.push('/leave-review')">
+              <q-card class="leave-review-card" @click="goToLeaveReview">
                 <q-card-section class="text-center">
                   <q-icon name="rate_review" size="64px" color="primary" class="q-mb-md" />
                   <div class="text-h5 text-weight-bold q-mb-sm">Be the First to Review!</div>
@@ -601,6 +611,10 @@ export default {
       router.push('/my-orders');
     };
 
+    const goToLeaveReview = () => {
+      router.push('/leave-review');
+    };
+
     const showMarketEventDialog = ref(false);
     const activeMarketEvent = ref(null);
     const pendingProduct = ref(null);
@@ -882,6 +896,7 @@ export default {
       handleGoogleSignIn,
       goToOrdersList,
       goToMyOrders,
+      goToLeaveReview,
       goToUpload,
       confirmAtMarketEvent,
       goToOnlineOrder,
@@ -901,6 +916,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../css/quasar.variables.scss';
 .landing-page {
   background: #ffffff; // Bright white
   background-image:
@@ -1938,7 +1954,7 @@ export default {
 }
 
 .review-card {
-  background: #f3e5f5;
+  background: $light-purple; // Light purple from design system
   height: 100%;
   border-radius: 12px;
 }
@@ -1947,7 +1963,7 @@ export default {
   background: #ffffff;
   height: 100%;
   border-radius: 12px;
-  border: 2px solid #f3e5f5;
+  border: 2px solid $light-purple; // Light purple border from design system
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 
@@ -1955,6 +1971,21 @@ export default {
     transform: translateY(-4px);
     box-shadow: 0 8px 32px rgba(243, 229, 245, 0.4);
     border-color: #e1bee7;
+  }
+}
+
+// Lighter grey stars for leave-review card (using design system token)
+.leave-review-stars {
+  .q-rating__icon {
+    color: $light-grey !important; // Light grey from design system
+  }
+  
+  .q-rating__icon--inactive {
+    color: $light-grey !important; // Light grey for inactive stars
+  }
+  
+  .q-rating__icon--active {
+    color: $light-grey !important; // Light grey for active stars (all inactive)
   }
 }
 

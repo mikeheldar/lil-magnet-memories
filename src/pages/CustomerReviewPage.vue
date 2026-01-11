@@ -1,6 +1,6 @@
 <template>
-  <q-page class="customer-review-page q-pa-lg">
-    <div class="page-container">
+  <q-page class="customer-review-page">
+    <div class="page-container q-pa-lg">
       <div class="text-center q-mb-xl">
         <div class="text-h4 text-weight-bold text-primary q-mb-sm">
           <q-icon name="rate_review" size="32px" class="q-mr-sm" />
