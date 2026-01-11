@@ -1465,7 +1465,7 @@ export default {
 // Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
-  top: calc(100% + 18px) !important; // Position 18px below the easel gallery picture
+  top: calc(100% + 8px) !important; // Position 8px below the easel gallery picture (moved up 10px from 18px)
   left: 50%;
   transform: translateX(-50%);
   display: flex !important;
@@ -1515,7 +1515,7 @@ export default {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 20px 20px 40px 20px; // Reduced top padding by 20px (from 40px to 20px) to move How It Works section up
   background: white;
 }
 
