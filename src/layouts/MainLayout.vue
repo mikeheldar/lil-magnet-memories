@@ -2121,46 +2121,6 @@ html, body {
   }
 }
 
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 50% !important;
-    position: relative !important;
-
-    :deep(.q-chip__content) {
-      padding: 0 !important;
-      margin: 0 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      width: 100% !important;
-      height: 100% !important;
-      position: relative !important;
-    }
-
-    // Center icons on small screens
-    :deep(.q-chip__icon) {
-      margin: 0 !important;
-      padding: 0 !important;
-      position: absolute !important;
-      left: 50% !important;
-      top: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      width: 16px !important;
-      height: 16px !important;
-      font-size: 16px !important;
-      line-height: 1 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-    }
-
-    // Hide text on small screens
-    :deep(span) {
-      display: none !important;
-    }
-  }
-}
-
 // Global chip icon styling
 :deep(.q-chip__icon) {
   color: rgba(255, 255, 255, 0.9) !important;
