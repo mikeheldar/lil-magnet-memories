@@ -1825,9 +1825,15 @@ html, body {
 .shop-category-item {
   transition: background-color 0.2s ease;
   width: 100% !important;
+  padding-right: 16px !important; // Match q-expansion-item padding for chevron alignment
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  // Ensure text section doesn't extend too far right
+  .q-item-section:not(.category-expand-section):not([avatar]) {
+    padding-right: 8px !important;
   }
 }
 
@@ -1846,14 +1852,16 @@ html, body {
 }
 
 .category-expand-section {
-  min-width: auto !important;
-  width: auto !important;
+  min-width: 40px !important; // Match q-expansion-item chevron width
+  width: 40px !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: flex-end !important;
-  margin-left: auto !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important; // Prevent shrinking
+  position: absolute !important;
+  right: 16px !important; // Match q-expansion-item chevron position
 }
 
 .category-expand-btn {
