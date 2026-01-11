@@ -367,7 +367,8 @@ export default {
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
     const reviews = ref([]);
-    const loadingReviews = ref(true);
+    const loadingReviews = ref(true); // Start as true to prevent showing "no reviews" before load completes
+    const reviewsLoaded = ref(false); // Track if reviews have been loaded at least once
     const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
       useCustomerType();
     
@@ -914,6 +915,7 @@ export default {
       isAdmin,
       reviews,
       loadingReviews,
+      reviewsLoaded,
       verifiedReviews,
       hasActiveEvent,
       activeMarketEventName,
