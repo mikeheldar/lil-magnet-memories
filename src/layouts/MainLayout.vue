@@ -379,10 +379,21 @@
                 <q-item-label>Custom Photo Magnets</q-item-label>
                 <q-item-label caption>Create personalized magnets</q-item-label>
               </q-item-section>
+              <q-item-section side="right" v-if="customProductsList.length > 0">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  @click.stop="customProductsExpanded = !customProductsExpanded"
+                  :icon="customProductsExpanded ? 'expand_less' : 'expand_more'"
+                  class="category-expand-btn"
+                />
+              </q-item-section>
             </q-item>
 
-            <!-- Show products for Custom (only on hover) -->
-            <div v-if="customProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
+            <!-- Show products for Custom (only when expanded) -->
+            <div v-if="customProductsExpanded && customProductsList.length > 0" :class="['product-submenu', 'q-pl-xl', 'q-pr-md', 'q-pb-sm', { expanded: customProductsExpanded }]">
             <q-item
               v-for="product in customProductsList"
               :key="product.id"
@@ -414,10 +425,21 @@
                 <q-item-label>Designer Magnets</q-item-label>
                 <q-item-label caption>Ready-made designs</q-item-label>
               </q-item-section>
+              <q-item-section side="right" v-if="designerProductsList.length > 0">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  @click.stop="designerProductsExpanded = !designerProductsExpanded"
+                  :icon="designerProductsExpanded ? 'expand_less' : 'expand_more'"
+                  class="category-expand-btn"
+                />
+              </q-item-section>
             </q-item>
 
-            <!-- Show products for Designer (only on hover) -->
-            <div v-if="designerProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
+            <!-- Show products for Designer (only when expanded) -->
+            <div v-if="designerProductsExpanded && designerProductsList.length > 0" :class="['product-submenu', 'q-pl-xl', 'q-pr-md', 'q-pb-sm', { expanded: designerProductsExpanded }]">
             <q-item
               v-for="product in designerProductsList"
               :key="product.id"
@@ -449,10 +471,21 @@
                 <q-item-label>Specialty Products</q-item-label>
                 <q-item-label caption>Unique specialty items</q-item-label>
               </q-item-section>
+              <q-item-section side="right" v-if="specialtyProductsList.length > 0">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  @click.stop="specialtyProductsExpanded = !specialtyProductsExpanded"
+                  :icon="specialtyProductsExpanded ? 'expand_less' : 'expand_more'"
+                  class="category-expand-btn"
+                />
+              </q-item-section>
             </q-item>
 
-            <!-- Show products for Specialty (only on hover) -->
-            <div v-if="specialtyProductsList.length > 0" class="product-submenu q-pl-xl q-pr-md q-pb-sm">
+            <!-- Show products for Specialty (only when expanded) -->
+            <div v-if="specialtyProductsExpanded && specialtyProductsList.length > 0" :class="['product-submenu', 'q-pl-xl', 'q-pr-md', 'q-pb-sm', { expanded: specialtyProductsExpanded }]">
             <q-item
               v-for="product in specialtyProductsList"
               :key="product.id"
@@ -804,6 +837,11 @@ export default {
     const specialtyProductsList = computed(() => {
       return products.value.filter((p) => p.category === 'specialty');
     });
+
+    // Expanded state for shop category submenus
+    const customProductsExpanded = ref(false);
+    const designerProductsExpanded = ref(false);
+    const specialtyProductsExpanded = ref(false);
 
 
 
@@ -1239,6 +1277,9 @@ export default {
       customProductsList,
       designerProductsList,
       specialtyProductsList,
+      customProductsExpanded,
+      designerProductsExpanded,
+      specialtyProductsExpanded,
     };
   },
 };
@@ -1797,9 +1838,26 @@ html, body {
   opacity: 0;
   transition: max-height 0.3s ease, opacity 0.2s ease;
   
-  .shop-category-wrapper:hover & {
+  &.expanded {
     max-height: 500px;
     opacity: 1;
+  }
+}
+
+.category-expand-btn {
+  color: rgba(0, 0, 0, 0.6) !important;
+  min-width: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.8) !important;
+  }
+  
+  .q-icon {
+    font-size: 18px;
   }
 }
 
