@@ -164,7 +164,7 @@
         <div class="text-h4 text-center q-mb-lg text-primary">
           Shop Our Products
         </div>
-        <div class="row q-col-gutter-md">
+        <div class="row q-col-gutter-md justify-center">
           <div v-if="visibilityLoaded && productTypeVisibility.custom" class="col-12 col-md-4">
             <q-card class="product-link-card" @click="$router.push('/products/custom')">
               <q-card-section class="text-center">
@@ -213,7 +213,7 @@
           <q-spinner-dots size="40px" color="primary" />
           <div class="q-mt-md text-grey-6">Loading reviews...</div>
         </div>
-        <div v-else-if="verifiedReviews && verifiedReviews.length > 0" class="row q-col-gutter-md" :key="`reviews-${reviews.length}`">
+        <div v-else-if="verifiedReviews && verifiedReviews.length > 0" class="row q-col-gutter-md justify-center" :key="`reviews-${reviews.length}`">
           <div
             v-for="review in verifiedReviews"
             :key="review.id"
