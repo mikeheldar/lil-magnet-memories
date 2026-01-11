@@ -1072,6 +1072,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 50px !important; // Add space below for easel dots to prevent overlap with next section
 }
 
 .hero-text {
@@ -1288,6 +1289,7 @@ export default {
   width: 100%;
   max-width: 100%;
   overflow: visible; // Allow shadows from easel images to extend
+  margin-bottom: 50px !important; // Add space below for easel dots to prevent overlap with next section
 }
 
 .easel-container {
@@ -1463,7 +1465,7 @@ export default {
 // Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
-  top: calc(100% + 15px) !important; // Move up 3px more (from 18px to 15px) to prevent bottom cutoff
+  top: calc(100% + 18px) !important; // Position 18px below the easel gallery picture
   left: 50%;
   transform: translateX(-50%);
   display: flex !important;
