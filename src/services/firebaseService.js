@@ -2232,6 +2232,7 @@ class FirebaseService {
         reviewText: reviewData.reviewText,
         rating: reviewData.rating || 5, // Default to 5 stars
         profilePicture: reviewData.profilePicture || null,
+        email: reviewData.email || null, // Store email for verification purposes
         isVerified: reviewData.isVerified !== undefined ? reviewData.isVerified : true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

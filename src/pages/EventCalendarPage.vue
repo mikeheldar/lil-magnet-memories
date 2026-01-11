@@ -19,106 +19,198 @@
 
       <!-- No Events -->
       <div
-        v-else-if="publicEvents.length === 0"
+        v-else-if="!loading && upcomingEvents.length === 0 && historicalEvents.length === 0"
         class="text-center q-pa-xl"
       >
         <q-icon name="event_busy" size="64px" color="grey-5" />
         <div class="text-h6 text-grey-6 q-mt-md">
-          No upcoming events scheduled
+          No events scheduled
         </div>
         <div class="text-body2 text-grey-5 q-mt-sm">
           Check back soon for our next market appearance!
         </div>
       </div>
 
-      <!-- Events List -->
-      <div v-else class="row q-col-gutter-md">
-        <div
-          v-for="event in publicEvents"
-          :key="event.id"
-          class="col-12 col-md-6 col-lg-4"
-        >
-          <q-card class="event-card" flat bordered>
-            <q-card-section>
-              <div class="row items-center q-mb-sm">
-                <div class="col">
-                  <div class="text-h6 text-weight-bold text-primary">
-                    {{ event.name }}
+      <!-- Upcoming Events Section -->
+      <div v-else-if="!loading && upcomingEvents.length > 0" class="q-mb-xl">
+        <div class="text-h5 text-weight-bold text-primary q-mb-md">
+          Upcoming Events
+        </div>
+        <div class="row q-col-gutter-md">
+          <div
+            v-for="event in upcomingEvents"
+            :key="event.id"
+            class="col-12 col-md-6 col-lg-4"
+          >
+            <q-card class="event-card" flat bordered>
+              <q-card-section>
+                <div class="row items-center q-mb-sm">
+                  <div class="col">
+                    <div class="text-h6 text-weight-bold text-primary">
+                      {{ event.name }}
+                    </div>
+                  </div>
+                  <q-chip
+                    :color="getEventStatusColor(getEventStatus(event))"
+                    text-color="white"
+                    size="sm"
+                  >
+                    {{ getEventStatusText(getEventStatus(event)) }}
+                  </q-chip>
+                </div>
+
+                <div class="event-details q-mb-md">
+                  <div class="row q-gutter-md">
+                    <div class="col-12">
+                      <q-icon
+                        name="place"
+                        color="grey-6"
+                        size="sm"
+                        class="q-mr-xs"
+                      />
+                      <span class="text-body2">{{ event.location }}</span>
+                    </div>
+                    <div v-if="event.eventLink" class="col-12">
+                      <q-icon
+                        name="link"
+                        color="grey-6"
+                        size="sm"
+                        class="q-mr-xs"
+                      />
+                      <a
+                        :href="event.eventLink"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-body2 text-primary text-weight-medium"
+                        style="text-decoration: none;"
+                      >
+                        Event Details
+                        <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+                      </a>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-icon
+                        name="schedule"
+                        color="grey-6"
+                        size="sm"
+                        class="q-mr-xs"
+                      />
+                      <span class="text-body2">{{
+                        formatDateTime(event.startDateTime)
+                      }}</span>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-icon
+                        name="schedule"
+                        color="grey-6"
+                        size="sm"
+                        class="q-mr-xs"
+                      />
+                      <span class="text-body2">{{
+                        formatDateTime(event.endDateTime)
+                      }}</span>
+                    </div>
                   </div>
                 </div>
-                <q-chip
-                  :color="getEventStatusColor(getEventStatus(event))"
-                  text-color="white"
-                  size="sm"
-                >
-                  {{ getEventStatusText(getEventStatus(event)) }}
-                </q-chip>
-              </div>
 
-              <div class="event-details q-mb-md">
-                <div class="row q-gutter-md">
-                  <div class="col-12">
-                    <q-icon
-                      name="place"
-                      color="grey-6"
-                      size="sm"
-                      class="q-mr-xs"
-                    />
-                    <span class="text-body2">{{ event.location }}</span>
+                <q-btn
+                  v-if="getEventStatus(event) === 'active'"
+                  color="primary"
+                  label="Shop at Event"
+                  icon="store"
+                  class="full-width"
+                  @click="goToMarketEventUpload"
+                />
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical Events Section -->
+      <div v-if="!loading && historicalEvents.length > 0">
+        <div class="text-h5 text-weight-bold text-primary q-mb-md q-mt-xl">
+          Historical Events
+        </div>
+        <div class="row q-col-gutter-md">
+          <div
+            v-for="event in historicalEvents"
+            :key="event.id"
+            class="col-12 col-md-6 col-lg-4"
+          >
+            <q-card class="event-card" flat bordered>
+              <q-card-section>
+                <div class="row items-center q-mb-sm">
+                  <div class="col">
+                    <div class="text-h6 text-weight-bold text-primary">
+                      {{ event.name }}
+                    </div>
                   </div>
-                  <div v-if="event.eventLink" class="col-12">
-                    <q-icon
-                      name="link"
-                      color="grey-6"
-                      size="sm"
-                      class="q-mr-xs"
-                    />
-                    <a
-                      :href="event.eventLink"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-body2 text-primary text-weight-medium"
-                      style="text-decoration: none;"
-                    >
-                      Event Details
-                      <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
-                    </a>
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <q-icon
-                      name="schedule"
-                      color="grey-6"
-                      size="sm"
-                      class="q-mr-xs"
-                    />
-                    <span class="text-body2">{{
-                      formatDateTime(event.startDateTime)
-                    }}</span>
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <q-icon
-                      name="schedule"
-                      color="grey-6"
-                      size="sm"
-                      class="q-mr-xs"
-                    />
-                    <span class="text-body2">{{
-                      formatDateTime(event.endDateTime)
-                    }}</span>
+                  <q-chip
+                    :color="getEventStatusColor(getEventStatus(event))"
+                    text-color="white"
+                    size="sm"
+                  >
+                    {{ getEventStatusText(getEventStatus(event)) }}
+                  </q-chip>
+                </div>
+
+                <div class="event-details q-mb-md">
+                  <div class="row q-gutter-md">
+                    <div class="col-12">
+                      <q-icon
+                        name="place"
+                        color="grey-6"
+                        size="sm"
+                        class="q-mr-xs"
+                      />
+                      <span class="text-body2">{{ event.location }}</span>
+                    </div>
+                    <div v-if="event.eventLink" class="col-12">
+                      <q-icon
+                        name="link"
+                        color="grey-6"
+                        size="sm"
+                        class="q-mr-xs"
+                      />
+                      <a
+                        :href="event.eventLink"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-body2 text-primary text-weight-medium"
+                        style="text-decoration: none;"
+                      >
+                        Event Details
+                        <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+                      </a>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-icon
+                        name="schedule"
+                        color="grey-6"
+                        size="sm"
+                        class="q-mr-xs"
+                      />
+                      <span class="text-body2">{{
+                        formatDateTime(event.startDateTime)
+                      }}</span>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-icon
+                        name="schedule"
+                        color="grey-6"
+                        size="sm"
+                        class="q-mr-xs"
+                      />
+                      <span class="text-body2">{{
+                        formatDateTime(event.endDateTime)
+                      }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <q-btn
-                v-if="getEventStatus(event) === 'active'"
-                color="primary"
-                label="Shop at Event"
-                icon="store"
-                class="full-width"
-                @click="goToMarketEventUpload"
-              />
-            </q-card-section>
-          </q-card>
+              </q-card-section>
+            </q-card>
+          </div>
         </div>
       </div>
     </div>
@@ -148,8 +240,8 @@ const loadEvents = async () => {
   }
 };
 
-// Filter to only show upcoming and active events
-const publicEvents = computed(() => {
+// Filter to show upcoming and active events
+const upcomingEvents = computed(() => {
   const now = new Date();
   return events.value
     .filter((event) => {
@@ -166,6 +258,27 @@ const publicEvents = computed(() => {
         ? b.startDateTime.toDate()
         : new Date(b.startDateTime);
       return dateA - dateB;
+    });
+});
+
+// Filter to show historical (past) events
+const historicalEvents = computed(() => {
+  const now = new Date();
+  return events.value
+    .filter((event) => {
+      const endDate = event.endDateTime?.toDate
+        ? event.endDateTime.toDate()
+        : new Date(event.endDateTime);
+      return endDate < now;
+    })
+    .sort((a, b) => {
+      const dateA = a.startDateTime?.toDate
+        ? a.startDateTime.toDate()
+        : new Date(a.startDateTime);
+      const dateB = b.startDateTime?.toDate
+        ? b.startDateTime.toDate()
+        : new Date(b.startDateTime);
+      return dateB - dateA; // Reverse order for historical (most recent first)
     });
 });
 

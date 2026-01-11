@@ -1,6 +1,9 @@
 <template>
-  <q-page class="customer-review-page" v-if="mounted">
-    <div class="page-container q-pa-lg">
+  <q-page class="customer-review-page">
+    <div v-if="!mounted" class="flex flex-center" style="min-height: 400px">
+      <q-spinner color="primary" size="3em" />
+    </div>
+    <div v-if="mounted" class="page-container q-pa-lg">
       <div class="text-center q-mb-xl">
         <div class="text-h4 text-weight-bold text-primary q-mb-sm">
           <q-icon name="rate_review" size="32px" class="q-mr-sm" />
@@ -93,9 +96,15 @@ const router = useRouter();
 const $q = useQuasar();
 const mounted = ref(false);
 
-// Ensure page only renders after layout is ready
+// Ensure page only renders after layout is fully ready
+// This prevents the "QPage needs to be a deep child of QLayout" error
+// Using v-show instead of v-if so component is created within QLayout context
 onMounted(async () => {
+  // Wait for Vue to finish rendering and QLayout to be established
   await nextTick();
+  await nextTick();
+  // Small delay to ensure QLayout context is fully initialized
+  await new Promise(resolve => setTimeout(resolve, 50));
   mounted.value = true;
 });
 

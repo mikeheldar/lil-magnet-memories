@@ -49,7 +49,18 @@
       </q-card>
 
       <!-- Reviews List -->
-      <div class="text-h6 q-mb-md">All Reviews ({{ reviews.length }})</div>
+      <div class="text-h6 q-mb-md">
+        All Reviews ({{ reviews.length }})
+        <q-chip
+          v-if="unverifiedReviews.length > 0"
+          color="orange"
+          text-color="white"
+          size="sm"
+          class="q-ml-sm"
+        >
+          {{ unverifiedReviews.length }} Pending Verification
+        </q-chip>
+      </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="text-center q-pa-xl">
@@ -57,77 +68,172 @@
         <div class="q-mt-md text-grey-6">Loading reviews...</div>
       </div>
 
-      <!-- Reviews Grid -->
-      <div v-else-if="reviews.length > 0" class="row q-col-gutter-md">
-        <div
-          v-for="review in reviews"
-          :key="review.id"
-          class="col-12 col-md-6 col-lg-4"
-        >
-          <q-card class="review-card">
-            <q-card-section>
-              <div class="row items-center q-mb-sm">
-                <q-avatar
-                  v-if="review.profilePicture"
-                  :src="review.profilePicture"
-                  size="48px"
-                  class="q-mr-sm"
-                />
-                <q-avatar
-                  v-else
-                  color="primary"
-                  text-color="white"
-                  size="48px"
-                  class="q-mr-sm"
-                >
-                  {{ review.customerName.charAt(0).toUpperCase() }}
-                </q-avatar>
-                <div class="col">
-                  <div class="text-weight-bold">{{ review.customerName }}</div>
-                  <q-rating
-                    :model-value="review.rating || 5"
-                    :max="5"
-                    size="16px"
-                    readonly
-                    class="star-rating"
+      <!-- Unverified Reviews Section -->
+      <div v-if="unverifiedReviews.length > 0" class="q-mb-xl">
+        <div class="text-h6 q-mb-md text-orange">
+          <q-icon name="pending" class="q-mr-sm" />
+          Pending Verification ({{ unverifiedReviews.length }})
+        </div>
+        <div class="row q-col-gutter-md">
+          <div
+            v-for="review in unverifiedReviews"
+            :key="review.id"
+            class="col-12 col-md-6 col-lg-4"
+          >
+            <q-card class="review-card unverified-review-card">
+              <q-card-section>
+                <div class="row items-center q-mb-sm">
+                  <q-avatar
+                    v-if="review.profilePicture"
+                    :src="review.profilePicture"
+                    size="48px"
+                    class="q-mr-sm"
+                  />
+                  <q-avatar
+                    v-else
+                    color="orange"
+                    text-color="white"
+                    size="48px"
+                    class="q-mr-sm"
+                  >
+                    {{ review.customerName.charAt(0).toUpperCase() }}
+                  </q-avatar>
+                  <div class="col">
+                    <div class="text-weight-bold">{{ review.customerName }}</div>
+                    <q-rating
+                      :model-value="review.rating || 5"
+                      :max="5"
+                      size="16px"
+                      readonly
+                      class="star-rating"
+                    />
+                  </div>
+                  <q-chip
+                    color="orange"
+                    text-color="white"
+                    size="sm"
+                    icon="pending"
+                  >
+                    Pending
+                  </q-chip>
+                </div>
+                <div class="text-body2 text-grey-8 q-mb-md">
+                  {{ review.reviewText }}
+                </div>
+                <div class="text-caption text-grey-6 q-mb-md">
+                  {{ formatDate(review.createdAt) }}
+                  <span v-if="review.email" class="q-ml-sm">
+                    ({{ review.email }})
+                  </span>
+                </div>
+                <div class="row q-gutter-sm">
+                  <q-btn
+                    flat
+                    dense
+                    color="green"
+                    label="Verify"
+                    icon="verified"
+                    @click="verifyReview(review)"
+                  />
+                  <q-btn
+                    flat
+                    dense
+                    color="primary"
+                    label="Edit"
+                    icon="edit"
+                    @click="startEditReview(review)"
+                  />
+                  <q-btn
+                    flat
+                    dense
+                    color="negative"
+                    label="Delete"
+                    icon="delete"
+                    @click="confirmDeleteReview(review)"
                   />
                 </div>
-                <q-chip
-                  v-if="review.isVerified"
-                  color="green"
-                  text-color="white"
-                  size="sm"
-                  icon="verified"
-                >
-                  Verified
-                </q-chip>
-              </div>
-              <div class="text-body2 text-grey-8 q-mb-md">
-                {{ review.reviewText }}
-              </div>
-              <div class="text-caption text-grey-6 q-mb-md">
-                {{ formatDate(review.createdAt) }}
-              </div>
-              <div class="row q-gutter-sm">
-                <q-btn
-                  flat
-                  dense
-                  color="primary"
-                  label="Edit"
-                  icon="edit"
-                  @click="startEditReview(review)"
-                />
-                <q-btn
-                  flat
-                  dense
-                  color="negative"
-                  label="Delete"
-                  icon="delete"
-                  @click="confirmDeleteReview(review)"
-                />
-              </div>
-            </q-card-section>
-          </q-card>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verified Reviews Section -->
+      <div v-if="verifiedReviews.length > 0">
+        <div class="text-h6 q-mb-md text-green">
+          <q-icon name="verified" class="q-mr-sm" />
+          Verified Reviews ({{ verifiedReviews.length }})
+        </div>
+        <div class="row q-col-gutter-md">
+          <div
+            v-for="review in verifiedReviews"
+            :key="review.id"
+            class="col-12 col-md-6 col-lg-4"
+          >
+            <q-card class="review-card">
+              <q-card-section>
+                <div class="row items-center q-mb-sm">
+                  <q-avatar
+                    v-if="review.profilePicture"
+                    :src="review.profilePicture"
+                    size="48px"
+                    class="q-mr-sm"
+                  />
+                  <q-avatar
+                    v-else
+                    color="primary"
+                    text-color="white"
+                    size="48px"
+                    class="q-mr-sm"
+                  >
+                    {{ review.customerName.charAt(0).toUpperCase() }}
+                  </q-avatar>
+                  <div class="col">
+                    <div class="text-weight-bold">{{ review.customerName }}</div>
+                    <q-rating
+                      :model-value="review.rating || 5"
+                      :max="5"
+                      size="16px"
+                      readonly
+                      class="star-rating"
+                    />
+                  </div>
+                  <q-chip
+                    color="green"
+                    text-color="white"
+                    size="sm"
+                    icon="verified"
+                  >
+                    Verified
+                  </q-chip>
+                </div>
+                <div class="text-body2 text-grey-8 q-mb-md">
+                  {{ review.reviewText }}
+                </div>
+                <div class="text-caption text-grey-6 q-mb-md">
+                  {{ formatDate(review.createdAt) }}
+                </div>
+                <div class="row q-gutter-sm">
+                  <q-btn
+                    flat
+                    dense
+                    color="primary"
+                    label="Edit"
+                    icon="edit"
+                    @click="startEditReview(review)"
+                  />
+                  <q-btn
+                    flat
+                    dense
+                    color="negative"
+                    label="Delete"
+                    icon="delete"
+                    @click="confirmDeleteReview(review)"
+                  />
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
         </div>
       </div>
 
@@ -211,7 +317,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { firebaseService } from '../services/firebaseService.js';
 import { useQuasar } from 'quasar';
 
@@ -358,6 +464,36 @@ export default {
       }
     };
 
+    // Filter reviews by verification status
+    const verifiedReviews = computed(() => {
+      return reviews.value.filter((review) => review.isVerified === true);
+    });
+
+    const unverifiedReviews = computed(() => {
+      return reviews.value.filter((review) => review.isVerified !== true);
+    });
+
+    const verifyReview = async (review) => {
+      try {
+        await firebaseService.updateReview(review.id, {
+          isVerified: true,
+        });
+        $q.notify({
+          type: 'positive',
+          message: 'Review verified successfully',
+          position: 'top',
+        });
+        await loadReviews();
+      } catch (error) {
+        console.error('Error verifying review:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to verify review',
+          position: 'top',
+        });
+      }
+    };
+
     onMounted(() => {
       loadReviews();
     });
@@ -379,6 +515,9 @@ export default {
       confirmDeleteReview,
       handleDeleteReview,
       formatDate,
+      verifiedReviews,
+      unverifiedReviews,
+      verifyReview,
     };
   },
 };
@@ -392,5 +531,9 @@ export default {
 
 .review-card {
   height: 100%;
+}
+
+.unverified-review-card {
+  border-left: 4px solid #ff9800;
 }
 </style>

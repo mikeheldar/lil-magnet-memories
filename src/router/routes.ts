@@ -60,6 +60,10 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
+        path: 'leave-review',
+        component: () => import('pages/CustomerReviewPage.vue'),
+      },
+      {
         path: 'firebase-test',
         component: () => import('pages/FirebaseDiagnostic.vue'),
       },
