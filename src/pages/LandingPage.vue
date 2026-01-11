@@ -213,7 +213,7 @@
           <q-spinner-dots size="40px" color="primary" />
           <div class="q-mt-md text-grey-6">Loading reviews...</div>
         </div>
-        <div v-else-if="verifiedReviews.length > 0" class="row q-col-gutter-md">
+        <div v-else-if="verifiedReviews && verifiedReviews.length > 0" class="row q-col-gutter-md" :key="`reviews-${reviews.length}`">
           <div
             v-for="review in verifiedReviews"
             :key="review.id"
@@ -682,26 +682,35 @@ export default {
       loadingReviews.value = true;
       try {
         const reviewsData = await firebaseService.getReviews();
-        reviews.value = reviewsData || [];
+        // Use a new array reference to ensure reactivity
+        reviews.value = Array.isArray(reviewsData) ? [...reviewsData] : [];
         console.log('✅ Reviews loaded:', reviews.value.length, 'total reviews');
-        console.log('✅ Verified reviews:', reviews.value.filter(r => r.isVerified === true || r.isVerified === 'true' || r.isVerified === 1).length);
+        const verifiedCount = verifiedReviews.value.length;
+        console.log('✅ Verified reviews:', verifiedCount);
+        console.log('✅ Reviews data:', reviews.value);
       } catch (error) {
         console.error('Error loading reviews:', error);
         reviews.value = [];
       } finally {
         loadingReviews.value = false;
+        // Force reactivity update
+        await nextTick();
       }
     };
 
     // Filter to only show verified reviews on landing page
     const verifiedReviews = computed(() => {
-      if (!reviews.value || reviews.value.length === 0) {
+      if (!reviews.value || !Array.isArray(reviews.value) || reviews.value.length === 0) {
+        console.log('🔍 Verified reviews computed: No reviews or empty array');
         return [];
       }
       // Filter for verified reviews, handling both boolean true and string 'true'
-      return reviews.value.filter((review) => {
-        return review.isVerified === true || review.isVerified === 'true' || review.isVerified === 1;
+      const verified = reviews.value.filter((review) => {
+        const isVerified = review.isVerified === true || review.isVerified === 'true' || review.isVerified === 1;
+        return isVerified;
       });
+      console.log('🔍 Verified reviews computed:', verified.length, 'out of', reviews.value.length);
+      return verified;
     });
 
     // Initialize visibility settings - uses global cached state
@@ -820,9 +829,22 @@ export default {
       // Load visibility settings first to prevent menu flash
       await loadVisibilitySettings();
       // Then load reviews to ensure they're ready before rendering
-      // Use nextTick to ensure DOM is ready before checking reviews
       await loadReviews();
-      await nextTick(); // Ensure reviews are rendered after loading
+      
+      // Watch for reviews changes to ensure reactivity
+      watch(reviews, (newReviews) => {
+        console.log('🔄 Reviews changed:', newReviews.length);
+        console.log('🔄 Verified reviews:', verifiedReviews.value.length);
+      }, { immediate: true, deep: true });
+      
+      // Force a reactivity update after reviews are loaded
+      await nextTick();
+      // Log the final state
+      console.log('📊 Final reviews state:', {
+        totalReviews: reviews.value.length,
+        verifiedReviews: verifiedReviews.value.length,
+        loadingReviews: loadingReviews.value
+      });
 
       // Check if user is already authenticated immediately
       const currentAuthUser = authService.getCurrentUser();
