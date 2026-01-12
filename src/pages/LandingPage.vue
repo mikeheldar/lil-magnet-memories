@@ -1540,7 +1540,7 @@ export default {
 }
 
 .how-it-works-section {
-  margin-top: -50px; // Move up 50px (doubled from -25px) to remove half the white space
+  margin-top: -30px; // Move up 30px closer to easel dots
   margin-bottom: 60px;
 }
 
