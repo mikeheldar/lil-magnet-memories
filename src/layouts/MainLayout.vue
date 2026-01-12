@@ -367,7 +367,7 @@
             <q-item
               clickable
               v-ripple
-              @click="$router.push('/products/custom')"
+              @click="navigateWithDrawerClose('/products/custom')"
               class="shop-category-item"
             >
               <q-item-section avatar>
@@ -398,7 +398,7 @@
               clickable
               v-ripple
               dense
-              @click.stop="$router.push(`/product/custom/${product.id}`)"
+              @click.stop="navigateWithDrawerClose(`/product/custom/${product.id}`)"
               class="product-item"
             >
               <q-item-section>
@@ -413,7 +413,7 @@
             <q-item
               clickable
               v-ripple
-              @click="$router.push('/products/designer')"
+              @click="navigateWithDrawerClose('/products/designer')"
               class="shop-category-item"
             >
               <q-item-section avatar>
@@ -444,7 +444,7 @@
               clickable
               v-ripple
               dense
-              @click.stop="$router.push(`/product/designer/${product.id}`)"
+              @click.stop="navigateWithDrawerClose(`/product/designer/${product.id}`)"
               class="product-item"
             >
               <q-item-section>
@@ -459,7 +459,7 @@
             <q-item
               clickable
               v-ripple
-              @click="$router.push('/products/specialty')"
+              @click="navigateWithDrawerClose('/products/specialty')"
               class="shop-category-item"
             >
               <q-item-section avatar>
@@ -490,7 +490,7 @@
               clickable
               v-ripple
               dense
-              @click.stop="$router.push(`/product/specialty/${product.id}`)"
+              @click.stop="navigateWithDrawerClose(`/product/specialty/${product.id}`)"
               class="product-item"
             >
               <q-item-section>
@@ -500,16 +500,6 @@
             </div>
           </div>
 
-          <!-- Start Creating Now (last item in Shop section) -->
-          <q-item clickable v-ripple @click="handleUploadClick" class="shop-category-item">
-            <q-item-section avatar>
-              <q-icon name="camera_alt" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Start Creating Now</q-item-label>
-              <q-item-label caption>{{ uploadLinkCaption }}</q-item-label>
-            </q-item-section>
-          </q-item>
         </q-expansion-item>
 
         <!-- Content for non-authenticated users -->
@@ -547,7 +537,7 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple to="/magnet-studio-select">
+              <q-item clickable v-ripple @click="navigateTo('/magnet-studio-select')">
                 <q-item-section avatar>
                   <q-icon name="apps" color="purple" />
                 </q-item-section>
@@ -1190,9 +1180,23 @@ export default {
       leftDrawerOpen.value = !leftDrawerOpen.value;
     };
 
+    // Helper function for router.push with conditional drawer closing
+    // Only closes drawer on small screens (<= 599px), keeps open on medium+ screens
+    const navigateWithDrawerClose = (path) => {
+      router.push(path);
+      const isSmallScreen = window.innerWidth <= 599;
+      if (isSmallScreen) {
+        leftDrawerOpen.value = false;
+      }
+    };
+
     const navigateTo = (path) => {
       router.push(path);
-      leftDrawerOpen.value = false; // Close drawer after navigation
+      // Only close drawer on small screens (<= 599px), keep open on medium+ screens
+      const isSmallScreen = window.innerWidth <= 599;
+      if (isSmallScreen) {
+        leftDrawerOpen.value = false;
+      }
     };
 
     const handleSignIn = async () => {
@@ -1360,6 +1364,7 @@ export default {
       userProfile,
       toggleLeftDrawer,
       navigateTo,
+      navigateWithDrawerClose,
       handleSignIn,
       handleSignOut,
       cartItemCount,
