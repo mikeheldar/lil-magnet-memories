@@ -10,45 +10,9 @@
         </div>
       </div>
 
-      <div class="row q-col-gutter-lg">
-        <!-- Contact Information -->
-        <div class="col-12 col-md-6">
-          <q-card>
-            <q-card-section>
-              <div class="text-h6 q-mb-md">
-                <q-icon name="email" class="q-mr-sm" />
-                Get in Touch
-              </div>
-              <div class="q-mb-md">
-                <div class="text-weight-medium q-mb-xs">Email:</div>
-                <div class="text-body1">
-                  <a href="mailto:info@lilmagnetmemories.com" class="text-primary">
-                    info@lilmagnetmemories.com
-                  </a>
-                </div>
-              </div>
-              <div class="q-mb-md">
-                <div class="text-weight-medium q-mb-xs">Phone:</div>
-                <div class="text-body1">
-                  <a href="tel:+1234567890" class="text-primary">
-                    (123) 456-7890
-                  </a>
-                </div>
-              </div>
-              <div class="q-mb-md">
-                <div class="text-weight-medium q-mb-xs">Business Hours:</div>
-                <div class="text-body1">
-                  Monday - Friday: 9:00 AM - 5:00 PM<br />
-                  Saturday: 10:00 AM - 2:00 PM<br />
-                  Sunday: Closed
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
-
+      <div class="row justify-center">
         <!-- Contact Form -->
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-8 col-lg-6">
           <q-card>
             <q-card-section>
               <div class="text-h6 q-mb-md">
@@ -96,6 +60,16 @@
               </q-form>
             </q-card-section>
           </q-card>
+
+          <!-- Contact Email -->
+          <div class="text-center q-mt-lg">
+            <div class="text-body1 text-grey-7 q-mb-sm">or contact us at</div>
+            <div class="text-body1">
+              <a href="mailto:info@lilmagnetmemories.com" class="text-primary">
+                info@lilmagnetmemories.com
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
