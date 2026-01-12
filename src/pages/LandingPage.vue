@@ -2001,6 +2001,26 @@ export default {
   background: $light-purple; // Light purple from design system
   height: 100%;
   border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+
+  .q-card-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex-grow: 1;
+
+    // Make review text grow to fill space, pushing badge to bottom
+    .text-body2 {
+      flex-grow: 1;
+      margin-bottom: 0 !important; // Remove margin so badge sits at bottom
+    }
+
+    // Push verified badge to bottom
+    .q-chip {
+      margin-top: auto;
+    }
+  }
 }
 
 .leave-review-card {
