@@ -992,7 +992,7 @@ export default {
   flex-direction: column; // Stack logo container and hero-content vertically
   align-items: stretch; // Stretch children to full width
   justify-content: flex-start;
-  padding: 0 10px 40px 10px; // No top padding - spacing comes from .q-page-container
+  padding: 0 10px 20px 10px; // Reduced bottom padding from 40px to 20px to reduce space
   padding-top: 0 !important; // Ensure no top padding on any screen size
 
   // Remove test environment top padding override
@@ -1092,7 +1092,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 50px !important; // Add space below for easel dots to prevent overlap with next section
+  margin-bottom: 12px !important; // Reduced from 50px to 12px to reduce space below dots
 }
 
 .hero-text {
@@ -1309,7 +1309,7 @@ export default {
   width: 100%;
   max-width: 100%;
   overflow: visible; // Allow shadows from easel images to extend
-  margin-bottom: 25px !important; // Reduced from 50px to 25px to consolidate space
+  margin-bottom: 12px !important; // Reduced from 25px to 12px to reduce space below dots
 }
 
 .easel-container {
@@ -1485,7 +1485,7 @@ export default {
 // Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
-  top: calc(100% - 12px) !important; // Position 12px above bottom of easel picture (moved up 20px from 8px)
+  top: calc(100% - 6px) !important; // Position 6px above bottom (reduced from 12px to reduce space)
   left: 50%;
   transform: translateX(-50%);
   display: flex !important;
@@ -1540,7 +1540,7 @@ export default {
 }
 
 .how-it-works-section {
-  margin-top: -25px; // Move up 25px closer to easel dots
+  margin-top: 10px; // Push down to avoid being covered by green section above
   margin-bottom: 60px;
 }
 
