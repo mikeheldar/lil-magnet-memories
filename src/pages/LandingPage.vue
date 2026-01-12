@@ -1,7 +1,7 @@
 <template>
   <q-page class="landing-page">
     <!-- Market Event Banner -->
-    <div v-if="hasActiveEvent" class="market-event-banner bg-green-5">
+    <div v-if="hasActiveEvent" class="market-event-banner">
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
         <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
@@ -76,6 +76,17 @@
                 ]"
                 @click.stop="goToImage(index)"
                 aria-label="Go to image"
+              />
+            </div>
+            <!-- Start Creating Magnets Now button (shown when checked into event) -->
+            <div v-if="isCustomerAtEvent" class="start-creating-button-wrapper">
+              <q-btn
+                color="primary"
+                size="lg"
+                label="Start Creating Magnets Now"
+                icon="camera_alt"
+                class="start-creating-button"
+                @click.stop="handleStartCreating"
               />
             </div>
           </div>
@@ -819,6 +830,11 @@ export default {
       }
     };
 
+    // Handle Start Creating Magnets Now button click
+    const handleStartCreating = () => {
+      router.push('/photo-upload');
+    };
+
     // Check if user is already authenticated
     onMounted(async () => {
       // Set up real-time listener for immediate updates
@@ -947,6 +963,7 @@ export default {
       nextImage,
       previousImage,
       toggleCustomerAtEvent,
+      handleStartCreating,
       handleTouchStart,
       handleTouchMove,
       handleTouchEnd,
@@ -1153,9 +1170,42 @@ export default {
   padding: 16px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  background: $positive; // Green for larger screens
 
   @media (max-width: 600px) {
-    padding: 8px 12px;
+    padding: 0 12px;
+    height: 50px;
+    background: $light-purple; // Light purple on small screens
+    display: flex;
+    align-items: center;
+    
+    // Darker text for better contrast on light purple background
+    .banner-text {
+      color: $dark !important;
+      
+      strong {
+        color: $dark !important;
+      }
+      
+      span {
+        color: $dark !important;
+      }
+      
+      a {
+        color: $primary !important;
+      }
+    }
+    
+    .banner-icon {
+      color: $dark !important;
+    }
+    
+    // Toggle should use dark color on light background
+    .banner-toggle {
+      .q-toggle__label {
+        color: $dark !important;
+      }
+    }
   }
 }
 
@@ -1317,6 +1367,7 @@ export default {
   max-height: 620px; // Set max height to 620px
   aspect-ratio: 16 / 9; // Wide rectangular format
   display: flex;
+  position: relative; // For positioning the floating button
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
@@ -2065,6 +2116,72 @@ export default {
   
   .q-rating__icon--active {
     color: $light-grey !important; // Light grey for active stars (all inactive)
+  }
+}
+
+// Start Creating Magnets Now button - floating over easel gallery
+.start-creating-button-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.start-creating-button {
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  
+  // Purple border with pulsing animation
+  &::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 3px solid $light-purple;
+    border-radius: inherit;
+    animation: pulse-border 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  
+  // Outer glow effect
+  &::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 2px solid $light-purple;
+    border-radius: inherit;
+    opacity: 0.5;
+    animation: pulse-glow 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.2;
+    transform: scale(1.1);
   }
 }
 
