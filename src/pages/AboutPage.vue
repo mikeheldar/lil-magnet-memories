@@ -320,6 +320,7 @@ export default {
 
 .instagram-link-container {
   margin-top: 6px; // Reduced from q-mt-md (16px) by 10px
+  margin-bottom: 10px; // Add 10px spacing below Instagram link
 }
 
 .instagram-link {
