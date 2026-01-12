@@ -2011,14 +2011,17 @@ export default {
     flex-grow: 1;
 
     // Make review text grow to fill space, pushing badge to bottom
-    .text-body2 {
+    // Target the div containing review text specifically
+    > div.text-body2 {
       flex-grow: 1;
       margin-bottom: 0 !important; // Remove margin so badge sits at bottom
+      min-height: 0; // Allow flex item to shrink if needed
     }
 
     // Push verified badge to bottom
     .q-chip {
       margin-top: auto;
+      flex-shrink: 0; // Prevent badge from shrinking
     }
   }
 }
