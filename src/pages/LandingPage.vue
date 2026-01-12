@@ -1309,7 +1309,7 @@ export default {
   width: 100%;
   max-width: 100%;
   overflow: visible; // Allow shadows from easel images to extend
-  margin-bottom: 50px !important; // Add space below for easel dots to prevent overlap with next section
+  margin-bottom: 25px !important; // Reduced from 50px to 25px to consolidate space
 }
 
 .easel-container {
@@ -1535,12 +1535,12 @@ export default {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 20px 20px 40px 20px; // Reduced top padding by 20px (from 40px to 20px) to move How It Works section up
+  padding: 10px 20px 20px 20px; // Reduced top padding from 20px to 10px and bottom from 40px to 20px to consolidate space
   background: white;
 }
 
 .how-it-works-section {
-  margin-top: -30px; // Move up 30px closer to easel dots
+  margin-top: -25px; // Move up 25px closer to easel dots
   margin-bottom: 60px;
 }
 
