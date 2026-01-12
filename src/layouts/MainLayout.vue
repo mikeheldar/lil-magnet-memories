@@ -2177,35 +2177,48 @@ html, body {
   // Market Event dropdown with pulsing effect
   &.market-event-dropdown {
     position: relative;
+    overflow: visible; // Allow pulsing effects to extend beyond button
     
-    // Light purple pulsing border
+    // Light purple pulsing background glow
     &::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      border: 2px solid $light-purple;
-      border-radius: inherit;
-      animation: pulse-subnav-border 2s ease-in-out infinite;
-      pointer-events: none;
-      opacity: 0.8;
-    }
-    
-    // Outer glow effect
-    &::after {
       content: '';
       position: absolute;
       top: -4px;
       left: -4px;
       right: -4px;
       bottom: -4px;
-      border: 1px solid $light-purple;
-      border-radius: inherit;
-      opacity: 0.4;
-      animation: pulse-subnav-glow 2s ease-in-out infinite;
+      background: $light-purple;
+      border-radius: 8px;
+      animation: pulse-subnav-bg 2s ease-in-out infinite;
       pointer-events: none;
+      z-index: -1;
+      opacity: 0.6;
+    }
+    
+    // Light purple pulsing border
+    &::after {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border: 3px solid $light-purple;
+      border-radius: inherit;
+      animation: pulse-subnav-border 2s ease-in-out infinite;
+      pointer-events: none;
+      opacity: 1;
+    }
+    
+    // Add purple text color pulse
+    .q-btn__content {
+      animation: pulse-subnav-text 2s ease-in-out infinite;
+    }
+    
+    // Icon color pulse
+    .q-icon {
+      color: $primary !important;
+      animation: pulse-subnav-icon 2s ease-in-out infinite;
     }
   }
   font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
@@ -2413,25 +2426,47 @@ html, body {
 }
 
 // Pulsing animations for market event dropdown
-@keyframes pulse-subnav-border {
+@keyframes pulse-subnav-bg {
   0%, 100% {
-    opacity: 0.8;
+    opacity: 0.6;
     transform: scale(1);
   }
   50% {
-    opacity: 0.4;
-    transform: scale(1.02);
+    opacity: 0.3;
+    transform: scale(1.08);
   }
 }
 
-@keyframes pulse-subnav-glow {
+@keyframes pulse-subnav-border {
   0%, 100% {
-    opacity: 0.4;
+    opacity: 1;
     transform: scale(1);
+    border-color: $light-purple;
   }
   50% {
-    opacity: 0.1;
+    opacity: 0.7;
     transform: scale(1.05);
+    border-color: $primary;
+  }
+}
+
+@keyframes pulse-subnav-text {
+  0%, 100% {
+    color: #30343F; // Jet Black
+  }
+  50% {
+    color: $primary; // Purple pulse
+  }
+}
+
+@keyframes pulse-subnav-icon {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
   }
 }
 </style>
