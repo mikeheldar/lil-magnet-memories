@@ -55,6 +55,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/EventCalendarPage.vue'),
       },
       {
+        path: 'newsletter-signup',
+        component: () => import('pages/NewsletterSignupPage.vue'),
+      },
+      {
         path: 'reviews-management',
         component: () => import('pages/ReviewsManagementPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },

@@ -809,10 +809,10 @@
                 <q-icon name="camera_alt" size="24px" />
                 <span class="q-ml-sm">Instagram</span>
               </a>
-              <a href="mailto:info@lilmagnetmemories.com" class="footer-social-link">
+              <router-link to="/newsletter-signup" class="footer-social-link">
                 <q-icon name="email" size="24px" />
-                <span class="q-ml-sm">Email</span>
-              </a>
+                <span class="q-ml-sm">Email Newsletter</span>
+              </router-link>
             </div>
           </div>
         </div>
