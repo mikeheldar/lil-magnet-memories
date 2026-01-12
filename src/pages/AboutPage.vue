@@ -285,11 +285,13 @@ export default {
 .story-section {
   max-width: 900px;
   margin: 0 auto;
+  margin-top: 10px; // Move down another 10px
 }
 
 .values-section {
   max-width: 900px;
   margin: 0 auto;
+  margin-bottom: 48px; // Add good spacing before Highlights section
 }
 
 .value-card {
