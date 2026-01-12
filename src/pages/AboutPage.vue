@@ -255,14 +255,13 @@ export default {
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
-  // Position logo 10px below header/subheader
-  // Small screens: 10px below header (84px header + 10px = 94px)
-  padding-top: 94px;
-  padding-bottom: 24px; // q-pb-lg equivalent
+  // Move section up so logo is 10px below header/subheader
+  // Small screens: move up to position logo 10px below header (84px + 10px = 94px)
+  margin-top: -14px; // Pulls content up
   
-  // Medium+ screens: 10px below subheader (64px header + 48px subheader + 10px = 122px)
+  // Medium+ screens: move up to position logo 10px below subheader (64px + 48px + 10px = 122px)
   @media (min-width: 768px) {
-    padding-top: 122px;
+    margin-top: -14px; // Pulls content up
   }
 }
 
