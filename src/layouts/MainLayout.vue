@@ -263,6 +263,52 @@
           class="sub-nav-btn"
           @click="$router.push('/about')"
         />
+
+        <!-- Market Event Live Dropdown (only on medium+ screens when event is live) -->
+        <q-btn-dropdown
+          v-if="hasActiveEvent"
+          flat
+          dense
+          no-caps
+          label="Market Event Live"
+          icon="event"
+          class="sub-nav-btn market-event-dropdown"
+        >
+          <q-list>
+            <q-item-label header class="text-grey-8">
+              {{ activeMarketEvent?.name }}
+            </q-item-label>
+            <q-item-label caption class="text-grey-6 q-px-md q-pb-sm">
+              {{ activeMarketEvent?.location }}
+            </q-item-label>
+            <q-separator />
+            <q-item>
+              <q-item-section>
+                <q-toggle
+                  v-model="isMarketCustomer"
+                  color="primary"
+                  checked-icon="check_circle"
+                  unchecked-icon="radio_button_unchecked"
+                  label="I'm at the event"
+                  @update:model-value="handleMarketEventToggle"
+                />
+              </q-item-section>
+            </q-item>
+            <q-item
+              v-if="activeMarketEvent?.eventLink"
+              clickable
+              v-close-popup
+              @click="openEventLink"
+            >
+              <q-item-section avatar>
+                <q-icon name="open_in_new" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Event Details</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
       </div>
     </div>
 
@@ -1052,6 +1098,36 @@ export default {
       }
     };
 
+    // Handle market event toggle from dropdown
+    const handleMarketEventToggle = (value) => {
+      if (value) {
+        setCustomerType('market_customer');
+        $q.notify({
+          type: 'positive',
+          message: 'Market event mode enabled!',
+          caption: "You'll see pickup and local payment options",
+          position: 'top',
+          timeout: 3000,
+        });
+      } else {
+        setCustomerType('online_customer');
+        $q.notify({
+          type: 'info',
+          message: 'Switched to online mode',
+          caption: "You'll see shipping options for orders",
+          position: 'top',
+          timeout: 2000,
+        });
+      }
+    };
+
+    // Open event link in new tab
+    const openEventLink = () => {
+      if (activeMarketEvent.value?.eventLink) {
+        window.open(activeMarketEvent.value.eventLink, '_blank', 'noopener,noreferrer');
+      }
+    };
+
     // Watch for drawer opening and scroll menu to top, reset scroll position
     watch(leftDrawerOpen, (isOpen) => {
       if (isOpen && drawerMenuContainerRef.value) {
@@ -1357,6 +1433,8 @@ export default {
       activeMarketEvent,
       hasActiveEvent,
       isMarketCustomer,
+      handleMarketEventToggle,
+      openEventLink,
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,
@@ -2095,6 +2173,41 @@ html, body {
   min-width: auto;
   position: relative;
   // Use Lato for body text in navigation
+  
+  // Market Event dropdown with pulsing effect
+  &.market-event-dropdown {
+    position: relative;
+    
+    // Light purple pulsing border
+    &::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border: 2px solid $light-purple;
+      border-radius: inherit;
+      animation: pulse-subnav-border 2s ease-in-out infinite;
+      pointer-events: none;
+      opacity: 0.8;
+    }
+    
+    // Outer glow effect
+    &::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border: 1px solid $light-purple;
+      border-radius: inherit;
+      opacity: 0.4;
+      animation: pulse-subnav-glow 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+  }
   font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
   font-weight: 400 !important; // Regular weight for body text
   font-style: normal !important;
@@ -2297,5 +2410,28 @@ html, body {
 
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+// Pulsing animations for market event dropdown
+@keyframes pulse-subnav-border {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes pulse-subnav-glow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.1;
+    transform: scale(1.05);
+  }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <q-page class="landing-page">
-    <!-- Market Event Banner -->
-    <div v-if="hasActiveEvent" class="market-event-banner">
+    <!-- Market Event Banner (only on small screens) -->
+    <div v-if="hasActiveEvent" class="market-event-banner lt-sm">
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
         <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
@@ -1165,12 +1165,17 @@ export default {
   display: none;
 }
 
-// Market event banner
+// Market event banner (only visible on small screens)
 .market-event-banner {
   padding: 16px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
   background: $positive; // Green for larger screens
+  
+  // Hide on medium+ screens (gt-xs = > 599px)
+  @media (min-width: 600px) {
+    display: none !important;
+  }
 
   @media (max-width: 600px) {
     padding: 0 12px;
