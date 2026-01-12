@@ -1485,7 +1485,7 @@ export default {
 // Carousel dots - positioned below the image, always visible
 .easel-carousel-dots {
   position: absolute;
-  top: calc(100% + 8px) !important; // Position 8px below the easel gallery picture (moved up 10px from 18px)
+  top: calc(100% - 12px) !important; // Position 12px above bottom of easel picture (moved up 20px from 8px)
   left: 50%;
   transform: translateX(-50%);
   display: flex !important;
@@ -1539,7 +1539,11 @@ export default {
   background: white;
 }
 
-.how-it-works-section,
+.how-it-works-section {
+  margin-top: -25px; // Move up 25px closer to easel dots
+  margin-bottom: 60px;
+}
+
 .custom-products-section,
 .designer-products-section,
 .specialty-products-section {
