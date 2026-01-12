@@ -2009,19 +2009,27 @@ export default {
     flex-direction: column;
     height: 100%;
     flex-grow: 1;
+    min-height: 0; // Important for flex children
 
     // Make review text grow to fill space, pushing badge to bottom
-    // Target the div containing review text specifically
-    > div.text-body2 {
+    // Target any div with text-body2 class that contains review text
+    div.text-body2 {
       flex-grow: 1;
+      flex-shrink: 1;
       margin-bottom: 0 !important; // Remove margin so badge sits at bottom
       min-height: 0; // Allow flex item to shrink if needed
+    }
+
+    // Keep header section (avatar/name/rating) from shrinking
+    > div.row {
+      flex-shrink: 0; // Don't shrink the header section
     }
 
     // Push verified badge to bottom
     .q-chip {
       margin-top: auto;
       flex-shrink: 0; // Prevent badge from shrinking
+      margin-bottom: 0; // Ensure no bottom margin
     }
   }
 }
