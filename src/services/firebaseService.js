@@ -1681,8 +1681,13 @@ class FirebaseService {
 
   async uploadProductImage(file) {
     try {
+      // Get storage instance directly to avoid Proxy issues with ref()
+      // The Proxy might not work correctly with Firebase's ref() function
+      // Use getApp() which is already imported as default
+      const storageInstance = getStorage(getApp());
+      
       const fileName = `products/${Date.now()}_${file.name}`;
-      const storageRef = ref(storage, fileName);
+      const storageRef = ref(storageInstance, fileName);
 
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
