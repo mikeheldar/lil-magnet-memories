@@ -948,7 +948,12 @@ export default {
     // Computed product lists for each category (filtered by visibility)
     const customProductsList = computed(() => {
       if (!productTypeVisibility.value.custom) return [];
-      return products.value.filter((p) => p.category === 'custom');
+      // Filter products by category - ensure we're checking the category field correctly
+      const filtered = products.value.filter((p) => {
+        // Check if category exists and matches 'custom'
+        return p && p.category === 'custom';
+      });
+      return filtered;
     });
 
     const designerProductsList = computed(() => {
@@ -975,6 +980,14 @@ export default {
         const productsData = await firebaseService.getProducts(isAdminUser);
         if (productsData && productsData.length > 0) {
           products.value = productsData;
+          console.log('📦 Loaded products in MainLayout:', productsData.length);
+          console.log('📦 All products:', productsData.map(p => ({ id: p.id, description: p.description, category: p.category })));
+          console.log('📦 Custom products:', productsData.filter(p => p.category === 'custom').length);
+          console.log('📦 Designer products:', productsData.filter(p => p.category === 'designer').length);
+          console.log('📦 Specialty products:', productsData.filter(p => p.category === 'specialty').length);
+          console.log('📦 Products without category:', productsData.filter(p => !p.category).length);
+        } else {
+          console.log('⚠️ No products loaded in MainLayout');
         }
       } catch (error) {
         console.error('Error loading products in MainLayout:', error);
@@ -1357,7 +1370,7 @@ export default {
       // Load visibility settings FIRST before loading products or rendering menus
       await loadVisibilitySettings();
       // Then load products for Shop section
-      loadProducts();
+      await loadProducts();
 
       // Listen for auth state changes
       authService.onAuthStateChanged((user) => {
