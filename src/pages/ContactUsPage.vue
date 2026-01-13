@@ -11,8 +11,29 @@
       </div>
 
       <div class="row justify-center">
+        <!-- Success State -->
+        <div v-if="success" class="col-12 col-md-8 col-lg-6">
+          <q-card>
+            <q-card-section class="text-center q-pa-xl">
+              <q-icon name="check_circle" color="positive" size="64px" class="q-mb-md" />
+              <div class="text-h5 text-weight-bold text-primary q-mb-sm">
+                Message Sent Successfully!
+              </div>
+              <div class="text-body1 text-grey-7 q-mb-lg">
+                Thank you for contacting us. We'll get back to you soon.
+              </div>
+              <q-btn
+                color="primary"
+                label="Contact Again"
+                @click="resetForm"
+                class="q-mt-md"
+              />
+            </q-card-section>
+          </q-card>
+        </div>
+
         <!-- Contact Form -->
-        <div class="col-12 col-md-8 col-lg-6">
+        <div v-else class="col-12 col-md-8 col-lg-6">
           <q-card>
             <q-card-section>
               <div class="text-h6 q-mb-md">
@@ -65,8 +86,8 @@
           <div class="text-center q-mt-lg">
             <div class="text-body1 text-grey-7 q-mb-sm">or contact us at</div>
             <div class="text-body1">
-              <a href="mailto:info@lilmagnetmemories.com" class="text-primary">
-                info@lilmagnetmemories.com
+              <a href="mailto:lilmagnetmemories@gmail.com" class="text-primary">
+                lilmagnetmemories@gmail.com
               </a>
             </div>
           </div>
@@ -82,6 +103,7 @@ import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
 const submitting = ref(false);
+const success = ref(false);
 const form = ref({
   name: '',
   email: '',
@@ -94,31 +116,56 @@ const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
+const resetForm = () => {
+  success.value = false;
+  form.value = {
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  };
+};
+
 const onSubmit = async () => {
   submitting.value = true;
   try {
-    // TODO: Implement email sending functionality
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+    const response = await fetch(
+      'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/send-contact-email',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.value.name,
+          email: form.value.email,
+          subject: form.value.subject,
+          message: form.value.message,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage =
+        errorData.error || `HTTP error! status: ${response.status}`;
+      const errorDetails = errorData.details || '';
+      throw new Error(
+        `${errorMessage}${errorDetails ? ` - ${errorDetails}` : ''}`
+      );
+    }
+
+    const result = await response.json();
+    console.log('Contact email sent successfully:', result);
     
-    $q.notify({
-      type: 'positive',
-      message: 'Message sent successfully!',
-      caption: 'We\'ll get back to you soon.',
-      position: 'top',
-    });
-    
-    // Reset form
-    form.value = {
-      name: '',
-      email: '',
-      subject: '',
-      message: '',
-    };
+    // Show success state
+    success.value = true;
   } catch (error) {
+    console.error('Error sending contact email:', error);
     $q.notify({
       type: 'negative',
       message: 'Failed to send message',
-      caption: 'Please try again later.',
+      caption: error.message || 'Please try again later.',
       position: 'top',
     });
   } finally {

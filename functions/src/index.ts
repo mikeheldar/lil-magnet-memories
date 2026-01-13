@@ -137,6 +137,7 @@ app.get('/', (req, res) => {
       health: '/',
       sendOrderEmail: '/send-order-email',
       sendStatusUpdateEmail: '/send-status-update-email',
+      sendContactEmail: '/send-contact-email',
       createPayment: '/payments/create',
     },
   });
@@ -319,6 +320,53 @@ app.post('/send-status-update-email', async (req, res) => {
 
     return res.status(500).json({
       error: 'Failed to send status update email',
+      details: error.message || 'Unknown error occurred',
+    });
+  }
+});
+
+// Send contact form email endpoint
+app.post('/send-contact-email', async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({
+        error: 'Missing required fields: name, email, subject, message',
+      });
+    }
+
+    console.log('📧 Lil Magnet Memories contact form email request:', {
+      name,
+      email,
+      subject,
+    });
+
+    // Send the contact email
+    const result = await sendLilMagnetContactEmail({
+      name,
+      email,
+      subject,
+      message,
+    });
+
+    return res.json({ success: true, messageId: result });
+  } catch (error) {
+    console.error('Send Lil Magnet contact email error:', error);
+
+    // Provide more specific error messages
+    if (error.code === 'EAUTH') {
+      return res.status(500).json({
+        error:
+          'Gmail authentication failed. Please check the app password configuration.',
+        details:
+          'Invalid login credentials. The Gmail app password may be expired or incorrect.',
+      });
+    }
+
+    return res.status(500).json({
+      error: 'Failed to send contact email',
       details: error.message || 'Unknown error occurred',
     });
   }
@@ -1030,6 +1078,99 @@ This email was automatically generated from your order status update.
     '✅ Lil Magnet status update email sent successfully:',
     info.messageId
   );
+  return info.messageId;
+}
+
+// Helper function to send Lil Magnet Memories contact form emails
+async function sendLilMagnetContactEmail(params: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Promise<string> {
+  const { name, email, subject, message } = params;
+
+  // Get email configuration from Firebase Functions config
+  const emailConfig = functions.config().email;
+  if (!emailConfig?.user || !emailConfig?.password) {
+    throw new Error(
+      'Email configuration not found in Firebase Functions config'
+    );
+  }
+
+  console.log('📧 Using email config:', {
+    service: emailConfig.service || 'gmail',
+    user: emailConfig.user,
+  });
+
+  // Create nodemailer transporter
+  const transporter = nodemailer.createTransport({
+    service: emailConfig.service || 'gmail',
+    auth: {
+      user: emailConfig.user,
+      pass: emailConfig.password,
+    },
+  });
+
+  const emailSubject = `Contact Form: ${subject}`;
+
+  // Create HTML email content
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #1976d2; margin: 0;">🎯 Lil Magnet Memories</h1>
+        <h2 style="color: #333; margin: 10px 0;">New Contact Form Submission</h2>
+      </div>
+
+      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="color: #1976d2; margin-top: 0;">Contact Information</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+      </div>
+
+      <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+        <h3 style="color: #1976d2; margin-top: 0;">Message</h3>
+        <div style="white-space: pre-wrap; color: #333; line-height: 1.6;">${message.replace(/\n/g, '<br>')}</div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
+        <p>You can reply directly to this email to respond to ${name}.</p>
+        <p style="font-size: 12px;">This email was automatically generated from the contact form on your website.</p>
+      </div>
+    </div>
+  `;
+
+  // Create plain text version
+  const textContent = `
+LIL MAGNET MEMORIES - New Contact Form Submission
+
+Contact Information:
+Name: ${name}
+Email: ${email}
+Subject: ${subject}
+Submitted: ${new Date().toLocaleString()}
+
+Message:
+${message}
+
+---
+You can reply directly to this email to respond to ${name}.
+This email was automatically generated from the contact form on your website.
+  `;
+
+  // Send the email
+  const info = await transporter.sendMail({
+    from: `"Lil Magnet Memories Contact Form" <${emailConfig.user}>`,
+    to: 'lilmagnetmemories@gmail.com',
+    replyTo: email, // Allow replying directly to the customer
+    subject: emailSubject,
+    text: textContent,
+    html: htmlContent,
+  });
+
+  console.log('✅ Lil Magnet contact email sent successfully:', info.messageId);
   return info.messageId;
 }
 
