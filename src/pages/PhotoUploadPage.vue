@@ -1759,9 +1759,38 @@ export default {
         // Determine which product to select
         let productToSelect = null;
 
-        // If product ID is already set (from localStorage initialization), verify it exists
+        // PRIORITY 1: Check route query parameter first (most recent user action - coming from product page)
+        // This takes precedence over localStorage since it represents the current user intent
+        if (route.query.productId) {
+          console.log('🔍 [LOAD] Checking route query for productId (priority):', route.query.productId);
+          productToSelect = products.value.find(
+            (p) => String(p.id) === String(route.query.productId)
+          );
+          if (productToSelect) {
+            console.log('✅ [LOAD] Found product from route query:', productToSelect.description);
+            // Save it to localStorage for anonymous users
+            if (!isAuthenticated.value) {
+              try {
+                const savedData = localStorage.getItem('guestFormData');
+                const dataToSave = savedData ? JSON.parse(savedData) : {};
+                dataToSave.selectedProductId = productToSelect.id;
+                localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
+                console.log(
+                  '✅ [LOAD] Saved route product to localStorage:',
+                  productToSelect.description
+                );
+              } catch (error) {
+                console.error('❌ [LOAD] Error saving route product to localStorage:', error);
+              }
+            }
+          } else {
+            console.log('⚠️ [LOAD] Route query productId not found in products:', route.query.productId);
+          }
+        }
+
+        // PRIORITY 2: If no route query, check if product ID is already set (from localStorage initialization)
         // BUT only if we have products loaded - don't clear if products array is empty yet
-        if (selectedProductId.value) {
+        if (!productToSelect && selectedProductId.value) {
           console.log('🔍 [LOAD] Checking if selectedProductId exists in products:', selectedProductId.value);
           console.log('🔍 [LOAD] Products array length:', products.value.length);
 
@@ -1792,31 +1821,8 @@ export default {
             loadingProducts.value = false;
             return;
           }
-        } else {
+        } else if (!productToSelect) {
           console.log('⚠️ [LOAD] No selectedProductId set, will look for defaults');
-        }
-
-        // If no saved product, check route query (from landing page)
-        if (!productToSelect && route.query.productId) {
-          console.log('🔍 [LOAD] Checking route query for productId:', route.query.productId);
-          productToSelect = products.value.find(
-            (p) => p.id === route.query.productId
-          );
-          // If product found from route, save it to localStorage for anonymous users
-          if (productToSelect && !isAuthenticated.value) {
-            try {
-              const savedData = localStorage.getItem('guestFormData');
-              const dataToSave = savedData ? JSON.parse(savedData) : {};
-              dataToSave.selectedProductId = productToSelect.id;
-              localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
-              console.log(
-                '✅ [LOAD] Saved route product to localStorage:',
-                productToSelect.description
-              );
-            } catch (error) {
-              console.error('❌ [LOAD] Error saving route product to localStorage:', error);
-            }
-          }
         }
 
         // Only set defaults if we have products loaded AND no product is already selected
@@ -2038,7 +2044,33 @@ export default {
           console.log('🔄 [WATCH] productOptions changed, count:', newOptions.length);
           console.log('🔄 [WATCH] Current selectedProductId:', selectedProductId.value);
           if (newOptions.length > 0) {
-            // PRIORITY 1: If we have a selectedProductId, verify it exists in the newly loaded options
+            // PRIORITY 1: Check route query parameter first (most recent user action - coming from product page)
+            if (route.query.productId) {
+              const routeProduct = newOptions.find(
+                (p) => String(p.id) === String(route.query.productId)
+              );
+              if (routeProduct) {
+                selectedProductId.value = routeProduct.id;
+                console.log('✅ [WATCH] Selected product from route query (priority):', routeProduct.description);
+                // Save it to localStorage for anonymous users
+                if (!isAuthenticated.value) {
+                  try {
+                    const savedData = localStorage.getItem('guestFormData');
+                    const dataToSave = savedData ? JSON.parse(savedData) : {};
+                    dataToSave.selectedProductId = routeProduct.id;
+                    localStorage.setItem('guestFormData', JSON.stringify(dataToSave));
+                    console.log('✅ [WATCH] Saved route product to localStorage');
+                  } catch (error) {
+                    console.error('❌ [WATCH] Error saving route product to localStorage:', error);
+                  }
+                }
+                return; // Exit early since we've set the product from route
+              } else {
+                console.log('⚠️ [WATCH] Route query productId not found in options:', route.query.productId);
+              }
+            }
+
+            // PRIORITY 2: If we have a selectedProductId, verify it exists in the newly loaded options
             if (selectedProductId.value) {
               console.log('🔍 [WATCH] Verifying selectedProductId exists in options:', selectedProductId.value);
               const existingProduct = newOptions.find(
@@ -2097,7 +2129,7 @@ export default {
               console.log('⚠️ [WATCH] Skipping localStorage restore - isAuthenticated:', isAuthenticated.value);
             }
 
-            // If no product selected, try to set default
+            // PRIORITY 4: If no product selected, try to set default or first product
             if (!selectedProductId.value) {
               const defaultProduct = newOptions.find(
                 (p) => p.isDefault === true
@@ -2108,17 +2140,6 @@ export default {
                   '✅ Watched: Set default product:',
                   defaultProduct.description
                 );
-              } else if (route.query.productId) {
-                const routeProduct = newOptions.find(
-                  (p) => p.id === route.query.productId
-                );
-                if (routeProduct) {
-                  selectedProductId.value = routeProduct.id;
-                  console.log(
-                    '✅ Watched: Set route product:',
-                    routeProduct.description
-                  );
-                }
               } else if (newOptions.length > 0) {
                 selectedProductId.value = newOptions[0].id;
                 console.log(
