@@ -229,8 +229,9 @@ const events = ref([]);
 const loadEvents = async () => {
   try {
     loading.value = true;
-    const allEvents = await marketEventService.getMarketEvents();
+    const allEvents = await marketEventService.getEvents();
     // Filter out testing events and only show public events
+    // Note: marketEventService.getEvents() already filters out testing events for non-admins
     events.value = allEvents.filter((event) => !event.isTesting);
   } catch (error) {
     console.error('Error loading events:', error);
