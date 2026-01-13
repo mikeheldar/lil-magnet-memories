@@ -987,18 +987,24 @@ export default {
         const isAdminUser = authService.isAdmin();
         const productsData = await firebaseService.getProducts(isAdminUser);
         if (productsData && productsData.length > 0) {
-          products.value = productsData;
-          console.log('📦 Loaded products in MainLayout:', productsData.length);
-          console.log('📦 All products:', productsData.map(p => ({ id: p.id, description: p.description, category: p.category })));
-          console.log('📦 Custom products:', productsData.filter(p => p.category === 'custom').length);
-          console.log('📦 Designer products:', productsData.filter(p => p.category === 'designer').length);
-          console.log('📦 Specialty products:', productsData.filter(p => p.category === 'specialty').length);
-          console.log('📦 Products without category:', productsData.filter(p => !p.category).length);
+          // Ensure all products have a category (default to 'custom' if missing)
+          const productsWithCategory = productsData.map(p => ({
+            ...p,
+            category: p.category || 'custom' // Default to 'custom' if category is missing
+          }));
+          products.value = productsWithCategory;
+          console.log('📦 Loaded products in MainLayout:', productsWithCategory.length);
+          console.log('📦 All products:', productsWithCategory.map(p => ({ id: p.id, description: p.description, category: p.category, collection: p.collection })));
+          console.log('📦 Custom products:', productsWithCategory.filter(p => p.category === 'custom').length);
+          console.log('📦 Designer products:', productsWithCategory.filter(p => p.category === 'designer').length);
+          console.log('📦 Specialty products:', productsWithCategory.filter(p => p.category === 'specialty').length);
         } else {
           console.log('⚠️ No products loaded in MainLayout');
+          products.value = [];
         }
       } catch (error) {
         console.error('Error loading products in MainLayout:', error);
+        products.value = [];
       }
     };
 
@@ -1373,6 +1379,14 @@ export default {
     const isAnonymousUser = (user) => {
       return user && user.providerId === 'firebase' && !user.email;
     };
+
+    // Watch for route changes to reload products (in case products were added/updated)
+    watch(() => route.path, async (newPath, oldPath) => {
+      // Reload products when navigating away from pricing page (products may have been updated)
+      if (oldPath && oldPath.includes('/pricing') && !newPath.includes('/pricing')) {
+        await loadProducts();
+      }
+    });
 
     onMounted(async () => {
       // Load visibility settings FIRST before loading products or rendering menus
