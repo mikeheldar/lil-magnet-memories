@@ -108,6 +108,7 @@ app.get('/', (req, res) => {
             health: '/',
             sendOrderEmail: '/send-order-email',
             sendStatusUpdateEmail: '/send-status-update-email',
+            sendContactEmail: '/send-contact-email',
             createPayment: '/payments/create',
         },
     });
@@ -151,7 +152,7 @@ app.get('/payments/locations', async (req, res) => {
 // Send order email endpoint
 app.post('/send-order-email', async (req, res) => {
     try {
-        const { firstName, lastName, email, phone, specialInstructions, photos, quantities, orderNumber, totalMagnets, } = req.body;
+        const { firstName, lastName, email, phone, specialInstructions, photos, quantities, orderNumber, totalMagnets, subtotal, shipping, tax, totalAmount, shippingOption, paymentOption, cartItems, } = req.body;
         // Validate required fields
         if (!firstName || !lastName || !email || !orderNumber) {
             return res.status(400).json({
@@ -175,6 +176,13 @@ app.post('/send-order-email', async (req, res) => {
             quantities: quantities || [],
             orderNumber,
             totalMagnets: totalMagnets || 0,
+            subtotal: subtotal || 0,
+            shipping: shipping || 0,
+            tax: tax || 0,
+            totalAmount: totalAmount || 0,
+            shippingOption: shippingOption || null,
+            paymentOption: paymentOption || null,
+            cartItems: cartItems || [],
         });
         return res.json({ success: true, messageId: result });
     }
@@ -196,7 +204,7 @@ app.post('/send-order-email', async (req, res) => {
 // Send order status update email endpoint
 app.post('/send-status-update-email', async (req, res) => {
     try {
-        const { firstName, lastName, email, orderNumber, status, photos, quantities, totalMagnets, } = req.body;
+        const { firstName, lastName, email, orderNumber, status, photos, quantities, totalMagnets, shippingOption, } = req.body;
         // Validate required fields
         if (!firstName || !lastName || !email || !orderNumber || !status) {
             return res.status(400).json({
@@ -219,6 +227,7 @@ app.post('/send-status-update-email', async (req, res) => {
             photos: photos || [],
             quantities: quantities || [],
             totalMagnets: totalMagnets || 0,
+            shippingOption: shippingOption || null,
         });
         return res.json({ success: true, messageId: result });
     }
@@ -233,6 +242,45 @@ app.post('/send-status-update-email', async (req, res) => {
         }
         return res.status(500).json({
             error: 'Failed to send status update email',
+            details: error.message || 'Unknown error occurred',
+        });
+    }
+});
+// Send contact form email endpoint
+app.post('/send-contact-email', async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+        // Validate required fields
+        if (!name || !email || !subject || !message) {
+            return res.status(400).json({
+                error: 'Missing required fields: name, email, subject, message',
+            });
+        }
+        console.log('📧 Lil Magnet Memories contact form email request:', {
+            name,
+            email,
+            subject,
+        });
+        // Send the contact email
+        const result = await sendLilMagnetContactEmail({
+            name,
+            email,
+            subject,
+            message,
+        });
+        return res.json({ success: true, messageId: result });
+    }
+    catch (error) {
+        console.error('Send Lil Magnet contact email error:', error);
+        // Provide more specific error messages
+        if (error.code === 'EAUTH') {
+            return res.status(500).json({
+                error: 'Gmail authentication failed. Please check the app password configuration.',
+                details: 'Invalid login credentials. The Gmail app password may be expired or incorrect.',
+            });
+        }
+        return res.status(500).json({
+            error: 'Failed to send contact email',
             details: error.message || 'Unknown error occurred',
         });
     }
@@ -355,7 +403,9 @@ app.post('/payments/create', async (req, res) => {
             });
         }
         // Serialize payment to convert BigInt values to strings for JSON
-        const serializedPayment = response.payment ? serializePayment(response.payment) : null;
+        const serializedPayment = response.payment
+            ? serializePayment(response.payment)
+            : null;
         return res.json({ success: true, payment: serializedPayment });
     }
     catch (error) {
@@ -378,7 +428,7 @@ app.post('/payments/create', async (req, res) => {
 // ===== HELPER FUNCTIONS =====
 // Helper function to send Lil Magnet Memories order emails
 async function sendLilMagnetOrderEmail(params) {
-    const { firstName, lastName, email, phone, specialInstructions, photos, quantities, orderNumber, totalMagnets, } = params;
+    const { firstName, lastName, email, phone, specialInstructions, photos, quantities, orderNumber, totalMagnets, subtotal = 0, shipping = 0, tax = 0, totalAmount = 0, shippingOption = null, paymentOption = null, cartItems = [], } = params;
     // Get email configuration from Firebase Functions config
     const emailConfig = functions.config().email;
     if (!(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.user) || !(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.password)) {
@@ -396,9 +446,68 @@ async function sendLilMagnetOrderEmail(params) {
             pass: emailConfig.password,
         },
     });
+    // Helper functions for formatting
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+        }).format(amount);
+    };
+    const formatAddress = (address) => {
+        if (!address)
+            return 'N/A';
+        const parts = [];
+        if (address.street)
+            parts.push(address.street);
+        if (address.city)
+            parts.push(address.city);
+        if (address.state)
+            parts.push(address.state);
+        if (address.zip)
+            parts.push(address.zip);
+        return parts.length > 0 ? parts.join(', ') : 'N/A';
+    };
+    const getPaymentMethodLabel = (paymentOption) => {
+        if (!paymentOption)
+            return 'Not specified';
+        const type = paymentOption.type;
+        switch (type) {
+            case 'square_card':
+                return 'Credit/Debit Card';
+            case 'apple_pay':
+                return 'Apple Pay';
+            case 'google_pay':
+                return 'Google Pay';
+            case 'paypal':
+                return 'PayPal';
+            case 'pay_at_event':
+                return 'Pay at Event';
+            default:
+                return type ? type.replace(/_/g, ' ') : 'Payment';
+        }
+    };
+    const getDeliveryOptionLabel = (shippingOption) => {
+        var _a;
+        if (!shippingOption)
+            return 'Not specified';
+        if (shippingOption.type === 'pickup') {
+            return 'Pickup at Market Event';
+        }
+        return shippingOption.label || ((_a = shippingOption.value) === null || _a === void 0 ? void 0 : _a.replace(/_/g, ' ')) || 'Shipping';
+    };
+    const isPayAtEvent = (paymentOption === null || paymentOption === void 0 ? void 0 : paymentOption.type) === 'pay_at_event';
+    const finalTotalAmount = totalAmount > 0 ? totalAmount : subtotal + shipping + tax;
     // Format photo details
     const photoDetails = photos
         .map((photo, index) => `${photo.name} (${quantities[index]} magnet${quantities[index] > 1 ? 's' : ''})`)
+        .join('\n');
+    // Format cart items
+    const cartItemsDetails = cartItems
+        .map((item) => {
+        const quantity = item.quantity || 1;
+        const productName = item.productName || item.name || 'Product';
+        return `${productName} (${quantity} magnet${quantity > 1 ? 's' : ''})`;
+    })
         .join('\n');
     const subject = `lil-order ${orderNumber}`;
     // Create HTML email content
@@ -410,38 +519,94 @@ async function sendLilMagnetOrderEmail(params) {
       </div>
 
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h3 style="color: #1976d2; margin-top: 0;">Order Information</h3>
+        <h3 style="color: #1976d2; margin-top: 0;">Order Details</h3>
         <p><strong>Order Number:</strong> ${orderNumber}</p>
         <p><strong>Customer Name:</strong> ${firstName} ${lastName}</p>
         <p><strong>Customer Email:</strong> ${email}</p>
         <p><strong>Customer Phone:</strong> ${phone || 'Not provided'}</p>
         <p><strong>Total Magnets:</strong> ${totalMagnets}</p>
-        <p><strong>Photos Submitted:</strong> ${photos.length}</p>
-        <p><strong>Special Instructions:</strong> ${specialInstructions || 'None'}</p>
-        <p><strong>Submission Date:</strong> ${new Date().toLocaleString()}</p>
+        ${specialInstructions ? `<p><strong>Special Instructions:</strong> ${specialInstructions}</p>` : ''}
+        <p><strong>Order Date:</strong> ${new Date().toLocaleString()}</p>
       </div>
 
-      ${photos.length > 0
+      ${cartItems.length > 0
         ? `
-        <div style="margin-bottom: 20px;">
-          <h3 style="color: #1976d2;">📸 Photo Details</h3>
+        <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+          <h3 style="color: #1976d2; margin-top: 0;">Order Items</h3>
           <ul style="list-style: none; padding: 0;">
-            ${photos
-            .map((photo, index) => `
-              <li style="background-color: #fff; padding: 10px; margin: 5px 0; border-radius: 4px; border-left: 4px solid #1976d2;">
-                <strong>${photo.name}</strong><br>
-                <span style="color: #666;">Quantity: ${quantities[index]} magnet${quantities[index] > 1 ? 's' : ''}</span>
+            ${cartItems
+            .map((item) => `
+              <li style="padding: 10px; margin: 5px 0; border-bottom: 1px solid #eee;">
+                <strong>${item.productName || item.name || 'Product'}</strong><br>
+                <span style="color: #666;">Quantity: ${item.quantity || 1} magnet${(item.quantity || 1) > 1 ? 's' : ''}</span>
               </li>
             `)
             .join('')}
           </ul>
         </div>
       `
-        : ''}
+        : photos.length > 0
+            ? `
+        <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+          <h3 style="color: #1976d2; margin-top: 0;">📸 Photo Details</h3>
+          <ul style="list-style: none; padding: 0;">
+            ${photos
+                .map((photo, index) => `
+              <li style="padding: 10px; margin: 5px 0; border-bottom: 1px solid #eee;">
+                <strong>${photo.name}</strong><br>
+                <span style="color: #666;">Quantity: ${quantities[index]} magnet${quantities[index] > 1 ? 's' : ''}</span>
+              </li>
+            `)
+                .join('')}
+          </ul>
+        </div>
+      `
+            : ''}
 
-      <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #1976d2;">
-        <h4 style="margin-top: 0; color: #1976d2;">Next Steps</h4>
-        <p style="margin: 0;">Please review the order details and contact the customer to confirm pricing and delivery details.</p>
+      <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+        <h3 style="color: #1976d2; margin-top: 0;">Receipt Summary</h3>
+        <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+          <span>Subtotal:</span>
+          <strong>${formatCurrency(subtotal)}</strong>
+        </div>
+        ${shipping > 0 ? `
+        <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+          <span>Shipping:</span>
+          <strong>${formatCurrency(shipping)}</strong>
+        </div>
+        ` : ''}
+        ${tax > 0 ? `
+        <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+          <span>Tax:</span>
+          <strong>${formatCurrency(tax)}</strong>
+        </div>
+        ` : ''}
+        <div style="display: flex; justify-content: space-between; margin: 15px 0; padding-top: 15px; border-top: 2px solid #1976d2; font-size: 18px;">
+          <span><strong>${isPayAtEvent ? 'Total to pay at tent' : 'Total Paid'}:</strong></span>
+          <strong style="color: #1976d2;">${formatCurrency(finalTotalAmount)}</strong>
+        </div>
+      </div>
+
+      <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+        <h3 style="color: #1976d2; margin-top: 0;">Delivery & Payment</h3>
+        <div style="margin: 10px 0;">
+          <strong>Delivery Option:</strong> ${getDeliveryOptionLabel(shippingOption)}
+        </div>
+        ${(shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.address) ? `
+        <div style="margin: 10px 0; padding-left: 20px; color: #666;">
+          <strong>Shipping Address:</strong><br>
+          ${formatAddress(shippingOption.address)}
+        </div>
+        ` : ''}
+        <div style="margin: 10px 0;">
+          <strong>Payment Method:</strong> ${getPaymentMethodLabel(paymentOption)}
+        </div>
+        ${(paymentOption === null || paymentOption === void 0 ? void 0 : paymentOption.billingAddress) ? `
+        <div style="margin: 10px 0; padding-left: 20px; color: #666;">
+          <strong>Billing Address:</strong><br>
+          ${formatAddress(paymentOption.billingAddress)}
+        </div>
+        ` : ''}
       </div>
 
       <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
@@ -459,13 +624,20 @@ Customer Name: ${firstName} ${lastName}
 Customer Email: ${email}
 Customer Phone: ${phone || 'Not provided'}
 Total Magnets: ${totalMagnets}
-Photos Submitted: ${photos.length}
-Special Instructions: ${specialInstructions || 'None'}
-Submission Date: ${new Date().toLocaleString()}
+${specialInstructions ? `Special Instructions: ${specialInstructions}\n` : ''}
+Order Date: ${new Date().toLocaleString()}
 
-${photos.length > 0 ? `Photo Details:\n${photoDetails}\n` : ''}
+${cartItems.length > 0 ? `Order Items:\n${cartItemsDetails}\n` : ''}
+${photos.length > 0 && cartItems.length === 0 ? `Photo Details:\n${photoDetails}\n` : ''}
 
-Next Steps: Please review the order details and contact the customer to confirm pricing and delivery details.
+Receipt Summary:
+Subtotal: ${formatCurrency(subtotal)}
+${shipping > 0 ? `Shipping: ${formatCurrency(shipping)}\n` : ''}${tax > 0 ? `Tax: ${formatCurrency(tax)}\n` : ''}${isPayAtEvent ? 'Total to pay at tent' : 'Total Paid'}: ${formatCurrency(finalTotalAmount)}
+
+Delivery & Payment:
+Delivery Option: ${getDeliveryOptionLabel(shippingOption)}
+${(shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.address) ? `Shipping Address: ${formatAddress(shippingOption.address)}\n` : ''}Payment Method: ${getPaymentMethodLabel(paymentOption)}
+${(paymentOption === null || paymentOption === void 0 ? void 0 : paymentOption.billingAddress) ? `Billing Address: ${formatAddress(paymentOption.billingAddress)}\n` : ''}
 
 Best regards,
 Lil Magnet Memories System
@@ -500,7 +672,7 @@ function formatStatusDisplay(status) {
 }
 // Helper function to send Lil Magnet Memories status update emails
 async function sendLilMagnetStatusUpdateEmail(params) {
-    const { firstName, lastName, email, orderNumber, status, photos, quantities, totalMagnets, } = params;
+    const { firstName, lastName, email, orderNumber, status, photos, quantities, totalMagnets, shippingOption, } = params;
     // Get email configuration from Firebase Functions config
     const emailConfig = functions.config().email;
     if (!(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.user) || !(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.password)) {
@@ -538,7 +710,18 @@ async function sendLilMagnetStatusUpdateEmail(params) {
             excitementLevel = 'Great progress';
             break;
         case 'completed':
-            statusMessage = 'Your custom magnets are ready for pickup! 🎊';
+            // Customize message based on delivery method
+            if ((shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'shipping') {
+                const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+                statusMessage = `Your custom magnets are created and ready to be shipped/delivered via ${shippingMethod}! 🎊`;
+            }
+            else if ((shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'pickup' || (shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'arranged_pickup') {
+                statusMessage = 'Your custom magnets are completed and ready for pickup! 🎊';
+            }
+            else {
+                // Default fallback
+                statusMessage = 'Your custom magnets are completed and ready! 🎊';
+            }
             statusEmoji = '🎯';
             excitementLevel = 'Amazing news';
             break;
@@ -598,7 +781,14 @@ async function sendLilMagnetStatusUpdateEmail(params) {
         : status === 'in_progress'
             ? "We're carefully crafting your magnets right now! You'll be notified when they're ready."
             : status === 'completed'
-                ? 'Your magnets are ready! Please contact us to arrange pickup or delivery.'
+                ? (shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'shipping'
+                    ? (() => {
+                        const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+                        return `Your magnets are ready! We'll ship them to you via ${shippingMethod} soon.`;
+                    })()
+                    : (shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'pickup' || (shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'arranged_pickup'
+                        ? 'Your magnets are ready! Please contact us to arrange pickup.'
+                        : 'Your magnets are ready!'
                 : 'Thank you for your business!'}</p>
       </div>
 
@@ -627,7 +817,14 @@ What's Next: ${status === 'new'
         : status === 'in_progress'
             ? "We're carefully crafting your magnets right now! You'll be notified when they're ready."
             : status === 'completed'
-                ? 'Your magnets are ready! Please contact us to arrange pickup or delivery.'
+                ? (shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'shipping'
+                    ? (() => {
+                        const shippingMethod = shippingOption.rawLabel || shippingOption.label || 'shipping';
+                        return `Your magnets are ready! We'll ship them to you via ${shippingMethod} soon.`;
+                    })()
+                    : (shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'pickup' || (shippingOption === null || shippingOption === void 0 ? void 0 : shippingOption.type) === 'arranged_pickup'
+                        ? 'Your magnets are ready! Please contact us to arrange pickup.'
+                        : 'Your magnets are ready!'
                 : 'Thank you for your business!'}
 
 Thank you for choosing Lil Magnet Memories! 🎯
@@ -643,6 +840,83 @@ This email was automatically generated from your order status update.
         html: htmlContent,
     });
     console.log('✅ Lil Magnet status update email sent successfully:', info.messageId);
+    return info.messageId;
+}
+// Helper function to send Lil Magnet Memories contact form emails
+async function sendLilMagnetContactEmail(params) {
+    const { name, email, subject, message } = params;
+    // Get email configuration from Firebase Functions config
+    const emailConfig = functions.config().email;
+    if (!(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.user) || !(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.password)) {
+        throw new Error('Email configuration not found in Firebase Functions config');
+    }
+    console.log('📧 Using email config:', {
+        service: emailConfig.service || 'gmail',
+        user: emailConfig.user,
+    });
+    // Create nodemailer transporter
+    const transporter = nodemailer.createTransport({
+        service: emailConfig.service || 'gmail',
+        auth: {
+            user: emailConfig.user,
+            pass: emailConfig.password,
+        },
+    });
+    const emailSubject = `Contact Form: ${subject}`;
+    // Create HTML email content
+    const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #1976d2; margin: 0;">🎯 Lil Magnet Memories</h1>
+        <h2 style="color: #333; margin: 10px 0;">New Contact Form Submission</h2>
+      </div>
+
+      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="color: #1976d2; margin-top: 0;">Contact Information</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+      </div>
+
+      <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+        <h3 style="color: #1976d2; margin-top: 0;">Message</h3>
+        <div style="white-space: pre-wrap; color: #333; line-height: 1.6;">${message.replace(/\n/g, '<br>')}</div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
+        <p>You can reply directly to this email to respond to ${name}.</p>
+        <p style="font-size: 12px;">This email was automatically generated from the contact form on your website.</p>
+      </div>
+    </div>
+  `;
+    // Create plain text version
+    const textContent = `
+LIL MAGNET MEMORIES - New Contact Form Submission
+
+Contact Information:
+Name: ${name}
+Email: ${email}
+Subject: ${subject}
+Submitted: ${new Date().toLocaleString()}
+
+Message:
+${message}
+
+---
+You can reply directly to this email to respond to ${name}.
+This email was automatically generated from the contact form on your website.
+  `;
+    // Send the email
+    const info = await transporter.sendMail({
+        from: `"Lil Magnet Memories Contact Form" <${emailConfig.user}>`,
+        to: 'lilmagnetmemories@gmail.com',
+        replyTo: email,
+        subject: emailSubject,
+        text: textContent,
+        html: htmlContent,
+    });
+    console.log('✅ Lil Magnet contact email sent successfully:', info.messageId);
     return info.messageId;
 }
 // Export the Express app as a Firebase Function
