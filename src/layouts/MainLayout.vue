@@ -159,6 +159,15 @@
                 <q-item-label>{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
+            <q-separator />
+            <q-item clickable v-close-popup @click="$router.push('/products/custom')">
+              <q-item-section avatar>
+                <q-icon name="shopping_bag" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-weight-medium">Shop All Custom Photo Magnets</q-item-label>
+              </q-item-section>
+            </q-item>
           </q-list>
           <q-list v-else>
             <q-item clickable v-close-popup @click="$router.push('/products/custom')">
@@ -190,6 +199,15 @@
                 <q-item-label>{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
+            <q-separator />
+            <q-item clickable v-close-popup @click="$router.push('/products/designer')">
+              <q-item-section avatar>
+                <q-icon name="shopping_bag" color="secondary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-weight-medium">Shop All Designer Magnets</q-item-label>
+              </q-item-section>
+            </q-item>
           </q-list>
           <q-list v-else>
             <q-item clickable v-close-popup @click="$router.push('/products/designer')">
@@ -219,6 +237,15 @@
             >
               <q-item-section>
                 <q-item-label>{{ product.description }}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item clickable v-close-popup @click="$router.push('/products/specialty')">
+              <q-item-section avatar>
+                <q-icon name="shopping_bag" color="specialty" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-weight-medium">Shop All Specialty Products</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -440,6 +467,21 @@
                 <q-item-label class="text-caption">{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
+            <q-separator class="q-my-xs" />
+            <q-item
+              clickable
+              v-ripple
+              dense
+              @click.stop="navigateWithDrawerClose('/products/custom')"
+              class="product-item shop-all-item"
+            >
+              <q-item-section avatar>
+                <q-icon name="shopping_bag" color="primary" size="sm" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-caption text-weight-medium">Shop All Custom Photo Magnets</q-item-label>
+              </q-item-section>
+            </q-item>
             </div>
           </div>
 
@@ -486,6 +528,21 @@
                 <q-item-label class="text-caption">{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
+            <q-separator class="q-my-xs" />
+            <q-item
+              clickable
+              v-ripple
+              dense
+              @click.stop="navigateWithDrawerClose('/products/designer')"
+              class="product-item shop-all-item"
+            >
+              <q-item-section avatar>
+                <q-icon name="shopping_bag" color="secondary" size="sm" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-caption text-weight-medium">Shop All Designer Magnets</q-item-label>
+              </q-item-section>
+            </q-item>
             </div>
           </div>
 
@@ -530,6 +587,21 @@
             >
               <q-item-section>
                 <q-item-label class="text-caption">{{ product.description }}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-separator class="q-my-xs" />
+            <q-item
+              clickable
+              v-ripple
+              dense
+              @click.stop="navigateWithDrawerClose('/products/specialty')"
+              class="product-item shop-all-item"
+            >
+              <q-item-section avatar>
+                <q-icon name="shopping_bag" color="specialty" size="sm" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-caption text-weight-medium">Shop All Specialty Products</q-item-label>
               </q-item-section>
             </q-item>
             </div>
