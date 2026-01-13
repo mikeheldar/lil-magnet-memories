@@ -131,18 +131,7 @@
           </q-btn-dropdown>
         </template>
 
-        <!-- Show upload link when not authenticated -->
-        <template v-else>
-          <q-btn
-            flat
-            dense
-            icon="camera_alt"
-            @click="handleUploadClick"
-            aria-label="Start Creating Magnets"
-          >
-            <q-tooltip>Start Creating Magnets</q-tooltip>
-          </q-btn>
-        </template>
+        <!-- Upload link removed - camera icon no longer shown in header -->
       </q-toolbar>
     </q-header>
 
@@ -1806,9 +1795,9 @@ html, body {
   }
 
   // Responsive font size on small screens to prevent text cutoff
-  // Font size stays at 1.5rem (24px) above 405px, reduces to 1.2rem (19.2px) below 405px - just a few points smaller
+  // Font size stays at 1.5rem (24px) above 450px, reduces to 1.2rem (19.2px) below 450px - just a few points smaller
   // Need very high specificity to override Quasar's .text-h5 class AND injected theme CSS
-  @media (max-width: 405px) {
+  @media (max-width: 450px) {
     font-size: 1.2rem !important; // Reduced from 1.5rem to 1.2rem (24px to 19.2px) - just a few points smaller
     letter-spacing: 0.02em !important; // Reduce letter spacing to make text more compact
     white-space: nowrap !important; // Prevent wrapping
@@ -1825,7 +1814,7 @@ html, body {
 
   // Override .text-h5 class with even higher specificity - must match or exceed theme CSS specificity
   &.text-h5.text-weight-bold {
-    @media (max-width: 405px) {
+    @media (max-width: 450px) {
       font-size: 1.2rem !important; // Reduced from 1.5rem to 1.2rem - just a few points smaller
     }
     @media (max-width: 360px) {
@@ -1858,8 +1847,8 @@ html, body {
   text-overflow: clip !important; /* Don't truncate text */
 
   // Remove min-width constraint on small screens to allow title to shrink fully
-  // Start resizing at 405px wide
-  @media (max-width: 405px) {
+  // Start resizing at 450px wide
+  @media (max-width: 450px) {
     min-width: unset !important; /* Allow title to shrink to fit text */
     max-width: calc(100vw - 120px) !important; /* Reserve space for hamburger and avatar (roughly 60px each side) */
     padding: 0 5px !important; /* Reduce padding on small screens */

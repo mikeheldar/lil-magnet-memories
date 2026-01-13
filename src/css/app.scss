@@ -139,8 +139,8 @@ body .q-header .q-toolbar .q-toolbar-title .header-title-clickable.text-h5.text-
   letter-spacing: 0.01em !important;
   
   // Responsive font size on small screens to prevent text cutoff
-  // Font size stays at 1.5rem (24px) above 405px, reduces to 1.2rem (19.2px) below 405px - just a few points smaller
-  @media (max-width: 405px) {
+  // Font size stays at 1.5rem (24px) above 450px, reduces to 1.2rem (19.2px) below 450px - just a few points smaller
+  @media (max-width: 450px) {
     font-size: 1.2rem !important; // Reduced from 1.5rem to 1.2rem (24px to 19.2px) - just a few points smaller
     white-space: nowrap !important; // Prevent wrapping
     overflow: visible !important; // Allow text to be visible
