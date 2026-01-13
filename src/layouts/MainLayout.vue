@@ -862,17 +862,17 @@
           <div class="col-12 col-md-3">
             <div class="text-h6 text-white q-mb-md">Shop</div>
             <div class="q-gutter-sm">
-              <div>
+              <div v-if="visibilityLoaded && productTypeVisibility.custom">
                 <router-link to="/products/custom" class="footer-link"
                   >Custom Photo Magnets</router-link
                 >
               </div>
-              <div>
+              <div v-if="visibilityLoaded && productTypeVisibility.designer">
                 <router-link to="/products/designer" class="footer-link"
                   >Designer Magnets</router-link
                 >
               </div>
-              <div>
+              <div v-if="visibilityLoaded && productTypeVisibility.specialty">
                 <router-link to="/products/specialty" class="footer-link"
                   >Specialty Products</router-link
                 >
