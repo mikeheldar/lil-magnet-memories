@@ -948,22 +948,30 @@ export default {
     // Computed product lists for each category (filtered by visibility)
     const customProductsList = computed(() => {
       if (!productTypeVisibility.value.custom) return [];
-      // Filter products by category - ensure we're checking the category field correctly
+      // Filter products by category - default to 'custom' if category is missing (backward compatibility)
       const filtered = products.value.filter((p) => {
-        // Check if category exists and matches 'custom'
-        return p && p.category === 'custom';
+        if (!p) return false;
+        // If category is missing or empty, default to 'custom' for backward compatibility
+        const category = p.category || 'custom';
+        return category === 'custom';
       });
       return filtered;
     });
 
     const designerProductsList = computed(() => {
       if (!productTypeVisibility.value.designer) return [];
-      return products.value.filter((p) => p.category === 'designer');
+      return products.value.filter((p) => {
+        if (!p) return false;
+        return p.category === 'designer';
+      });
     });
 
     const specialtyProductsList = computed(() => {
       if (!productTypeVisibility.value.specialty) return [];
-      return products.value.filter((p) => p.category === 'specialty');
+      return products.value.filter((p) => {
+        if (!p) return false;
+        return p.category === 'specialty';
+      });
     });
 
     // Expanded state for shop category submenus
