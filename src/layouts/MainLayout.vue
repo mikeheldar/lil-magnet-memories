@@ -2174,12 +2174,12 @@ html, body {
   position: relative;
   // Use Lato for body text in navigation
   
-  // Market Event dropdown with pulsing effect
+  // Market Event dropdown with pulsing effect (stops after 30 seconds)
   &.market-event-dropdown {
     position: relative;
     overflow: visible; // Allow pulsing effects to extend beyond button
     
-    // Light purple pulsing background glow
+    // Light purple pulsing background glow (stops after 30s, fades out)
     &::before {
       content: '';
       position: absolute;
@@ -2189,37 +2189,40 @@ html, body {
       bottom: -4px;
       background: $light-purple;
       border-radius: 8px;
-      animation: pulse-subnav-bg 2s ease-in-out infinite;
+      animation: pulse-subnav-bg 2s ease-in-out 15, fade-out-bg 0.5s ease-in-out 30s forwards;
       pointer-events: none;
       z-index: -1;
       opacity: 0.6;
     }
     
-    // Light purple pulsing border
+    // Light purple pulsing border (stops after 30s, then shows thin static border)
     &::after {
       content: '';
       position: absolute;
-      top: -3px;
-      left: -3px;
-      right: -3px;
-      bottom: -3px;
-      border: 3px solid $light-purple;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      bottom: -1px;
+      border: 1px solid $light-purple;
       border-radius: inherit;
-      animation: pulse-subnav-border 2s ease-in-out infinite;
+      animation: pulse-subnav-border 2s ease-in-out 15, fade-to-static-border 0.5s ease-in-out 30s forwards;
       pointer-events: none;
-      opacity: 1;
+      opacity: 0;
     }
     
-    // Add purple text color pulse
+    // Add purple text color pulse (stops after 30s, returns to normal)
     .q-btn__content {
-      animation: pulse-subnav-text 2s ease-in-out infinite;
+      animation: pulse-subnav-text 2s ease-in-out 15, fade-to-normal-text 0.5s ease-in-out 30s forwards;
     }
     
-    // Icon color pulse
+    // Icon color pulse (stops after 30s, returns to normal)
     .q-icon {
       color: $primary !important;
-      animation: pulse-subnav-icon 2s ease-in-out infinite;
+      animation: pulse-subnav-icon 2s ease-in-out 15, fade-to-normal-icon 0.5s ease-in-out 30s forwards;
     }
+    
+    // Static thin purple border (always visible)
+    border: 1px solid $light-purple;
   }
   font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
   font-weight: 400 !important; // Regular weight for body text
@@ -2425,7 +2428,7 @@ html, body {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-// Pulsing animations for market event dropdown
+// Pulsing animations for market event dropdown (runs for 30 seconds)
 @keyframes pulse-subnav-bg {
   0%, 100% {
     opacity: 0.6;
@@ -2442,11 +2445,13 @@ html, body {
     opacity: 1;
     transform: scale(1);
     border-color: $light-purple;
+    border-width: 3px;
   }
   50% {
     opacity: 0.7;
     transform: scale(1.05);
     border-color: $primary;
+    border-width: 3px;
   }
 }
 
@@ -2467,6 +2472,40 @@ html, body {
   50% {
     transform: scale(1.1);
     opacity: 0.8;
+  }
+}
+
+// Animation to fade out background glow after 30 seconds
+@keyframes fade-out-bg {
+  to {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+// Animation to show static thin border after 30 seconds
+@keyframes fade-to-static-border {
+  to {
+    opacity: 1;
+    border-width: 1px;
+    border-color: $light-purple;
+    transform: scale(1);
+  }
+}
+
+// Animation to return text to normal color after 30 seconds
+@keyframes fade-to-normal-text {
+  to {
+    color: #30343F; // Jet Black
+  }
+}
+
+// Animation to return icon to normal state after 30 seconds
+@keyframes fade-to-normal-icon {
+  to {
+    transform: scale(1);
+    opacity: 1;
+    color: $primary !important;
   }
 }
 </style>
