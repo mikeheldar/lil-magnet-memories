@@ -1020,7 +1020,14 @@ export default {
 
     // Computed product lists for each category (filtered by visibility)
     const customProductsList = computed(() => {
-      if (!productTypeVisibility.value.custom) return [];
+      if (!productTypeVisibility.value.custom) {
+        console.log('🔍 [customProductsList] Visibility disabled for custom');
+        return [];
+      }
+      if (!productsLoaded.value) {
+        console.log('🔍 [customProductsList] Products not loaded yet');
+        return [];
+      }
       // Filter products by category - default to 'custom' if category is missing (backward compatibility)
       const filtered = products.value.filter((p) => {
         if (!p) return false;
@@ -1028,11 +1035,13 @@ export default {
         const category = p.category || 'custom';
         return category === 'custom';
       });
+      console.log('✅ [customProductsList] Computed:', filtered.length, 'products');
       return filtered;
     });
 
     const designerProductsList = computed(() => {
       if (!productTypeVisibility.value.designer) return [];
+      if (!productsLoaded.value) return [];
       return products.value.filter((p) => {
         if (!p) return false;
         return p.category === 'designer';
@@ -1041,6 +1050,7 @@ export default {
 
     const specialtyProductsList = computed(() => {
       if (!productTypeVisibility.value.specialty) return [];
+      if (!productsLoaded.value) return [];
       return products.value.filter((p) => {
         if (!p) return false;
         return p.category === 'specialty';
@@ -1078,14 +1088,19 @@ export default {
           products.value = [];
         }
         // Mark products as loaded regardless of whether products were found
+        // Set productsLoaded AFTER products.value is set to ensure computed properties see the data
+        await nextTick(); // Wait for products.value to be reactive
         productsLoaded.value = true;
         console.log('✅ [MainLayout] Products loading complete, productsLoaded set to true');
-        // Use nextTick to ensure Vue updates the DOM after productsLoaded changes
+        console.log('✅ [MainLayout] customProductsList.length:', customProductsList.value.length);
+        // Use nextTick again to ensure Vue updates the DOM after productsLoaded changes
         await nextTick();
         console.log('✅ [MainLayout] DOM updated after products load');
       } catch (error) {
         console.error('Error loading products in MainLayout:', error);
         products.value = [];
+        // Wait for reactivity before marking as loaded
+        await nextTick();
         // Still mark as loaded even on error to prevent infinite waiting
         productsLoaded.value = true;
         console.log('⚠️ [MainLayout] Products loading failed, but productsLoaded set to true');
