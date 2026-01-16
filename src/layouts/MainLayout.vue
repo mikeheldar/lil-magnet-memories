@@ -1065,11 +1065,16 @@ export default {
 
 
     // Load products
-    const loadProducts = async () => {
+    const loadProducts = async (retryCount = 0) => {
+      const maxRetries = 3;
       productsLoaded.value = false; // Reset loading state
       try {
-        console.log('🔄 [MainLayout] Starting products load...');
-        const isAdminUser = authService.isAdmin();
+        console.log('🔄 [MainLayout] Starting products load...', retryCount > 0 ? `(retry ${retryCount})` : '');
+        // Check admin status - if user is not authenticated yet, use false (non-admin)
+        const currentUser = authService.getCurrentUser();
+        const isAdminUser = currentUser ? authService.isAdmin() : false;
+        console.log('🔄 [MainLayout] Loading products, isAdminUser:', isAdminUser, 'currentUser:', currentUser?.email || 'none');
+        
         const productsData = await firebaseService.getProducts(isAdminUser);
         if (productsData && productsData.length > 0) {
           // Ensure all products have a category (default to 'custom' if missing)
@@ -1085,6 +1090,12 @@ export default {
           console.log('📦 Specialty products:', productsWithCategory.filter(p => p.category === 'specialty').length);
         } else {
           console.log('⚠️ No products loaded in MainLayout');
+          // Retry if no products and we haven't exceeded retries
+          if (retryCount < maxRetries) {
+            console.log(`⏳ [MainLayout] No products returned, retrying (${retryCount + 1}/${maxRetries})...`);
+            await new Promise((resolve) => setTimeout(resolve, 1000 * (retryCount + 1)));
+            return loadProducts(retryCount + 1);
+          }
           products.value = [];
         }
         // Mark products as loaded regardless of whether products were found
@@ -1098,6 +1109,12 @@ export default {
         console.log('✅ [MainLayout] DOM updated after products load');
       } catch (error) {
         console.error('Error loading products in MainLayout:', error);
+        // Retry on error if we haven't exceeded retries
+        if (retryCount < maxRetries) {
+          console.log(`⏳ [MainLayout] Error loading products, retrying (${retryCount + 1}/${maxRetries})...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (retryCount + 1)));
+          return loadProducts(retryCount + 1);
+        }
         products.value = [];
         // Wait for reactivity before marking as loaded
         await nextTick();
@@ -1508,7 +1525,7 @@ export default {
       console.log('✅ [MainLayout] Template updated after products load');
 
       // Listen for auth state changes
-      authService.onAuthStateChanged((user) => {
+      authService.onAuthStateChanged(async (user) => {
         // Only treat non-anonymous users as authenticated for UI
         // Anonymous users should see sign-in options, not be treated as signed in
         const isRealUser = user && !isAnonymousUser(user);
@@ -1524,6 +1541,13 @@ export default {
           isAdmin.value = authService.isAdmin();
           console.log('Admin status updated (immediate):', isAdmin.value);
 
+          // Reload products if user just authenticated (they might be admin and need to see testing products)
+          // Only reload if products haven't loaded yet or if we got 0 products before
+          if (products.value.length === 0 || !productsLoaded.value) {
+            console.log('🔄 [MainLayout] User authenticated, reloading products to check for admin products...');
+            await loadProducts();
+          }
+
           // Also check async in background for Firebase-based admins (non-blocking)
           authService
             .isAdminAsync()
@@ -1531,6 +1555,11 @@ export default {
               if (adminStatus !== isAdmin.value) {
                 isAdmin.value = adminStatus;
                 console.log('Admin status updated (async):', adminStatus);
+                // Reload products if admin status changed (user might need to see testing products)
+                if (adminStatus && products.value.length === 0) {
+                  console.log('🔄 [MainLayout] User is admin, reloading products...');
+                  loadProducts();
+                }
               }
             })
             .catch(() => {
