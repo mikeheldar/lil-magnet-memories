@@ -1505,6 +1505,20 @@ export default {
     });
 
     onMounted(async () => {
+      // Check if user is already authenticated and set admin status immediately
+      const currentUser = authService.getCurrentUser();
+      if (currentUser && !isAnonymousUser(currentUser)) {
+        isAuthenticated.value = true;
+        userProfile.value = {
+          displayName: currentUser.displayName,
+          photoURL: currentUser.photoURL,
+          email: currentUser.email,
+        };
+        // Set admin status immediately for faster UI rendering
+        isAdmin.value = authService.isAdmin();
+        console.log('✅ [MainLayout] User already authenticated, admin status:', isAdmin.value);
+      }
+
       // CRITICAL: Load visibility settings FIRST and wait for it to complete
       // This ensures visibilityLoaded is true and productTypeVisibility has correct values
       // BEFORE any menus try to render
