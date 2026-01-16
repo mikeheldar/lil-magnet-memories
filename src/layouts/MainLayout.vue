@@ -1461,10 +1461,21 @@ export default {
     });
 
     onMounted(async () => {
-      // Load visibility settings FIRST before loading products or rendering menus
+      // CRITICAL: Load visibility settings FIRST and wait for it to complete
+      // This ensures visibilityLoaded is true and productTypeVisibility has correct values
+      // BEFORE any menus try to render
+      console.log('🔄 [MainLayout] Starting visibility load...');
       await loadVisibilitySettings();
-      // Then load products for Shop section
+      console.log('✅ [MainLayout] Visibility loaded:', {
+        visibilityLoaded: visibilityLoaded.value,
+        visibility: productTypeVisibility.value
+      });
+      
+      // Only load products AFTER visibility is confirmed loaded
+      // This prevents products from being filtered before visibility is known
+      console.log('🔄 [MainLayout] Starting products load...');
       await loadProducts();
+      console.log('✅ [MainLayout] Products loaded:', products.value.length);
 
       // Listen for auth state changes
       authService.onAuthStateChanged((user) => {

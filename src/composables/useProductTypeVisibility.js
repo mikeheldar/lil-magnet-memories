@@ -2,10 +2,11 @@ import { ref } from 'vue';
 import { firebaseService } from '../services/firebaseService.js';
 
 // Global singleton state for product type visibility
+// Initialize with all false to prevent showing menus before visibility is loaded
 const productTypeVisibility = ref({
-  custom: true, // Default: only custom is enabled
-  designer: false, // Default: disabled
-  specialty: false, // Default: disabled
+  custom: false, // Will be set after loading from Firebase
+  designer: false,
+  specialty: false,
 });
 
 const visibilityLoaded = ref(false);
@@ -34,15 +35,21 @@ export function useProductTypeVisibility() {
     // Start loading
     loadPromise = (async () => {
       try {
+        console.log('🔄 [Visibility] Loading visibility settings from Firebase...');
         const visibility = await firebaseService.getProductTypeVisibility();
+        console.log('✅ [Visibility] Loaded visibility settings:', visibility);
         productTypeVisibility.value = visibility;
+        // CRITICAL: Only set visibilityLoaded to true AFTER visibility is set
+        // This ensures the template doesn't render with defaults
         visibilityLoaded.value = true;
+        console.log('✅ [Visibility] visibilityLoaded set to true');
         return productTypeVisibility.value;
       } catch (error) {
-        console.error('Error loading visibility settings:', error);
-        // On error, default to only custom enabled
+        console.error('❌ [Visibility] Error loading visibility settings:', error);
+        // On error, default to only custom enabled (but still mark as loaded)
         productTypeVisibility.value = { custom: true, designer: false, specialty: false };
         visibilityLoaded.value = true;
+        console.log('⚠️ [Visibility] Using default visibility settings due to error:', productTypeVisibility.value);
         return productTypeVisibility.value;
       } finally {
         loadPromise = null;
