@@ -439,7 +439,7 @@
                 <q-item-label>Custom Photo Magnets</q-item-label>
                 <q-item-label caption>Create personalized magnets</q-item-label>
               </q-item-section>
-              <q-item-section side="right" v-if="customProductsList.length > 0" class="category-expand-section">
+              <q-item-section side="right" v-if="productsLoaded && customProductsList.length > 0" class="category-expand-section">
                 <q-btn
                   flat
                   dense
@@ -500,7 +500,7 @@
                 <q-item-label>Designer Magnets</q-item-label>
                 <q-item-label caption>Ready-made designs</q-item-label>
               </q-item-section>
-              <q-item-section side="right" v-if="designerProductsList.length > 0" class="category-expand-section">
+              <q-item-section side="right" v-if="productsLoaded && designerProductsList.length > 0" class="category-expand-section">
                 <q-btn
                   flat
                   dense
@@ -561,7 +561,7 @@
                 <q-item-label>Specialty Products</q-item-label>
                 <q-item-label caption>Unique specialty items</q-item-label>
               </q-item-section>
-              <q-item-section side="right" v-if="specialtyProductsList.length > 0" class="category-expand-section">
+              <q-item-section side="right" v-if="productsLoaded && specialtyProductsList.length > 0" class="category-expand-section">
                 <q-btn
                   flat
                   dense
@@ -1013,6 +1013,7 @@ export default {
 
     // Shop section state
     const products = ref([]);
+    const productsLoaded = ref(false);
     
     // Use global product type visibility composable
     const { productTypeVisibility, visibilityLoaded, initializeVisibility } = useProductTypeVisibility();
@@ -1055,7 +1056,9 @@ export default {
 
     // Load products
     const loadProducts = async () => {
+      productsLoaded.value = false; // Reset loading state
       try {
+        console.log('🔄 [MainLayout] Starting products load...');
         const isAdminUser = authService.isAdmin();
         const productsData = await firebaseService.getProducts(isAdminUser);
         if (productsData && productsData.length > 0) {
@@ -1074,9 +1077,15 @@ export default {
           console.log('⚠️ No products loaded in MainLayout');
           products.value = [];
         }
+        // Mark products as loaded regardless of whether products were found
+        productsLoaded.value = true;
+        console.log('✅ [MainLayout] Products loading complete, productsLoaded set to true');
       } catch (error) {
         console.error('Error loading products in MainLayout:', error);
         products.value = [];
+        // Still mark as loaded even on error to prevent infinite waiting
+        productsLoaded.value = true;
+        console.log('⚠️ [MainLayout] Products loading failed, but productsLoaded set to true');
       }
     };
 
@@ -1569,6 +1578,7 @@ export default {
       specialtyProductsExpanded,
       productTypeVisibility,
       visibilityLoaded,
+      productsLoaded,
     };
   },
 };
