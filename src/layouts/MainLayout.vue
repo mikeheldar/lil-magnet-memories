@@ -140,7 +140,7 @@
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
-          v-if="visibilityLoaded && productTypeVisibility.custom"
+          v-if="visibilityLoaded && productsLoaded && productTypeVisibility.custom"
           flat
           dense
           no-caps
@@ -180,7 +180,7 @@
 
         <!-- Designer Magnets Dropdown -->
         <q-btn-dropdown
-          v-if="visibilityLoaded && productTypeVisibility.designer"
+          v-if="visibilityLoaded && productsLoaded && productTypeVisibility.designer"
           flat
           dense
           no-caps
@@ -220,7 +220,7 @@
 
         <!-- Specialty Products Dropdown -->
         <q-btn-dropdown
-          v-if="visibilityLoaded && productTypeVisibility.specialty"
+          v-if="visibilityLoaded && productsLoaded && productTypeVisibility.specialty"
           flat
           dense
           no-caps
@@ -425,7 +425,7 @@
           header-class="text-grey-8"
         >
           <!-- Custom Photo Magnets -->
-          <div v-if="visibilityLoaded && productTypeVisibility.custom" class="shop-category-wrapper">
+          <div v-if="visibilityLoaded && productsLoaded && productTypeVisibility.custom" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -486,7 +486,7 @@
           </div>
 
           <!-- Designer Magnets -->
-          <div v-if="visibilityLoaded && productTypeVisibility.designer" class="shop-category-wrapper">
+          <div v-if="visibilityLoaded && productsLoaded && productTypeVisibility.designer" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -547,7 +547,7 @@
           </div>
 
           <!-- Specialty Products -->
-          <div v-if="visibilityLoaded && productTypeVisibility.specialty" class="shop-category-wrapper">
+          <div v-if="visibilityLoaded && productsLoaded && productTypeVisibility.specialty" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -1080,6 +1080,9 @@ export default {
         // Mark products as loaded regardless of whether products were found
         productsLoaded.value = true;
         console.log('✅ [MainLayout] Products loading complete, productsLoaded set to true');
+        // Use nextTick to ensure Vue updates the DOM after productsLoaded changes
+        await nextTick();
+        console.log('✅ [MainLayout] DOM updated after products load');
       } catch (error) {
         console.error('Error loading products in MainLayout:', error);
         products.value = [];
@@ -1485,6 +1488,9 @@ export default {
       console.log('🔄 [MainLayout] Starting products load...');
       await loadProducts();
       console.log('✅ [MainLayout] Products loaded:', products.value.length);
+      // Force a reactivity update to ensure template re-renders with productsLoaded = true
+      await nextTick();
+      console.log('✅ [MainLayout] Template updated after products load');
 
       // Listen for auth state changes
       authService.onAuthStateChanged((user) => {
