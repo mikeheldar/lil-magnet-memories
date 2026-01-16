@@ -8,7 +8,7 @@
     >
       <!-- Image container with transition -->
       <transition-group
-        name="slide"
+        name="ken-burns-slide"
         tag="div"
         class="slideshow-container"
       >
@@ -19,6 +19,10 @@
           :src="image"
           :alt="alt"
           class="product-image"
+          :class="{
+            'ken-burns-forward': index === currentIndex && kenBurnsPhase === 'forward',
+            'ken-burns-reverse': index === currentIndex && kenBurnsPhase === 'reverse',
+          }"
           @load="handleImageLoad"
         />
       </transition-group>
@@ -106,9 +110,20 @@ const currentIndex = ref(0);
 let slideshowInterval = null;
 const isPaused = ref(false);
 
+// Ken Burns effect state
+const kenBurnsPhase = ref('forward'); // 'forward', 'reverse', or 'idle'
+let kenBurnsTimeout = null;
+
+// Ken Burns timing (in milliseconds)
+const KEN_BURNS_FORWARD_DURATION = 4000; // 4 seconds forward
+const KEN_BURNS_REVERSE_DURATION = 4000; // 4 seconds reverse
+const SLIDE_TRANSITION_DURATION = 1500; // 1.5 seconds slide (slow)
+
 const nextImage = () => {
   if (images.value.length > 1) {
     currentIndex.value = (currentIndex.value + 1) % images.value.length;
+    // Reset Ken Burns phase when manually changing images
+    kenBurnsPhase.value = 'forward';
   }
 };
 
@@ -118,13 +133,54 @@ const previousImage = () => {
       currentIndex.value === 0
         ? images.value.length - 1
         : currentIndex.value - 1;
+    // Reset Ken Burns phase when manually changing images
+    kenBurnsPhase.value = 'forward';
   }
 };
 
 const goToImage = (index) => {
   if (index >= 0 && index < images.value.length) {
     currentIndex.value = index;
+    // Reset Ken Burns phase when manually changing images
+    kenBurnsPhase.value = 'forward';
   }
+};
+
+const startKenBurnsCycle = () => {
+  if (!props.autoRotate || images.value.length <= 1 || isPaused.value) {
+    return;
+  }
+
+  // Start with forward Ken Burns animation
+  kenBurnsPhase.value = 'forward';
+
+  // After forward completes, go to reverse
+  kenBurnsTimeout = setTimeout(() => {
+    if (isPaused.value) return;
+    kenBurnsPhase.value = 'reverse';
+
+    // After reverse completes, slide to next image
+    kenBurnsTimeout = setTimeout(() => {
+      if (isPaused.value) return;
+      kenBurnsPhase.value = 'idle'; // Reset phase for slide transition
+      nextImage();
+
+      // After slide transition, start cycle again
+      kenBurnsTimeout = setTimeout(() => {
+        if (!isPaused.value) {
+          startKenBurnsCycle();
+        }
+      }, SLIDE_TRANSITION_DURATION);
+    }, KEN_BURNS_REVERSE_DURATION);
+  }, KEN_BURNS_FORWARD_DURATION);
+};
+
+const stopKenBurnsCycle = () => {
+  if (kenBurnsTimeout) {
+    clearTimeout(kenBurnsTimeout);
+    kenBurnsTimeout = null;
+  }
+  kenBurnsPhase.value = 'idle';
 };
 
 const startSlideshow = () => {
@@ -132,9 +188,7 @@ const startSlideshow = () => {
     return;
   }
   stopSlideshow();
-  slideshowInterval = setInterval(() => {
-    nextImage();
-  }, props.rotationInterval);
+  startKenBurnsCycle();
 };
 
 const stopSlideshow = () => {
@@ -142,6 +196,7 @@ const stopSlideshow = () => {
     clearInterval(slideshowInterval);
     slideshowInterval = null;
   }
+  stopKenBurnsCycle();
 };
 
 const pauseSlideshow = () => {
@@ -157,7 +212,13 @@ const resumeSlideshow = () => {
 };
 
 const handleImageLoad = () => {
-  // Image loaded successfully
+  // Image loaded successfully - restart Ken Burns cycle if slideshow is active
+  if (props.autoRotate && images.value.length > 1 && !isPaused.value) {
+    // Only restart if we're in idle phase (image just loaded/changed)
+    if (kenBurnsPhase.value === 'idle') {
+      startKenBurnsCycle();
+    }
+  }
 };
 
 // Watch for changes in images array
@@ -165,6 +226,7 @@ watch(
   () => images.value,
   () => {
     currentIndex.value = 0;
+    kenBurnsPhase.value = 'forward'; // Reset phase when images change
     if (props.autoRotate && images.value.length > 1) {
       startSlideshow();
     }
@@ -180,6 +242,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopSlideshow();
+  stopKenBurnsCycle();
 });
 </script>
 
@@ -333,19 +396,54 @@ onUnmounted(() => {
   }
 }
 
-// Slide transition
-.slide-enter-active,
-.slide-leave-active {
-  transition: opacity 0.5s ease;
+// Ken Burns animations
+@keyframes kenBurnsForward {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.2) translate(-5%, -5%);
+  }
 }
 
-.slide-enter-from,
-.slide-leave-to {
-  opacity: 0;
+@keyframes kenBurnsReverse {
+  0% {
+    transform: scale(1.2) translate(-5%, -5%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
 }
 
-.slide-enter-to,
-.slide-leave-from {
-  opacity: 1;
+.product-image {
+  &.ken-burns-forward {
+    animation: kenBurnsForward 4s ease-in-out forwards;
+  }
+
+  &.ken-burns-reverse {
+    animation: kenBurnsReverse 4s ease-in-out forwards;
+  }
+}
+
+// Ken Burns slide transition - horizontal slide
+.ken-burns-slide-enter-active,
+.ken-burns-slide-leave-active {
+  transition: transform 1.5s ease-in-out;
+}
+
+.ken-burns-slide-enter-from {
+  transform: translateX(100%);
+}
+
+.ken-burns-slide-enter-to {
+  transform: translateX(0);
+}
+
+.ken-burns-slide-leave-from {
+  transform: translateX(0);
+}
+
+.ken-burns-slide-leave-to {
+  transform: translateX(-100%);
 }
 </style>
