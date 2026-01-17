@@ -2191,34 +2191,15 @@ html, body {
 
 // About info icon in header (small screens, not logged in)
 .about-header-icon {
-  flex-shrink: 0 !important;
-  z-index: 100 !important;
+  flex-shrink: 0;
   margin-left: 8px;
-  min-width: 32px !important;
-  width: 32px !important;
-  height: 32px !important;
-  padding: 0 !important;
-  background: transparent !important; // No button background
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   
-  .q-icon {
-    font-size: 32px !important; // 32px icon size
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: white !important; // White circle
-    color: #424242 !important; // Dark grey icon
-  }
-  
-  &:hover .q-icon {
-    background: rgba(255, 255, 255, 0.9) !important;
-  }
-  
-  // Remove any Quasar button backgrounds
-  &::before {
-    display: none !important;
+  :deep(.q-icon) {
+    font-size: 18px;
   }
 }
 
