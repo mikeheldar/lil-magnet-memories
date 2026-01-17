@@ -1666,6 +1666,7 @@ export default {
       productTypeVisibility,
       visibilityLoaded,
       productsLoaded,
+      hasVisibleCategories,
     };
   },
 };
