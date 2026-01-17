@@ -2034,9 +2034,9 @@ html, body {
 }
 
 .q-toolbar-title {
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  position: fixed !important; /* Fixed to viewport, not toolbar */
+  left: 50vw !important; /* Center relative to viewport width */
+  transform: translateX(-50%) !important; /* Center the element itself */
   width: fit-content !important; /* Fit content width */
   min-width: 225px !important; /* Ensure minimum width for title on larger screens */
   max-width: none !important;
@@ -2051,6 +2051,16 @@ html, body {
   opacity: 1 !important; /* Always fully opaque */
   overflow: visible !important; /* Prevent clipping */
   text-overflow: clip !important; /* Don't truncate text */
+  
+  // Position vertically to match toolbar height
+  // Small screens: header is 84px, center vertically
+  top: 42px !important; /* Half of 84px header height */
+  transform: translate(-50%, -50%) !important; /* Center both horizontally and vertically */
+  
+  // Medium+ screens: header is 64px
+  @media (min-width: 768px) {
+    top: 32px !important; /* Half of 64px header height */
+  }
 
   // Remove min-width constraint on small screens to allow title to shrink fully
   // Start resizing at 450px wide
@@ -2177,6 +2187,33 @@ html, body {
   z-index: 100 !important; /* Above menus but below title */
   margin-left: 8px; /* Small gap from menus */
   position: relative;
+}
+
+// About info icon in header (small screens, not logged in)
+.about-header-icon {
+  flex-shrink: 0 !important;
+  z-index: 100 !important;
+  margin-left: 8px;
+  min-width: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  
+  .q-icon {
+    font-size: 24px !important;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white !important;
+  }
+  
+  &:hover .q-icon {
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 
 // Ensure shopping cart button also doesn't get overlapped
