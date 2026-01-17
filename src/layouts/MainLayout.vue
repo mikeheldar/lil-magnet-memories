@@ -79,7 +79,7 @@
           aria-label="About"
           class="lt-md about-header-icon"
         >
-          <q-icon name="info" color="grey-7" />
+          <q-icon name="info" size="16px" />
           <q-tooltip>About</q-tooltip>
         </q-btn>
 
@@ -2222,13 +2222,17 @@ html, body {
     display: block !important;
   }
   
-  .q-icon {
+  :deep(.q-icon) {
     font-size: 16px !important; // Size for the 'i' icon
-    color: #666666 !important; // Grey color for the 'i' icon
+    color: #555555 !important; // Dark grey color for the 'i' icon
     margin: 0 !important;
     padding: 0 !important;
     position: relative !important;
     z-index: 2 !important; // Above white circle
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
   
   // Light grey border on hover
