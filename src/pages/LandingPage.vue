@@ -2129,11 +2129,21 @@ export default {
   transform: translate(-50%, -50%);
   z-index: 100;
   pointer-events: auto;
+  
+  // Make button wider on small screens
+  @media (max-width: 599px) {
+    width: 90%;
+  }
 }
 
 .start-creating-button {
   position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  
+  // Make button full width on small screens
+  @media (max-width: 599px) {
+    width: 100%;
+  }
   
   // Purple border with pulsing animation
   &::before {
