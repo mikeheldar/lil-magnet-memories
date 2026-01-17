@@ -111,6 +111,25 @@ const images = computed(() => {
   return [];
 });
 
+// Computed track style for logging
+const trackStyle = computed(() => {
+  const width = images.value.length * 100;
+  const translateX = -currentIndex.value * 100;
+  return {
+    width: `${width}%`,
+    transform: `translateX(${translateX}%)`,
+  };
+});
+
+// Log track style when it changes
+watch(
+  () => trackStyle.value,
+  (newStyle) => {
+    console.log('🎨 [Slideshow] Track style:', newStyle);
+  },
+  { deep: true }
+);
+
 const currentIndex = ref(0);
 const isPaused = ref(false);
 const isTransitioning = ref(false);
@@ -133,13 +152,24 @@ const addTimeout = (fn, ms) => {
 
 const nextImage = () => {
   if (images.value.length > 1) {
+    const oldIndex = currentIndex.value;
+    const newIndex = (currentIndex.value + 1) % images.value.length;
+    console.log('🔄 [Slideshow] nextImage:', {
+      oldIndex,
+      newIndex,
+      totalImages: images.value.length,
+      trackWidth: `${images.value.length * 100}%`,
+      imageWidth: `${100 / images.value.length}%`,
+      translateX: `-${newIndex * 100}%`,
+    });
     isTransitioning.value = true;
-    currentIndex.value = (currentIndex.value + 1) % images.value.length;
+    currentIndex.value = newIndex;
     // Reset Ken Burns phase when manually changing images
     kenBurnsPhase.value = 'forward';
     // Reset transition flag after animation completes
     setTimeout(() => {
       isTransitioning.value = false;
+      console.log('✅ [Slideshow] Transition complete, isTransitioning:', false);
     }, SLIDE_TRANSITION_DURATION);
   }
 };
@@ -178,13 +208,17 @@ const startKenBurnsCycle = () => {
     return;
   }
 
+  console.log('🎬 [Slideshow] Starting Ken Burns cycle, currentIndex:', currentIndex.value);
+
   // Start with forward Ken Burns animation
   kenBurnsPhase.value = 'forward';
+  console.log('▶️ [Slideshow] Ken Burns forward phase started');
 
   // After forward completes, go to reverse
   addTimeout(() => {
     if (isPaused.value) return;
     kenBurnsPhase.value = 'reverse';
+    console.log('◀️ [Slideshow] Ken Burns reverse phase started');
 
     // After reverse completes, wait a tiny bit then slide to next image
     addTimeout(() => {
@@ -192,6 +226,7 @@ const startKenBurnsCycle = () => {
         // Small delay to ensure reverse animation completes and transform resets
         addTimeout(() => {
           if (isPaused.value) return;
+          console.log('🔄 [Slideshow] Starting slide transition from Ken Burns cycle');
           kenBurnsPhase.value = 'idle'; // Reset phase for slide transition
           isTransitioning.value = true;
           nextImage();
@@ -200,6 +235,7 @@ const startKenBurnsCycle = () => {
           addTimeout(() => {
             if (!isPaused.value) {
               isTransitioning.value = false;
+              console.log('🔄 [Slideshow] Slide complete, restarting Ken Burns cycle');
               startKenBurnsCycle();
             }
           }, SLIDE_TRANSITION_DURATION);
@@ -252,6 +288,10 @@ const handleImageLoad = () => {
 watch(
   () => images.value,
   () => {
+    console.log('📸 [Slideshow] Images changed:', {
+      count: images.value.length,
+      images: images.value,
+    });
     currentIndex.value = 0;
     kenBurnsPhase.value = 'forward'; // Reset phase when images change
     if (props.autoRotate && images.value.length > 1) {
@@ -259,6 +299,19 @@ watch(
     }
   },
   { immediate: true }
+);
+
+// Watch currentIndex to log changes
+watch(
+  () => currentIndex.value,
+  (newIndex, oldIndex) => {
+    console.log('📍 [Slideshow] currentIndex changed:', {
+      from: oldIndex,
+      to: newIndex,
+      totalImages: images.value.length,
+      trackTransform: `translateX(-${newIndex * 100}%)`,
+    });
+  }
 );
 
 onMounted(() => {
