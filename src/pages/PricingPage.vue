@@ -351,38 +351,49 @@
               hint="This product will be selected by default in photo upload forms"
             />
 
-            <div class="text-body2 q-mb-sm">Product Image</div>
-            <div v-if="editingProduct.imageUrl" class="q-mb-md">
-              <img
-                :src="editingProduct.imageUrl"
-                alt="Product preview"
-                class="product-preview-img"
-              />
-              <q-btn
-                flat
-                label="Remove Image"
-                color="negative"
-                size="sm"
-                @click="removeImage"
-                class="q-mt-xs"
-              />
+            <div class="text-body2 q-mb-sm">Product Images</div>
+            <div v-if="editingProduct.images && editingProduct.images.length > 0" class="q-mb-md">
+              <div class="row q-col-gutter-sm q-mb-sm">
+                <div v-for="(imageUrl, index) in editingProduct.images" :key="index" class="col-6 col-sm-4 col-md-3">
+                  <div class="product-image-wrapper">
+                    <img
+                      :src="imageUrl"
+                      alt="Product image"
+                      class="product-preview-img"
+                    />
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      icon="close"
+                      color="negative"
+                      size="sm"
+                      @click="removeImageAtIndex(index)"
+                      class="remove-image-btn"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <q-file
-              v-else
-              v-model="imageFile"
-              label="Upload Product Image"
+              v-model="imageFiles"
+              label="Upload Product Images"
               accept="image/*"
               filled
-              @update:model-value="handleImageSelect"
+              multiple
+              @update:model-value="handleMultipleImageSelect"
               class="q-mb-md"
             >
               <template v-slot:prepend>
                 <q-icon name="attach_file" />
               </template>
+              <template v-slot:hint>
+                You can upload multiple images for this product
+              </template>
             </q-file>
             <div v-if="uploadingImage" class="q-mb-md">
               <q-spinner size="24px" />
-              <span class="q-ml-sm">Uploading image...</span>
+              <span class="q-ml-sm">Uploading images...</span>
             </div>
 
             <div class="text-body2 q-mb-sm">Pricing</div>
@@ -771,6 +782,7 @@ export default {
     const showDeleteDialog = ref(false);
     const deleteIndex = ref(-1);
     const imageFile = ref(null);
+    const imageFiles = ref(null); // For multiple image uploads
     const uploadingImage = ref(false);
     const bulkEditingProduct = ref(null);
     const bulkImageFiles = ref(null);
@@ -1409,12 +1421,55 @@ export default {
       bulkImageFiles.value = null;
     };
 
+    const handleMultipleImageSelect = async (files) => {
+      if (!files || files.length === 0) return;
+
+      uploadingImage.value = true;
+      try {
+        // Initialize images array if it doesn't exist
+        if (!editingProduct.value.images) {
+          editingProduct.value.images = [];
+        }
+
+        // Upload all files
+        for (const file of files) {
+          const imageUrl = await firebaseService.uploadProductImage(file);
+          editingProduct.value.images.push(imageUrl);
+        }
+
+        safeNotify({
+          type: 'positive',
+          message: `${files.length} image(s) uploaded successfully`,
+          position: 'top',
+        });
+
+        // Clear the file input
+        imageFiles.value = null;
+      } catch (error) {
+        console.error('Error uploading images:', error);
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to upload images',
+          position: 'top',
+        });
+      } finally {
+        uploadingImage.value = false;
+      }
+    };
+
+    const removeImageAtIndex = (index) => {
+      if (editingProduct.value.images) {
+        editingProduct.value.images.splice(index, 1);
+      }
+    };
+
     const handleImageSelect = async (file) => {
       if (!file) return;
 
       uploadingImage.value = true;
       try {
         const imageUrl = await firebaseService.uploadProductImage(file);
+        // Support old single image format
         editingProduct.value.imageUrl = imageUrl;
         safeNotify({
           type: 'positive',
@@ -1629,6 +1684,9 @@ export default {
       removePricing,
       updateQuantity,
       updatePrice,
+      handleMultipleImageSelect,
+      removeImageAtIndex,
+      imageFiles,
       handleImageSelect,
       removeImage,
       handleBulkImageSelect,

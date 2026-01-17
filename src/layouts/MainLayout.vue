@@ -234,7 +234,7 @@
 
         <!-- Specialty Products Dropdown -->
         <q-btn-dropdown
-          v-if="visibilityLoaded && productsLoaded && productTypeVisibility.specialty"
+          v-if="layoutReady && visibilityLoaded && productsLoaded && productTypeVisibility.specialty"
           flat
           dense
           no-caps
