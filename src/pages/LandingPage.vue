@@ -2132,7 +2132,7 @@ export default {
   
   // Make button wider on small screens
   @media (max-width: 599px) {
-    width: 90%;
+    width: 90% !important;
   }
 }
 
@@ -2142,7 +2142,8 @@ export default {
   
   // Make button full width on small screens
   @media (max-width: 599px) {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   
   // Purple border with pulsing animation
