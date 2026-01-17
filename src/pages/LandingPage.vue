@@ -491,17 +491,28 @@ export default {
     };
 
     // Handle slide transition events
-    const onSlideEnter = () => {
+    const onSlideEnter = (el) => {
+      // Reset transform before starting Ken Burns
+      if (el) {
+        el.style.transform = '';
+        void el.offsetHeight; // Force reflow
+      }
       // Start Ken Burns after slide completes
       setTimeout(() => {
         isKenBurnsActive.value = true;
         console.log('▶️ [LandingPage Easel] Ken Burns started');
-      }, 800); // After slide transition completes
+      }, 1600); // After slide transition completes (1.5s + small buffer)
     };
 
-    const onSlideLeave = () => {
-      // Stop Ken Burns during slide
+    const onSlideLeave = (el) => {
+      // Stop Ken Burns and reset transform before slide
       isKenBurnsActive.value = false;
+      if (el) {
+        // Reset any Ken Burns transform
+        el.style.animation = 'none';
+        el.style.transform = '';
+        void el.offsetHeight; // Force reflow
+      }
       console.log('⏸️ [LandingPage Easel] Ken Burns paused for slide');
     };
 
@@ -1470,9 +1481,17 @@ export default {
   }
 }
 
-// Stop Ken Burns during slide transition
-.slide-enter-active .ken-burns-active,
-.slide-leave-active .ken-burns-active {
+// Stop Ken Burns during slide transition and ensure slide transform takes precedence
+.slide-enter-active,
+.slide-leave-active {
+  .ken-burns-active {
+    animation: none !important;
+  }
+}
+
+// Ensure slide transform overrides Ken Burns transform
+.slide-enter-active .easel-image,
+.slide-leave-active .easel-image {
   animation: none !important;
 }
 
