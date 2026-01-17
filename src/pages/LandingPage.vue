@@ -432,8 +432,15 @@ export default {
 
     const nextImage = () => {
       if (easelImages.length > 1) {
+        const oldIndex = easelImageIndex.value;
         easelImageIndex.value =
           (easelImageIndex.value + 1) % easelImages.length;
+        console.log('🔄 [LandingPage Easel] nextImage:', {
+          from: oldIndex,
+          to: easelImageIndex.value,
+          totalImages: easelImages.length,
+          component: 'LandingPage Easel Gallery',
+        });
         // Reset panning animation for new image
         resetPanningAnimation();
       }
@@ -452,6 +459,7 @@ export default {
 
     // Reset and start Ken Burns animation when image is ready
     const resetPanningAnimation = () => {
+      console.log('🎬 [LandingPage Easel] resetPanningAnimation called');
       // Stop the current animation
       isImagePanning.value = false;
       // Use nextTick to ensure DOM update before starting animation
@@ -465,6 +473,7 @@ export default {
             // Trigger reflow
             void easelImageRef.value.offsetHeight;
           }
+          console.log('▶️ [LandingPage Easel] Starting Ken Burns animation');
           isImagePanning.value = true; // Start the Ken Burns zoom/pan effect
         }, 100); // Reduced delay for faster restart
       });
@@ -933,6 +942,7 @@ export default {
       // Don't auto-show dialog on load - only show when user clicks "Start Creating Magnets"
 
       // Start panning animation for initial image
+      console.log('🎬 [LandingPage Easel] Component mounted, starting initial animation');
       resetPanningAnimation();
 
       // Rotate easel images with simple cycle:

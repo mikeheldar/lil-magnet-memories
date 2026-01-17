@@ -102,7 +102,14 @@ let slideshowInterval = null;
 
 const nextImage = () => {
   if (images.value.length > 1) {
+    const oldIndex = currentIndex.value;
     currentIndex.value = (currentIndex.value + 1) % images.value.length;
+    console.log('🔄 [SimpleSlideshow] nextImage:', {
+      from: oldIndex,
+      to: currentIndex.value,
+      totalImages: images.value.length,
+      component: 'SimpleSlideshow',
+    });
   }
 };
 
@@ -167,6 +174,11 @@ watch(
 );
 
 onMounted(() => {
+  console.log('🎬 [SimpleSlideshow] Component mounted:', {
+    imagesCount: images.value.length,
+    autoRotate: props.autoRotate,
+    component: 'SimpleSlideshow',
+  });
   if (props.autoRotate && images.value.length > 1) {
     startSlideshow();
   }
