@@ -2200,17 +2200,35 @@ html, body {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: white !important; // White circle background
+  background: rgba(128, 128, 128, 0.6) !important; // Grey outer circle background
   border-radius: 50% !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+  position: relative !important;
+  
+  // White inner circle - perfectly centered
+  &::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important; // Perfect centering
+    width: 24px !important; // Slightly smaller than outer circle (32px)
+    height: 24px !important;
+    background: white !important;
+    border-radius: 50% !important;
+    z-index: 1 !important;
+    display: block !important;
+  }
   
   .q-icon {
-    font-size: 18px !important;
+    font-size: 16px !important; // Size for the 'i' icon
     color: #666666 !important; // Grey color for the 'i' icon
     margin: 0 !important;
     padding: 0 !important;
+    position: relative !important;
+    z-index: 2 !important; // Above white circle
   }
   
   // Light grey border on hover
@@ -2218,8 +2236,7 @@ html, body {
     border: 1px solid rgba(0, 0, 0, 0.2) !important;
   }
   
-  // Ensure no grey border appears by default
-  &::before,
+  // Ensure no other pseudo-elements interfere (only keep ::before for white circle)
   &::after {
     display: none !important;
   }
