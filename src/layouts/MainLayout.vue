@@ -1029,16 +1029,34 @@ export default {
     // Shop section state
     const products = ref([]);
     const productsLoaded = ref(false);
+    const layoutReady = ref(false); // Only true after visibility is loaded in onMounted
     
     // Use global product type visibility composable
     const { productTypeVisibility, visibilityLoaded, initializeVisibility } = useProductTypeVisibility();
 
     // Check if any product categories are visible
     const hasVisibleCategories = computed(() => {
-      if (!visibilityLoaded.value) return false;
-      return productTypeVisibility.value.custom || 
+      // Don't show anything until layout is ready (after onMounted completes)
+      if (!layoutReady.value) {
+        console.log('🔍 [hasVisibleCategories] Layout not ready yet');
+        return false;
+      }
+      if (!visibilityLoaded.value) {
+        console.log('🔍 [hasVisibleCategories] Visibility not loaded yet');
+        return false;
+      }
+      const hasVisible = productTypeVisibility.value.custom || 
              productTypeVisibility.value.designer || 
              productTypeVisibility.value.specialty;
+      console.log('🔍 [hasVisibleCategories] Check:', {
+        layoutReady: layoutReady.value,
+        visibilityLoaded: visibilityLoaded.value,
+        custom: productTypeVisibility.value.custom,
+        designer: productTypeVisibility.value.designer,
+        specialty: productTypeVisibility.value.specialty,
+        hasVisible
+      });
+      return hasVisible;
     });
 
     // Computed product lists for each category (filtered by visibility)
@@ -1560,6 +1578,10 @@ export default {
       // Force a reactivity update to ensure template re-renders with productsLoaded = true
       await nextTick();
       console.log('✅ [MainLayout] Template updated after products load');
+      
+      // Mark layout as ready - this will trigger menu rendering
+      layoutReady.value = true;
+      console.log('✅ [MainLayout] Layout ready - menus can now render');
 
       // Listen for auth state changes
       authService.onAuthStateChanged(async (user) => {
@@ -1666,6 +1688,7 @@ export default {
       productTypeVisibility,
       visibilityLoaded,
       productsLoaded,
+      layoutReady,
       hasVisibleCategories,
     };
   },
