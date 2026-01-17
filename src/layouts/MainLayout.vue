@@ -2191,15 +2191,28 @@ html, body {
 
 // About info icon in header (small screens, not logged in)
 .about-header-icon {
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
+  z-index: 100 !important;
   margin-left: 8px;
-  min-width: 32px;
-  width: 32px;
-  height: 32px;
-  padding: 0;
+  min-width: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
   
-  :deep(.q-icon) {
-    font-size: 18px;
+  .q-icon {
+    font-size: 24px !important;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white !important;
+  }
+  
+  &:hover .q-icon {
+    background: rgba(255, 255, 255, 0.3);
   }
 }
 

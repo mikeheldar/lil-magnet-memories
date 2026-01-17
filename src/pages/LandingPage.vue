@@ -521,7 +521,7 @@ export default {
       if (el) {
         // Reset any Ken Burns transform
         el.style.animation = 'none';
-        el.style.transform = '';
+        el.style.transform = 'translateX(0)';
         void el.offsetHeight; // Force reflow
       }
       console.log('⏸️ [LandingPage Easel] Ken Burns paused for slide');
@@ -1470,15 +1470,25 @@ export default {
 }
 
 .slide-leave-from {
-  // Start from current transform state (preserves Ken Burns transform)
-  // The transition will smoothly animate from whatever transform Ken Burns left
-  transform: translateX(0);
+  transform: translateX(0) !important;
 }
 
 .slide-leave-to {
-  // Combine slide transform with any existing transform
-  // This ensures smooth transition from Ken Burns state
-  transform: translateX(-100%);
+  transform: translateX(-150%) !important; // Slide further off screen to ensure it's completely hidden
+}
+
+.slide-leave-active {
+  transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  // Keep the element offscreen after transition
+  &.v-leave-to {
+    transform: translateX(-150%) !important;
+  }
 }
 
 // Ken Burns effect - zoom in more, then unzoom to original size before slide transition
