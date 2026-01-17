@@ -15,7 +15,7 @@
         <img
           v-for="(image, index) in images"
           v-show="index === currentIndex"
-          :key="image"
+          :key="`slide-${index}-${image}`"
           :src="image"
           :alt="alt"
           class="product-image"
@@ -116,7 +116,7 @@ let kenBurnsTimeouts = [];
 // Ken Burns timing (in milliseconds)
 const KEN_BURNS_FORWARD_DURATION = 4000; // 4 seconds forward
 const KEN_BURNS_REVERSE_DURATION = 4000; // 4 seconds reverse
-const SLIDE_TRANSITION_DURATION = 1500; // 1.5 seconds slide
+const SLIDE_TRANSITION_DURATION = 800; // 0.8 seconds slide (matches CSS transition)
 
 // Helper to track all timeouts
 const addTimeout = (fn, ms) => {
@@ -165,18 +165,22 @@ const startKenBurnsCycle = () => {
     if (isPaused.value) return;
     kenBurnsPhase.value = 'reverse';
 
-    // After reverse completes, slide to next image
+    // After reverse completes, wait a tiny bit then slide to next image
     addTimeout(() => {
       if (isPaused.value) return;
-      kenBurnsPhase.value = 'idle'; // Reset phase for slide transition
-      nextImage();
-
-      // After slide transition, start cycle again
+      // Small delay to ensure reverse animation completes and transform resets
       addTimeout(() => {
-        if (!isPaused.value) {
-          startKenBurnsCycle();
-        }
-      }, SLIDE_TRANSITION_DURATION);
+        if (isPaused.value) return;
+        kenBurnsPhase.value = 'idle'; // Reset phase for slide transition
+        nextImage();
+
+        // After slide transition, start cycle again
+        addTimeout(() => {
+          if (!isPaused.value) {
+            startKenBurnsCycle();
+          }
+        }, SLIDE_TRANSITION_DURATION);
+      }, 50); // Small delay to ensure animation state is cleared
     }, KEN_BURNS_REVERSE_DURATION);
   }, KEN_BURNS_FORWARD_DURATION);
 };
@@ -416,6 +420,8 @@ onUnmounted(() => {
 }
 
 .product-image {
+  will-change: transform;
+  
   &.ken-burns-forward {
     animation: kenBurnsForward 4s ease-in-out forwards;
   }
@@ -423,12 +429,28 @@ onUnmounted(() => {
   &.ken-burns-reverse {
     animation: kenBurnsReverse 4s ease-in-out forwards;
   }
+  
+  // Stop Ken Burns animation during slide transition
+  &.ken-burns-slide-enter-active,
+  &.ken-burns-slide-leave-active {
+    animation: none !important;
+  }
 }
 
-// Ken Burns slide transition - horizontal slide
+// Ken Burns slide transition - horizontal slide (smooth like reference site)
+.ken-burns-slide-move,
 .ken-burns-slide-enter-active,
 .ken-burns-slide-leave-active {
-  transition: transform 1.5s ease-in-out;
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ken-burns-slide-enter-active,
+.ken-burns-slide-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .ken-burns-slide-enter-from {
