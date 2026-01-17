@@ -71,7 +71,7 @@
 
         <!-- About Info Icon (small screens, not logged in) - positioned like user avatar -->
         <q-btn
-          v-if="!isAuthenticated"
+          v-if="!isAuthenticated && cartItemCount === 0"
           flat
           dense
           round
