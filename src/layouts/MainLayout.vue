@@ -2198,21 +2198,45 @@ html, body {
   width: 32px !important;
   height: 32px !important;
   padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   
   .q-icon {
-    font-size: 24px !important;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    font-size: 20px !important; // Slightly smaller for better centering
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.2) !important;
     color: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    // Remove any border or outline
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    // Ensure perfect centering
+    text-align: center !important;
+    vertical-align: middle !important;
   }
   
+  // Remove any border from the button itself
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  
   &:hover .q-icon {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  // Ensure no grey border appears
+  &::before,
+  &::after {
+    display: none !important;
   }
 }
 
