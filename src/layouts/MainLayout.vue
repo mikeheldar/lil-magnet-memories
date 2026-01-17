@@ -2222,12 +2222,21 @@ html, body {
     // Ensure perfect centering
     text-align: center !important;
     vertical-align: middle !important;
+    // Ensure icon is visible
+    position: relative !important;
+    z-index: 1 !important;
   }
   
-  // Ensure icon text/glyph is grey
+  // Ensure icon text/glyph is grey and visible
   .q-icon,
-  .q-icon::before {
+  .q-icon::before,
+  .q-icon::after {
     color: #666666 !important; // Grey color for the 'i' icon
+  }
+  
+  // Target the actual icon content
+  :deep(.q-icon) {
+    color: #666666 !important;
   }
   
   // Remove any border from the button itself
