@@ -11,7 +11,10 @@
         <div 
           class="slideshow-track"
           :class="{ 'is-transitioning': isTransitioning }"
-          :style="{ transform: `translateX(${-currentIndex * 100}%)` }"
+          :style="{ 
+            width: `${images.length * 100}%`,
+            transform: `translateX(${-currentIndex * 100}%)` 
+          }"
         >
           <img
             v-for="(image, index) in images"
@@ -19,6 +22,7 @@
             :src="image"
             :alt="alt"
             class="product-image"
+            :style="{ width: `${100 / images.length}%` }"
             :class="{
               'ken-burns-forward': index === currentIndex && kenBurnsPhase === 'forward' && !isTransitioning,
               'ken-burns-reverse': index === currentIndex && kenBurnsPhase === 'reverse' && !isTransitioning,
@@ -350,20 +354,14 @@ onUnmounted(() => {
 
 .slideshow-track {
   display: flex;
-  width: 100%;
   height: 100%;
   transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  
-  &.is-transitioning {
-    // Smooth transition during slide
-  }
+  will-change: transform;
 }
 
 .product-image {
-  width: 100%;
   height: 100%;
-  min-width: 100%;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   object-fit: cover;
   border-radius: 6px;
 }
