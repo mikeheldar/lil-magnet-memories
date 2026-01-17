@@ -75,11 +75,11 @@
           flat
           dense
           round
+          icon="info"
           @click="$router.push('/about')"
           aria-label="About"
           class="lt-md about-header-icon"
         >
-          <i class="q-icon notranslate material-icons" aria-hidden="true" role="img">info</i>
           <q-tooltip>About</q-tooltip>
         </q-btn>
 
@@ -2190,59 +2190,20 @@ html, body {
 
 // About info icon in header (small screens, not logged in)
 .about-header-icon {
-  flex-shrink: 0 !important;
-  z-index: 100 !important;
+  flex-shrink: 0;
   margin-left: 8px;
-  min-width: 32px !important;
-  width: 32px !important;
-  height: 32px !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: rgba(128, 128, 128, 0.6) !important; // Grey outer circle background
-  border-radius: 50% !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  position: relative !important;
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: white;
+  border-radius: 50%;
   
-  // White inner circle - perfectly centered
-  &::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important; // Perfect centering
-    width: 24px !important; // Slightly smaller than outer circle (32px)
-    height: 24px !important;
-    background: white !important;
-    border-radius: 50% !important;
-    z-index: 1 !important;
-    display: block !important;
-  }
-  
-  :deep(.q-icon) {
-    font-size: 16px !important; // Size for the 'i' icon
-    color: #555555 !important; // Dark grey color for the 'i' icon
-    margin: 0 !important;
-    padding: 0 !important;
-    position: relative !important;
-    z-index: 2 !important; // Above white circle
-    line-height: 1 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-  
-  // Light grey border on hover
-  &:hover {
-    border: 1px solid rgba(0, 0, 0, 0.2) !important;
-  }
-  
-  // Ensure no other pseudo-elements interfere (only keep ::before for white circle)
-  &::after {
-    display: none !important;
+  :deep(.q-btn__content) {
+    .q-icon {
+      font-size: 18px;
+      color: #424242; // Material grey-darken-3
+    }
   }
 }
 
