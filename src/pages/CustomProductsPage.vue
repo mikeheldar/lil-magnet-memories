@@ -38,7 +38,7 @@
                   <q-card-section class="row items-center q-gutter-md">
                     <!-- Product Image -->
                     <div class="col-auto">
-                      <ProductImageSlideshow
+                      <SimpleSlideshow
                         :image-url="product.imageUrl"
                         :image-urls="product.imageUrls"
                         :alt="product.description"
@@ -96,7 +96,7 @@
               <q-card-section class="row items-center q-gutter-md">
                 <!-- Product Image -->
                 <div class="col-auto">
-                  <ProductImageSlideshow
+                  <SimpleSlideshow
                     :image-url="product.imageUrl"
                     :image-urls="product.imageUrls"
                     :alt="product.description"
@@ -154,12 +154,12 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService';
-import ProductImageSlideshow from '../components/ProductImageSlideshow.vue';
+import SimpleSlideshow from '../components/SimpleSlideshow.vue';
 
 export default {
   name: 'CustomProductsPage',
   components: {
-    ProductImageSlideshow,
+    SimpleSlideshow,
   },
   setup() {
     const router = useRouter();

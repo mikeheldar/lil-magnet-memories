@@ -36,7 +36,7 @@
               >
                 <q-card class="product-card" @click="goToProductDetail(product)">
                   <q-card-section class="product-card-content text-center">
-                    <ProductImageSlideshow
+                    <SimpleSlideshow
                       :image-url="product.imageUrl"
                       :image-urls="product.imageUrls"
                       :alt="product.description"
@@ -91,7 +91,7 @@
           >
             <q-card class="product-card" @click="goToProductDetail(product)">
               <q-card-section class="product-card-content text-center">
-                <ProductImageSlideshow
+                <SimpleSlideshow
                   :image-url="product.imageUrl"
                   :image-urls="product.imageUrls"
                   :alt="product.description"
@@ -146,12 +146,12 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService';
-import ProductImageSlideshow from '../components/ProductImageSlideshow.vue';
+import SimpleSlideshow from '../components/SimpleSlideshow.vue';
 
 export default {
   name: 'DesignerProductsPage',
   components: {
-    ProductImageSlideshow,
+    SimpleSlideshow,
   },
   setup() {
     const router = useRouter();

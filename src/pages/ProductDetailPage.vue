@@ -26,7 +26,7 @@
         <div class="row q-col-gutter-lg">
           <!-- Product Image -->
           <div class="col-12 col-md-6">
-            <ProductImageSlideshow
+            <SimpleSlideshow
               :image-url="product.imageUrl"
               :image-urls="product.imageUrls"
               :alt="product.description"
@@ -93,12 +93,12 @@ import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
 import { useQuasar } from 'quasar';
-import ProductImageSlideshow from '../components/ProductImageSlideshow.vue';
+import SimpleSlideshow from '../components/SimpleSlideshow.vue';
 
 export default {
   name: 'ProductDetailPage',
   components: {
-    ProductImageSlideshow,
+    SimpleSlideshow,
   },
   setup() {
     const route = useRoute();
