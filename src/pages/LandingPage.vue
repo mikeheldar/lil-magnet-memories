@@ -1474,7 +1474,7 @@ export default {
 }
 
 .slide-leave-to {
-  transform: translateX(-150%) !important;
+  transform: translateX(-100%) !important;
 }
 
 // Ken Burns effect - zoom in more, then unzoom to original size before slide transition
