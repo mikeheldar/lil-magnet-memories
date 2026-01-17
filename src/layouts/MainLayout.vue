@@ -2201,23 +2201,16 @@ html, body {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  // Remove any background from button itself
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
   
   .q-icon {
     font-size: 20px !important; // Slightly smaller for better centering
     width: 32px !important;
     height: 32px !important;
-    min-width: 32px !important;
-    min-height: 32px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     border-radius: 50% !important;
-    background: white !important; // Fully white background to fill the entire circle
+    background: white !important; // Fully white background to fill the circle
     color: #30343F !important; // Dark grey/black color for the 'i' icon to contrast with white
     margin: 0 !important;
     padding: 0 !important;
@@ -2229,31 +2222,18 @@ html, body {
     // Ensure perfect centering
     text-align: center !important;
     vertical-align: middle !important;
-    // Ensure icon fills the entire button area
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
   }
   
-  // Ensure button content doesn't add extra spacing
-  .q-btn__content {
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 32px !important;
-    height: 32px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    position: relative !important;
-  }
+  // Remove any border from the button itself
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   
   &:hover .q-icon {
     background: rgba(255, 255, 255, 0.9) !important; // Slightly dimmed on hover for feedback
   }
   
-  // Ensure no grey border or pseudo-elements appear
+  // Ensure no grey border appears
   &::before,
   &::after {
     display: none !important;
