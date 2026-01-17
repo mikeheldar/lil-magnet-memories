@@ -431,8 +431,9 @@
 
         <q-separator />
 
-        <!-- Shop section (always visible) -->
+        <!-- Shop section (only show when visibility is loaded) -->
         <q-expansion-item
+          v-if="visibilityLoaded"
           icon="shopping_bag"
           label="Shop"
           :default-opened="true"
