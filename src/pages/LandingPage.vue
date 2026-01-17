@@ -1381,10 +1381,8 @@ export default {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden !important; // Clip images during transition AND Ken Burns zoom (critical for Ken Burns)
+  overflow: hidden !important; // Clip images during transition
   flex: 1; // Take up available space in flex container
-  // Ensure no image parts are visible outside the wrapper
-  clip-path: inset(0);
 }
 
 // On medium and large screens, ensure easel aligns properly
@@ -1421,7 +1419,16 @@ export default {
 }
 
 // Slide transition - both images move together (slower)
-.slide-enter-active,
+.slide-enter-active {
+  transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
 .slide-leave-active {
   transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: absolute;
@@ -1429,6 +1436,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 
 .slide-enter-from {
