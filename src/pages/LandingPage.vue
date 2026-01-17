@@ -501,6 +501,17 @@ export default {
       setTimeout(() => {
         isKenBurnsActive.value = true;
         console.log('▶️ [LandingPage Easel] Ken Burns started');
+        
+        // Reset Ken Burns after animation completes (7s) so it's ready for next slide
+        setTimeout(() => {
+          isKenBurnsActive.value = false;
+          if (el) {
+            el.style.animation = 'none';
+            el.style.transform = 'scale(1) translate(0, 0)';
+            void el.offsetHeight; // Force reflow
+          }
+          console.log('⏸️ [LandingPage Easel] Ken Burns completed, reset to original size');
+        }, 7000); // After Ken Burns animation completes (7s)
       }, 1600); // After slide transition completes (1.5s + small buffer)
     };
 
@@ -1470,18 +1481,21 @@ export default {
   transform: translateX(-100%);
 }
 
-// Ken Burns effect - slow pan while image is displayed (paused between slides)
+// Ken Burns effect - zoom in more, then unzoom to original size before slide transition
 .easel-image.ken-burns-active {
-  animation: kenBurnsSlow 10s ease-in-out infinite;
-  animation-direction: alternate;
+  animation: kenBurnsSlow 7s ease-in-out;
+  animation-fill-mode: forwards;
 }
 
 @keyframes kenBurnsSlow {
   0% {
     transform: scale(1) translate(0, 0);
   }
+  50% {
+    transform: scale(1.15) translate(-3%, -2%); // Zoom in more (was 1.1)
+  }
   100% {
-    transform: scale(1.1) translate(-3%, -2%);
+    transform: scale(1) translate(0, 0); // Return to original size
   }
 }
 
