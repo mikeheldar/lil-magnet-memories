@@ -69,6 +69,20 @@
           <q-tooltip>Shopping Cart</q-tooltip>
         </q-btn>
 
+        <!-- About Info Icon (small screens, not logged in) - positioned like user avatar -->
+        <q-btn
+          v-if="!isAuthenticated"
+          flat
+          dense
+          round
+          icon="info"
+          @click="$router.push('/about')"
+          aria-label="About"
+          class="lt-md about-header-icon"
+          :style="headerButtonStyle"
+        >
+          <q-tooltip>About</q-tooltip>
+        </q-btn>
 
         <!-- User Profile Dropdown (only when authenticated) - triangle dropdown icon -->
         <template v-if="isAuthenticated">
