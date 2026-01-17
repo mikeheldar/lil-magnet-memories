@@ -161,7 +161,8 @@ const nextImage = () => {
       totalImages: images.value.length,
       trackWidth: `${images.value.length * 100}%`,
       imageWidth: `${100 / images.value.length}%`,
-      translateX: `-${newIndex * 100}%`,
+      translateX: `-${newIndex * (100 / images.value.length)}%`,
+      translateXPercentOfTrack: `${(100 / images.value.length)}%`,
     });
     isTransitioning.value = true;
     currentIndex.value = newIndex;
