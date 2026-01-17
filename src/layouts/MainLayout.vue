@@ -75,12 +75,11 @@
           flat
           dense
           round
-          icon="info"
           @click="$router.push('/about')"
           aria-label="About"
           class="lt-md about-header-icon"
-          :style="headerButtonStyle"
         >
+          <q-icon name="info" />
           <q-tooltip>About</q-tooltip>
         </q-btn>
 
@@ -2201,54 +2200,25 @@ html, body {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  
-  .q-icon {
-    font-size: 20px !important; // Slightly smaller for better centering
-    width: 32px !important;
-    height: 32px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 50% !important;
-    background: white !important; // Fully white background to fill the circle
-    color: #666666 !important; // Grey color for the 'i' icon
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1 !important;
-    // Remove any border or outline by default
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    // Ensure perfect centering
-    text-align: center !important;
-    vertical-align: middle !important;
-    // Ensure icon is visible
-    position: relative !important;
-    z-index: 1 !important;
-  }
-  
-  // Ensure icon text/glyph is grey and visible
-  .q-icon,
-  .q-icon::before,
-  .q-icon::after {
-    color: #666666 !important; // Grey color for the 'i' icon
-  }
-  
-  // Target the actual icon content
-  :deep(.q-icon) {
-    color: #666666 !important;
-  }
-  
-  // Remove any border from the button itself
+  background: white !important; // White circle background
+  border-radius: 50% !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
   
-  &:hover .q-icon {
-    border: 1px solid rgba(0, 0, 0, 0.2) !important; // Light grey border on hover
+  .q-icon {
+    font-size: 18px !important;
+    color: #666666 !important; // Grey color for the 'i' icon
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
-  // Ensure no grey border appears
+  // Light grey border on hover
+  &:hover {
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  // Ensure no grey border appears by default
   &::before,
   &::after {
     display: none !important;
