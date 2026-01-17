@@ -53,12 +53,13 @@
             @touchend="handleTouchEnd"
           >
             <div class="easel-image-wrapper">
-              <transition name="slide">
+              <transition name="slide" @enter="onSlideEnter" @leave="onSlideLeave">
                 <img
                   :key="`easel-${easelImageIndex}`"
                   :src="currentEaselImage"
                   alt="Custom photo magnets on easel display"
                   class="easel-image"
+                  :class="{ 'ken-burns-active': isKenBurnsActive }"
                   @load="handleImageLoad"
                   ref="easelImageRef"
                 />
@@ -415,6 +416,7 @@ export default {
       '/easel-gallery/C374BFFD-1749-4450-89D4-A87D1561EAF4_1_105_c.jpeg',
     ];
     const easelImageIndex = ref(0);
+    const isKenBurnsActive = ref(false);
     const currentEaselImage = computed(
       () => easelImages[easelImageIndex.value]
     );
@@ -486,6 +488,21 @@ export default {
     const easelImageRef = ref(null);
     const handleImageLoad = () => {
       console.log('✅ [LandingPage Easel] Image loaded:', currentEaselImage.value);
+    };
+
+    // Handle slide transition events
+    const onSlideEnter = () => {
+      // Start Ken Burns after slide completes
+      setTimeout(() => {
+        isKenBurnsActive.value = true;
+        console.log('▶️ [LandingPage Easel] Ken Burns started');
+      }, 800); // After slide transition completes
+    };
+
+    const onSlideLeave = () => {
+      // Stop Ken Burns during slide
+      isKenBurnsActive.value = false;
+      console.log('⏸️ [LandingPage Easel] Ken Burns paused for slide');
     };
 
     const handleGoogleSignIn = async () => {
@@ -880,15 +897,20 @@ export default {
 
       // Don't auto-show dialog on load - only show when user clicks "Start Creating Magnets"
 
-      console.log('🎬 [LandingPage Easel] Component mounted, using simple fade transitions');
+      console.log('🎬 [LandingPage Easel] Component mounted, using slide transitions with Ken Burns');
 
-      // Rotate easel images with simple fade transition
+      // Start Ken Burns for initial image
+      setTimeout(() => {
+        isKenBurnsActive.value = true;
+      }, 500);
+
+      // Rotate easel images with slide transition
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
-        }, 5000); // 5 seconds between images
+        }, 8000); // 8 seconds between images (allows time for Ken Burns)
       }
     });
 
@@ -910,6 +932,7 @@ export default {
       easelImages,
       currentEaselImage,
       easelImageIndex,
+      isKenBurnsActive,
       showMarketEventDialog,
       activeMarketEvent,
       handleGoogleSignIn,
@@ -928,6 +951,8 @@ export default {
       handleTouchMove,
       handleTouchEnd,
       handleImageLoad,
+      onSlideEnter,
+      onSlideLeave,
       productTypeVisibility,
       visibilityLoaded,
     };
@@ -1395,10 +1420,10 @@ export default {
   left: 0;
 }
 
-// Slide transition - both images move together
+// Slide transition - both images move together (slower)
 .slide-enter-active,
 .slide-leave-active {
-  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: absolute;
   top: 0;
   left: 0;
@@ -1420,6 +1445,27 @@ export default {
 
 .slide-leave-to {
   transform: translateX(-100%);
+}
+
+// Ken Burns effect - slow pan while image is displayed (paused between slides)
+.easel-image.ken-burns-active {
+  animation: kenBurnsSlow 10s ease-in-out infinite;
+  animation-direction: alternate;
+}
+
+@keyframes kenBurnsSlow {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate(-3%, -2%);
+  }
+}
+
+// Stop Ken Burns during slide transition
+.slide-enter-active .ken-burns-active,
+.slide-leave-active .ken-burns-active {
+  animation: none !important;
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
