@@ -2132,7 +2132,7 @@ export default {
   
   // Make button wider on small screens
   @media (max-width: 599px) {
-    width: 90% !important;
+    width: 85% !important;
   }
 }
 
