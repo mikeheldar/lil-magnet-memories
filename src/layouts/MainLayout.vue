@@ -2211,11 +2211,11 @@ html, body {
     justify-content: center !important;
     border-radius: 50% !important;
     background: white !important; // Fully white background to fill the circle
-    color: #30343F !important; // Dark grey/black color for the 'i' icon to contrast with white
+    color: #666666 !important; // Grey color for the 'i' icon
     margin: 0 !important;
     padding: 0 !important;
     line-height: 1 !important;
-    // Remove any border or outline
+    // Remove any border or outline by default
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
@@ -2230,7 +2230,7 @@ html, body {
   box-shadow: none !important;
   
   &:hover .q-icon {
-    background: rgba(255, 255, 255, 0.9) !important; // Slightly dimmed on hover for feedback
+    border: 1px solid rgba(0, 0, 0, 0.2) !important; // Light grey border on hover
   }
   
   // Ensure no grey border appears
