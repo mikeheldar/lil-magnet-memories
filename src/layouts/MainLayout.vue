@@ -79,7 +79,7 @@
           aria-label="About"
           class="lt-md about-header-icon"
         >
-          <q-icon name="info" />
+          <q-icon name="info" color="grey-7" />
           <q-tooltip>About</q-tooltip>
         </q-btn>
 
