@@ -53,13 +53,12 @@
             @touchend="handleTouchEnd"
           >
             <div class="easel-image-wrapper">
-              <transition name="slide" @after-enter="handleImageEnter">
+              <transition name="fade" mode="out-in">
                 <img
                   :key="`easel-${easelImageIndex}`"
                   :src="currentEaselImage"
                   alt="Custom photo magnets on easel display"
                   class="easel-image"
-                  :class="{ 'image-panning': isImagePanning }"
                   @load="handleImageLoad"
                   ref="easelImageRef"
                 />
@@ -416,7 +415,6 @@ export default {
       '/easel-gallery/C374BFFD-1749-4450-89D4-A87D1561EAF4_1_105_c.jpeg',
     ];
     const easelImageIndex = ref(0);
-    const isImagePanning = ref(false);
     const currentEaselImage = computed(
       () => easelImages[easelImageIndex.value]
     );
@@ -425,8 +423,6 @@ export default {
     const goToImage = (index) => {
       if (index !== easelImageIndex.value) {
         easelImageIndex.value = index;
-        // Reset panning animation for new image
-        resetPanningAnimation();
       }
     };
 
@@ -439,10 +435,8 @@ export default {
           from: oldIndex,
           to: easelImageIndex.value,
           totalImages: easelImages.length,
-          component: 'LandingPage Easel Gallery',
+          component: 'LandingPage Easel Gallery - Simple Fade',
         });
-        // Reset panning animation for new image
-        resetPanningAnimation();
       }
     };
 
@@ -452,52 +446,7 @@ export default {
           easelImageIndex.value === 0
             ? easelImages.length - 1
             : easelImageIndex.value - 1;
-        // Reset panning animation for new image
-        resetPanningAnimation();
       }
-    };
-
-    // Reset and start Ken Burns animation when image is ready
-    const resetPanningAnimation = () => {
-      console.log('🎬 [LandingPage Easel] resetPanningAnimation called');
-      // Stop the current animation
-      isImagePanning.value = false;
-      // Use nextTick to ensure DOM update before starting animation
-      nextTick(() => {
-        // Small delay to ensure image is fully loaded and rendered before starting animation
-        // This also ensures the transform resets to base position before starting new animation
-        setTimeout(() => {
-          // Force a reflow to ensure transform is reset
-          if (easelImageRef.value) {
-            easelImageRef.value.style.animation = 'none';
-            // Trigger reflow
-            void easelImageRef.value.offsetHeight;
-          }
-          console.log('▶️ [LandingPage Easel] Starting Ken Burns animation');
-          isImagePanning.value = true; // Start the Ken Burns zoom/pan effect
-        }, 100); // Reduced delay for faster restart
-      });
-    };
-
-    // Handle when image transition enters (after slide-in completes)
-    const handleImageEnter = () => {
-      // Ensure animation is stopped first
-      isImagePanning.value = false;
-      // Use nextTick to ensure DOM is updated
-      nextTick(() => {
-        // Brief pause after slide completes, then start Ken Burns panning animation
-        setTimeout(() => {
-          // Force reset transform to base position before starting animation
-          if (easelImageRef.value) {
-            easelImageRef.value.style.animation = 'none';
-            easelImageRef.value.style.transform = 'translateX(-50%) translateY(-50%) scale(1.1)';
-            // Trigger reflow
-            void easelImageRef.value.offsetHeight;
-          }
-          // Start Ken Burns animation from base position
-          isImagePanning.value = true;
-        }, 50); // Small delay to ensure transform is reset
-      });
     };
 
     // Touch/swipe handling for mobile
@@ -533,21 +482,11 @@ export default {
       touchEndX.value = 0;
     };
 
-    // Handle image load to constrain oversized images
+    // Handle image load
     const easelImageRef = ref(null);
-    // Image now fills square container via CSS - no manual sizing needed
     const handleImageLoad = () => {
-      // CSS handles sizing with object-fit: cover in square container
-      // Start panning animation when image loads
-      resetPanningAnimation();
+      console.log('✅ [LandingPage Easel] Image loaded:', currentEaselImage.value);
     };
-
-    // Watch for image index changes - stop Ken Burns animation before transition
-    watch(easelImageIndex, () => {
-      // Stop Ken Burns animation when image index changes (transition will handle slide)
-      isImagePanning.value = false;
-      // After transition completes, restart Ken Burns animation (handled by handleImageEnter)
-    });
 
     const handleGoogleSignIn = async () => {
       signingIn.value = true;
@@ -941,20 +880,15 @@ export default {
 
       // Don't auto-show dialog on load - only show when user clicks "Start Creating Magnets"
 
-      // Start panning animation for initial image
-      console.log('🎬 [LandingPage Easel] Component mounted, starting initial animation');
-      resetPanningAnimation();
+      console.log('🎬 [LandingPage Easel] Component mounted, using simple fade transitions');
 
-      // Rotate easel images with simple cycle:
-      // 8s Ken Burns (pan up and left) → pause at end position → slide transition (5s) → repeat
-      // Total cycle: 8s Ken Burns + 5s slide = 13s
+      // Rotate easel images with simple fade transition
       // Only if more than 1 image
       if (easelImages.length > 1) {
         setInterval(() => {
           easelImageIndex.value =
             (easelImageIndex.value + 1) % easelImages.length;
-          // Ken Burns animation will restart automatically via watch when image changes
-        }, 13000); // 13 seconds: 8s Ken Burns + 5s slide
+        }, 5000); // 5 seconds between images
       }
     });
 
@@ -976,7 +910,6 @@ export default {
       easelImages,
       currentEaselImage,
       easelImageIndex,
-      isImagePanning,
       showMarketEventDialog,
       activeMarketEvent,
       handleGoogleSignIn,
@@ -995,7 +928,6 @@ export default {
       handleTouchMove,
       handleTouchEnd,
       handleImageLoad,
-      handleImageEnter,
       productTypeVisibility,
       visibilityLoaded,
     };
@@ -1442,16 +1374,15 @@ export default {
   }
 }
 
-// Image fills the wide rectangular container
-// Base transform centers and slightly zooms - will be animated by Ken Burns and transition
+// Image fills the wide rectangular container - simple, no animations
 .easel-image {
   width: 100%;
   height: 100%;
-  object-fit: cover; // Fill container, crop to fit
-  object-position: center center; // Center as default
+  object-fit: cover;
+  object-position: center center;
   display: block;
-  border-radius: 0; // No border radius for edge-to-edge
-  border: none; // No border for edge-to-edge
+  border-radius: 0;
+  border: none;
   padding: 0;
   box-sizing: border-box;
   // Use filter drop-shadow for natural, unclipped shadows
@@ -1460,90 +1391,24 @@ export default {
           drop-shadow(0 2px 15px rgba(0, 0, 0, 0.1));
   background: transparent;
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%) scale(1.1); // Start zoomed in to prevent edges showing during Ken Burns pan
-  transform-origin: center center; // Scale from center
-  
-  // During Vue transitions, transition classes override base transform
-  // Base transform is only for initial state before Ken Burns or transition
+  top: 0;
+  left: 0;
 }
 
-// Ken Burns effect - slow, smooth pan only (no zoom during animation)
-// Starts zoomed in (scale 1.1) and pans slowly up and left - so focus appears to move down and right
-// Zoom ensures edges never show during pan
-.easel-image.image-panning {
-  animation: kenBurns 8s ease-in-out forwards !important;
-  will-change: transform; // Optimize animation performance
+// Simple fade transition
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
 }
 
-// Reset transform when not panning to prevent jump
-.easel-image:not(.image-panning) {
-  // Ensure base transform is applied when animation stops
-  transform: translateX(-50%) translateY(-50%) scale(1.1) !important;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-@keyframes kenBurns {
-  0% {
-    transform: translateX(-50%) translateY(-50%) scale(1.1); // Start centered, zoomed in
-  }
-  100% {
-    transform: translateX(calc(-50% - 5%)) translateY(calc(-50% - 4%)) scale(1.1); // End position - pan up and left more, maintaining zoom
-  }
-}
-
-// Slide animation - smooth, slow swipe effect
-// Both images move simultaneously: old slides left off-screen, new slides in from right
-// Images appear stitched together (no gap between them during transition)
-// Smooth ease-in-out transition for natural acceleration/deceleration
-.slide-enter-active {
-  transition: transform 5s ease-in-out !important;
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  width: 100% !important;
-  height: 100% !important;
-  transform-origin: center center !important;
-  z-index: 2 !important;
-}
-
-.slide-leave-active {
-  transition: transform 5s ease-in-out !important;
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  width: 100% !important;
-  height: 100% !important;
-  transform-origin: center center !important;
-  z-index: 1 !important;
-}
-
-// New image starts off-screen to the right (at Ken Burns start position - centered, zoomed)
-.slide-enter-from {
-  animation: none !important;
-  transform: translateX(calc(-50% + 100vw)) translateY(-50%) scale(1.1) !important;
-  opacity: 1 !important;
-}
-
-// New image slides to center (Ken Burns start position - matches base transform exactly)
-.slide-enter-to {
-  animation: none !important;
-  transform: translateX(-50%) translateY(-50%) scale(1.1) !important;
-  opacity: 1 !important;
-}
-
-// Old image starts from Ken Burns end position (panned up and left, maintaining zoom)
-.slide-leave-from {
-  animation: none !important;
-  transform: translateX(calc(-50% - 5%)) translateY(calc(-50% - 4%)) scale(1.1) !important;
-  opacity: 1 !important;
-}
-
-// Old image slides completely off-screen to the left (maintaining Ken Burns pan position and zoom)
-.slide-leave-to {
-  animation: none !important;
-  transform: translateX(calc(-50% - 5% - 120vw)) translateY(calc(-50% - 4%)) scale(1.1) !important;
-  opacity: 1 !important;
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
@@ -1941,8 +1806,9 @@ export default {
   }
 
   .easel-image {
-    max-width: calc(100% - 6px); // Scale to fit
-    max-height: calc(100% - 6px); // Scale to fit
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 
@@ -2047,8 +1913,8 @@ export default {
   .easel-image {
     width: 100%;
     height: 100%;
-    object-fit: cover !important; // Fill container with no empty space
-    object-position: top right !important; // Start at top-right for panning animation
+    object-fit: cover;
+    object-position: center center;
   }
 
   // Ensure dots are visible 20px below the image on small screens
