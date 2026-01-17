@@ -452,26 +452,43 @@ export default {
 
     // Reset and start Ken Burns animation when image is ready
     const resetPanningAnimation = () => {
-      // Reset the panning state first to allow animation to restart
+      // Stop the current animation
       isImagePanning.value = false;
       // Use nextTick to ensure DOM update before starting animation
       nextTick(() => {
         // Small delay to ensure image is fully loaded and rendered before starting animation
+        // This also ensures the transform resets to base position before starting new animation
         setTimeout(() => {
-          isImagePanning.value = true; // Start the Ken Burns zoom/pan effect (5 seconds, then pauses)
-        }, 300); // Delay to ensure image is fully rendered and ready
+          // Force a reflow to ensure transform is reset
+          if (easelImageRef.value) {
+            easelImageRef.value.style.animation = 'none';
+            // Trigger reflow
+            void easelImageRef.value.offsetHeight;
+          }
+          isImagePanning.value = true; // Start the Ken Burns zoom/pan effect
+        }, 100); // Reduced delay for faster restart
       });
     };
 
     // Handle when image transition enters (after slide-in completes)
     const handleImageEnter = () => {
-      // Brief pause after slide completes, then start Ken Burns panning animation directly
-      // Don't toggle isImagePanning off/on to avoid visual jump - start animation directly
-      setTimeout(() => {
-        // Start Ken Burns animation directly without resetting state
-        // The image is already at the correct position from slide-enter-to
-        isImagePanning.value = true;
-      }, 100); // Reduced pause for faster start of Ken Burns effect
+      // Ensure animation is stopped first
+      isImagePanning.value = false;
+      // Use nextTick to ensure DOM is updated
+      nextTick(() => {
+        // Brief pause after slide completes, then start Ken Burns panning animation
+        setTimeout(() => {
+          // Force reset transform to base position before starting animation
+          if (easelImageRef.value) {
+            easelImageRef.value.style.animation = 'none';
+            easelImageRef.value.style.transform = 'translateX(-50%) translateY(-50%) scale(1.1)';
+            // Trigger reflow
+            void easelImageRef.value.offsetHeight;
+          }
+          // Start Ken Burns animation from base position
+          isImagePanning.value = true;
+        }, 50); // Small delay to ensure transform is reset
+      });
     };
 
     // Touch/swipe handling for mobile
@@ -1448,6 +1465,12 @@ export default {
 .easel-image.image-panning {
   animation: kenBurns 8s ease-in-out forwards !important;
   will-change: transform; // Optimize animation performance
+}
+
+// Reset transform when not panning to prevent jump
+.easel-image:not(.image-panning) {
+  // Ensure base transform is applied when animation stops
+  transform: translateX(-50%) translateY(-50%) scale(1.1) !important;
 }
 
 @keyframes kenBurns {
