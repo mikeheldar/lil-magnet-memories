@@ -107,17 +107,23 @@ const images = computed(() => {
 });
 
 const currentIndex = ref(0);
-let slideshowInterval = null;
 const isPaused = ref(false);
 
 // Ken Burns effect state
 const kenBurnsPhase = ref('forward'); // 'forward', 'reverse', or 'idle'
-let kenBurnsTimeout = null;
+let kenBurnsTimeouts = [];
 
 // Ken Burns timing (in milliseconds)
 const KEN_BURNS_FORWARD_DURATION = 4000; // 4 seconds forward
 const KEN_BURNS_REVERSE_DURATION = 4000; // 4 seconds reverse
-const SLIDE_TRANSITION_DURATION = 1500; // 1.5 seconds slide (slow)
+const SLIDE_TRANSITION_DURATION = 1500; // 1.5 seconds slide
+
+// Helper to track all timeouts
+const addTimeout = (fn, ms) => {
+  const id = setTimeout(fn, ms);
+  kenBurnsTimeouts.push(id);
+  return id;
+};
 
 const nextImage = () => {
   if (images.value.length > 1) {
@@ -155,18 +161,18 @@ const startKenBurnsCycle = () => {
   kenBurnsPhase.value = 'forward';
 
   // After forward completes, go to reverse
-  kenBurnsTimeout = setTimeout(() => {
+  addTimeout(() => {
     if (isPaused.value) return;
     kenBurnsPhase.value = 'reverse';
 
     // After reverse completes, slide to next image
-    kenBurnsTimeout = setTimeout(() => {
+    addTimeout(() => {
       if (isPaused.value) return;
       kenBurnsPhase.value = 'idle'; // Reset phase for slide transition
       nextImage();
 
       // After slide transition, start cycle again
-      kenBurnsTimeout = setTimeout(() => {
+      addTimeout(() => {
         if (!isPaused.value) {
           startKenBurnsCycle();
         }
@@ -176,10 +182,8 @@ const startKenBurnsCycle = () => {
 };
 
 const stopKenBurnsCycle = () => {
-  if (kenBurnsTimeout) {
-    clearTimeout(kenBurnsTimeout);
-    kenBurnsTimeout = null;
-  }
+  kenBurnsTimeouts.forEach(clearTimeout);
+  kenBurnsTimeouts = [];
   kenBurnsPhase.value = 'idle';
 };
 
@@ -192,10 +196,6 @@ const startSlideshow = () => {
 };
 
 const stopSlideshow = () => {
-  if (slideshowInterval) {
-    clearInterval(slideshowInterval);
-    slideshowInterval = null;
-  }
   stopKenBurnsCycle();
 };
 
