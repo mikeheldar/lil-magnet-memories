@@ -76,11 +76,10 @@
           dense
           round
           icon="info"
-          color="white"
-          text-color="grey-8"
           @click="$router.push('/about')"
           aria-label="About"
           class="lt-md about-header-icon"
+          :style="headerButtonStyle"
         >
           <q-tooltip>About</q-tooltip>
         </q-btn>
@@ -2198,14 +2197,9 @@ html, body {
   width: 32px;
   height: 32px;
   padding: 0;
-  background: white;
-  border-radius: 50%;
   
-  :deep(.q-btn__content) {
-    .q-icon {
-      font-size: 18px;
-      color: #424242; // Material grey-darken-3
-    }
+  :deep(.q-icon) {
+    font-size: 18px;
   }
 }
 
