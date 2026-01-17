@@ -505,27 +505,36 @@ export default {
     };
 
     const onSlideLeave = (el) => {
-      // Stop Ken Burns animation and capture current transform state
-      // This prevents the jerk by freezing the Ken Burns transform before slide transition
+      // Stop Ken Burns animation and smoothly reset to base transform
+      // This prevents the jerk by ensuring smooth transition to slide state
       isKenBurnsActive.value = false;
       if (el) {
-        // Stop the animation first
+        // Stop the animation
         el.style.animation = 'none';
         
-        // Capture the current computed transform from Ken Burns animation
-        // This freezes the transform at its current state
-        const computedStyle = window.getComputedStyle(el);
-        const currentTransform = computedStyle.transform;
+        // Use requestAnimationFrame to ensure smooth transition
+        // This ensures the transform reset happens at the right time in the render cycle
+        requestAnimationFrame(() => {
+          if (el) {
+            // Capture current transform state
+            const computedStyle = window.getComputedStyle(el);
+            const currentTransform = computedStyle.transform;
+            
+            // Reset to base transform (scale(1) translate(0,0)) smoothly
+            // This ensures the slide transition starts from a known state
+            el.style.transition = 'transform 0.1s ease-out';
+            el.style.transform = 'scale(1) translate(0, 0)';
+            
+            // After the reset completes, remove the transition so slide transition can take over
+            setTimeout(() => {
+              if (el) {
+                el.style.transition = '';
+              }
+            }, 100);
+          }
+        });
         
-        // If there's a Ken Burns transform, preserve it temporarily
-        // The slide transition will smoothly transition from this state
-        if (currentTransform && currentTransform !== 'none') {
-          // Apply the current transform as inline style to preserve it
-          // The slide transition CSS will then smoothly transition from this state
-          el.style.transform = currentTransform;
-        }
-        
-        void el.offsetHeight; // Force reflow to apply changes
+        void el.offsetHeight; // Force reflow
       }
       console.log('⏸️ [LandingPage Easel] Ken Burns paused for slide');
     };
