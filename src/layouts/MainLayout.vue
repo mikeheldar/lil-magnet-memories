@@ -2198,21 +2198,27 @@ html, body {
   width: 32px !important;
   height: 32px !important;
   padding: 0 !important;
+  background: transparent !important; // No button background
   
   .q-icon {
-    font-size: 24px !important;
+    font-size: 20px !important; // Slightly smaller icon
     width: 32px;
     height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    color: white !important;
+    background: white !important; // White circle
+    color: #424242 !important; // Dark grey icon
   }
   
   &:hover .q-icon {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  // Remove any Quasar button backgrounds
+  &::before {
+    display: none !important;
   }
 }
 
