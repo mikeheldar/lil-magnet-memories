@@ -505,15 +505,27 @@ export default {
     };
 
     const onSlideLeave = (el) => {
-      // Stop Ken Burns animation but preserve current transform state
-      // This prevents the jerk - the slide transition will smoothly transition from the Ken Burns transform
+      // Stop Ken Burns animation and capture current transform state
+      // This prevents the jerk by freezing the Ken Burns transform before slide transition
       isKenBurnsActive.value = false;
       if (el) {
-        // Stop the animation but don't reset transform - let slide transition handle it smoothly
+        // Stop the animation first
         el.style.animation = 'none';
-        // Don't reset transform here - let CSS transition handle it smoothly
-        // The slide-leave-active class will apply its own transform which will smoothly transition
-        void el.offsetHeight; // Force reflow
+        
+        // Capture the current computed transform from Ken Burns animation
+        // This freezes the transform at its current state
+        const computedStyle = window.getComputedStyle(el);
+        const currentTransform = computedStyle.transform;
+        
+        // If there's a Ken Burns transform, preserve it temporarily
+        // The slide transition will smoothly transition from this state
+        if (currentTransform && currentTransform !== 'none') {
+          // Apply the current transform as inline style to preserve it
+          // The slide transition CSS will then smoothly transition from this state
+          el.style.transform = currentTransform;
+        }
+        
+        void el.offsetHeight; // Force reflow to apply changes
       }
       console.log('⏸️ [LandingPage Easel] Ken Burns paused for slide');
     };
