@@ -154,7 +154,7 @@
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
-          v-if="visibilityLoaded && productsLoaded && productTypeVisibility.custom"
+          v-if="productTypeVisibility.custom"
           flat
           dense
           no-caps
@@ -194,7 +194,7 @@
 
         <!-- Designer Magnets Dropdown -->
         <q-btn-dropdown
-          v-if="visibilityLoaded && productsLoaded && productTypeVisibility.designer"
+          v-if="layoutReady && visibilityLoaded && productsLoaded && productTypeVisibility.designer"
           flat
           dense
           no-caps
@@ -440,7 +440,7 @@
           header-class="text-grey-8"
         >
           <!-- Custom Photo Magnets -->
-          <div v-if="visibilityLoaded && productsLoaded && productTypeVisibility.custom" class="shop-category-wrapper">
+          <div v-if="productTypeVisibility.custom" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -501,7 +501,7 @@
           </div>
 
           <!-- Designer Magnets -->
-          <div v-if="visibilityLoaded && productsLoaded && productTypeVisibility.designer" class="shop-category-wrapper">
+          <div v-if="layoutReady && visibilityLoaded && productsLoaded && productTypeVisibility.designer" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -562,7 +562,7 @@
           </div>
 
           <!-- Specialty Products -->
-          <div v-if="visibilityLoaded && productsLoaded && productTypeVisibility.specialty" class="shop-category-wrapper">
+          <div v-if="layoutReady && visibilityLoaded && productsLoaded && productTypeVisibility.specialty" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -1036,26 +1036,24 @@ export default {
 
     // Check if any product categories are visible
     const hasVisibleCategories = computed(() => {
-      // Don't show anything until layout is ready (after onMounted completes)
+      // Custom Photo Magnets always shows immediately (default true)
+      // For other categories, wait until layout is ready
+      const customVisible = productTypeVisibility.value.custom;
+      
+      // If layout not ready, only show custom (default)
       if (!layoutReady.value) {
-        console.log('🔍 [hasVisibleCategories] Layout not ready yet');
-        return false;
+        return customVisible;
       }
+      
+      // Once layout is ready, check all categories
       if (!visibilityLoaded.value) {
-        console.log('🔍 [hasVisibleCategories] Visibility not loaded yet');
-        return false;
+        return customVisible;
       }
+      
       const hasVisible = productTypeVisibility.value.custom || 
              productTypeVisibility.value.designer || 
              productTypeVisibility.value.specialty;
-      console.log('🔍 [hasVisibleCategories] Check:', {
-        layoutReady: layoutReady.value,
-        visibilityLoaded: visibilityLoaded.value,
-        custom: productTypeVisibility.value.custom,
-        designer: productTypeVisibility.value.designer,
-        specialty: productTypeVisibility.value.specialty,
-        hasVisible
-      });
+      
       return hasVisible;
     });
 

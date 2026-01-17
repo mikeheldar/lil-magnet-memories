@@ -2,11 +2,11 @@ import { ref } from 'vue';
 import { firebaseService } from '../services/firebaseService.js';
 
 // Global singleton state for product type visibility
-// Initialize with all false to prevent showing menus before visibility is loaded
+// Initialize with custom=true (default visible), others false until loaded from Firebase
 const productTypeVisibility = ref({
-  custom: false, // Will be set after loading from Firebase
-  designer: false,
-  specialty: false,
+  custom: true, // Default visible - always show Custom Photo Magnets
+  designer: false, // Will be set after loading from Firebase
+  specialty: false, // Will be set after loading from Firebase
 });
 
 const visibilityLoaded = ref(false);
