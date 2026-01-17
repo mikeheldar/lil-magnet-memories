@@ -150,7 +150,7 @@
     </q-header>
 
     <!-- Sub-Navigation Bar (below header, small screens and up - includes medium) -->
-    <div v-if="visibilityLoaded" class="sub-navigation-bar gt-xs" :class="[headerClasses, { 'header-hidden': !headerVisible }]">
+    <div v-if="hasVisibleCategories" class="sub-navigation-bar gt-xs" :class="[headerClasses, { 'header-hidden': !headerVisible }]">
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
@@ -431,9 +431,9 @@
 
         <q-separator />
 
-        <!-- Shop section (only show when visibility is loaded) -->
+        <!-- Shop section (only show when visibility is loaded AND at least one category is visible) -->
         <q-expansion-item
-          v-if="visibilityLoaded"
+          v-if="hasVisibleCategories"
           icon="shopping_bag"
           label="Shop"
           :default-opened="true"
@@ -1032,6 +1032,14 @@ export default {
     
     // Use global product type visibility composable
     const { productTypeVisibility, visibilityLoaded, initializeVisibility } = useProductTypeVisibility();
+
+    // Check if any product categories are visible
+    const hasVisibleCategories = computed(() => {
+      if (!visibilityLoaded.value) return false;
+      return productTypeVisibility.value.custom || 
+             productTypeVisibility.value.designer || 
+             productTypeVisibility.value.specialty;
+    });
 
     // Computed product lists for each category (filtered by visibility)
     const customProductsList = computed(() => {
