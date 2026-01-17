@@ -2210,8 +2210,8 @@ html, body {
     align-items: center !important;
     justify-content: center !important;
     border-radius: 50% !important;
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
+    background: white !important; // Fully white background to fill the circle
+    color: #30343F !important; // Dark grey/black color for the 'i' icon to contrast with white
     margin: 0 !important;
     padding: 0 !important;
     line-height: 1 !important;
@@ -2230,7 +2230,7 @@ html, body {
   box-shadow: none !important;
   
   &:hover .q-icon {
-    background: rgba(255, 255, 255, 0.3) !important;
+    background: rgba(255, 255, 255, 0.9) !important; // Slightly dimmed on hover for feedback
   }
   
   // Ensure no grey border appears
