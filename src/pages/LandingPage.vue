@@ -53,7 +53,7 @@
             @touchend="handleTouchEnd"
           >
             <div class="easel-image-wrapper">
-              <transition name="fade" mode="out-in">
+              <transition name="slide" mode="out-in">
                 <img
                   :key="`easel-${easelImageIndex}`"
                   :src="currentEaselImage"
@@ -1395,20 +1395,31 @@ export default {
   left: 0;
 }
 
-// Simple fade transition
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
+// Slide transition - both images move together
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.slide-enter-from {
+  transform: translateX(100%);
 }
 
-.fade-enter-to,
-.fade-leave-from {
-  opacity: 1;
+.slide-enter-to {
+  transform: translateX(0);
+}
+
+.slide-leave-from {
+  transform: translateX(0);
+}
+
+.slide-leave-to {
+  transform: translateX(-100%);
 }
 
 // All screen sizes: full width, edge to edge, wide rectangular format
