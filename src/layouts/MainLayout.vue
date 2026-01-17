@@ -76,6 +76,8 @@
           dense
           round
           icon="info"
+          color="white"
+          text-color="grey-8"
           @click="$router.push('/about')"
           aria-label="About"
           class="lt-md about-header-icon"
