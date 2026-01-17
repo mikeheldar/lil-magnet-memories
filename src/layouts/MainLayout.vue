@@ -150,7 +150,7 @@
     </q-header>
 
     <!-- Sub-Navigation Bar (below header, small screens and up - includes medium) -->
-    <div class="sub-navigation-bar gt-xs" :class="[headerClasses, { 'header-hidden': !headerVisible }]">
+    <div v-if="visibilityLoaded" class="sub-navigation-bar gt-xs" :class="[headerClasses, { 'header-hidden': !headerVisible }]">
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
