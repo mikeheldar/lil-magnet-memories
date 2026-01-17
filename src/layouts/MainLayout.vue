@@ -2201,7 +2201,7 @@ html, body {
   background: transparent !important; // No button background
   
   .q-icon {
-    font-size: 20px !important; // Slightly smaller icon
+    font-size: 32px !important; // 32px icon size
     width: 32px;
     height: 32px;
     display: flex;
