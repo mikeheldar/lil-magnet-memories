@@ -1458,7 +1458,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: 0;
 }
 
 .slide-enter-from {
@@ -1474,21 +1474,7 @@ export default {
 }
 
 .slide-leave-to {
-  transform: translateX(-150%) !important; // Slide further off screen to ensure it's completely hidden
-}
-
-.slide-leave-active {
-  transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  // Keep the element offscreen after transition
-  &.v-leave-to {
-    transform: translateX(-150%) !important;
-  }
+  transform: translateX(-150%) !important;
 }
 
 // Ken Burns effect - zoom in more, then unzoom to original size before slide transition
