@@ -53,7 +53,7 @@
             @touchend="handleTouchEnd"
           >
             <div class="easel-image-wrapper">
-              <transition name="slide" mode="out-in">
+              <transition name="slide">
                 <img
                   :key="`easel-${easelImageIndex}`"
                   :src="currentEaselImage"
