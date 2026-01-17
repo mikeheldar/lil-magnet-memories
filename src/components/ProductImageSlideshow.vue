@@ -13,7 +13,7 @@
           :class="{ 'is-transitioning': isTransitioning }"
           :style="{ 
             width: `${images.length * 100}%`,
-            transform: `translateX(${-currentIndex * 100}%)` 
+            transform: `translateX(${-currentIndex * (100 / images.length)}%)` 
           }"
         >
           <img
@@ -114,10 +114,11 @@ const images = computed(() => {
 // Computed track style for logging
 const trackStyle = computed(() => {
   const width = images.value.length * 100;
-  const translateX = -currentIndex.value * 100;
+  const translateX = -currentIndex.value * (100 / images.value.length);
   return {
     width: `${width}%`,
     transform: `translateX(${translateX}%)`,
+    imageWidthPercent: `${100 / images.value.length}%`,
   };
 });
 
@@ -305,11 +306,13 @@ watch(
 watch(
   () => currentIndex.value,
   (newIndex, oldIndex) => {
+    const translateXPercent = newIndex * (100 / images.value.length);
     console.log('📍 [Slideshow] currentIndex changed:', {
       from: oldIndex,
       to: newIndex,
       totalImages: images.value.length,
-      trackTransform: `translateX(-${newIndex * 100}%)`,
+      trackTransform: `translateX(-${translateXPercent}%)`,
+      explanation: `Moving track by ${translateXPercent}% of its own width (${100 / images.value.length}% per image)`,
     });
   }
 );
