@@ -6,26 +6,27 @@
       @mouseenter="pauseSlideshow"
       @mouseleave="resumeSlideshow"
     >
-      <!-- Image container with transition -->
-      <transition-group
-        name="ken-burns-slide"
-        tag="div"
-        class="slideshow-container"
-      >
-        <img
-          v-for="(image, index) in images"
-          v-show="index === currentIndex"
-          :key="`slide-${index}-${image}`"
-          :src="image"
-          :alt="alt"
-          class="product-image"
-          :class="{
-            'ken-burns-forward': index === currentIndex && kenBurnsPhase === 'forward',
-            'ken-burns-reverse': index === currentIndex && kenBurnsPhase === 'reverse',
-          }"
-          @load="handleImageLoad"
-        />
-      </transition-group>
+      <!-- Image container with carousel-style transition -->
+      <div class="slideshow-container">
+        <div 
+          class="slideshow-track"
+          :class="{ 'is-transitioning': isTransitioning }"
+          :style="{ transform: `translateX(${-currentIndex * 100}%)` }"
+        >
+          <img
+            v-for="(image, index) in images"
+            :key="`slide-${index}-${image}`"
+            :src="image"
+            :alt="alt"
+            class="product-image"
+            :class="{
+              'ken-burns-forward': index === currentIndex && kenBurnsPhase === 'forward' && !isTransitioning,
+              'ken-burns-reverse': index === currentIndex && kenBurnsPhase === 'reverse' && !isTransitioning,
+            }"
+            @load="handleImageLoad"
+          />
+        </div>
+      </div>
 
       <!-- Navigation arrows (only show if multiple images) -->
       <template v-if="images.length > 1">
@@ -108,6 +109,7 @@ const images = computed(() => {
 
 const currentIndex = ref(0);
 const isPaused = ref(false);
+const isTransitioning = ref(false);
 
 // Ken Burns effect state
 const kenBurnsPhase = ref('forward'); // 'forward', 'reverse', or 'idle'
@@ -127,28 +129,43 @@ const addTimeout = (fn, ms) => {
 
 const nextImage = () => {
   if (images.value.length > 1) {
+    isTransitioning.value = true;
     currentIndex.value = (currentIndex.value + 1) % images.value.length;
     // Reset Ken Burns phase when manually changing images
     kenBurnsPhase.value = 'forward';
+    // Reset transition flag after animation completes
+    setTimeout(() => {
+      isTransitioning.value = false;
+    }, SLIDE_TRANSITION_DURATION);
   }
 };
 
 const previousImage = () => {
   if (images.value.length > 1) {
+    isTransitioning.value = true;
     currentIndex.value =
       currentIndex.value === 0
         ? images.value.length - 1
         : currentIndex.value - 1;
     // Reset Ken Burns phase when manually changing images
     kenBurnsPhase.value = 'forward';
+    // Reset transition flag after animation completes
+    setTimeout(() => {
+      isTransitioning.value = false;
+    }, SLIDE_TRANSITION_DURATION);
   }
 };
 
 const goToImage = (index) => {
   if (index >= 0 && index < images.value.length) {
+    isTransitioning.value = true;
     currentIndex.value = index;
     // Reset Ken Burns phase when manually changing images
     kenBurnsPhase.value = 'forward';
+    // Reset transition flag after animation completes
+    setTimeout(() => {
+      isTransitioning.value = false;
+    }, SLIDE_TRANSITION_DURATION);
   }
 };
 
@@ -168,19 +185,21 @@ const startKenBurnsCycle = () => {
     // After reverse completes, wait a tiny bit then slide to next image
     addTimeout(() => {
       if (isPaused.value) return;
-      // Small delay to ensure reverse animation completes and transform resets
-      addTimeout(() => {
-        if (isPaused.value) return;
-        kenBurnsPhase.value = 'idle'; // Reset phase for slide transition
-        nextImage();
-
-        // After slide transition, start cycle again
+        // Small delay to ensure reverse animation completes and transform resets
         addTimeout(() => {
-          if (!isPaused.value) {
-            startKenBurnsCycle();
-          }
-        }, SLIDE_TRANSITION_DURATION);
-      }, 50); // Small delay to ensure animation state is cleared
+          if (isPaused.value) return;
+          kenBurnsPhase.value = 'idle'; // Reset phase for slide transition
+          isTransitioning.value = true;
+          nextImage();
+
+          // After slide transition, start cycle again
+          addTimeout(() => {
+            if (!isPaused.value) {
+              isTransitioning.value = false;
+              startKenBurnsCycle();
+            }
+          }, SLIDE_TRANSITION_DURATION);
+        }, 50); // Small delay to ensure animation state is cleared
     }, KEN_BURNS_REVERSE_DURATION);
   }, KEN_BURNS_FORWARD_DURATION);
 };
@@ -326,16 +345,27 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+
+.slideshow-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  &.is-transitioning {
+    // Smooth transition during slide
+  }
 }
 
 .product-image {
   width: 100%;
   height: 100%;
+  min-width: 100%;
+  flex-shrink: 0;
   object-fit: cover;
   border-radius: 6px;
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 .product-image-placeholder {
@@ -421,6 +451,7 @@ onUnmounted(() => {
 
 .product-image {
   will-change: transform;
+  position: relative;
   
   &.ken-burns-forward {
     animation: kenBurnsForward 4s ease-in-out forwards;
@@ -429,43 +460,7 @@ onUnmounted(() => {
   &.ken-burns-reverse {
     animation: kenBurnsReverse 4s ease-in-out forwards;
   }
-  
-  // Stop Ken Burns animation during slide transition
-  &.ken-burns-slide-enter-active,
-  &.ken-burns-slide-leave-active {
-    animation: none !important;
-  }
 }
 
-// Ken Burns slide transition - horizontal slide (smooth like reference site)
-.ken-burns-slide-move,
-.ken-burns-slide-enter-active,
-.ken-burns-slide-leave-active {
-  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.ken-burns-slide-enter-active,
-.ken-burns-slide-leave-active {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.ken-burns-slide-enter-from {
-  transform: translateX(100%);
-}
-
-.ken-burns-slide-enter-to {
-  transform: translateX(0);
-}
-
-.ken-burns-slide-leave-from {
-  transform: translateX(0);
-}
-
-.ken-burns-slide-leave-to {
-  transform: translateX(-100%);
-}
+// Ken Burns animations run on individual images, not during transition
 </style>
