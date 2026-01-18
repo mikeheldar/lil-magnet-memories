@@ -273,12 +273,9 @@
             </q-item>
           </q-list>
         </q-card>
-      </div>
 
-      <!-- Right: Product Form -->
-      <div class="col-12 col-md-4">
-        <!-- Single Product Form -->
-        <q-card v-if="editingProduct && !bulkEditingProduct">
+        <!-- Inline Edit Product Form -->
+        <q-card v-if="editingProduct && !bulkEditingProduct" class="q-mt-md">
           <q-card-section>
             <div class="text-h6 q-mb-md">
               {{ editingProduct.index >= 0 ? 'Edit Product' : 'New Product' }}
@@ -447,8 +444,8 @@
           </q-card-section>
         </q-card>
 
-        <!-- Bulk Product Form -->
-        <q-card v-if="bulkEditingProduct">
+        <!-- Inline Bulk Product Form -->
+        <q-card v-if="bulkEditingProduct" class="q-mt-md">
           <q-card-section>
             <div class="text-h6 q-mb-md">Bulk Add Products</div>
             <div class="text-body2 text-grey-7 q-mb-md">
