@@ -243,7 +243,7 @@ export default {
 .product-card {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  max-width: 400px;
+  max-width: 500px;
   margin: 0 auto;
 }
 

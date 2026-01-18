@@ -1785,6 +1785,7 @@ export default {
   height: 150px;
   object-fit: cover;
   border-radius: 8px;
+  aspect-ratio: 1 / 1; /* Force square aspect ratio */
 }
 
 .product-image-wrapper .remove-image-btn {
