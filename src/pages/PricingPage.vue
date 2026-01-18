@@ -261,11 +261,12 @@
           </q-list>
         </q-card>
 
-        <!-- Inline Edit Product Form -->
-        <q-card v-if="editingProduct && !bulkEditingProduct" class="q-mt-md">
+        <!-- Inline Edit/Add Product Form (moved from bottom - shows based on context) -->
+        <q-card v-if="editingProduct && !bulkEditingProduct && editingProduct.index !== undefined" class="q-mt-md">
           <q-card-section>
-            <div class="text-h6 q-mb-md">
-              {{ editingProduct.index >= 0 ? 'Edit Product' : 'New Product' }}
+            <div class="row items-center justify-between q-mb-md">
+              <div class="text-h6">Edit Product</div>
+              <q-btn flat dense label="Cancel" @click="cancelEdit" />
             </div>
 
             <q-input
