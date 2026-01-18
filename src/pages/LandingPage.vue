@@ -828,24 +828,20 @@ export default {
 
     // Handle Start Creating Magnets Now button click
     const handleStartCreating = () => {
-      // Check if there's a previously selected product in localStorage
+      // Always navigate to photo upload and let it select the default product
+      // Clear any stored product selection so it uses the default
       try {
         const savedData = localStorage.getItem('guestFormData');
         if (savedData) {
           const parsed = JSON.parse(savedData);
-          if (parsed.selectedProductId) {
-            // Navigate with the product query parameter
-            router.push({
-              path: '/photo-upload',
-              query: { product: parsed.selectedProductId }
-            });
-            return;
-          }
+          // Remove the selectedProductId to force default product selection
+          delete parsed.selectedProductId;
+          localStorage.setItem('guestFormData', JSON.stringify(parsed));
         }
       } catch (error) {
-        console.error('Error reading stored product:', error);
+        console.error('Error clearing stored product:', error);
       }
-      // If no stored product, just navigate normally
+      // Navigate to photo upload - it will automatically select the default product
       router.push('/photo-upload');
     };
 
