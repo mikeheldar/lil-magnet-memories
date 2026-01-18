@@ -90,9 +90,10 @@
                       size="80px"
                       square
                     >
+                      <!-- Debug: Show which path is taken -->
                       <SimpleSlideshow 
                         v-if="product.images && product.images.length > 1"
-                        :images="product.images"
+                        :image-urls="product.images"
                         :interval="3000"
                         class="product-list-slideshow"
                       />
