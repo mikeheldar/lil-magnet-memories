@@ -618,7 +618,6 @@
             </div>
           </q-card-section>
         </q-card>
-      </q-card>
     </div>
 
     <!-- Confirmation Dialog -->
