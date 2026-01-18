@@ -585,6 +585,7 @@
             </q-item>
           </q-list>
         </q-card>
+    </div>
 
     <!-- Confirmation Dialog -->
     <q-dialog v-model="showDeleteDialog">
