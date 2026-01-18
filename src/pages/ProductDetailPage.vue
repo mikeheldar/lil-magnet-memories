@@ -28,7 +28,7 @@
           <div class="col-12 col-md-6">
             <SimpleSlideshow
               :image-url="product.imageUrl"
-              :image-urls="product.imageUrls"
+              :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
               :alt="product.description"
             />
           </div>

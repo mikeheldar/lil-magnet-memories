@@ -1794,6 +1794,13 @@ export default {
   background: rgba(255, 255, 255, 0.9);
 }
 
+.product-list-slideshow {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .shipping-option-item {
   padding: 12px 16px;
 }

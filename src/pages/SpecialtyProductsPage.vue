@@ -38,7 +38,7 @@
                   <q-card-section class="product-card-content text-center">
                     <SimpleSlideshow
                       :image-url="product.imageUrl"
-                      :image-urls="product.imageUrls"
+                      :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
                       :alt="product.description"
                     />
                     <div class="text-h6 q-mt-md q-mb-sm">
@@ -93,7 +93,7 @@
               <q-card-section class="product-card-content text-center">
                 <SimpleSlideshow
                   :image-url="product.imageUrl"
-                  :image-urls="product.imageUrls"
+                  :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
                   :alt="product.description"
                 />
                 <div class="text-h6 q-mt-md q-mb-sm">

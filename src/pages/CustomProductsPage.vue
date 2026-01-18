@@ -40,7 +40,7 @@
                     <div class="col-auto">
                       <SimpleSlideshow
                         :image-url="product.imageUrl"
-                        :image-urls="product.imageUrls"
+                        :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
                         :alt="product.description"
                         class="product-image-slideshow-small"
                       />
@@ -98,7 +98,7 @@
                 <div class="col-auto">
                   <SimpleSlideshow
                     :image-url="product.imageUrl"
-                    :image-urls="product.imageUrls"
+                    :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
                     :alt="product.description"
                     class="product-image-slideshow-small"
                   />
