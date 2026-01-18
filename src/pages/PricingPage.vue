@@ -84,13 +84,21 @@
                   class="product-item"
                 >
                   <q-item-section avatar>
+                    <!-- Show rotating images if product has multiple images -->
                     <q-avatar 
-                      v-if="product.imageUrl" 
+                      v-if="(product.images && product.images.length > 0) || product.imageUrl" 
                       size="80px"
                       square
                     >
+                      <SimpleSlideshow 
+                        v-if="product.images && product.images.length > 1"
+                        :images="product.images"
+                        :interval="3000"
+                        class="product-list-slideshow"
+                      />
                       <img 
-                        :src="product.imageUrl" 
+                        v-else
+                        :src="product.images && product.images.length > 0 ? product.images[0] : product.imageUrl" 
                         :alt="product.description"
                         style="object-fit: cover; width: 100%; height: 100%;"
                       />
@@ -771,9 +779,13 @@ import {
   firebaseService,
   DEFAULT_SHIPPING_OPTIONS,
 } from '../services/firebaseService.js';
+import SimpleSlideshow from '../components/SimpleSlideshow.vue';
 
 export default {
   name: 'PricingPage',
+  components: {
+    SimpleSlideshow,
+  },
   setup() {
     const $q = useQuasar();
     const router = useRouter();
@@ -1210,6 +1222,7 @@ export default {
         description: '',
         detailedDescription: '',
         imageUrl: '',
+        images: [], // Support multiple images
         category: activeCategory.value,
         collection: '',
         isTesting: false,
@@ -1219,6 +1232,7 @@ export default {
         },
       };
       imageFile.value = null;
+      imageFiles.value = null;
     };
 
     const bulkAddProducts = () => {
@@ -1405,6 +1419,7 @@ export default {
         description: products.value[index].description,
         detailedDescription: products.value[index].detailedDescription || '',
         imageUrl: products.value[index].imageUrl || '',
+        images: products.value[index].images || [], // Load multiple images
         category: products.value[index].category || 'custom',
         collection: products.value[index].collection || '',
         isTesting: products.value[index].isTesting || false,
@@ -1412,6 +1427,7 @@ export default {
         pricing: { ...products.value[index].pricing },
       };
       imageFile.value = null;
+      imageFiles.value = null;
     };
 
     const cancelEdit = () => {
@@ -1522,6 +1538,7 @@ export default {
         description: editingProduct.value.description,
         detailedDescription: editingProduct.value.detailedDescription || '',
         imageUrl: editingProduct.value.imageUrl || '',
+        images: editingProduct.value.images || [], // Save multiple images
         category: editingProduct.value.category,
         collection: editingProduct.value.collection || '',
         isTesting: editingProduct.value.isTesting || false,
@@ -1544,11 +1561,12 @@ export default {
           // Update existing
           const existingProduct = products.value[editingProduct.value.index];
           await firebaseService.updateProduct(existingProduct.id, product);
-          // Update the product in the array, preserving all fields including imageUrl
+          // Update the product in the array, preserving all fields including images
           const updatedProduct = {
             ...product,
             id: existingProduct.id,
             imageUrl: product.imageUrl || existingProduct.imageUrl || '',
+            images: product.images || existingProduct.images || [],
           };
           products.value[editingProduct.value.index] = updatedProduct;
           safeNotify({
@@ -1563,6 +1581,7 @@ export default {
             ...product, 
             id,
             imageUrl: product.imageUrl || '',
+            images: product.images || [],
           };
           products.value.push(newProduct);
           safeNotify({
@@ -1753,6 +1772,26 @@ export default {
   max-width: 200px;
   height: auto;
   border-radius: 8px;
+}
+
+.product-image-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.product-image-wrapper .product-preview-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.product-image-wrapper .remove-image-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .shipping-option-item {
