@@ -1,7 +1,7 @@
 <template>
-  <q-page class="newsletter-signup-page">
-    <div class="q-pa-md">
-      <div class="text-center q-mb-xl">
+  <q-page padding class="newsletter-signup-page">
+    <div class="newsletter-container">
+      <div class="text-center q-mb-lg">
         <q-icon name="email" size="64px" color="primary" class="q-mb-md" />
         <div class="text-h4 text-weight-bold text-primary q-mb-sm">
           Subscribe to Our Newsletter
@@ -128,9 +128,11 @@ const onSubmit = async () => {
 
 <style lang="scss" scoped>
 .newsletter-signup-page {
-  min-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: calc(100vh - 100px);
+}
+
+.newsletter-container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 </style>
