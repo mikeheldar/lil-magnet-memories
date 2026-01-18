@@ -7,43 +7,30 @@
           <div class="text-h5 q-mb-md">Product Management</div>
           
           <!-- Product Type Visibility Toggles -->
-          <q-card flat bordered class="q-mb-md">
-                <q-card-section>
-                  <div class="text-subtitle1 q-mb-md text-weight-medium">Show Product Types in Menus</div>
-                  <div class="row q-gutter-lg">
-                    <div class="col-12 col-sm-4">
-                      <q-toggle
-                        v-model="customVisible"
-                        label="Custom Photo Products"
-                        color="primary"
-                        size="lg"
-                        @update:model-value="updateVisibility('custom', $event)"
-                      />
-                    </div>
-                    <div class="col-12 col-sm-4">
-                      <q-toggle
-                        v-model="designerVisible"
-                        label="Designer Magnets"
-                        color="secondary"
-                        size="lg"
-                        @update:model-value="updateVisibility('designer', $event)"
-                      />
-                    </div>
-                    <div class="col-12 col-sm-4">
-                      <q-toggle
-                        v-model="specialtyVisible"
-                        label="Specialty Products"
-                        color="specialty"
-                        size="lg"
-                        @update:model-value="updateVisibility('specialty', $event)"
-                      />
-                    </div>
-                  </div>
-                  <div class="text-caption text-grey-7 q-mt-sm">
-                    When disabled, products of this type will not appear in header menus, drawer menus, or the landing page.
-                  </div>
-                </q-card-section>
-              </q-card>
+          <div class="row items-center q-gutter-md q-mb-md q-pa-sm" style="background: #f5f5f5; border-radius: 4px;">
+            <div class="text-subtitle2 text-weight-medium">Show in Menus:</div>
+            <q-toggle
+              v-model="customVisible"
+              label="Custom"
+              color="primary"
+              size="sm"
+              @update:model-value="updateVisibility('custom', $event)"
+            />
+            <q-toggle
+              v-model="designerVisible"
+              label="Designer"
+              color="secondary"
+              size="sm"
+              @update:model-value="updateVisibility('designer', $event)"
+            />
+            <q-toggle
+              v-model="specialtyVisible"
+              label="Specialty"
+              color="specialty"
+              size="sm"
+              @update:model-value="updateVisibility('specialty', $event)"
+            />
+          </div>
               
               <q-tabs v-model="activeCategory" class="text-primary q-mb-md">
                 <q-tab name="custom" label="Custom Photo Products" />
