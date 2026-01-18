@@ -47,13 +47,13 @@
               By subscribing, you'll receive updates about:
             </div>
             <div class="q-mt-sm q-gutter-sm">
-              <q-chip icon="event" color="primary" text-color="white" size="sm">
+              <q-chip icon="event" color="primary" text-color="white">
                 Upcoming Events
               </q-chip>
-              <q-chip icon="new_releases" color="secondary" text-color="white" size="sm">
+              <q-chip icon="new_releases" color="secondary" text-color="white">
                 New Products
               </q-chip>
-              <q-chip icon="local_offer" color="accent" text-color="white" size="sm">
+              <q-chip icon="local_offer" color="accent" text-color="white">
                 Special Offers
               </q-chip>
             </div>
