@@ -504,7 +504,7 @@
               flat
               label="Cancel"
               color="grey"
-              @click="showOrderSummary = false"
+              @click="handleCancelOrder"
               class="q-mr-sm"
             />
             <q-btn
@@ -716,13 +716,13 @@ import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 import { auth } from '../firebase/config.js';
+import { useCart } from '../composables/useCart.js';
 import { signInAnonymously } from 'firebase/auth';
 import { marketEventService } from '../services/marketEventService.js';
 import {
   useCustomerType,
   CUSTOMER_TYPES,
 } from '../composables/useCustomerType.js';
-import { useCart } from '../composables/useCart.js';
 
 export default {
   name: 'PhotoUploadPage',
@@ -731,6 +731,12 @@ export default {
     const quasar = $q; // Capture in local variable for safe access
     const router = useRouter();
     const route = useRoute();
+    
+    // Cart composable
+    const { addCustomUploadToCart, removeFromCart, cartItems } = useCart();
+    
+    // Track the cart item ID if we add one (for removal on cancel)
+    const currentCartItemId = ref(null);
 
     // Get customer type composable once at setup (for reactivity)
     const { isMarketCustomer, setCustomerType } = useCustomerType();
@@ -893,7 +899,6 @@ export default {
       );
       return null;
     });
-    const { addCustomUploadToCart } = useCart();
     let marketEventUnsubscribe = null;
     let eventCheckInterval = null;
     const hadEventOnLoad = ref(false);
@@ -1170,6 +1175,16 @@ export default {
       const i = Math.floor(Math.log(bytes) / Math.log(k));
       return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
     };
+    
+    const handleCancelOrder = () => {
+      // Remove item from cart if it was added
+      if (currentCartItemId.value) {
+        console.log('Removing cart item due to cancel:', currentCartItemId.value);
+        removeFromCart(currentCartItemId.value);
+        currentCartItemId.value = null;
+      }
+      showOrderSummary.value = false;
+    };
 
     const confirmOrder = async () => {
       showOrderSummary.value = false;
@@ -1266,10 +1281,13 @@ export default {
         selectedFiles.value = [];
         fileQuantities.value = [];
         
-        // Clear cart after successful order
-        localStorage.removeItem('cart');
-        window.dispatchEvent(new Event('cart-updated'));
-        console.log('Cart cleared after order confirmation');
+        // Clear the current cart item ID and remove from cart after successful order
+        if (currentCartItemId.value) {
+          console.log('Removing cart item after successful order:', currentCartItemId.value);
+          removeFromCart(currentCartItemId.value);
+          currentCartItemId.value = null;
+        }
+        console.log('Cart item removed after order confirmation');
 
         // Show success notification
         try {
@@ -1555,40 +1573,91 @@ export default {
       }
 
       // Otherwise, show order summary dialog (default behavior)
-      orderNumber.value = generateOrderNumber();
-      
-      // Add items to cart for market event orders
+      // For market events, upload photos first and add to cart
       if (isAtMarketEvent.value) {
+        submitting.value = true;
+        showUploadProgress.value = true;
+        uploadProgress.value = {
+          overall: 0,
+          completed: 0,
+          total: selectedFiles.value.length,
+          uploaded: 0,
+          totalSize: selectedFiles.value.reduce(
+            (sum, file) => sum + (file.size || 0),
+            0
+          ),
+        };
+        
         try {
-          // Get or create cart from localStorage
-          let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          console.log('📤 Uploading photos to Firebase Storage before showing order summary...');
+          const uploadedPhotos = await firebaseService.uploadPhotos(
+            selectedFiles.value,
+            (progress) => {
+              uploadProgress.value = progress;
+            }
+          );
+          console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
           
-          // Create cart items from selected files
-          const cartItems = selectedFiles.value.map((file, index) => ({
-            id: `temp-${Date.now()}-${index}`,
-            productId: selectedProductId.value,
-            productName: selectedProduct.value?.description || 'Magnet',
-            quantity: fileQuantities.value[index],
-            photo: file,
-            photoPreview: URL.createObjectURL(file),
-            photoName: file.name,
-            price: totalCost.value.total / totalMagnets.value, // Price per magnet
-            timestamp: Date.now()
+          // Prepare photos data with URLs and quantities
+          const photosForCart = uploadedPhotos.map((uploadedPhoto, index) => ({
+            name: uploadedPhoto.name,
+            url: uploadedPhoto.url,
+            path: uploadedPhoto.path,
+            quantity: fileQuantities.value[index]
           }));
           
-          // Add to cart
-          cart.push(...cartItems);
-          localStorage.setItem('cart', JSON.stringify(cart));
+          // Add to cart using the cart composable
+          const uploadData = {
+            productName: selectedProduct.value?.description || 'Magnet',
+            photos: photosForCart,
+            quantities: fileQuantities.value,
+            specialInstructions: formData.value.specialInstructions,
+            totalMagnets: totalMagnets.value,
+            totalCost: totalCost.value,
+            costBreakdown: [], // Can add breakdown if needed
+            pricing: selectedProduct.value?.pricing || {},
+            marketEventContext: true,
+            formData: {
+              firstName: formData.value.firstName,
+              lastName: formData.value.lastName,
+              email: formData.value.email,
+              phone: formData.value.phone,
+              specialInstructions: formData.value.specialInstructions,
+            }
+          };
           
-          // Trigger cart update event for MainLayout
-          window.dispatchEvent(new Event('cart-updated'));
+          addCustomUploadToCart(uploadData);
           
-          console.log('Added', cartItems.length, 'items to cart');
+          // Store the cart item ID for potential removal on cancel
+          // Find the item we just added (it's the last one with marketEventContext)
+          const addedItem = cartItems.value.find(item => 
+            item.isCustomUpload && 
+            item.marketEventContext && 
+            item.photos?.length === photosForCart.length
+          );
+          if (addedItem) {
+            currentCartItemId.value = addedItem.productId;
+            console.log('✅ Added item to cart with ID:', currentCartItemId.value);
+          }
+          
+          submitting.value = false;
+          showUploadProgress.value = false;
+          
         } catch (error) {
-          console.error('Error adding items to cart:', error);
+          console.error('❌ Error uploading photos:', error);
+          submitting.value = false;
+          showUploadProgress.value = false;
+          safeNotify({
+            type: 'negative',
+            message: 'Failed to upload photos',
+            caption: error.message || 'Please try again',
+            position: 'top',
+          });
+          return;
         }
       }
       
+      orderNumber.value = generateOrderNumber();
       showOrderSummary.value = true;
     };
 
@@ -2288,6 +2357,7 @@ export default {
       goToMainPage,
       onProductChange,
       handleSubmitClick,
+      handleCancelOrder,
       firstNameInput,
       lastNameInput,
       emailInput,
