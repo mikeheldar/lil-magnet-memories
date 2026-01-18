@@ -84,21 +84,13 @@
                   class="product-item"
                 >
                   <q-item-section avatar>
-                    <!-- Show rotating images if product has multiple images -->
+                    <!-- Show first image from images array or imageUrl -->
                     <q-avatar 
                       v-if="(product.images && product.images.length > 0) || product.imageUrl" 
                       size="80px"
                       square
                     >
-                      <!-- Debug: Show which path is taken -->
-                      <SimpleSlideshow 
-                        v-if="product.images && product.images.length > 1"
-                        :image-urls="product.images"
-                        :interval="3000"
-                        class="product-list-slideshow"
-                      />
                       <img 
-                        v-else
                         :src="product.images && product.images.length > 0 ? product.images[0] : product.imageUrl" 
                         :alt="product.description"
                         style="object-fit: cover; width: 100%; height: 100%;"
