@@ -765,13 +765,10 @@ import {
   firebaseService,
   DEFAULT_SHIPPING_OPTIONS,
 } from '../services/firebaseService.js';
-import SimpleSlideshow from '../components/SimpleSlideshow.vue';
 
 export default {
   name: 'PricingPage',
-  components: {
-    SimpleSlideshow,
-  },
+  components: {},
   setup() {
     const $q = useQuasar();
     const router = useRouter();
