@@ -1,15 +1,13 @@
 <template>
   <q-page padding class="pricing-page">
-    <div class="pricing-page-container">
-      <div class="row q-col-gutter-md">
-        <!-- Left: Pricing List -->
-        <div class="col-12 col-md-8">
-          <q-card>
-            <q-card-section>
-              <div class="text-h5 q-mb-md">Product Management</div>
-              
-              <!-- Product Type Visibility Toggles -->
-              <q-card flat bordered class="q-mb-md">
+    <div class="pricing-page-container-full">
+      <!-- Full Width Product Management Section -->
+      <q-card>
+        <q-card-section>
+          <div class="text-h5 q-mb-md">Product Management</div>
+          
+          <!-- Product Type Visibility Toggles -->
+          <q-card flat bordered class="q-mb-md">
                 <q-card-section>
                   <div class="text-subtitle1 q-mb-md text-weight-medium">Show Product Types in Menus</div>
                   <div class="row q-gutter-lg">
@@ -623,8 +621,7 @@
             </div>
           </q-card-section>
         </q-card>
-      </div>
-    </div>
+      </q-card>
     </div>
 
     <!-- Confirmation Dialog -->
@@ -1732,8 +1729,8 @@ export default {
 </script>
 
 <style scoped>
-.pricing-page-container {
-  max-width: 1200px;
+.pricing-page-container-full {
+  max-width: 100%;
   margin: 0 auto;
   width: 100%;
 }
