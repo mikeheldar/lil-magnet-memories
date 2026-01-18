@@ -1265,6 +1265,11 @@ export default {
         };
         selectedFiles.value = [];
         fileQuantities.value = [];
+        
+        // Clear cart after successful order
+        localStorage.removeItem('cart');
+        window.dispatchEvent(new Event('cart-updated'));
+        console.log('Cart cleared after order confirmation');
 
         // Show success notification
         try {
@@ -1551,6 +1556,39 @@ export default {
 
       // Otherwise, show order summary dialog (default behavior)
       orderNumber.value = generateOrderNumber();
+      
+      // Add items to cart for market event orders
+      if (isAtMarketEvent.value) {
+        try {
+          // Get or create cart from localStorage
+          let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          
+          // Create cart items from selected files
+          const cartItems = selectedFiles.value.map((file, index) => ({
+            id: `temp-${Date.now()}-${index}`,
+            productId: selectedProductId.value,
+            productName: selectedProduct.value?.description || 'Magnet',
+            quantity: fileQuantities.value[index],
+            photo: file,
+            photoPreview: URL.createObjectURL(file),
+            photoName: file.name,
+            price: totalCost.value.total / totalMagnets.value, // Price per magnet
+            timestamp: Date.now()
+          }));
+          
+          // Add to cart
+          cart.push(...cartItems);
+          localStorage.setItem('cart', JSON.stringify(cart));
+          
+          // Trigger cart update event for MainLayout
+          window.dispatchEvent(new Event('cart-updated'));
+          
+          console.log('Added', cartItems.length, 'items to cart');
+        } catch (error) {
+          console.error('Error adding items to cart:', error);
+        }
+      }
+      
       showOrderSummary.value = true;
     };
 
