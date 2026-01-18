@@ -261,4 +261,10 @@ export default {
 .product-pricing-inline {
   margin-top: 8px;
 }
+
+/* Limit product image width */
+.product-image-slideshow-small {
+  max-width: 500px;
+  width: 100%;
+}
 </style>
