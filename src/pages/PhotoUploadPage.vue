@@ -508,6 +508,14 @@
               class="q-mr-sm"
             />
             <q-btn
+              outline
+              label="Keep Shopping"
+              color="primary"
+              icon="shopping_cart"
+              @click="handleKeepShopping"
+              class="q-mr-sm"
+            />
+            <q-btn
               label="Confirm Order"
               color="primary"
               @click="confirmOrder"
@@ -1184,6 +1192,16 @@ export default {
         currentCartItemId.value = null;
       }
       showOrderSummary.value = false;
+    };
+    
+    const handleKeepShopping = () => {
+      // Item stays in cart - just close dialog and navigate to main page
+      console.log('Keeping item in cart and returning to main page');
+      showOrderSummary.value = false;
+      // Reset the current cart item ID since we're keeping it
+      currentCartItemId.value = null;
+      // Navigate to main page
+      router.push('/');
     };
 
     const confirmOrder = async () => {
@@ -2358,6 +2376,7 @@ export default {
       onProductChange,
       handleSubmitClick,
       handleCancelOrder,
+      handleKeepShopping,
       firstNameInput,
       lastNameInput,
       emailInput,
