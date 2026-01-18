@@ -1728,8 +1728,13 @@ export default {
 <style scoped>
 .pricing-page-container-full {
   max-width: 100%;
-  margin: 0 auto;
+  padding: 0;
+  margin: 0;
   width: 100%;
+}
+
+.pricing-page {
+  max-width: 100%;
 }
 
 .product-item {
