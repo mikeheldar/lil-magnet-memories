@@ -828,6 +828,24 @@ export default {
 
     // Handle Start Creating Magnets Now button click
     const handleStartCreating = () => {
+      // Check if there's a previously selected product in localStorage
+      try {
+        const savedData = localStorage.getItem('guestFormData');
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          if (parsed.selectedProductId) {
+            // Navigate with the product query parameter
+            router.push({
+              path: '/photo-upload',
+              query: { product: parsed.selectedProductId }
+            });
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error reading stored product:', error);
+      }
+      // If no stored product, just navigate normally
       router.push('/photo-upload');
     };
 
