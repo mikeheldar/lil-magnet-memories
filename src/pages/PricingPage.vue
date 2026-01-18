@@ -156,116 +156,11 @@
           </div>
         </q-card>
 
-        <q-card class="q-mt-md">
-          <q-card-section>
-            <div class="row items-center justify-between q-mb-sm">
-              <div class="text-h5">Shipping Options</div>
-              <div class="q-gutter-sm">
-                <q-btn
-                  color="primary"
-                  label="Add Shipping Option"
-                  icon="local_shipping"
-                  size="sm"
-                  @click="addShippingOption"
-                />
-                <q-btn
-                  flat
-                  color="grey-7"
-                  label="Reset to Default"
-                  size="sm"
-                  @click="resetShippingOptions"
-                />
-              </div>
-            </div>
-            <div class="text-body2 text-grey-7">
-              Adjust shipping speeds, pickup options, and costs for checkout.
-            </div>
-          </q-card-section>
-          <q-separator />
-          <q-list separator>
-            <q-item
-              v-for="(option, index) in shippingOptions"
-              :key="option.value || index"
-              class="shipping-option-item"
-            >
-              <q-item-section>
-                <q-item-label class="text-weight-medium">
-                  {{ option.label || option.value }}
-                  <q-chip
-                    v-if="option.isTesting"
-                    color="orange"
-                    text-color="white"
-                    size="sm"
-                    class="q-ml-sm"
-                  >
-                    Testing Only
-                  </q-chip>
-                  <q-chip
-                    v-if="option.default"
-                    color="primary"
-                    text-color="white"
-                    size="sm"
-                    class="q-ml-sm"
-                  >
-                    Default
-                  </q-chip>
-                </q-item-label>
-                <q-item-label caption class="text-grey-7">
-                  <div v-if="option.description">{{ option.description }}</div>
-                  <div v-if="option.estimatedTimeline">
-                    {{ option.estimatedTimeline }}
-                  </div>
-                  <div class="text-caption text-grey-6 q-mt-xs">
-                    Type:
-                    {{
-                      option.type === 'pickup'
-                        ? 'Event pickup'
-                        : 'Ship to address'
-                    }}
-                    &nbsp;•&nbsp; Requires address:
-                    {{ option.allowAddress !== false ? 'Yes' : 'No' }}
-                  </div>
-                </q-item-label>
-              </q-item-section>
-              <q-item-section side class="text-right">
-                <div class="text-body2 text-primary">
-                  {{ `$${Number(option.cost || 0).toFixed(2)}` }}
-                </div>
-                <div class="q-gutter-xs q-mt-sm">
-                  <q-btn
-                    flat
-                    round
-                    icon="edit"
-                    color="primary"
-                    size="sm"
-                    @click="editShippingOption(index)"
-                  />
-                  <q-btn
-                    flat
-                    round
-                    icon="delete"
-                    color="negative"
-                    size="sm"
-                    @click="confirmShippingDelete(index)"
-                  />
-                </div>
-              </q-item-section>
-            </q-item>
-            <q-item v-if="!shippingOptions.length">
-              <q-item-section>
-                <q-item-label caption>
-                  No shipping options configured yet.
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card>
-
-        <!-- Inline Edit/Add Product Form (moved from bottom - shows based on context) -->
-        <q-card v-if="editingProduct && !bulkEditingProduct && editingProduct.index !== undefined" class="q-mt-md">
+        <!-- EDIT/ADD PRODUCT FORM - Appears between products and shipping -->
+        <q-card v-if="editingProduct && !bulkEditingProduct" class="q-mt-md">
           <q-card-section>
             <div class="row items-center justify-between q-mb-md">
-              <div class="text-h6">Edit Product</div>
+              <div class="text-h6">{{ editingProduct.index !== undefined ? 'Edit Product' : 'New Product' }}</div>
               <q-btn flat dense label="Cancel" @click="cancelEdit" />
             </div>
 
@@ -432,10 +327,13 @@
           </q-card-section>
         </q-card>
 
-        <!-- Inline Bulk Product Form -->
+        <!-- BULK ADD PRODUCT FORM - Appears between products and shipping -->
         <q-card v-if="bulkEditingProduct" class="q-mt-md">
           <q-card-section>
-            <div class="text-h6 q-mb-md">Bulk Add Products</div>
+            <div class="row items-center justify-between q-mb-md">
+              <div class="text-h6">Bulk Add Products</div>
+              <q-btn flat dense label="Cancel" @click="cancelBulkEdit" />
+            </div>
             <div class="text-body2 text-grey-7 q-mb-md">
               Upload multiple product images. All products will share the same details below.
             </div>
@@ -511,45 +409,21 @@
               <template v-slot:prepend>
                 <q-icon name="attach_file" />
               </template>
+              <template v-slot:hint>
+                Each image will create a separate product with the details above
+              </template>
             </q-file>
-
-            <div v-if="bulkImageFiles && bulkImageFiles.length > 0" class="q-mb-md">
-              <div class="text-body2 q-mb-sm">
-                Selected Images ({{ bulkImageFiles.length }}):
-              </div>
-              <div class="row q-col-gutter-sm">
-                <div
-                  v-for="(file, index) in bulkImageFiles"
-                  :key="index"
-                  class="col-6 col-sm-4"
-                >
-                  <div class="bulk-image-preview">
-                    <img
-                      :src="getImagePreview(file)"
-                      alt="Preview"
-                      class="bulk-preview-img"
-                    />
-                    <q-btn
-                      flat
-                      round
-                      dense
-                      icon="close"
-                      color="negative"
-                      size="sm"
-                      class="bulk-remove-btn"
-                      @click="removeBulkImage(index)"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div v-if="uploadingBulkImages" class="q-mb-md">
               <q-spinner size="24px" />
               <span class="q-ml-sm">Uploading images...</span>
             </div>
+            <div v-if="bulkImageFiles && bulkImageFiles.length > 0" class="q-mb-md">
+              <div class="text-body2 q-mb-sm">
+                Selected {{ bulkImageFiles.length }} image(s)
+              </div>
+            </div>
 
-            <div class="text-body2 q-mb-sm">Pricing</div>
+            <div class="text-body2 q-mb-sm">Pricing (shared across all products)</div>
             <div
               v-for="(entry, index) in bulkPricingEntries"
               :key="index"
@@ -606,7 +480,111 @@
             </div>
           </q-card-section>
         </q-card>
-    </div>
+
+        <q-card class="q-mt-md">
+          <q-card-section>
+            <div class="row items-center justify-between q-mb-sm">
+              <div class="text-h5">Shipping Options</div>
+              <div class="q-gutter-sm">
+                <q-btn
+                  color="primary"
+                  label="Add Shipping Option"
+                  icon="local_shipping"
+                  size="sm"
+                  @click="addShippingOption"
+                />
+                <q-btn
+                  flat
+                  color="grey-7"
+                  label="Reset to Default"
+                  size="sm"
+                  @click="resetShippingOptions"
+                />
+              </div>
+            </div>
+            <div class="text-body2 text-grey-7">
+              Adjust shipping speeds, pickup options, and costs for checkout.
+            </div>
+          </q-card-section>
+          <q-separator />
+          <q-list separator>
+            <q-item
+              v-for="(option, index) in shippingOptions"
+              :key="option.value || index"
+              class="shipping-option-item"
+            >
+              <q-item-section>
+                <q-item-label class="text-weight-medium">
+                  {{ option.label || option.value }}
+                  <q-chip
+                    v-if="option.isTesting"
+                    color="orange"
+                    text-color="white"
+                    size="sm"
+                    class="q-ml-sm"
+                  >
+                    Testing Only
+                  </q-chip>
+                  <q-chip
+                    v-if="option.default"
+                    color="primary"
+                    text-color="white"
+                    size="sm"
+                    class="q-ml-sm"
+                  >
+                    Default
+                  </q-chip>
+                </q-item-label>
+                <q-item-label caption class="text-grey-7">
+                  <div v-if="option.description">{{ option.description }}</div>
+                  <div v-if="option.estimatedTimeline">
+                    {{ option.estimatedTimeline }}
+                  </div>
+                  <div class="text-caption text-grey-6 q-mt-xs">
+                    Type:
+                    {{
+                      option.type === 'pickup'
+                        ? 'Event pickup'
+                        : 'Ship to address'
+                    }}
+                    &nbsp;•&nbsp; Requires address:
+                    {{ option.allowAddress !== false ? 'Yes' : 'No' }}
+                  </div>
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side class="text-right">
+                <div class="text-body2 text-primary">
+                  {{ `$${Number(option.cost || 0).toFixed(2)}` }}
+                </div>
+                <div class="q-gutter-xs q-mt-sm">
+                  <q-btn
+                    flat
+                    round
+                    icon="edit"
+                    color="primary"
+                    size="sm"
+                    @click="editShippingOption(index)"
+                  />
+                  <q-btn
+                    flat
+                    round
+                    icon="delete"
+                    color="negative"
+                    size="sm"
+                    @click="confirmShippingDelete(index)"
+                  />
+                </div>
+              </q-item-section>
+            </q-item>
+            <q-item v-if="!shippingOptions.length">
+              <q-item-section>
+                <q-item-label caption>
+                  No shipping options configured yet.
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card>
 
     <!-- Confirmation Dialog -->
     <q-dialog v-model="showDeleteDialog">
