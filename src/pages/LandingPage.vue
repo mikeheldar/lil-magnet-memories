@@ -79,7 +79,7 @@
               />
             </div>
             <!-- Start Creating Magnets Now button (shown when checked into event) -->
-            <div v-if="isCustomerAtEvent" class="start-creating-button-wrapper">
+            <div v-if="hasActiveEvent && isCustomerAtEvent" class="start-creating-button-wrapper">
               <q-btn
                 color="primary"
                 size="lg"

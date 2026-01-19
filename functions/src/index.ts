@@ -725,21 +725,26 @@ async function sendLilMagnetOrderEmail(params: {
           : photos.length > 0
           ? `
         <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
-          <h3 style="color: #1976d2; margin-top: 0;">📸 Photo Details</h3>
-          <ul style="list-style: none; padding: 0;">
+          <h3 style="color: #1976d2; margin-top: 0;">📸 Your Custom Magnets</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
             ${photos
               .map(
                 (photo, index) => `
-              <li style="padding: 10px; margin: 5px 0; border-bottom: 1px solid #eee;">
-                <strong>${photo.name}</strong><br>
-                <span style="color: #666;">Quantity: ${
-                  quantities[index]
-                } magnet${quantities[index] > 1 ? 's' : ''}</span>
-              </li>
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                ${photo.url ? `
+                  <img src="${photo.url}" alt="${photo.name}" style="max-width: 100%; height: auto; border-radius: 4px; margin-bottom: 10px; max-height: 200px; object-fit: cover;" />
+                ` : ''}
+                <div style="margin-top: 10px;">
+                  <strong style="font-size: 14px; color: #333;">${photo.name}</strong><br>
+                  <span style="color: #666; font-size: 13px;">Quantity: ${
+                    quantities[index]
+                  } magnet${quantities[index] > 1 ? 's' : ''}</span>
+                </div>
+              </div>
             `
               )
               .join('')}
-          </ul>
+          </div>
         </div>
       `
           : ''
@@ -983,20 +988,25 @@ async function sendLilMagnetStatusUpdateEmail(params: {
           ? `
         <div style="margin-bottom: 20px;">
           <h3 style="color: #1976d2;">📸 Your Custom Magnets</h3>
-          <ul style="list-style: none; padding: 0;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
             ${photos
               .map(
                 (photo, index) => `
-              <li style="background-color: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #1976d2; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <strong>${photo.name}</strong><br>
-                <span style="color: #666; font-size: 14px;">Quantity: ${
-                  quantities[index]
-                } magnet${quantities[index] > 1 ? 's' : ''}</span>
-              </li>
+              <div style="background-color: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #1976d2; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
+                ${photo.url ? `
+                  <img src="${photo.url}" alt="${photo.name}" style="max-width: 100%; height: auto; border-radius: 4px; margin-bottom: 10px; max-height: 200px; object-fit: cover;" />
+                ` : ''}
+                <div style="margin-top: 10px;">
+                  <strong style="font-size: 14px;">${photo.name}</strong><br>
+                  <span style="color: #666; font-size: 13px;">Quantity: ${
+                    quantities[index]
+                  } magnet${quantities[index] > 1 ? 's' : ''}</span>
+                </div>
+              </div>
             `
               )
               .join('')}
-          </ul>
+          </div>
         </div>
       `
           : ''
