@@ -16,13 +16,6 @@ export const googlePlacesService = {
     console.log('🔍 [Google Reviews] Starting fetch...');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
-    if (!API_KEY) {
-      console.error('❌ [Google Reviews] VITE_GOOGLE_PLACES_API_KEY not set in environment');
-      console.log('   Check your .env file and Vercel environment variables');
-      return [];
-    }
-    console.log('✅ [Google Reviews] API Key found:', API_KEY.substring(0, 20) + '...');
-
     if (!PLACE_ID) {
       console.error('❌ [Google Reviews] VITE_GOOGLE_PLACE_ID not set in environment');
       console.log('   Check your .env file and Vercel environment variables');
@@ -31,28 +24,15 @@ export const googlePlacesService = {
     console.log('✅ [Google Reviews] Place ID found:', PLACE_ID);
 
     try {
-      // Using Places API (legacy) - more widely supported
-      const fields = 'name,rating,user_ratings_total,reviews';
-      const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${PLACE_ID}&fields=${fields}&key=${API_KEY}`;
+      // Use Vercel Serverless Function as backend proxy (solves CORS issue)
+      const apiUrl = `/api/google-reviews?placeId=${PLACE_ID}`;
       
-      console.log('📡 [Google Reviews] API URL constructed');
-      console.log('   Fields:', fields);
-      console.log('   Full URL:', url.replace(API_KEY, 'API_KEY_HIDDEN'));
+      console.log('📡 [Google Reviews] Using Vercel Serverless Function');
+      console.log('   Endpoint:', apiUrl);
+      console.log('   This solves CORS issues by calling Google API from backend');
       
-      // Note: Direct API calls from browser will fail due to CORS
-      // This needs to be proxied through a backend endpoint or use Places API client library
-      // For now, using a CORS proxy for demonstration
-      const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
-      
-      console.log('🌐 [Google Reviews] Using CORS proxy:', proxyUrl.substring(0, 50) + '...');
-      console.log('⚠️  [Google Reviews] NOTE: CORS proxy may not work - see GOOGLE_REVIEWS_DISPLAY_SETUP.md');
-      
-      console.log('⏳ [Google Reviews] Sending request...');
-      const response = await fetch(proxyUrl, {
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      });
+      console.log('⏳ [Google Reviews] Sending request to backend proxy...');
+      const response = await fetch(apiUrl);
 
       console.log('📥 [Google Reviews] Response received');
       console.log('   Status:', response.status, response.statusText);
