@@ -1334,13 +1334,18 @@ export default {
         cartItems.value.forEach(item => {
           if (item.isCustomUpload && item.photos) {
             item.photos.forEach(photo => {
-              allPhotos.push({
-                url: photo.url,
-                name: photo.name,
-                path: photo.path
-              });
-              allQuantities.push(photo.quantity);
-              totalMagnetsCount += photo.quantity;
+              // Only include defined fields
+              const photoData = {
+                url: photo.url || '',
+                name: photo.name || '',
+              };
+              // Only add path if it's defined and not empty
+              if (photo.path) {
+                photoData.path = photo.path;
+              }
+              allPhotos.push(photoData);
+              allQuantities.push(photo.quantity || 1);
+              totalMagnetsCount += (photo.quantity || 1);
             });
             // Add the item's total cost
             if (item.totalCost) {
@@ -1350,11 +1355,11 @@ export default {
         });
 
         const customerData = {
-          firstName: formData.value.firstName,
-          lastName: formData.value.lastName,
-          email: formData.value.email,
-          phone: formData.value.phone,
-          specialInstructions: formData.value.specialInstructions,
+          firstName: formData.value.firstName || '',
+          lastName: formData.value.lastName || '',
+          email: formData.value.email || '',
+          phone: formData.value.phone || '',
+          specialInstructions: formData.value.specialInstructions || '',
           photos: allPhotos,
           quantities: allQuantities,
           orderNumber: orderNumber.value,
