@@ -1376,6 +1376,7 @@ export default {
               }
             : null,
           shippingOption: null, // Market event orders are pickup
+          photosAlreadyUploaded: true, // Flag to skip re-uploading photos
         };
 
         console.log('Submitting order with all cart items:', {

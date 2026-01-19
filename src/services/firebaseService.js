@@ -808,15 +808,23 @@ class FirebaseService {
   // Save order to Firestore
   async saveOrder(orderData, onProgress = null) {
     try {
-      // Upload photos first
-      console.log('Starting photo uploads...');
-      const uploadedPhotos = await this.uploadPhotos(
-        orderData.photos,
-        onProgress
-      );
-      console.log(
-        `Photo uploads completed: ${uploadedPhotos.length} photos uploaded`
-      );
+      let uploadedPhotos;
+      
+      // Check if photos are already uploaded (have URLs)
+      if (orderData.photosAlreadyUploaded) {
+        console.log('Photos already uploaded, skipping upload step...');
+        uploadedPhotos = orderData.photos; // Already have URL, name, etc.
+      } else {
+        // Upload photos first
+        console.log('Starting photo uploads...');
+        uploadedPhotos = await this.uploadPhotos(
+          orderData.photos,
+          onProgress
+        );
+        console.log(
+          `Photo uploads completed: ${uploadedPhotos.length} photos uploaded`
+        );
+      }
 
       // Prepare order document with all fields sanitized
       const orderDoc = {
