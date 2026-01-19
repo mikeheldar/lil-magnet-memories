@@ -818,20 +818,24 @@ class FirebaseService {
         `Photo uploads completed: ${uploadedPhotos.length} photos uploaded`
       );
 
-      // Prepare order document
+      // Prepare order document with all fields sanitized
       const orderDoc = {
         orderNumber: orderData.orderNumber,
         customer: {
-          firstName: orderData.firstName,
-          lastName: orderData.lastName,
-          email: orderData.email,
+          firstName: orderData.firstName || '',
+          lastName: orderData.lastName || '',
+          email: orderData.email || '',
           phone: orderData.phone || '',
         },
         userId: orderData.userId || null,
         specialInstructions: orderData.specialInstructions || '',
         photos: uploadedPhotos,
-        quantities: orderData.quantities,
-        totalMagnets: orderData.totalMagnets,
+        quantities: orderData.quantities || [],
+        totalMagnets: orderData.totalMagnets || 0,
+        subtotal: orderData.subtotal || 0,
+        shipping: orderData.shipping || 0,
+        tax: orderData.tax || 0,
+        totalAmount: orderData.totalAmount || 0,
         status: 'new',
         submissionDate: serverTimestamp(),
         submissionDateClient: Date.now(), // Client-side timestamp (milliseconds) - always available
@@ -839,6 +843,14 @@ class FirebaseService {
         createdAtClient: Date.now(), // Client-side timestamp (milliseconds) - always available
         updatedAt: serverTimestamp(),
       };
+      
+      // Only include optional fields if they are defined and not null
+      if (orderData.paymentOption && orderData.paymentOption !== null) {
+        orderDoc.paymentOption = orderData.paymentOption;
+      }
+      if (orderData.shippingOption && orderData.shippingOption !== null) {
+        orderDoc.shippingOption = orderData.shippingOption;
+      }
 
       // Ensure we have an auth context for Firestore rules (request.auth != null)
       // This is critical - Firestore rules require authentication
