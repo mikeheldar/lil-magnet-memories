@@ -1,5 +1,7 @@
 # Google Reviews Integration Setup
 
+> **Note**: After adding environment variables to Vercel, you must trigger a new deployment for them to take effect.
+
 ## Step 1: Get Your Google Review URL
 
 ### Method 1: From Google Business Profile (Easiest - RECOMMENDED)
