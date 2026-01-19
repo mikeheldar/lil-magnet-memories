@@ -8,15 +8,21 @@
  * @returns {string} The Google review link
  */
 export const getGoogleReviewUrl = () => {
-  const placeId = import.meta.env.VITE_GOOGLE_PLACE_ID;
-  
-  if (!placeId) {
-    console.warn('VITE_GOOGLE_PLACE_ID not set in environment variables');
-    // Fallback to search if Place ID not configured
-    return 'https://www.google.com/search?q=Li%27l+Magnet+Memories';
+  // Priority 1: Use Google's short review URL (recommended by Google Business Profile)
+  const shortUrl = import.meta.env.VITE_GOOGLE_REVIEW_URL;
+  if (shortUrl) {
+    return shortUrl;
   }
   
-  return `https://search.google.com/local/writereview?placeid=${placeId}`;
+  // Priority 2: Construct from Place ID
+  const placeId = import.meta.env.VITE_GOOGLE_PLACE_ID;
+  if (placeId) {
+    return `https://search.google.com/local/writereview?placeid=${placeId}`;
+  }
+  
+  // Fallback: Search page (when nothing is configured)
+  console.warn('VITE_GOOGLE_REVIEW_URL or VITE_GOOGLE_PLACE_ID not set in environment variables');
+  return 'https://www.google.com/search?q=Li%27l+Magnet+Memories';
 };
 
 /**
@@ -35,11 +41,11 @@ export const getGoogleBusinessUrl = () => {
 };
 
 /**
- * Check if Google Place ID is configured
- * @returns {boolean} True if Place ID is set
+ * Check if Google review URL is configured
+ * @returns {boolean} True if review URL or Place ID is set
  */
 export const isGoogleReviewConfigured = () => {
-  return !!import.meta.env.VITE_GOOGLE_PLACE_ID;
+  return !!(import.meta.env.VITE_GOOGLE_REVIEW_URL || import.meta.env.VITE_GOOGLE_PLACE_ID);
 };
 
 /**
