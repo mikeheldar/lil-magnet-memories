@@ -460,36 +460,44 @@
             <div class="q-mb-md">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">Order Details</div>
               
-              <!-- Show all cart items -->
-              <div v-for="(cartItem, cartIndex) in cartItems" :key="cartIndex" class="q-mb-md">
-                <div v-if="cartItem.isCustomUpload && cartItem.photos">
-                  <div class="text-caption text-weight-medium text-grey-8 q-mb-xs">
-                    {{ cartItem.productName || 'Photo Magnets' }}
-                  </div>
-                  <div class="row q-col-gutter-sm">
-                    <div
-                      v-for="(photo, photoIndex) in cartItem.photos"
-                      :key="photoIndex"
-                      class="col-6"
-                    >
-                      <div class="photo-thumbnail-container">
-                        <img
-                          :src="photo.url || photo.preview"
-                          class="photo-thumbnail rounded-borders q-mb-xs"
-                          alt="Photo thumbnail"
-                        />
-                      </div>
-                      <div class="text-caption text-truncate" :title="photo.name">
-                        {{ photo.name }}
-                      </div>
-                      <div class="text-caption text-primary">
-                        <q-icon name="style" size="12px" class="q-mr-xs" />
-                        {{ photo.quantity }} magnet{{ photo.quantity > 1 ? 's' : '' }}
+              <!-- Show all cart items only if they exist and have photos -->
+              <div v-if="cartItems && cartItems.length > 0">
+                <div v-for="(cartItem, cartIndex) in cartItems" :key="cartIndex" class="q-mb-md">
+                  <div v-if="cartItem.isCustomUpload && cartItem.photos && cartItem.photos.length > 0">
+                    <div class="text-caption text-weight-medium text-grey-8 q-mb-xs">
+                      {{ cartItem.productName || 'Photo Magnets' }}
+                    </div>
+                    <div class="row q-col-gutter-sm">
+                      <div
+                        v-for="(photo, photoIndex) in cartItem.photos"
+                        :key="photoIndex"
+                        class="col-6"
+                      >
+                        <div class="photo-thumbnail-container">
+                          <img
+                            :src="photo.url || photo.preview || ''"
+                            class="photo-thumbnail rounded-borders q-mb-xs"
+                            alt="Photo thumbnail"
+                            @error="$event.target.style.display='none'"
+                          />
+                        </div>
+                        <div class="text-caption text-truncate" :title="photo.name || ''">
+                          {{ photo.name || 'Photo' }}
+                        </div>
+                        <div class="text-caption text-primary">
+                          <q-icon name="style" size="12px" class="q-mr-xs" />
+                          {{ photo.quantity || 0 }} magnet{{ (photo.quantity || 0) !== 1 ? 's' : '' }}
+                        </div>
                       </div>
                     </div>
+                    <q-separator class="q-my-sm" v-if="cartIndex < cartItems.length - 1" />
                   </div>
-                  <q-separator class="q-my-sm" v-if="cartIndex < cartItems.length - 1" />
                 </div>
+              </div>
+              
+              <!-- Fallback: Show message if no cart items -->
+              <div v-else class="text-center text-grey-6 q-pa-md">
+                No items in cart
               </div>
             </div>
 
@@ -498,9 +506,9 @@
             <div class="text-center">
               <div class="text-h6 text-primary">
                 <q-icon name="style" class="q-mr-sm" />
-                Total: {{ cartTotalMagnets }} Magnet{{ cartTotalMagnets !== 1 ? 's' : '' }}
+                Total: {{ cartTotalMagnets || 0 }} Magnet{{ (cartTotalMagnets || 0) !== 1 ? 's' : '' }}
               </div>
-              <div class="text-body2 text-grey-7 q-mt-xs">
+              <div v-if="cartItems && cartItems.length > 0" class="text-body2 text-grey-7 q-mt-xs">
                 from {{ cartItems.length }} order{{ cartItems.length !== 1 ? 's' : '' }}
               </div>
             </div>
