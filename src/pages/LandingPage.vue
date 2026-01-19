@@ -853,31 +853,62 @@ export default {
 
     // Load Google Reviews
     const loadGoogleReviews = async () => {
+      console.log('═══════════════════════════════════════════');
+      console.log('🚀 [LandingPage] loadGoogleReviews called');
+      console.log('═══════════════════════════════════════════');
+      
       loadingGoogleReviews.value = true;
       try {
-        console.log('🔍 Loading Google reviews...');
-        
         // Try cache first
+        console.log('📦 [LandingPage] Checking cache...');
         const cached = googlePlacesService.getCachedReviews();
+        
         if (cached && cached.length > 0) {
+          console.log(`✅ [LandingPage] Found ${cached.length} cached reviews`);
           googleReviews.value = cached;
           loadingGoogleReviews.value = false;
-          console.log('✅ Loaded', cached.length, 'cached Google reviews');
+          console.log('   Reactive state updated with cached reviews');
+          console.log('   googleReviews.value.length:', googleReviews.value.length);
+        } else {
+          console.log('   No valid cache found');
         }
         
         // Fetch fresh reviews in background
+        console.log('🌐 [LandingPage] Fetching fresh reviews from API...');
         const fresh = await googlePlacesService.fetchReviews();
+        
+        console.log('📥 [LandingPage] Fresh fetch complete');
+        console.log('   Returned:', fresh ? fresh.length : 0, 'reviews');
+        console.log('   Fresh reviews data:', fresh);
+        
         if (fresh && fresh.length > 0) {
+          console.log(`✅ [LandingPage] Updating with ${fresh.length} fresh reviews`);
           googleReviews.value = fresh;
           googlePlacesService.setCachedReviews(fresh);
-          console.log('✅ Loaded', fresh.length, 'fresh Google reviews');
-        } else if (!cached || cached.length === 0) {
-          console.log('ℹ️ No Google reviews available');
+          console.log('   Reactive state updated with fresh reviews');
+          console.log('   googleReviews.value.length:', googleReviews.value.length);
+        } else {
+          console.warn('⚠️  [LandingPage] No fresh reviews returned');
+          if (!cached || cached.length === 0) {
+            console.warn('   AND no cached reviews available');
+            console.warn('   UI will show "No Google reviews yet"');
+          } else {
+            console.log('   But cached reviews are still showing');
+          }
         }
       } catch (error) {
-        console.error('❌ Error loading Google reviews:', error);
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('❌ [LandingPage] CRITICAL ERROR loading Google reviews');
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('   Error:', error);
+        console.error('   Stack:', error.stack);
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       } finally {
         loadingGoogleReviews.value = false;
+        console.log('✅ [LandingPage] Loading complete');
+        console.log('   Final googleReviews count:', googleReviews.value.length);
+        console.log('   loadingGoogleReviews:', loadingGoogleReviews.value);
+        console.log('═══════════════════════════════════════════');
       }
     };
 

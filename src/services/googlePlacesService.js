@@ -12,51 +12,110 @@ export const googlePlacesService = {
    * @returns {Promise<Array>} Array of formatted reviews
    */
   async fetchReviews() {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔍 [Google Reviews] Starting fetch...');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
     if (!API_KEY) {
-      console.warn('⚠️ VITE_GOOGLE_PLACES_API_KEY not set');
+      console.error('❌ [Google Reviews] VITE_GOOGLE_PLACES_API_KEY not set in environment');
+      console.log('   Check your .env file and Vercel environment variables');
       return [];
     }
+    console.log('✅ [Google Reviews] API Key found:', API_KEY.substring(0, 20) + '...');
 
     if (!PLACE_ID) {
-      console.warn('⚠️ VITE_GOOGLE_PLACE_ID not set');
+      console.error('❌ [Google Reviews] VITE_GOOGLE_PLACE_ID not set in environment');
+      console.log('   Check your .env file and Vercel environment variables');
       return [];
     }
+    console.log('✅ [Google Reviews] Place ID found:', PLACE_ID);
 
     try {
-      console.log('🔍 Fetching Google reviews...');
-      
       // Using Places API (legacy) - more widely supported
       const fields = 'name,rating,user_ratings_total,reviews';
       const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${PLACE_ID}&fields=${fields}&key=${API_KEY}`;
+      
+      console.log('📡 [Google Reviews] API URL constructed');
+      console.log('   Fields:', fields);
+      console.log('   Full URL:', url.replace(API_KEY, 'API_KEY_HIDDEN'));
       
       // Note: Direct API calls from browser will fail due to CORS
       // This needs to be proxied through a backend endpoint or use Places API client library
       // For now, using a CORS proxy for demonstration
       const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
       
+      console.log('🌐 [Google Reviews] Using CORS proxy:', proxyUrl.substring(0, 50) + '...');
+      console.log('⚠️  [Google Reviews] NOTE: CORS proxy may not work - see GOOGLE_REVIEWS_DISPLAY_SETUP.md');
+      
+      console.log('⏳ [Google Reviews] Sending request...');
       const response = await fetch(proxyUrl, {
         headers: {
           'X-Requested-With': 'XMLHttpRequest'
         }
       });
 
+      console.log('📥 [Google Reviews] Response received');
+      console.log('   Status:', response.status, response.statusText);
+      console.log('   OK:', response.ok);
+      console.log('   Headers:', {
+        contentType: response.headers.get('content-type'),
+        contentLength: response.headers.get('content-length')
+      });
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ [Google Reviews] HTTP Error Response:');
+        console.error('   Status:', response.status);
+        console.error('   Status Text:', response.statusText);
+        console.error('   Body:', errorText.substring(0, 500));
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('📦 [Google Reviews] Response data:', JSON.stringify(data, null, 2));
       
       if (data.status !== 'OK') {
-        console.error('❌ Google Places API error:', data.status, data.error_message);
+        console.error('❌ [Google Reviews] API Error:');
+        console.error('   Status:', data.status);
+        console.error('   Error Message:', data.error_message);
+        console.error('   Full Response:', data);
         return [];
       }
 
       const reviews = data.result?.reviews || [];
-      console.log(`✅ Fetched ${reviews.length} Google reviews`);
+      console.log(`✅ [Google Reviews] Successfully fetched ${reviews.length} reviews`);
       
-      return this.formatReviews(reviews);
+      if (reviews.length > 0) {
+        console.log('📝 [Google Reviews] Sample review:');
+        console.log('   Author:', reviews[0].author_name);
+        console.log('   Rating:', reviews[0].rating);
+        console.log('   Text:', reviews[0].text?.substring(0, 100) + '...');
+      } else {
+        console.warn('⚠️  [Google Reviews] No reviews found in API response');
+        console.log('   This could mean:');
+        console.log('   1. Your business has no reviews yet');
+        console.log('   2. Wrong Place ID');
+        console.log('   3. Reviews not public');
+      }
+      
+      const formatted = this.formatReviews(reviews);
+      console.log(`✅ [Google Reviews] Formatted ${formatted.length} reviews for display`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      return formatted;
     } catch (error) {
-      console.error('❌ Error fetching Google reviews:', error);
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.error('❌ [Google Reviews] FETCH FAILED');
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.error('   Error Type:', error.name);
+      console.error('   Error Message:', error.message);
+      console.error('   Error Stack:', error.stack);
+      console.error('   Possible causes:');
+      console.error('   1. CORS proxy is down/blocked');
+      console.error('   2. Network connectivity issue');
+      console.error('   3. Invalid API key or Place ID');
+      console.error('   4. API quota exceeded');
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       return [];
     }
   },
@@ -67,17 +126,30 @@ export const googlePlacesService = {
    * @returns {Array} Formatted reviews
    */
   formatReviews(reviews) {
-    return reviews.map((review) => ({
-      id: `google-${review.time}`,
-      author: review.author_name || 'Anonymous',
-      authorPhoto: review.profile_photo_url || null,
-      rating: review.rating || 5,
-      text: review.text || '',
-      date: new Date(review.time * 1000), // Convert Unix timestamp
-      relativeTime: review.relative_time_description || '',
-      source: 'google',
-      verified: true, // Google reviews are inherently verified
-    }));
+    console.log(`🔄 [Google Reviews] Formatting ${reviews.length} reviews...`);
+    
+    const formatted = reviews.map((review, index) => {
+      const formatted = {
+        id: `google-${review.time}`,
+        author: review.author_name || 'Anonymous',
+        authorPhoto: review.profile_photo_url || null,
+        rating: review.rating || 5,
+        text: review.text || '',
+        date: new Date(review.time * 1000), // Convert Unix timestamp
+        relativeTime: review.relative_time_description || '',
+        source: 'google',
+        verified: true, // Google reviews are inherently verified
+      };
+      
+      if (index === 0) {
+        console.log('   Sample formatted review:', formatted);
+      }
+      
+      return formatted;
+    });
+    
+    console.log(`✅ [Google Reviews] Formatting complete`);
+    return formatted;
   },
 
   /**
@@ -86,22 +158,31 @@ export const googlePlacesService = {
    */
   getCachedReviews() {
     try {
+      console.log('💾 [Google Reviews Cache] Checking localStorage...');
       const cached = localStorage.getItem('google_reviews_cache');
-      if (!cached) return null;
+      
+      if (!cached) {
+        console.log('   No cache found');
+        return null;
+      }
 
       const { reviews, timestamp } = JSON.parse(cached);
       const age = Date.now() - timestamp;
+      const ageMinutes = Math.floor(age / 60000);
+      
+      console.log(`   Cache found: ${reviews.length} reviews`);
+      console.log(`   Cache age: ${ageMinutes} minutes`);
       
       // Cache for 1 hour (3600000 ms)
       if (age < 3600000) {
-        console.log('✅ Using cached Google reviews');
+        console.log(`✅ [Google Reviews Cache] Using cached reviews (${ageMinutes}m old)`);
         return reviews;
       }
       
-      console.log('⏰ Google reviews cache expired');
+      console.log(`⏰ [Google Reviews Cache] Cache expired (${ageMinutes}m > 60m)`);
       return null;
     } catch (error) {
-      console.error('❌ Error reading cached reviews:', error);
+      console.error('❌ [Google Reviews Cache] Error reading cache:', error);
       return null;
     }
   },
@@ -112,13 +193,16 @@ export const googlePlacesService = {
    */
   setCachedReviews(reviews) {
     try {
-      localStorage.setItem('google_reviews_cache', JSON.stringify({
+      const cacheData = {
         reviews,
         timestamp: Date.now(),
-      }));
-      console.log('✅ Cached Google reviews');
+      };
+      localStorage.setItem('google_reviews_cache', JSON.stringify(cacheData));
+      console.log(`✅ [Google Reviews Cache] Cached ${reviews.length} reviews`);
+      console.log(`   Cache will expire in 60 minutes`);
     } catch (error) {
-      console.error('❌ Error caching reviews:', error);
+      console.error('❌ [Google Reviews Cache] Error saving cache:', error);
+      console.error('   Error:', error.message);
     }
   },
 
