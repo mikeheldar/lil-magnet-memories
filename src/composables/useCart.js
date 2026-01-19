@@ -384,48 +384,72 @@ export function useCart() {
   };
 
   const addCustomUploadToCart = (uploadData) => {
-    // Sanitize function to remove undefined values
+    // Deep sanitize function to remove undefined/null values from objects and arrays
     const sanitize = (obj) => {
-      if (!obj) return {};
-      const cleaned = {};
-      Object.keys(obj).forEach(key => {
-        const value = obj[key];
-        if (value !== undefined && value !== null) {
-          if (typeof value === 'object' && !Array.isArray(value)) {
-            cleaned[key] = sanitize(value);
-          } else {
-            cleaned[key] = value;
+      if (obj === null || obj === undefined) {
+        return null;
+      }
+      
+      if (Array.isArray(obj)) {
+        // For arrays, sanitize each element and filter out nulls
+        return obj.map(item => sanitize(item)).filter(item => item !== null);
+      }
+      
+      if (typeof obj === 'object') {
+        const cleaned = {};
+        Object.keys(obj).forEach(key => {
+          const value = obj[key];
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              cleaned[key] = value.map(item => 
+                typeof item === 'object' ? sanitize(item) : item
+              ).filter(item => item !== null && item !== undefined);
+            } else if (typeof value === 'object') {
+              const sanitized = sanitize(value);
+              if (Object.keys(sanitized).length > 0) {
+                cleaned[key] = sanitized;
+              }
+            } else {
+              cleaned[key] = value;
+            }
           }
-        }
-      });
-      return cleaned;
+        });
+        return cleaned;
+      }
+      
+      return obj;
     };
 
-    // Add custom upload item with photos (sanitize all data)
+    // Add custom upload item with photos (sanitize all data deeply)
     const cartItem = {
       isCustomUpload: true,
       productId: `custom-upload-${Date.now()}`, // Unique ID for custom uploads
       productName: uploadData.productName || 'Custom Photo Magnets',
-      photos: (uploadData.photos || []).map(photo => sanitize(photo)),
-      photoQuantities: uploadData.quantities || [],
+      photos: sanitize(uploadData.photos || []),
+      photoQuantities: sanitize(uploadData.quantities || []),
       specialInstructions: uploadData.specialInstructions || '',
       quantity: uploadData.totalMagnets || 0,
       totalCost: uploadData.totalCost || 0,
-      costBreakdown: uploadData.costBreakdown || [],
-      pricing: uploadData.pricing || {},
+      costBreakdown: sanitize(uploadData.costBreakdown || []),
+      pricing: sanitize(uploadData.pricing || {}),
       marketEventContext: uploadData.marketEventContext || false, // Remember if from market event
     };
     
     // Include formData if provided (customer info from upload form)
     if (uploadData.formData) {
-      cartItem.formData = sanitize(uploadData.formData);
-      console.log('📝 Adding formData to cart item:', cartItem.formData);
+      const sanitizedFormData = sanitize(uploadData.formData);
+      if (Object.keys(sanitizedFormData).length > 0) {
+        cartItem.formData = sanitizedFormData;
+        console.log('📝 Adding formData to cart item:', cartItem.formData);
+      }
     }
     
-    console.log('🛒 Adding sanitized cart item:', cartItem);
+    console.log('🛒 Adding deeply sanitized cart item:', JSON.stringify(cartItem, null, 2));
     cartItems.value.push(cartItem);
     // Explicitly trigger save to ensure immediate sync
     saveCart(cartItems.value);
+    
+    return cartItem.productId;
   };
 
   const updateQuantity = (productId, newQuantity) => {

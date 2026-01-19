@@ -1653,12 +1653,12 @@ export default {
           );
           console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
           
-          // Prepare photos data with URLs and quantities
+          // Prepare photos data with URLs and quantities (ensure no undefined values)
           const photosForCart = uploadedPhotos.map((uploadedPhoto, index) => ({
-            name: uploadedPhoto.name,
-            url: uploadedPhoto.url,
-            path: uploadedPhoto.path,
-            quantity: fileQuantities.value[index]
+            name: uploadedPhoto.name || '',
+            url: uploadedPhoto.url || '',
+            path: uploadedPhoto.path || '',
+            quantity: fileQuantities.value[index] || 1
           }));
           
           // Add to cart using the cart composable
