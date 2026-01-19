@@ -2502,6 +2502,9 @@ export default {
       emailInput,
       photoUploadSection,
       personalInfoSection,
+      // Cart items and methods from useCart
+      cartItems,
+      removeFromCart,
     };
   },
 };
