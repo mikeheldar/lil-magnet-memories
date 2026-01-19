@@ -220,11 +220,27 @@
         <div class="text-h4 text-center q-mb-lg text-primary">
           What Our Customers Say
         </div>
-        <div v-if="loadingReviews || !reviewsLoaded" class="text-center q-pa-lg">
-          <q-spinner-dots size="40px" color="primary" />
-          <div class="q-mt-md text-grey-6">Loading reviews...</div>
-        </div>
-        <div v-else-if="reviewsLoaded && verifiedReviews && verifiedReviews.length > 0" class="row q-col-gutter-md justify-center" :key="`reviews-${reviews.length}`">
+
+        <!-- Review Source Tabs -->
+        <q-tabs
+          v-model="reviewSource"
+          class="text-primary q-mb-md"
+          active-color="primary"
+          indicator-color="primary"
+          align="center"
+        >
+          <q-tab name="internal" label="Customer Stories" icon="rate_review" />
+          <q-tab name="google" label="Google Reviews" icon="fab fa-google" />
+        </q-tabs>
+
+        <q-tab-panels v-model="reviewSource" animated>
+          <!-- Internal Reviews Tab -->
+          <q-tab-panel name="internal">
+            <div v-if="loadingReviews || !reviewsLoaded" class="text-center q-pa-lg">
+              <q-spinner-dots size="40px" color="primary" />
+              <div class="q-mt-md text-grey-6">Loading reviews...</div>
+            </div>
+            <div v-else-if="reviewsLoaded && verifiedReviews && verifiedReviews.length > 0" class="row q-col-gutter-md justify-center" :key="`reviews-${reviews.length}`">
           <div
             v-for="review in verifiedReviews"
             :key="review.id"
@@ -296,25 +312,124 @@
               </q-card-section>
             </q-card>
           </div>
-        </div>
-        <div v-else-if="reviewsLoaded && (!verifiedReviews || verifiedReviews.length === 0)" class="text-center q-pa-xl">
-          <div class="text-grey-6 q-mb-md">No verified reviews yet.</div>
-          <!-- Leave Your Review Card (shown when no reviews) -->
-          <div class="row justify-center">
-            <div class="col-12 col-sm-8 col-md-6 col-lg-4">
-              <q-card class="leave-review-card" @click="goToLeaveReview">
-                <q-card-section class="text-center">
-                  <q-icon name="rate_review" size="64px" color="primary" class="q-mb-md" />
-                  <div class="text-h5 text-weight-bold q-mb-sm">Be the First to Review!</div>
-                  <div class="text-body1 text-grey-7 q-mb-md">
-                    Share your experience with us
-                  </div>
-                  <q-btn color="primary" label="Leave Your Review" icon="rate_review" />
-                </q-card-section>
-              </q-card>
             </div>
-          </div>
-        </div>
+            <div v-else-if="reviewsLoaded && (!verifiedReviews || verifiedReviews.length === 0)" class="text-center q-pa-xl">
+              <div class="text-grey-6 q-mb-md">No verified reviews yet.</div>
+              <!-- Leave Your Review Card (shown when no reviews) -->
+              <div class="row justify-center">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+                  <q-card class="leave-review-card" @click="goToLeaveReview">
+                    <q-card-section class="text-center">
+                      <q-icon name="rate_review" size="64px" color="primary" class="q-mb-md" />
+                      <div class="text-h5 text-weight-bold q-mb-sm">Be the First to Review!</div>
+                      <div class="text-body1 text-grey-7 q-mb-md">
+                        Share your experience with us
+                      </div>
+                      <q-btn color="primary" label="Leave Your Review" icon="rate_review" />
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </div>
+            </div>
+          </q-tab-panel>
+
+          <!-- Google Reviews Tab -->
+          <q-tab-panel name="google">
+            <div v-if="loadingGoogleReviews" class="text-center q-pa-lg">
+              <q-spinner-dots size="40px" color="primary" />
+              <div class="q-mt-md text-grey-6">Loading Google reviews...</div>
+            </div>
+            <div v-else-if="googleReviews.length === 0" class="text-center q-pa-xl">
+              <q-icon name="fab fa-google" size="64px" color="grey-5" class="q-mb-md" />
+              <div class="text-h6 text-grey-6 q-mb-md">No Google reviews yet</div>
+              <div class="text-body2 text-grey-7 q-mb-lg">
+                Be the first to leave us a Google review!
+              </div>
+              <q-btn
+                color="primary"
+                label="Leave Google Review"
+                icon="open_in_new"
+                :href="googleReviewUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                @click="trackGoogleClick"
+              />
+            </div>
+            <div v-else class="row q-col-gutter-md justify-center">
+              <div
+                v-for="review in googleReviews"
+                :key="review.id"
+                class="col-12 col-sm-6 col-md-4 col-lg-3"
+              >
+                <q-card class="review-card google-review-card">
+                  <q-card-section>
+                    <div class="row items-center q-mb-sm">
+                      <q-avatar
+                        v-if="review.authorPhoto"
+                        :src="review.authorPhoto"
+                        size="48px"
+                        class="q-mr-sm"
+                      />
+                      <q-avatar
+                        v-else
+                        color="primary"
+                        text-color="white"
+                        size="48px"
+                        class="q-mr-sm"
+                      >
+                        {{ review.author.charAt(0).toUpperCase() }}
+                      </q-avatar>
+                      <div class="col">
+                        <div class="text-weight-bold">{{ review.author }}</div>
+                        <q-rating
+                          :model-value="review.rating"
+                          :max="5"
+                          size="16px"
+                          readonly
+                          color="amber"
+                          class="star-rating"
+                        />
+                        <div class="text-caption text-grey-6">{{ review.relativeTime }}</div>
+                      </div>
+                    </div>
+                    <div class="text-body2 text-grey-8 q-mb-sm google-review-text">
+                      {{ review.text }}
+                    </div>
+                    <div class="row items-center justify-between">
+                      <q-chip size="sm" color="grey-2" text-color="grey-8" icon="fab fa-google">
+                        Google Review
+                      </q-chip>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+              <!-- Leave Your Google Review Card -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <q-card class="leave-review-card" @click="handleGoogleReviewClick">
+                  <q-card-section>
+                    <div class="row items-center q-mb-sm">
+                      <div class="col text-center">
+                        <q-icon name="fab fa-google" size="48px" color="primary" class="q-mb-sm" />
+                        <div class="text-weight-bold text-grey-8 q-mb-xs">Leave Google Review</div>
+                        <q-rating
+                          :model-value="0"
+                          :max="5"
+                          size="16px"
+                          readonly
+                          color="grey-4"
+                          class="leave-review-stars"
+                        />
+                      </div>
+                    </div>
+                    <div class="text-body2 text-grey-7 text-center">
+                      Share your experience on Google!
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
       </div>
     </div>
 
@@ -361,6 +476,12 @@ import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
+import { googlePlacesService } from '../services/googlePlacesService.js';
+import { 
+  getGoogleReviewUrl, 
+  isGoogleReviewConfigured,
+  trackGoogleReviewClick 
+} from '../utils/googleReviews.js';
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { userPreferencesService } from '../services/userPreferencesService.js';
@@ -381,6 +502,13 @@ export default {
     const reviews = ref([]);
     const loadingReviews = ref(true); // Start as true to prevent showing "no reviews" before load completes
     const reviewsLoaded = ref(false); // Track if reviews have been loaded at least once
+    
+    // Google Reviews state
+    const googleReviews = ref([]);
+    const loadingGoogleReviews = ref(true);
+    const reviewSource = ref('internal'); // 'internal' or 'google'
+    const googleReviewUrl = computed(() => getGoogleReviewUrl());
+    
     const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
       useCustomerType();
     
@@ -723,6 +851,42 @@ export default {
       }
     };
 
+    // Load Google Reviews
+    const loadGoogleReviews = async () => {
+      loadingGoogleReviews.value = true;
+      try {
+        console.log('🔍 Loading Google reviews...');
+        
+        // Try cache first
+        const cached = googlePlacesService.getCachedReviews();
+        if (cached && cached.length > 0) {
+          googleReviews.value = cached;
+          loadingGoogleReviews.value = false;
+          console.log('✅ Loaded', cached.length, 'cached Google reviews');
+        }
+        
+        // Fetch fresh reviews in background
+        const fresh = await googlePlacesService.fetchReviews();
+        if (fresh && fresh.length > 0) {
+          googleReviews.value = fresh;
+          googlePlacesService.setCachedReviews(fresh);
+          console.log('✅ Loaded', fresh.length, 'fresh Google reviews');
+        } else if (!cached || cached.length === 0) {
+          console.log('ℹ️ No Google reviews available');
+        }
+      } catch (error) {
+        console.error('❌ Error loading Google reviews:', error);
+      } finally {
+        loadingGoogleReviews.value = false;
+      }
+    };
+
+    // Handle Google review button click
+    const handleGoogleReviewClick = () => {
+      trackGoogleReviewClick('landing-page');
+      window.open(googleReviewUrl.value, '_blank', 'noopener,noreferrer');
+    };
+
     // Filter to only show verified reviews on landing page
     const verifiedReviews = computed(() => {
       if (!reviews.value || !Array.isArray(reviews.value) || reviews.value.length === 0) {
@@ -881,6 +1045,8 @@ export default {
       await loadVisibilitySettings();
       // Then load reviews to ensure they're ready before rendering
       await loadReviews();
+      // Load Google reviews in parallel
+      loadGoogleReviews(); // Don't await - load in background
       // Force a reactivity update after reviews are loaded
       await nextTick();
       // Log the final state
@@ -951,6 +1117,12 @@ export default {
       loadingReviews,
       reviewsLoaded,
       verifiedReviews,
+      // Google Reviews
+      googleReviews,
+      loadingGoogleReviews,
+      reviewSource,
+      googleReviewUrl,
+      handleGoogleReviewClick,
       hasActiveEvent,
       activeMarketEventName,
       activeMarketEventLink,
@@ -2102,6 +2274,23 @@ export default {
       flex-shrink: 0; // Prevent badge from shrinking
       margin-bottom: 0; // Ensure no bottom margin
     }
+  }
+}
+
+.google-review-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e8eaed;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .google-review-text {
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
   }
 }
 
