@@ -384,27 +384,45 @@ export function useCart() {
   };
 
   const addCustomUploadToCart = (uploadData) => {
-    // Add custom upload item with photos
+    // Sanitize function to remove undefined values
+    const sanitize = (obj) => {
+      if (!obj) return {};
+      const cleaned = {};
+      Object.keys(obj).forEach(key => {
+        const value = obj[key];
+        if (value !== undefined && value !== null) {
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            cleaned[key] = sanitize(value);
+          } else {
+            cleaned[key] = value;
+          }
+        }
+      });
+      return cleaned;
+    };
+
+    // Add custom upload item with photos (sanitize all data)
     const cartItem = {
       isCustomUpload: true,
       productId: `custom-upload-${Date.now()}`, // Unique ID for custom uploads
       productName: uploadData.productName || 'Custom Photo Magnets',
-      photos: uploadData.photos,
-      photoQuantities: uploadData.quantities,
-      specialInstructions: uploadData.specialInstructions,
-      quantity: uploadData.totalMagnets,
-      totalCost: uploadData.totalCost,
-      costBreakdown: uploadData.costBreakdown,
-      pricing: uploadData.pricing,
+      photos: (uploadData.photos || []).map(photo => sanitize(photo)),
+      photoQuantities: uploadData.quantities || [],
+      specialInstructions: uploadData.specialInstructions || '',
+      quantity: uploadData.totalMagnets || 0,
+      totalCost: uploadData.totalCost || 0,
+      costBreakdown: uploadData.costBreakdown || [],
+      pricing: uploadData.pricing || {},
       marketEventContext: uploadData.marketEventContext || false, // Remember if from market event
     };
     
     // Include formData if provided (customer info from upload form)
     if (uploadData.formData) {
-      cartItem.formData = uploadData.formData;
-      console.log('📝 Adding formData to cart item:', uploadData.formData);
+      cartItem.formData = sanitize(uploadData.formData);
+      console.log('📝 Adding formData to cart item:', cartItem.formData);
     }
     
+    console.log('🛒 Adding sanitized cart item:', cartItem);
     cartItems.value.push(cartItem);
     // Explicitly trigger save to ensure immediate sync
     saveCart(cartItems.value);

@@ -1665,19 +1665,19 @@ export default {
           const uploadData = {
             productName: selectedProduct.value?.description || 'Magnet',
             photos: photosForCart,
-            quantities: fileQuantities.value,
-            specialInstructions: formData.value.specialInstructions,
+            quantities: fileQuantities.value || [],
+            specialInstructions: formData.value.specialInstructions || '',
             totalMagnets: totalMagnets.value,
             totalCost: totalCost.value,
             costBreakdown: [], // Can add breakdown if needed
             pricing: selectedProduct.value?.pricing || {},
             marketEventContext: true,
             formData: {
-              firstName: formData.value.firstName,
-              lastName: formData.value.lastName,
-              email: formData.value.email,
-              phone: formData.value.phone,
-              specialInstructions: formData.value.specialInstructions,
+              firstName: formData.value.firstName || '',
+              lastName: formData.value.lastName || '',
+              email: formData.value.email || '',
+              phone: formData.value.phone || '',
+              specialInstructions: formData.value.specialInstructions || '',
             }
           };
           
