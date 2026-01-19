@@ -1715,15 +1715,21 @@ class FirebaseService {
         
         if (item.isCustomUpload && item.photos) {
           // Remove base64 previews, keep only Firebase Storage URLs
-          const sanitizedPhotos = item.photos.map((photo) => ({
-            name: photo.name,
-            url: photo.url, // Firebase Storage URL (persistent, small)
-            // Don't include preview (base64 can be 1-5MB per image, exceeds Firestore limit)
-            fileName: photo.fileName,
-            size: photo.size,
-            type: photo.type,
-            quantity: photo.quantity,
-          }));
+          const sanitizedPhotos = item.photos.map((photo) => {
+            const photoData = {
+              name: photo.name || '',
+              url: photo.url || '', // Firebase Storage URL (persistent, small)
+              quantity: photo.quantity || 1,
+            };
+            
+            // Only include optional fields if they're defined
+            if (photo.fileName) photoData.fileName = photo.fileName;
+            if (photo.size) photoData.size = photo.size;
+            if (photo.type) photoData.type = photo.type;
+            if (photo.path) photoData.path = photo.path;
+            
+            return photoData;
+          });
           sanitized.photos = sanitizedPhotos;
         }
         
