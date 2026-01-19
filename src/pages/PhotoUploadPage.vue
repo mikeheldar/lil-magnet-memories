@@ -463,7 +463,7 @@
               <!-- Debug info to see what's in cart -->
               <div class="text-caption text-grey-7 q-mb-sm" style="font-size: 10px;">
                 Cart: {{ cartItems.length }} item(s) | 
-                <span v-if="cartItems.length > 0">
+                <span v-if="cartItems && cartItems.length > 0 && cartItems[0]">
                   First item: {{ cartItems[0].isCustomUpload ? 'Custom' : 'Regular' }} | 
                   Has photos: {{ cartItems[0].photos ? 'Yes (' + cartItems[0].photos.length + ')' : 'No' }}
                 </span>
