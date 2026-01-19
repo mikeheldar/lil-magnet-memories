@@ -460,44 +460,112 @@
             <div class="q-mb-md">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">Order Details</div>
               
-              <!-- Show all cart items only if they exist and have photos -->
+              <!-- Show all cart items -->
               <div v-if="cartItems && cartItems.length > 0">
-                <div v-for="(cartItem, cartIndex) in cartItems" :key="cartIndex" class="q-mb-md">
-                  <div v-if="cartItem.isCustomUpload && cartItem.photos && cartItem.photos.length > 0">
-                    <div class="text-caption text-weight-medium text-grey-8 q-mb-xs">
-                      {{ cartItem.productName || 'Photo Magnets' }}
-                    </div>
-                    <div class="row q-col-gutter-sm">
-                      <div
-                        v-for="(photo, photoIndex) in cartItem.photos"
-                        :key="photoIndex"
-                        class="col-6"
-                      >
-                        <div class="photo-thumbnail-container">
-                          <img
-                            :src="photo.url || photo.preview || ''"
-                            class="photo-thumbnail rounded-borders q-mb-xs"
-                            alt="Photo thumbnail"
-                            @error="$event.target.style.display='none'"
-                          />
+                <div v-for="(cartItem, cartIndex) in cartItems" :key="cartItem.productId || cartIndex" class="q-mb-md">
+                  <!-- Custom Upload Items (with photos) -->
+                  <div v-if="cartItem.isCustomUpload">
+                    <q-card flat bordered class="q-pa-sm">
+                      <div class="row items-center justify-between q-mb-sm">
+                        <div class="text-body2 text-weight-medium">
+                          {{ cartItem.productName || 'Photo Magnets' }}
                         </div>
-                        <div class="text-caption text-truncate" :title="photo.name || ''">
-                          {{ photo.name || 'Photo' }}
-                        </div>
-                        <div class="text-caption text-primary">
-                          <q-icon name="style" size="12px" class="q-mr-xs" />
-                          {{ photo.quantity || 0 }} magnet{{ (photo.quantity || 0) !== 1 ? 's' : '' }}
+                        <q-btn
+                          flat
+                          dense
+                          round
+                          size="sm"
+                          icon="close"
+                          color="negative"
+                          @click="removeFromCart(cartItem.productId)"
+                        >
+                          <q-tooltip>Remove from cart</q-tooltip>
+                        </q-btn>
+                      </div>
+                      
+                      <div v-if="cartItem.photos && cartItem.photos.length > 0" class="row q-col-gutter-sm">
+                        <div
+                          v-for="(photo, photoIndex) in cartItem.photos"
+                          :key="photoIndex"
+                          class="col-6"
+                        >
+                          <div class="photo-thumbnail-container" style="position: relative;">
+                            <img
+                              :src="photo.url || photo.preview || ''"
+                              class="photo-thumbnail rounded-borders"
+                              alt="Photo thumbnail"
+                              style="width: 100%; height: 120px; object-fit: cover;"
+                              @error="$event.target.style.display='none'"
+                            />
+                          </div>
+                          <div class="text-caption text-truncate q-mt-xs" :title="photo.name || ''">
+                            {{ photo.name || 'Photo' }}
+                          </div>
+                          <div class="text-caption text-primary">
+                            <q-icon name="style" size="12px" class="q-mr-xs" />
+                            {{ photo.quantity || 0 }} magnet{{ (photo.quantity || 0) !== 1 ? 's' : '' }}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <q-separator class="q-my-sm" v-if="cartIndex < cartItems.length - 1" />
+                      
+                      <div v-if="cartItem.specialInstructions" class="q-mt-sm">
+                        <div class="text-caption text-grey-7">
+                          <q-icon name="note" size="14px" class="q-mr-xs" />
+                          {{ cartItem.specialInstructions }}
+                        </div>
+                      </div>
+                      
+                      <div class="q-mt-sm text-right">
+                        <span class="text-body2 text-weight-medium">
+                          {{ cartItem.quantity || 0 }} magnet{{ (cartItem.quantity || 0) !== 1 ? 's' : '' }}
+                        </span>
+                      </div>
+                    </q-card>
+                  </div>
+                  
+                  <!-- Regular Product Items -->
+                  <div v-else>
+                    <q-card flat bordered class="q-pa-sm">
+                      <div class="row items-center">
+                        <div v-if="cartItem.productImage" class="col-auto q-mr-md">
+                          <img
+                            :src="cartItem.productImage"
+                            style="width: 60px; height: 60px; object-fit: cover;"
+                            class="rounded-borders"
+                            alt="Product"
+                          />
+                        </div>
+                        <div class="col">
+                          <div class="text-body2 text-weight-medium">
+                            {{ cartItem.productName || 'Product' }}
+                          </div>
+                          <div class="text-caption text-grey-7">
+                            Quantity: {{ cartItem.quantity || 0 }}
+                          </div>
+                        </div>
+                        <div class="col-auto">
+                          <q-btn
+                            flat
+                            dense
+                            round
+                            size="sm"
+                            icon="close"
+                            color="negative"
+                            @click="removeFromCart(cartItem.productId)"
+                          >
+                            <q-tooltip>Remove from cart</q-tooltip>
+                          </q-btn>
+                        </div>
+                      </div>
+                    </q-card>
                   </div>
                 </div>
               </div>
               
               <!-- Fallback: Show message if no cart items -->
               <div v-else class="text-center text-grey-6 q-pa-md">
-                No items in cart
+                <q-icon name="shopping_cart" size="48px" color="grey-4" class="q-mb-sm" />
+                <div>No items in cart</div>
               </div>
             </div>
 
