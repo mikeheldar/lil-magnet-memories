@@ -460,6 +460,15 @@
             <div class="q-mb-md">
               <div class="text-subtitle1 text-weight-medium q-mb-sm">Order Details</div>
               
+              <!-- Debug info to see what's in cart -->
+              <div class="text-caption text-grey-7 q-mb-sm" style="font-size: 10px;">
+                Cart: {{ cartItems.length }} item(s) | 
+                <span v-if="cartItems.length > 0">
+                  First item: {{ cartItems[0].isCustomUpload ? 'Custom' : 'Regular' }} | 
+                  Has photos: {{ cartItems[0].photos ? 'Yes (' + cartItems[0].photos.length + ')' : 'No' }}
+                </span>
+              </div>
+              
               <!-- Show all cart items -->
               <div v-if="cartItems && cartItems.length > 0">
                 <div v-for="(cartItem, cartIndex) in cartItems" :key="cartItem.productId || cartIndex" class="q-mb-md">
@@ -506,6 +515,11 @@
                             {{ photo.quantity || 0 }} magnet{{ (photo.quantity || 0) !== 1 ? 's' : '' }}
                           </div>
                         </div>
+                      </div>
+                      
+                      <!-- Show message if no photos in custom upload -->
+                      <div v-else class="text-caption text-grey-6 q-pa-sm">
+                        No photos attached
                       </div>
                       
                       <div v-if="cartItem.specialInstructions" class="q-mt-sm">
