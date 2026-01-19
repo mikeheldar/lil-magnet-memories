@@ -4,13 +4,47 @@
       <q-spinner color="primary" size="3em" />
     </div>
     <div v-if="mounted" class="page-container q-pa-lg">
+      <!-- Google Review CTA (Primary) -->
+      <q-card v-if="isGoogleReviewConfigured" class="google-review-card q-mb-xl">
+        <q-card-section class="text-center bg-primary text-white">
+          <q-icon name="star" size="64px" class="q-mb-md" />
+          <div class="text-h4 text-weight-bold q-mb-sm">Love Li'l Magnet Memories?</div>
+          <div class="text-body1 q-mb-md">
+            Help others discover us by leaving a Google review!
+          </div>
+          <q-btn
+            size="lg"
+            color="white"
+            text-color="primary"
+            label="Leave Google Review"
+            icon="open_in_new"
+            :href="googleReviewUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            @click="trackGoogleClick"
+            class="google-review-btn"
+          />
+          <div class="text-caption q-mt-sm opacity-90">
+            Takes less than 30 seconds • Helps us grow
+          </div>
+        </q-card-section>
+      </q-card>
+
+      <!-- Divider -->
+      <div class="text-center q-py-lg">
+        <q-separator class="q-mb-md" />
+        <div class="text-body2 text-grey-6">OR</div>
+        <q-separator class="q-mt-md" />
+      </div>
+
+      <!-- Website Review Form (Secondary) -->
       <div class="text-center q-mb-xl">
-        <div class="text-h4 text-weight-bold text-primary q-mb-sm">
-          <q-icon name="rate_review" size="32px" class="q-mr-sm" />
-          Leave Your Review
+        <div class="text-h5 text-weight-bold text-primary q-mb-sm">
+          <q-icon name="rate_review" size="28px" class="q-mr-sm" />
+          Share on Our Website
         </div>
-        <div class="text-body1 text-grey-7">
-          We'd love to hear about your experience with Li'l Magnet Memories!
+        <div class="text-body2 text-grey-7">
+          Leave a testimonial to appear on our site
         </div>
       </div>
 
@@ -87,14 +121,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
+import { 
+  getGoogleReviewUrl, 
+  isGoogleReviewConfigured,
+  trackGoogleReviewClick 
+} from '../utils/googleReviews.js';
 
 const router = useRouter();
 const $q = useQuasar();
 const mounted = ref(false);
+
+// Google Reviews integration
+const googleReviewUrl = computed(() => getGoogleReviewUrl());
+const trackGoogleClick = () => trackGoogleReviewClick('review-page');
 
 // Ensure page only renders after layout is fully ready
 // This prevents the "QPage needs to be a deep child of QLayout" error
@@ -180,5 +223,32 @@ const handleSubmitReview = async () => {
 .star-rating {
   display: flex;
   justify-content: center;
+}
+
+.google-review-card {
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(156, 39, 176, 0.2);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.google-review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(156, 39, 176, 0.3);
+}
+
+.google-review-btn {
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.google-review-btn:hover {
+  transform: scale(1.05);
+}
+
+.opacity-90 {
+  opacity: 0.9;
 }
 </style>

@@ -91,6 +91,30 @@
           </q-card-section>
         </q-card>
 
+        <!-- Google Review Prompt -->
+        <q-card v-if="isGoogleReviewConfigured" class="google-review-prompt q-mt-lg">
+          <q-card-section class="text-center">
+            <q-icon name="star" size="48px" color="primary" class="q-mb-sm" />
+            <div class="text-h6 text-weight-bold q-mb-sm">Loved your magnets?</div>
+            <div class="text-body2 text-grey-7 q-mb-md">
+              Share your experience and help others discover us!
+            </div>
+            <q-btn
+              color="primary"
+              label="Leave Google Review"
+              icon="open_in_new"
+              size="md"
+              :href="googleReviewUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              @click="trackGoogleClick"
+            />
+            <div class="text-caption text-grey-6 q-mt-sm">
+              Takes less than 30 seconds
+            </div>
+          </q-card-section>
+        </q-card>
+
         <!-- Action Buttons -->
         <div class="action-buttons q-mt-lg">
           <q-btn
@@ -145,12 +169,21 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { authService } from '../services/authService';
 import { marketEventService } from '../services/marketEventService.js';
+import { 
+  getGoogleReviewUrl, 
+  isGoogleReviewConfigured,
+  trackGoogleReviewClick 
+} from '../utils/googleReviews.js';
 
 export default {
   name: 'ThankYouPage',
   setup() {
     const router = useRouter();
     const route = useRoute();
+
+    // Google Reviews integration
+    const googleReviewUrl = computed(() => getGoogleReviewUrl());
+    const trackGoogleClick = () => trackGoogleReviewClick('thank-you-page');
 
     const orderNumber = ref('');
     const customerName = ref('');
@@ -376,6 +409,10 @@ export default {
       goHome,
       viewMyOrders,
       formatCurrency,
+      // Google Reviews
+      googleReviewUrl,
+      isGoogleReviewConfigured,
+      trackGoogleClick,
     };
   },
 };
@@ -522,5 +559,18 @@ export default {
   .order-number-section {
     padding: 1rem;
   }
+}
+
+.google-review-prompt {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(156, 39, 176, 0.15);
+  border: 2px solid rgba(156, 39, 176, 0.1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f5fa 100%);
+  transition: all 0.3s ease;
+}
+
+.google-review-prompt:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(156, 39, 176, 0.2);
 }
 </style>
