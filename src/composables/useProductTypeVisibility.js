@@ -2,9 +2,10 @@ import { ref } from 'vue';
 import { firebaseService } from '../services/firebaseService.js';
 
 // Global singleton state for product type visibility
-// Initialize with custom=true (default visible), others false until loaded from Firebase
+// Initialize ALL as false - only show after explicitly loaded from Firebase
+// This prevents race conditions where items show before visibility is confirmed
 const productTypeVisibility = ref({
-  custom: true, // Default visible - always show Custom Photo Magnets
+  custom: false, // Will be set after loading from Firebase
   designer: false, // Will be set after loading from Firebase
   specialty: false, // Will be set after loading from Firebase
 });
@@ -47,6 +48,7 @@ export function useProductTypeVisibility() {
       } catch (error) {
         console.error('❌ [Visibility] Error loading visibility settings:', error);
         // On error, default to only custom enabled (but still mark as loaded)
+        // This ensures we have a safe default state after attempting to load
         productTypeVisibility.value = { custom: true, designer: false, specialty: false };
         visibilityLoaded.value = true;
         console.log('⚠️ [Visibility] Using default visibility settings due to error:', productTypeVisibility.value);

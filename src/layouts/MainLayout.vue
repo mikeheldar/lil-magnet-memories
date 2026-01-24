@@ -154,7 +154,7 @@
       <div class="sub-nav-container">
         <!-- Custom Photo Magnets Dropdown -->
         <q-btn-dropdown
-          v-if="productTypeVisibility.custom"
+          v-if="visibilityLoaded && productTypeVisibility.custom"
           flat
           dense
           no-caps
@@ -440,7 +440,7 @@
           header-class="text-grey-8"
         >
           <!-- Custom Photo Magnets -->
-          <div v-if="productTypeVisibility.custom" class="shop-category-wrapper">
+          <div v-if="visibilityLoaded && productTypeVisibility.custom" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
@@ -1035,21 +1035,15 @@ export default {
     const { productTypeVisibility, visibilityLoaded, initializeVisibility } = useProductTypeVisibility();
 
     // Check if any product categories are visible
+    // CRITICAL: Only return true if visibility has been explicitly loaded from Firebase
+    // This prevents race conditions where items show before visibility is confirmed
     const hasVisibleCategories = computed(() => {
-      // Custom Photo Magnets always shows immediately (default true)
-      // For other categories, wait until layout is ready
-      const customVisible = productTypeVisibility.value.custom;
-      
-      // If layout not ready, only show custom (default)
-      if (!layoutReady.value) {
-        return customVisible;
-      }
-      
-      // Once layout is ready, check all categories
+      // NEVER show categories until visibility is confirmed loaded
       if (!visibilityLoaded.value) {
-        return customVisible;
+        return false;
       }
       
+      // Once visibility is loaded, check which categories are enabled
       const hasVisible = productTypeVisibility.value.custom || 
              productTypeVisibility.value.designer || 
              productTypeVisibility.value.specialty;

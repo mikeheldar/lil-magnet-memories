@@ -93,10 +93,10 @@
 
         <!-- Google Review Prompt -->
         <q-card v-if="isGoogleReviewConfigured" class="google-review-prompt q-mt-lg">
-          <q-card-section class="text-center">
-            <q-icon name="star" size="48px" color="primary" class="q-mb-sm" />
-            <div class="text-h6 text-weight-bold q-mb-sm">Loved your magnets?</div>
-            <div class="text-body2 text-grey-7 q-mb-md">
+          <q-card-section class="text-center google-review-content">
+            <q-icon name="star" size="32px" color="primary" class="q-mb-xs" />
+            <div class="text-h6 text-weight-bold q-mb-xs">Loved your magnets?</div>
+            <div class="text-body2 text-grey-7 q-mb-sm">
               Share your experience and help others discover us!
             </div>
             <q-btn
@@ -108,8 +108,9 @@
               target="_blank"
               rel="noopener noreferrer"
               @click="trackGoogleClick"
+              class="q-mb-xs"
             />
-            <div class="text-caption text-grey-6 q-mt-sm">
+            <div class="text-caption text-grey-6">
               Takes less than 30 seconds
             </div>
           </q-card-section>
@@ -562,15 +563,19 @@ export default {
 }
 
 .google-review-prompt {
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(156, 39, 176, 0.15);
-  border: 2px solid rgba(156, 39, 176, 0.1);
-  background: linear-gradient(135deg, #ffffff 0%, #f8f5fa 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(228, 217, 255, 0.2);
+  border: 1px solid rgba(228, 217, 255, 0.3);
+  background: linear-gradient(135deg, #FAFAFF 0%, #E4D9FF 100%);
   transition: all 0.3s ease;
 }
 
 .google-review-prompt:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(156, 39, 176, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(228, 217, 255, 0.3);
+}
+
+.google-review-content {
+  padding: 16px 20px !important;
 }
 </style>

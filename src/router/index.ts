@@ -40,8 +40,12 @@ export default route(function (/* { store, ssrContext } */) {
   authService.init();
 
   // Initialize product type visibility settings early to prevent menu flash
+  // Note: This is fire-and-forget - MainLayout will await it in onMounted
+  // Starting it early helps reduce load time, but we don't block router initialization
   const { initializeVisibility } = useProductTypeVisibility();
-  initializeVisibility();
+  initializeVisibility().catch(err => {
+    console.error('Error initializing visibility in router:', err);
+  });
 
   // Add authentication and admin guards
   Router.beforeEach(async (to, from, next) => {
