@@ -157,12 +157,22 @@ const initAutocomplete = async () => {
 
       // Build formatted address string
       const formattedAddress = place.formattedAddress || place.displayName;
+      
+      // Update internal value first
       inputValue.value = formattedAddress;
       
-      // Validate
-      validateInput(formattedAddress);
+      // Update the input element value to ensure it's displayed
+      const inputElement = element.querySelector('input');
+      if (inputElement) {
+        inputElement.value = formattedAddress;
+      }
       
+      // Validate and emit immediately - this is crucial for form validation
+      validateInput(formattedAddress);
       emit('update:modelValue', formattedAddress);
+
+      // Use nextTick to ensure the value is propagated before emitting place-selected
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       // Emit detailed place information
       emit('place-selected', {
@@ -177,10 +187,28 @@ const initAutocomplete = async () => {
       });
 
       hideHint.value = true;
+      
+      console.log('Place selected and value emitted:', formattedAddress);
     } catch (error) {
       console.error('Error fetching place details:', error);
     }
   });
+
+  // Also listen to input changes for manual typing
+  const inputElement = element.querySelector('input');
+  if (inputElement) {
+    inputElement.addEventListener('input', (event) => {
+      const value = event.target.value;
+      inputValue.value = value;
+      emit('update:modelValue', value);
+      validateInput(value);
+    });
+
+    inputElement.addEventListener('blur', (event) => {
+      const value = event.target.value;
+      validateInput(value);
+    });
+  }
 
   // Set initial value if provided
   if (props.modelValue) {
