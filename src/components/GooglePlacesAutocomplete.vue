@@ -1,27 +1,24 @@
 <template>
   <div class="google-places-autocomplete">
-    <q-input
-      ref="inputRef"
-      v-model="inputValue"
-      :label="label"
-      :filled="filled"
-      :outlined="outlined"
-      :rules="rules"
-      :hint="hint"
-      @update:model-value="onInputChange"
-    >
-      <template v-slot:prepend>
-        <q-icon name="place" />
-      </template>
-      <template v-if="loading" v-slot:append>
-        <q-spinner color="primary" size="20px" />
-      </template>
-    </q-input>
+    <div class="input-label" v-if="label">
+      {{ label }} <span v-if="isRequired" class="text-negative">*</span>
+    </div>
+    <div class="autocomplete-wrapper" :class="{ 'filled-style': filled, 'outlined-style': outlined }">
+      <q-icon name="place" class="prepend-icon" />
+      <gmp-place-autocomplete
+        ref="autocompleteRef"
+        :placeholder="hint"
+        class="gmp-autocomplete-input"
+      />
+      <q-spinner v-if="loading" color="primary" size="20px" class="append-icon" />
+    </div>
+    <div v-if="hint && !hideHint" class="input-hint">{{ hint }}</div>
+    <div v-if="errorMessage" class="input-error">{{ errorMessage }}</div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -56,96 +53,139 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'place-selected']);
 
-const inputRef = ref(null);
+const autocompleteRef = ref(null);
 const inputValue = ref(props.modelValue);
 const loading = ref(false);
-let autocomplete = null;
+const errorMessage = ref('');
+const hideHint = ref(false);
+
+const isRequired = computed(() => {
+  return props.rules.some(rule => {
+    const result = rule('');
+    return result !== true && typeof result === 'string' && result.toLowerCase().includes('required');
+  });
+});
 
 // Watch for external changes to modelValue
 watch(() => props.modelValue, (newVal) => {
   if (newVal !== inputValue.value) {
     inputValue.value = newVal;
+    updateAutocompleteValue(newVal);
   }
 });
 
-const onInputChange = (val) => {
-  inputValue.value = val;
-  emit('update:modelValue', val);
+const updateAutocompleteValue = (value) => {
+  if (autocompleteRef.value) {
+    const inputElement = autocompleteRef.value.querySelector('input');
+    if (inputElement) {
+      inputElement.value = value || '';
+    }
+  }
 };
 
-const initAutocomplete = () => {
+const validateInput = (value) => {
+  errorMessage.value = '';
+  for (const rule of props.rules) {
+    const result = rule(value);
+    if (result !== true) {
+      errorMessage.value = result;
+      return false;
+    }
+  }
+  return true;
+};
+
+const initAutocomplete = async () => {
   if (!window.google || !window.google.maps || !window.google.maps.places) {
     console.error('Google Maps JavaScript API not loaded');
     return;
   }
 
-  // Get the native input element from Quasar's q-input
-  const input = inputRef.value?.$el?.querySelector('input');
-  if (!input) {
-    console.error('Could not find input element');
+  const element = autocompleteRef.value;
+  if (!element) {
+    console.error('Could not find autocomplete element');
     return;
   }
 
-  // Create autocomplete instance
-  autocomplete = new window.google.maps.places.Autocomplete(input, {
-    types: props.types,
-    fields: ['formatted_address', 'address_components', 'geometry', 'name', 'place_id'],
-  });
+  // Set the types for autocomplete
+  if (props.types && props.types.length > 0) {
+    element.setAttribute('types', props.types.join(','));
+  }
 
-  // Listen for place selection
-  autocomplete.addListener('place_changed', () => {
-    const place = autocomplete.getPlace();
+  // Listen for place selection using the new web component
+  element.addEventListener('gmp-placeselect', async (event) => {
+    const place = event.detail.place;
 
-    if (!place.geometry) {
-      console.warn('No details available for input:', place.name);
+    if (!place) {
+      console.warn('No place details available');
       return;
     }
 
-    // Extract address components
-    const addressComponents = {};
-    if (place.address_components) {
-      place.address_components.forEach((component) => {
-        const types = component.types;
-        if (types.includes('street_number')) {
-          addressComponents.streetNumber = component.long_name;
-        }
-        if (types.includes('route')) {
-          addressComponents.route = component.long_name;
-        }
-        if (types.includes('locality')) {
-          addressComponents.city = component.long_name;
-        }
-        if (types.includes('administrative_area_level_1')) {
-          addressComponents.state = component.short_name;
-          addressComponents.stateLong = component.long_name;
-        }
-        if (types.includes('postal_code')) {
-          addressComponents.zip = component.long_name;
-        }
-        if (types.includes('country')) {
-          addressComponents.country = component.short_name;
-          addressComponents.countryLong = component.long_name;
-        }
+    try {
+      // Fetch place details
+      await place.fetchFields({
+        fields: ['displayName', 'formattedAddress', 'addressComponents', 'location', 'id'],
       });
+
+      // Extract address components
+      const addressComponents = {};
+      if (place.addressComponents) {
+        place.addressComponents.forEach((component) => {
+          const types = component.types;
+          if (types.includes('street_number')) {
+            addressComponents.streetNumber = component.longText;
+          }
+          if (types.includes('route')) {
+            addressComponents.route = component.longText;
+          }
+          if (types.includes('locality')) {
+            addressComponents.city = component.longText;
+          }
+          if (types.includes('administrative_area_level_1')) {
+            addressComponents.state = component.shortText;
+            addressComponents.stateLong = component.longText;
+          }
+          if (types.includes('postal_code')) {
+            addressComponents.zip = component.longText;
+          }
+          if (types.includes('country')) {
+            addressComponents.country = component.shortText;
+            addressComponents.countryLong = component.longText;
+          }
+        });
+      }
+
+      // Build formatted address string
+      const formattedAddress = place.formattedAddress || place.displayName;
+      inputValue.value = formattedAddress;
+      
+      // Validate
+      validateInput(formattedAddress);
+      
+      emit('update:modelValue', formattedAddress);
+
+      // Emit detailed place information
+      emit('place-selected', {
+        formattedAddress,
+        addressComponents,
+        coordinates: place.location ? {
+          lat: place.location.lat(),
+          lng: place.location.lng(),
+        } : null,
+        placeId: place.id,
+        name: place.displayName,
+      });
+
+      hideHint.value = true;
+    } catch (error) {
+      console.error('Error fetching place details:', error);
     }
-
-    // Build formatted address string
-    const formattedAddress = place.formatted_address || place.name;
-    inputValue.value = formattedAddress;
-    emit('update:modelValue', formattedAddress);
-
-    // Emit detailed place information
-    emit('place-selected', {
-      formattedAddress,
-      addressComponents,
-      coordinates: {
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng(),
-      },
-      placeId: place.place_id,
-      name: place.name,
-    });
   });
+
+  // Set initial value if provided
+  if (props.modelValue) {
+    updateAutocompleteValue(props.modelValue);
+  }
 };
 
 const loadGoogleMapsScript = () => {
@@ -168,7 +208,7 @@ const loadGoogleMapsScript = () => {
       return;
     }
 
-    // Load the script
+    // Load the script with the new loading parameter for web components
     const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
       reject(new Error('VITE_GOOGLE_PLACES_API_KEY not found in environment variables'));
@@ -176,7 +216,7 @@ const loadGoogleMapsScript = () => {
     }
 
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
     script.async = true;
     script.defer = true;
     script.onload = () => resolve();
@@ -189,32 +229,141 @@ onMounted(async () => {
   loading.value = true;
   try {
     await loadGoogleMapsScript();
-    initAutocomplete();
+    await initAutocomplete();
   } catch (error) {
     console.error('Error loading Google Places Autocomplete:', error);
+    errorMessage.value = 'Failed to load address autocomplete';
   } finally {
     loading.value = false;
   }
+});
+
+// Expose validate method for form validation
+defineExpose({
+  validate: () => validateInput(inputValue.value),
 });
 </script>
 
 <style scoped>
 .google-places-autocomplete {
   width: 100%;
+  margin-bottom: 16px;
 }
 
-/* Style the Google autocomplete dropdown to match Quasar theme */
+.input-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.autocomplete-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.autocomplete-wrapper.filled-style {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.42);
+}
+
+.autocomplete-wrapper.filled-style:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.autocomplete-wrapper.filled-style:focus-within {
+  border-bottom: 2px solid var(--q-primary);
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.autocomplete-wrapper.outlined-style {
+  border: 1px solid rgba(0, 0, 0, 0.24);
+  padding: 8px 12px;
+}
+
+.autocomplete-wrapper.outlined-style:hover {
+  border-color: rgba(0, 0, 0, 0.87);
+}
+
+.autocomplete-wrapper.outlined-style:focus-within {
+  border: 2px solid var(--q-primary);
+}
+
+.prepend-icon {
+  color: rgba(0, 0, 0, 0.54);
+  margin-right: 12px;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.append-icon {
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.gmp-autocomplete-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Style the Google Place Autocomplete web component */
+:deep(gmp-place-autocomplete) {
+  width: 100%;
+}
+
+:deep(gmp-place-autocomplete input) {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  font-family: inherit;
+  color: rgba(0, 0, 0, 0.87);
+  width: 100%;
+  padding: 0;
+}
+
+:deep(gmp-place-autocomplete input::placeholder) {
+  color: rgba(0, 0, 0, 0.4);
+  font-size: 14px;
+}
+
+.input-hint {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 4px;
+  padding-left: 12px;
+}
+
+.input-error {
+  font-size: 12px;
+  color: var(--q-negative);
+  margin-top: 4px;
+  padding-left: 12px;
+}
+
+/* Style the autocomplete dropdown */
 :deep(.pac-container) {
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   margin-top: 4px;
   font-family: inherit;
+  z-index: 9999;
 }
 
 :deep(.pac-item) {
-  padding: 8px 12px;
+  padding: 10px 12px;
   cursor: pointer;
   font-size: 14px;
+  border-top: 1px solid #e0e0e0;
+}
+
+:deep(.pac-item:first-child) {
+  border-top: none;
 }
 
 :deep(.pac-item:hover) {
