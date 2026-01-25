@@ -113,6 +113,8 @@ const getSuggestions = async (input) => {
     return;
   }
 
+  console.log('🏗️ [AddressAutocomplete] Getting suggestions for:', input);
+
   try {
     const request = {
       input: input,
@@ -120,15 +122,30 @@ const getSuggestions = async (input) => {
     };
 
     autocompleteService.getPlacePredictions(request, (predictions, status) => {
-      console.log('🏗️ [AddressAutocomplete] Got predictions:', predictions?.length, 'status:', status);
+      console.log('🏗️ [AddressAutocomplete] Predictions callback fired');
+      console.log('🏗️ [AddressAutocomplete] Status:', status);
+      console.log('🏗️ [AddressAutocomplete] Predictions count:', predictions?.length || 0);
+      
       if (status === 'OK' && predictions) {
         suggestions.value = predictions;
+        console.log('🏗️ [AddressAutocomplete] Set suggestions:', suggestions.value.length);
+      } else if (status === 'ZERO_RESULTS') {
+        console.log('🏗️ [AddressAutocomplete] No results found');
+        suggestions.value = [];
+      } else if (status === 'REQUEST_DENIED') {
+        console.error('🏗️ [AddressAutocomplete] REQUEST DENIED - Check API key and restrictions');
+        suggestions.value = [];
+      } else if (status === 'INVALID_REQUEST') {
+        console.error('🏗️ [AddressAutocomplete] INVALID REQUEST - Check request parameters');
+        suggestions.value = [];
       } else {
+        console.error('🏗️ [AddressAutocomplete] Error status:', status);
         suggestions.value = [];
       }
     });
   } catch (error) {
     console.error('🏗️ [AddressAutocomplete] Error getting suggestions:', error);
+    suggestions.value = [];
   }
 };
 
