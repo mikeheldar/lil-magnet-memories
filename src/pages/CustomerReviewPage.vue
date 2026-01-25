@@ -6,8 +6,15 @@
     <div v-if="mounted" class="page-container q-pa-lg">
       <!-- Google Review CTA (Primary) - Smaller Version -->
       <q-card v-if="isGoogleReviewConfigured" class="google-review-card q-mb-xl">
-        <q-card-section class="text-center bg-primary text-white">
-          <q-icon name="star" size="48px" class="q-mb-sm" />
+        <q-card-section class="text-center bg-blue-8 text-white">
+          <q-rating
+            :model-value="5"
+            :max="5"
+            size="48px"
+            readonly
+            color="amber"
+            class="q-mb-sm justify-center"
+          />
           <div class="text-h5 text-weight-bold q-mb-sm">Love Li'l Magnet Memories?</div>
           <div class="text-body2 q-mb-md">
             Help others discover us by leaving a Google review!
@@ -15,7 +22,7 @@
           <q-btn
             size="md"
             color="white"
-            text-color="primary"
+            text-color="blue-8"
             label="Leave Google Review"
             icon="open_in_new"
             :href="googleReviewUrl"
