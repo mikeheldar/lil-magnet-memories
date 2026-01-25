@@ -294,7 +294,6 @@
               :rules="[(val) => !!val || 'Location is required']"
               hint="Start typing an address and select from the dropdown"
               @place-selected="onNewEventPlaceSelected"
-              @update:model-value="(val) => { newEvent.location = val; console.log('Manual v-model update:', val); }"
             />
 
             <div class="row q-gutter-md">
@@ -369,7 +368,6 @@
               :rules="[(val) => !!val || 'Location is required']"
               hint="Start typing an address and select from the dropdown"
               @place-selected="onEditEventPlaceSelected"
-              @update:model-value="(val) => { editingEvent.location = val; console.log('Manual v-model update (edit):', val); }"
             />
 
             <div class="row q-gutter-md">
