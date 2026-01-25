@@ -311,14 +311,23 @@ const loadGoogleMapsScript = () => {
 
 onMounted(async () => {
   loading.value = true;
+  console.log('📍 [GooglePlacesAutocomplete] Component mounted');
+  console.log('📍 [GooglePlacesAutocomplete] API Key present:', !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY);
+  
   try {
+    console.log('📍 [GooglePlacesAutocomplete] Loading Google Maps script...');
     await loadGoogleMapsScript();
+    console.log('📍 [GooglePlacesAutocomplete] Script loaded successfully');
+    
+    console.log('📍 [GooglePlacesAutocomplete] Initializing autocomplete...');
     await initAutocomplete();
+    console.log('📍 [GooglePlacesAutocomplete] Autocomplete initialized');
   } catch (error) {
-    console.error('Error loading Google Places Autocomplete:', error);
+    console.error('📍 [GooglePlacesAutocomplete] Error loading:', error);
     errorMessage.value = 'Failed to load address autocomplete';
   } finally {
     loading.value = false;
+    console.log('📍 [GooglePlacesAutocomplete] Mount complete');
   }
 });
 
