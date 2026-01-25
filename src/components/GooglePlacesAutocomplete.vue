@@ -274,21 +274,31 @@ const initAutocomplete = async () => {
 
 const loadGoogleMapsScript = () => {
   return new Promise((resolve, reject) => {
-    // Check if already loaded
+    // Check if already loaded and ready
     if (window.google && window.google.maps && window.google.maps.places) {
+      console.log('📍 [GooglePlacesAutocomplete] API already loaded');
       resolve();
       return;
     }
 
     // Check if script is already being loaded
-    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-      // Wait for it to load
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      console.log('📍 [GooglePlacesAutocomplete] Script tag exists, waiting for API to be ready...');
+      // Wait for it to be ready
       const checkInterval = setInterval(() => {
         if (window.google && window.google.maps && window.google.maps.places) {
+          console.log('📍 [GooglePlacesAutocomplete] API ready after waiting');
           clearInterval(checkInterval);
           resolve();
         }
       }, 100);
+      
+      // Timeout after 10 seconds
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        reject(new Error('Timeout waiting for Google Maps API'));
+      }, 10000);
       return;
     }
 
@@ -299,13 +309,37 @@ const loadGoogleMapsScript = () => {
       return;
     }
 
+    console.log('📍 [GooglePlacesAutocomplete] Creating new script tag...');
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
     script.async = true;
     script.defer = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load Google Maps script'));
+    
+    script.onload = () => {
+      console.log('📍 [GooglePlacesAutocomplete] Script onload fired, waiting for API...');
+      // Wait for the API to be fully ready after script loads
+      const checkInterval = setInterval(() => {
+        if (window.google && window.google.maps && window.google.maps.places) {
+          console.log('📍 [GooglePlacesAutocomplete] API ready!');
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 50);
+      
+      // Timeout after 5 seconds
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        reject(new Error('API not ready after script load'));
+      }, 5000);
+    };
+    
+    script.onerror = () => {
+      console.error('📍 [GooglePlacesAutocomplete] Script failed to load');
+      reject(new Error('Failed to load Google Maps script'));
+    };
+    
     document.head.appendChild(script);
+    console.log('📍 [GooglePlacesAutocomplete] Script tag added to head');
   });
 };
 
