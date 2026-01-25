@@ -4,16 +4,16 @@
       <q-spinner color="primary" size="3em" />
     </div>
     <div v-if="mounted" class="page-container q-pa-lg">
-      <!-- Google Review CTA (Primary) -->
+      <!-- Google Review CTA (Primary) - Smaller Version -->
       <q-card v-if="isGoogleReviewConfigured" class="google-review-card q-mb-xl">
         <q-card-section class="text-center bg-primary text-white">
-          <q-icon name="star" size="64px" class="q-mb-md" />
-          <div class="text-h4 text-weight-bold q-mb-sm">Love Li'l Magnet Memories?</div>
-          <div class="text-body1 q-mb-md">
+          <q-icon name="star" size="48px" class="q-mb-sm" />
+          <div class="text-h5 text-weight-bold q-mb-sm">Love Li'l Magnet Memories?</div>
+          <div class="text-body2 q-mb-md">
             Help others discover us by leaving a Google review!
           </div>
           <q-btn
-            size="lg"
+            size="md"
             color="white"
             text-color="primary"
             label="Leave Google Review"
@@ -25,7 +25,7 @@
             class="google-review-btn"
           />
           <div class="text-caption q-mt-sm opacity-90">
-            Takes less than 30 seconds • Helps us grow
+            Takes less than 30 seconds
           </div>
         </q-card-section>
       </q-card>
