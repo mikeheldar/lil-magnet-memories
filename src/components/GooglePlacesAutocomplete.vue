@@ -116,6 +116,16 @@ const initAutocomplete = async () => {
     element.setAttribute('types', props.types.join(','));
   }
 
+  // Get the actual input element (might be in shadow DOM)
+  let inputElement = element.querySelector('input');
+  
+  // If not found, try to access shadow root
+  if (!inputElement && element.shadowRoot) {
+    inputElement = element.shadowRoot.querySelector('input');
+  }
+  
+  console.log('📍 [GooglePlacesAutocomplete] Input element found:', !!inputElement);
+
   // Listen for place selection using the new web component
   element.addEventListener('gmp-placeselect', async (event) => {
     const place = event.detail.place;
@@ -167,20 +177,27 @@ const initAutocomplete = async () => {
       // Update internal value first
       inputValue.value = formattedAddress;
       
+      // FORCE multiple emissions to ensure it gets through
+      emit('update:modelValue', formattedAddress);
+      
+      // Wait a tick
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+      // Emit again to be absolutely sure
+      emit('update:modelValue', formattedAddress);
+      
+      console.log('📍 [GooglePlacesAutocomplete] Emitted update:modelValue TWICE with:', formattedAddress);
+      
       // Update the input element value to ensure it's displayed
-      const inputElement = element.querySelector('input');
       if (inputElement) {
         inputElement.value = formattedAddress;
       }
       
-      // Validate and emit immediately - this is crucial for form validation
+      // Validate
       validateInput(formattedAddress);
-      
-      console.log('📍 [GooglePlacesAutocomplete] Emitting update:modelValue with:', formattedAddress);
-      emit('update:modelValue', formattedAddress);
 
-      // Use nextTick to ensure the value is propagated before emitting place-selected
-      await new Promise(resolve => setTimeout(resolve, 0));
+      // Wait another tick
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       console.log('📍 [GooglePlacesAutocomplete] Emitting place-selected event');
       // Emit detailed place information
@@ -198,13 +215,13 @@ const initAutocomplete = async () => {
       hideHint.value = true;
       
       console.log('📍 [GooglePlacesAutocomplete] All emissions complete');
+      console.log('📍 [GooglePlacesAutocomplete] Final inputValue.value:', inputValue.value);
     } catch (error) {
       console.error('Error fetching place details:', error);
     }
   });
 
   // Also listen to input changes for manual typing
-  const inputElement = element.querySelector('input');
   if (inputElement) {
     inputElement.addEventListener('input', (event) => {
       const value = event.target.value;
@@ -241,6 +258,18 @@ const initAutocomplete = async () => {
   if (props.modelValue) {
     updateAutocompleteValue(props.modelValue);
   }
+  
+  // Set up a polling interval to check if the input has a value that wasn't emitted
+  setInterval(() => {
+    if (inputElement) {
+      const currentInputValue = inputElement.value;
+      if (currentInputValue && currentInputValue !== inputValue.value) {
+        console.log('📍 [GooglePlacesAutocomplete] Polling detected unemitted value:', currentInputValue);
+        inputValue.value = currentInputValue;
+        emit('update:modelValue', currentInputValue);
+      }
+    }
+  }, 500); // Check every 500ms
 };
 
 const loadGoogleMapsScript = () => {
