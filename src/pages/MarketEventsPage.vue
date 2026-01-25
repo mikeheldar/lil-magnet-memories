@@ -781,6 +781,14 @@ export default {
 
     // Create new event
     const createEvent = async () => {
+      // Debug: Log the current form values
+      console.log('Creating event with values:', {
+        name: newEvent.value.name,
+        location: newEvent.value.location,
+        startDateTime: newEvent.value.startDateTime,
+        endDateTime: newEvent.value.endDateTime,
+      });
+
       if (
         !newEvent.value.name ||
         !newEvent.value.location ||
@@ -791,6 +799,7 @@ export default {
           $q.notify({
             type: 'negative',
             message: 'Please fill in all fields',
+            caption: `Missing: ${!newEvent.value.name ? 'Name ' : ''}${!newEvent.value.location ? 'Location ' : ''}${!newEvent.value.startDateTime ? 'Start Time ' : ''}${!newEvent.value.endDateTime ? 'End Time' : ''}`,
             position: 'top',
           });
         } catch (error) {
@@ -1144,6 +1153,7 @@ export default {
     // Handle place selection for new event
     const onNewEventPlaceSelected = (placeDetails) => {
       console.log('New event place selected:', placeDetails);
+      console.log('Current newEvent.location:', newEvent.value.location);
       // The formatted address is already set via v-model
       // You can store additional details if needed
       if (placeDetails.coordinates) {
@@ -1151,6 +1161,9 @@ export default {
         newEvent.value.coordinates = placeDetails.coordinates;
         newEvent.value.placeId = placeDetails.placeId;
       }
+      
+      // Force update to ensure reactivity
+      console.log('After place selected, newEvent.location:', newEvent.value.location);
     };
 
     // Handle place selection for editing event

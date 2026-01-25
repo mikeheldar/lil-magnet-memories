@@ -158,6 +158,8 @@ const initAutocomplete = async () => {
       // Build formatted address string
       const formattedAddress = place.formattedAddress || place.displayName;
       
+      console.log('📍 [GooglePlacesAutocomplete] Place selected:', formattedAddress);
+      
       // Update internal value first
       inputValue.value = formattedAddress;
       
@@ -169,11 +171,14 @@ const initAutocomplete = async () => {
       
       // Validate and emit immediately - this is crucial for form validation
       validateInput(formattedAddress);
+      
+      console.log('📍 [GooglePlacesAutocomplete] Emitting update:modelValue with:', formattedAddress);
       emit('update:modelValue', formattedAddress);
 
       // Use nextTick to ensure the value is propagated before emitting place-selected
       await new Promise(resolve => setTimeout(resolve, 0));
 
+      console.log('📍 [GooglePlacesAutocomplete] Emitting place-selected event');
       // Emit detailed place information
       emit('place-selected', {
         formattedAddress,
@@ -188,7 +193,7 @@ const initAutocomplete = async () => {
 
       hideHint.value = true;
       
-      console.log('Place selected and value emitted:', formattedAddress);
+      console.log('📍 [GooglePlacesAutocomplete] All emissions complete');
     } catch (error) {
       console.error('Error fetching place details:', error);
     }
