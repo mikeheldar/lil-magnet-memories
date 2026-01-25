@@ -81,6 +81,10 @@ const updateAutocompleteValue = (value) => {
       inputElement.value = value || '';
     }
   }
+  // Also emit to ensure parent gets the update
+  if (value) {
+    emit('update:modelValue', value);
+  }
 };
 
 const validateInput = (value) => {
@@ -207,11 +211,29 @@ const initAutocomplete = async () => {
       inputValue.value = value;
       emit('update:modelValue', value);
       validateInput(value);
+      console.log('📍 [GooglePlacesAutocomplete] Input changed:', value);
     });
 
     inputElement.addEventListener('blur', (event) => {
       const value = event.target.value;
       validateInput(value);
+      // Ensure the value is emitted on blur as well
+      if (value && value !== props.modelValue) {
+        console.log('📍 [GooglePlacesAutocomplete] Blur event - emitting value:', value);
+        inputValue.value = value;
+        emit('update:modelValue', value);
+      }
+    });
+    
+    // Also add a change event listener as a fallback
+    inputElement.addEventListener('change', (event) => {
+      const value = event.target.value;
+      if (value) {
+        console.log('📍 [GooglePlacesAutocomplete] Change event - emitting value:', value);
+        inputValue.value = value;
+        emit('update:modelValue', value);
+        validateInput(value);
+      }
     });
   }
 
