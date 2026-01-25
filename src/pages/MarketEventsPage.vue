@@ -1153,29 +1153,46 @@ export default {
     // Handle place selection for new event
     const onNewEventPlaceSelected = (placeDetails) => {
       console.log('New event place selected:', placeDetails);
+      
+      // FORCE set the location directly - bypass v-model
+      newEvent.value.location = placeDetails.formattedAddress;
+      
       console.log('Current newEvent.location:', newEvent.value.location);
-      // The formatted address is already set via v-model
-      // You can store additional details if needed
+      
+      // Store additional details if needed
       if (placeDetails.coordinates) {
-        // Optionally store coordinates for future use
         newEvent.value.coordinates = placeDetails.coordinates;
         newEvent.value.placeId = placeDetails.placeId;
       }
       
-      // Force update to ensure reactivity
+      // Force reactivity update
       console.log('After place selected, newEvent.location:', newEvent.value.location);
+      
+      // Trigger a manual update to ensure Vue detects the change
+      newEvent.value = { ...newEvent.value };
+      
+      console.log('After force update, newEvent.location:', newEvent.value.location);
     };
 
     // Handle place selection for editing event
     const onEditEventPlaceSelected = (placeDetails) => {
       console.log('Edit event place selected:', placeDetails);
-      // The formatted address is already set via v-model
-      // You can store additional details if needed
+      
+      // FORCE set the location directly - bypass v-model
+      editingEvent.value.location = placeDetails.formattedAddress;
+      
+      console.log('Current editingEvent.location:', editingEvent.value.location);
+      
+      // Store additional details if needed
       if (placeDetails.coordinates) {
-        // Optionally store coordinates for future use
         editingEvent.value.coordinates = placeDetails.coordinates;
         editingEvent.value.placeId = placeDetails.placeId;
       }
+      
+      // Force reactivity update
+      editingEvent.value = { ...editingEvent.value };
+      
+      console.log('After force update, editingEvent.location:', editingEvent.value.location);
     };
 
     // Initialize
