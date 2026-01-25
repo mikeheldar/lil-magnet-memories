@@ -288,11 +288,12 @@
               filled
             />
 
-            <q-input
+            <GooglePlacesAutocomplete
               v-model="newEvent.location"
-              label="Location/Place"
+              label="Location/Address"
               :rules="[(val) => !!val || 'Location is required']"
-              filled
+              hint="Start typing an address and select from the dropdown"
+              @place-selected="onNewEventPlaceSelected"
             />
 
             <div class="row q-gutter-md">
@@ -361,11 +362,12 @@
               filled
             />
 
-            <q-input
+            <GooglePlacesAutocomplete
               v-model="editingEvent.location"
-              label="Location/Place"
+              label="Location/Address"
               :rules="[(val) => !!val || 'Location is required']"
-              filled
+              hint="Start typing an address and select from the dropdown"
+              @place-selected="onEditEventPlaceSelected"
             />
 
             <div class="row q-gutter-md">
@@ -456,9 +458,13 @@ import { marketEventService } from '../services/marketEventService.js';
 import { authService } from '../services/authService';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import GooglePlacesAutocomplete from '../components/GooglePlacesAutocomplete.vue';
 
 export default {
   name: 'MarketEventsPage',
+  components: {
+    GooglePlacesAutocomplete,
+  },
   setup() {
     const $q = useQuasar();
 
@@ -1135,6 +1141,30 @@ export default {
       }
     };
 
+    // Handle place selection for new event
+    const onNewEventPlaceSelected = (placeDetails) => {
+      console.log('New event place selected:', placeDetails);
+      // The formatted address is already set via v-model
+      // You can store additional details if needed
+      if (placeDetails.coordinates) {
+        // Optionally store coordinates for future use
+        newEvent.value.coordinates = placeDetails.coordinates;
+        newEvent.value.placeId = placeDetails.placeId;
+      }
+    };
+
+    // Handle place selection for editing event
+    const onEditEventPlaceSelected = (placeDetails) => {
+      console.log('Edit event place selected:', placeDetails);
+      // The formatted address is already set via v-model
+      // You can store additional details if needed
+      if (placeDetails.coordinates) {
+        // Optionally store coordinates for future use
+        editingEvent.value.coordinates = placeDetails.coordinates;
+        editingEvent.value.placeId = placeDetails.placeId;
+      }
+    };
+
     // Initialize
     onMounted(() => {
       setupRealtimeListener();
@@ -1181,6 +1211,8 @@ export default {
       undoCheckOut,
       confirmDeleteEvent,
       deleteEvent,
+      onNewEventPlaceSelected,
+      onEditEventPlaceSelected,
     };
   },
 };
