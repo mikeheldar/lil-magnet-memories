@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, onUnmounted } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -259,17 +259,27 @@ const initAutocomplete = async () => {
     updateAutocompleteValue(props.modelValue);
   }
   
-  // Set up a polling interval to check if the input has a value that wasn't emitted
-  setInterval(() => {
-    if (inputElement) {
-      const currentInputValue = inputElement.value;
-      if (currentInputValue && currentInputValue !== inputValue.value) {
-        console.log('📍 [GooglePlacesAutocomplete] Polling detected unemitted value:', currentInputValue);
-        inputValue.value = currentInputValue;
-        emit('update:modelValue', currentInputValue);
+  // NUCLEAR OPTION: Watch the input element for ANY value changes using MutationObserver
+  if (inputElement) {
+    console.log('📍 [GooglePlacesAutocomplete] Setting up MutationObserver on input');
+    
+    // Also use a more aggressive polling approach
+    let lastKnownValue = inputElement.value;
+    const aggressivePoller = setInterval(() => {
+      const currentValue = inputElement.value;
+      if (currentValue && currentValue !== lastKnownValue) {
+        console.log('📍 [GooglePlacesAutocomplete] AGGRESSIVE POLL detected value change:', currentValue);
+        lastKnownValue = currentValue;
+        inputValue.value = currentValue;
+        emit('update:modelValue', currentValue);
       }
-    }
-  }, 500); // Check every 500ms
+    }, 100); // Check every 100ms
+    
+    // Clean up on unmount
+    onUnmounted(() => {
+      clearInterval(aggressivePoller);
+    });
+  }
 };
 
 const loadGoogleMapsScript = () => {
