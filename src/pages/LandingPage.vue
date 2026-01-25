@@ -7,6 +7,17 @@
         <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
             <strong>Market Event Live!</strong>
           <span class="gt-xs">We're at {{ activeMarketEventName }}.</span>
+          
+          <!-- Distance indicator -->
+          <span v-if="eventDistance !== null" class="distance-badge">
+            <q-icon name="location_on" size="16px" class="q-mr-xs" />
+            {{ formatDistance(eventDistance) }} away
+          </span>
+          <span v-else-if="loadingLocation" class="distance-badge">
+            <q-spinner size="14px" color="white" class="q-mr-xs" />
+            Getting location...
+          </span>
+          
           <a
             v-if="activeMarketEventLink"
             :href="activeMarketEventLink"
@@ -387,6 +398,7 @@ import { useQuasar } from 'quasar';
 import { useCustomerType } from '../composables/useCustomerType.js';
 import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
 import { ensureNetworkReady } from '../firebase/config.js';
+import { getUserLocation, calculateDistance, formatDistance as formatDistanceUtil } from '../utils/geolocation.js';
 
 export default {
   name: 'LandingPage',
@@ -649,6 +661,50 @@ export default {
     const showMarketEventDialog = ref(false);
     const activeMarketEvent = ref(null);
     const pendingProduct = ref(null);
+
+    // Distance tracking
+    const eventDistance = ref(null);
+    const loadingLocation = ref(false);
+    const userLocation = ref(null);
+
+    // Format distance for display
+    const formatDistance = (meters) => {
+      return formatDistanceUtil(meters);
+    };
+
+    // Calculate distance to event
+    const calculateEventDistance = async () => {
+      // Get the active event
+      const event = marketEventService.getCheckedInEvent();
+      if (!event || !event.coordinates) {
+        console.log('No active event or event has no coordinates');
+        eventDistance.value = null;
+        return;
+      }
+
+      loadingLocation.value = true;
+      try {
+        // Get user's location
+        const location = await getUserLocation();
+        userLocation.value = location;
+
+        // Calculate distance
+        const distance = calculateDistance(
+          location.lat,
+          location.lng,
+          event.coordinates.lat,
+          event.coordinates.lng
+        );
+
+        eventDistance.value = distance;
+        console.log(`Distance to event: ${distance}m (${formatDistance(distance)})`);
+      } catch (error) {
+        console.error('Error getting user location:', error);
+        eventDistance.value = null;
+      } finally {
+        loadingLocation.value = false;
+      }
+    };
 
     const goToUpload = (product = null) => {
       // Check if there's an active market event
@@ -965,6 +1021,11 @@ export default {
         // Trigger reactivity when events change
         marketEventCheckTrigger.value++;
         console.log('🔄 Market events updated on landing page');
+        
+        // Recalculate distance when events change
+        if (hasActiveEvent.value) {
+          calculateEventDistance();
+        }
       });
 
       // Set up listener for user preferences (for syncing across devices)
@@ -978,6 +1039,11 @@ export default {
       // Initial check - cache should be populated quickly by real-time listener
       // But trigger an update to ensure UI reflects current state
       marketEventCheckTrigger.value++;
+
+      // Calculate distance if there's an active event
+      if (hasActiveEvent.value) {
+        calculateEventDistance();
+      }
 
       // Cleanup listeners on unmount
       onUnmounted(() => {
@@ -1078,6 +1144,10 @@ export default {
       isCustomerAtEvent,
       isTestEnvironment,
       showCTAButton,
+      // Distance tracking
+      eventDistance,
+      loadingLocation,
+      formatDistance,
       easelImages,
       currentEaselImage,
       easelImageIndex,
@@ -1409,6 +1479,22 @@ export default {
 .banner-toggle {
   @media (max-width: 600px) {
     transform: scale(0.85);
+  }
+}
+
+.distance-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  
+  @media (max-width: 600px) {
+    font-size: 0.75rem;
+    padding: 2px 6px;
   }
 }
 
