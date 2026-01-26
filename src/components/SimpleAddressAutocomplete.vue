@@ -1,25 +1,31 @@
 <template>
-  <div class="google-places-wrapper">
-    <div class="q-field q-field--filled q-field--labeled">
-      <div class="q-field__inner relative-position col">
-        <div class="q-field__control relative-position row no-wrap">
-          <div class="q-field__prepend q-anchor--skip">
-            <q-icon name="place" />
-          </div>
-          
-          <div class="q-field__control-container col relative-position row no-wrap q-anchor--skip">
-            <gmp-place-autocomplete
-              ref="autocompleteElement"
-              class="full-width"
-              :placeholder="hint"
-            />
-          </div>
-        </div>
-        
-        <div v-if="hint" class="q-field__bottom row items-start">
-          <div class="q-field__messages col">{{ hint }}</div>
-        </div>
+  <div class="simple-autocomplete-wrapper">
+    <q-input
+      v-if="!scriptLoaded"
+      :model-value="modelValue"
+      :label="label"
+      :hint="hint"
+      filled
+      readonly
+    >
+      <template v-slot:prepend>
+        <q-icon name="place" />
+      </template>
+      <template v-slot:append>
+        <q-spinner color="primary" size="20px" />
+      </template>
+    </q-input>
+
+    <div v-else class="autocomplete-container">
+      <div class="label-text">{{ label }}</div>
+      <div class="input-wrapper">
+        <q-icon name="place" class="prepend-icon" />
+        <gmp-place-autocomplete
+          ref="autocompleteElement"
+          :placeholder="hint"
+        />
       </div>
+      <div v-if="hint" class="hint-text">{{ hint }}</div>
     </div>
   </div>
 </template>
@@ -37,19 +43,57 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'place-selected']);
 
 const autocompleteElement = ref(null);
+const scriptLoaded = ref(false);
 let pollInterval = null;
 
 console.log('🎯 [SimpleAutocomplete] Component created');
 
+const loadScript = () => {
+  return new Promise((resolve) => {
+    // Check if already loaded
+    if (window.google?.maps?.places) {
+      console.log('🎯 [SimpleAutocomplete] Script already loaded');
+      resolve();
+      return;
+    }
+
+    // Check if script tag exists
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      console.log('🎯 [SimpleAutocomplete] Script tag exists, waiting...');
+      existingScript.addEventListener('load', () => {
+        console.log('🎯 [SimpleAutocomplete] Script loaded');
+        resolve();
+      });
+      return;
+    }
+
+    // Load the script
+    console.log('🎯 [SimpleAutocomplete] Loading script...');
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_PLACES_API_KEY}&libraries=places&loading=async`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      console.log('🎯 [SimpleAutocomplete] Script loaded successfully');
+      resolve();
+    };
+    document.head.appendChild(script);
+  });
+};
+
 onMounted(async () => {
-  console.log('🎯 [SimpleAutocomplete] Mounted');
+  console.log('🎯 [SimpleAutocomplete] Mounted, loading script...');
   
-  // Wait for the element to be ready
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await loadScript();
+  scriptLoaded.value = true;
+  
+  // Wait for Vue to render the web component
+  await new Promise(resolve => setTimeout(resolve, 200));
   
   const element = autocompleteElement.value;
   if (!element) {
-    console.error('🎯 [SimpleAutocomplete] Element not found');
+    console.error('🎯 [SimpleAutocomplete] Element not found after script load');
     return;
   }
   
@@ -57,7 +101,7 @@ onMounted(async () => {
 
   // Listen for place selection
   element.addEventListener('gmp-placeselect', async (event) => {
-    console.log('🎯 [SimpleAutocomplete] Place selected event fired!');
+    console.log('🎯 [SimpleAutocomplete] Place selected!');
     const place = event.detail.place;
     
     if (!place) {
@@ -71,13 +115,11 @@ onMounted(async () => {
       });
 
       const formattedAddress = place.formattedAddress || place.displayName;
-      console.log('🎯 [SimpleAutocomplete] Got address:', formattedAddress);
+      console.log('🎯 [SimpleAutocomplete] Address:', formattedAddress);
       
-      // EMIT IMMEDIATELY
       emit('update:modelValue', formattedAddress);
       console.log('🎯 [SimpleAutocomplete] Emitted to parent');
       
-      // Extract coordinates
       const coordinates = place.location ? {
         lat: place.location.lat(),
         lng: place.location.lng(),
@@ -94,17 +136,13 @@ onMounted(async () => {
     }
   });
 
-  // AGGRESSIVE POLLING - check input value every 100ms
+  // POLLING for value changes
   const getInputValue = () => {
     try {
-      // Try light DOM first
       let input = element.querySelector('input');
-      
-      // Try shadow DOM if not found
       if (!input && element.shadowRoot) {
         input = element.shadowRoot.querySelector('input');
       }
-      
       return input?.value || '';
     } catch (e) {
       return '';
@@ -115,7 +153,7 @@ onMounted(async () => {
   pollInterval = setInterval(() => {
     const currentValue = getInputValue();
     if (currentValue && currentValue !== lastValue && currentValue.length > 10) {
-      console.log('🎯 [SimpleAutocomplete] POLL detected new value:', currentValue);
+      console.log('🎯 [SimpleAutocomplete] POLL:', currentValue);
       lastValue = currentValue;
       emit('update:modelValue', currentValue);
     }
@@ -132,32 +170,55 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.google-places-wrapper {
+.simple-autocomplete-wrapper {
   width: 100%;
-  margin-bottom: 16px;
 }
 
-.q-field--filled .q-field__control {
+.autocomplete-container {
+  position: relative;
   background: rgba(0, 0, 0, 0.05);
   border-radius: 4px 4px 0 0;
-  padding: 8px 12px;
-}
-
-.q-field--filled .q-field__control:before {
+  padding: 16px 12px 8px 12px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.42);
 }
 
-:deep(gmp-place-autocomplete) {
+.label-text {
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prepend-icon {
+  color: rgba(0, 0, 0, 0.54);
+  font-size: 24px;
+}
+
+.hint-text {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 4px;
+}
+
+gmp-place-autocomplete {
+  flex: 1;
   width: 100%;
-  display: block;
 }
 
 :deep(gmp-place-autocomplete input) {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 16px;
-  width: 100%;
-  padding: 4px 0;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 16px !important;
+  width: 100% !important;
+  padding: 0 !important;
+  font-family: inherit !important;
 }
 </style>
