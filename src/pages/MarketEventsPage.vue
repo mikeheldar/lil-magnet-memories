@@ -288,7 +288,7 @@
               filled
             />
 
-            <AddressAutocomplete
+            <SimpleAddressAutocomplete
               v-model="newEvent.location"
               label="Location/Address"
               :rules="[(val) => !!val || 'Location is required']"
@@ -362,7 +362,7 @@
               filled
             />
 
-            <AddressAutocomplete
+            <SimpleAddressAutocomplete
               v-model="editingEvent.location"
               label="Location/Address"
               :rules="[(val) => !!val || 'Location is required']"
@@ -458,12 +458,12 @@ import { marketEventService } from '../services/marketEventService.js';
 import { authService } from '../services/authService';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
-import AddressAutocomplete from '../components/AddressAutocomplete.vue';
+import SimpleAddressAutocomplete from '../components/SimpleAddressAutocomplete.vue';
 
 export default {
   name: 'MarketEventsPage',
   components: {
-    AddressAutocomplete,
+    SimpleAddressAutocomplete,
   },
   setup() {
     const $q = useQuasar();
