@@ -88,14 +88,16 @@ watch(() => props.modelValue, (newVal) => {
 });
 
 const handleInput = (val) => {
-  console.log('🏗️ [AddressAutocomplete] Input changed:', val);
+  console.log('🏗️ [AddressAutocomplete] handleInput called with:', val, 'length:', val?.length);
   inputValue.value = val;
   emit('update:modelValue', val);
   
   // Get autocomplete suggestions
   if (val && val.length > 2) {
+    console.log('🏗️ [AddressAutocomplete] Length > 2, calling getSuggestions');
     getSuggestions(val);
   } else {
+    console.log('🏗️ [AddressAutocomplete] Length <= 2 or empty, clearing suggestions');
     suggestions.value = [];
   }
 };
