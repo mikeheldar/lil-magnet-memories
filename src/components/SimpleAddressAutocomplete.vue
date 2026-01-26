@@ -98,14 +98,22 @@ onMounted(async () => {
   }
   
   console.log('🎯 [SimpleAutocomplete] Element found, setting up listener');
+  console.log('🎯 [SimpleAutocomplete] Element:', element);
 
-  // Listen for place selection
+  // LISTEN TO ALL EVENTS for debugging
+  ['gmp-placeselect', 'place-changed', 'place_changed', 'change', 'input', 'blur'].forEach(eventName => {
+    element.addEventListener(eventName, (e) => {
+      console.log(`🎯 [SimpleAutocomplete] EVENT: ${eventName}`, e);
+    });
+  });
+
+  // Listen for place selection (primary approach)
   element.addEventListener('gmp-placeselect', async (event) => {
-    console.log('🎯 [SimpleAutocomplete] Place selected!');
-    const place = event.detail.place;
+    console.log('🎯 [SimpleAutocomplete] ✅ Place selected!');
+    const place = event.detail?.place;
     
     if (!place) {
-      console.warn('🎯 [SimpleAutocomplete] No place in event');
+      console.warn('🎯 [SimpleAutocomplete] No place in event.detail');
       return;
     }
 
@@ -118,7 +126,7 @@ onMounted(async () => {
       console.log('🎯 [SimpleAutocomplete] Address:', formattedAddress);
       
       emit('update:modelValue', formattedAddress);
-      console.log('🎯 [SimpleAutocomplete] Emitted to parent');
+      console.log('🎯 [SimpleAutocomplete] ✅ Emitted to parent:', formattedAddress);
       
       const coordinates = place.location ? {
         lat: place.location.lat(),
@@ -136,26 +144,63 @@ onMounted(async () => {
     }
   });
 
-  // POLLING for value changes
+  // POLLING for value changes (very aggressive)
   const getInputValue = () => {
     try {
+      // Try multiple ways to access the input
+      console.log('🎯 [SimpleAutocomplete] Checking for input...');
+      
+      // Method 1: Light DOM
       let input = element.querySelector('input');
+      console.log('🎯 [SimpleAutocomplete] Light DOM input:', input);
+      
+      // Method 2: Shadow DOM
       if (!input && element.shadowRoot) {
         input = element.shadowRoot.querySelector('input');
+        console.log('🎯 [SimpleAutocomplete] Shadow DOM input:', input);
       }
-      return input?.value || '';
+      
+      // Method 3: Check all inputs on page
+      if (!input) {
+        const allInputs = document.querySelectorAll('input');
+        console.log('🎯 [SimpleAutocomplete] All inputs on page:', allInputs.length);
+        // Find the one that might have an address value
+        for (const inp of allInputs) {
+          if (inp.value && inp.value.length > 10 && inp.value.includes(',')) {
+            console.log('🎯 [SimpleAutocomplete] Found candidate input:', inp.value);
+            input = inp;
+            break;
+          }
+        }
+      }
+      
+      const value = input?.value || '';
+      if (value) {
+        console.log('🎯 [SimpleAutocomplete] Input value:', value, 'length:', value.length);
+      }
+      return value;
     } catch (e) {
+      console.error('🎯 [SimpleAutocomplete] Error getting input:', e);
       return '';
     }
   };
 
   let lastValue = '';
+  let pollCount = 0;
   pollInterval = setInterval(() => {
+    pollCount++;
+    if (pollCount % 10 === 0) {  // Log every 10th poll (every second)
+      console.log('🎯 [SimpleAutocomplete] Polling...', pollCount);
+    }
+    
     const currentValue = getInputValue();
-    if (currentValue && currentValue !== lastValue && currentValue.length > 10) {
-      console.log('🎯 [SimpleAutocomplete] POLL:', currentValue);
+    if (currentValue && currentValue !== lastValue) {
+      console.log('🎯 [SimpleAutocomplete] 🚀 POLL DETECTED CHANGE!');
+      console.log('🎯 [SimpleAutocomplete] Old:', lastValue);
+      console.log('🎯 [SimpleAutocomplete] New:', currentValue);
       lastValue = currentValue;
       emit('update:modelValue', currentValue);
+      console.log('🎯 [SimpleAutocomplete] ✅ Emitted via poll');
     }
   }, 100);
 
