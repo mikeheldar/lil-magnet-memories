@@ -120,7 +120,7 @@ const getSuggestions = async (input) => {
   try {
     const request = {
       input: input,
-      types: ['address'],
+      // Don't specify types - let it return all place types
     };
 
     autocompleteService.getPlacePredictions(request, (predictions, status) => {
@@ -152,24 +152,29 @@ const getSuggestions = async (input) => {
 };
 
 const selectSuggestion = async (suggestion) => {
-  console.log('🏗️ [AddressAutocomplete] Suggestion selected:', suggestion);
+  console.log('🏗️ [AddressAutocomplete] ✅ SUGGESTION CLICKED:', suggestion.description);
   
-  // Set the display value
+  // Set the display value IMMEDIATELY
   inputValue.value = suggestion.description;
   emit('update:modelValue', suggestion.description);
+  console.log('🏗️ [AddressAutocomplete] ✅ Emitted update:modelValue:', suggestion.description);
+  
   suggestions.value = [];
 
   // Get place details
   if (placesService) {
+    console.log('🏗️ [AddressAutocomplete] Fetching place details for:', suggestion.place_id);
     const request = {
       placeId: suggestion.place_id,
       fields: ['formatted_address', 'address_components', 'geometry', 'name'],
     };
 
     placesService.getDetails(request, (place, status) => {
-      console.log('🏗️ [AddressAutocomplete] Got place details:', place, 'status:', status);
+      console.log('🏗️ [AddressAutocomplete] Place details status:', status);
       
       if (status === 'OK' && place) {
+        console.log('🏗️ [AddressAutocomplete] Place details received:', place.formatted_address);
+        
         // Extract address components
         const addressComponents = {};
         if (place.address_components) {
@@ -198,8 +203,7 @@ const selectSuggestion = async (suggestion) => {
           });
         }
 
-        // Emit detailed place information
-        emit('place-selected', {
+        const placeData = {
           formattedAddress: place.formatted_address || suggestion.description,
           addressComponents,
           coordinates: place.geometry?.location ? {
@@ -208,9 +212,17 @@ const selectSuggestion = async (suggestion) => {
           } : null,
           placeId: suggestion.place_id,
           name: place.name,
-        });
+        };
+
+        // Emit detailed place information
+        console.log('🏗️ [AddressAutocomplete] ✅ Emitting place-selected:', placeData);
+        emit('place-selected', placeData);
+      } else {
+        console.error('🏗️ [AddressAutocomplete] ❌ Failed to get place details:', status);
       }
     });
+  } else {
+    console.error('🏗️ [AddressAutocomplete] ❌ PlacesService not initialized');
   }
 };
 
