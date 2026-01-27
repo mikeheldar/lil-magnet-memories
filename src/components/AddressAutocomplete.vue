@@ -111,11 +111,19 @@ const handleBlur = () => {
 
 const getSuggestions = async (input) => {
   if (!autocompleteService) {
-    console.log('🏗️ [AddressAutocomplete] Autocomplete service not ready');
+    console.error('🏗️ [AddressAutocomplete] ❌ Autocomplete service not ready');
+    return;
+  }
+
+  if (!window.google?.maps?.places) {
+    console.error('🏗️ [AddressAutocomplete] ❌ Google Maps Places API not available');
     return;
   }
 
   console.log('🏗️ [AddressAutocomplete] Getting suggestions for:', input);
+  console.log('🏗️ [AddressAutocomplete] Service ready:', !!autocompleteService);
+
+  loading.value = true;
 
   try {
     const request = {
@@ -123,30 +131,42 @@ const getSuggestions = async (input) => {
       // Don't specify types - let it return all place types
     };
 
+    console.log('🏗️ [AddressAutocomplete] Calling getPlacePredictions with request:', request);
+
     autocompleteService.getPlacePredictions(request, (predictions, status) => {
-      console.log('🏗️ [AddressAutocomplete] Predictions callback fired');
+      console.log('🏗️ [AddressAutocomplete] ✅ Predictions callback fired!');
       console.log('🏗️ [AddressAutocomplete] Status:', status);
+      console.log('🏗️ [AddressAutocomplete] Predictions:', predictions);
       console.log('🏗️ [AddressAutocomplete] Predictions count:', predictions?.length || 0);
+      
+      loading.value = false;
       
       if (status === 'OK' && predictions) {
         suggestions.value = predictions;
-        console.log('🏗️ [AddressAutocomplete] Set suggestions:', suggestions.value.length);
+        console.log('🏗️ [AddressAutocomplete] ✅ Set suggestions:', suggestions.value.length);
       } else if (status === 'ZERO_RESULTS') {
-        console.log('🏗️ [AddressAutocomplete] No results found');
+        console.log('🏗️ [AddressAutocomplete] ⚠️ No results found');
         suggestions.value = [];
       } else if (status === 'REQUEST_DENIED') {
-        console.error('🏗️ [AddressAutocomplete] REQUEST DENIED - Check API key and restrictions');
+        console.error('🏗️ [AddressAutocomplete] ❌ REQUEST DENIED - Check API key and restrictions');
+        console.error('🏗️ [AddressAutocomplete] Make sure Places API is enabled in Google Cloud Console');
         suggestions.value = [];
       } else if (status === 'INVALID_REQUEST') {
-        console.error('🏗️ [AddressAutocomplete] INVALID REQUEST - Check request parameters');
+        console.error('🏗️ [AddressAutocomplete] ❌ INVALID REQUEST - Check request parameters');
+        suggestions.value = [];
+      } else if (status === 'OVER_QUERY_LIMIT') {
+        console.error('🏗️ [AddressAutocomplete] ❌ OVER_QUERY_LIMIT - Too many requests');
         suggestions.value = [];
       } else {
-        console.error('🏗️ [AddressAutocomplete] Error status:', status);
+        console.error('🏗️ [AddressAutocomplete] ❌ Error status:', status);
         suggestions.value = [];
       }
     });
+    
+    console.log('🏗️ [AddressAutocomplete] getPlacePredictions called, waiting for callback...');
   } catch (error) {
-    console.error('🏗️ [AddressAutocomplete] Error getting suggestions:', error);
+    console.error('🏗️ [AddressAutocomplete] ❌ Exception getting suggestions:', error);
+    loading.value = false;
     suggestions.value = [];
   }
 };
@@ -228,20 +248,33 @@ const selectSuggestion = async (suggestion) => {
 
 const initServices = () => {
   if (!window.google || !window.google.maps || !window.google.maps.places) {
-    console.error('🏗️ [AddressAutocomplete] Google Maps API not loaded');
-    return;
+    console.error('🏗️ [AddressAutocomplete] ❌ Google Maps API not loaded');
+    console.error('🏗️ [AddressAutocomplete] window.google:', !!window.google);
+    console.error('🏗️ [AddressAutocomplete] window.google.maps:', !!window.google?.maps);
+    console.error('🏗️ [AddressAutocomplete] window.google.maps.places:', !!window.google?.maps?.places);
+    return false;
   }
 
   console.log('🏗️ [AddressAutocomplete] Initializing services...');
+  console.log('🏗️ [AddressAutocomplete] AutocompleteService available:', !!window.google.maps.places.AutocompleteService);
+  console.log('🏗️ [AddressAutocomplete] PlacesService available:', !!window.google.maps.places.PlacesService);
   
-  // Initialize AutocompleteService for predictions
-  autocompleteService = new window.google.maps.places.AutocompleteService();
-  
-  // Initialize PlacesService for details (needs a div element)
-  const div = document.createElement('div');
-  placesService = new window.google.maps.places.PlacesService(div);
-  
-  console.log('🏗️ [AddressAutocomplete] Services initialized successfully');
+  try {
+    // Initialize AutocompleteService for predictions
+    autocompleteService = new window.google.maps.places.AutocompleteService();
+    console.log('🏗️ [AddressAutocomplete] ✅ AutocompleteService created:', !!autocompleteService);
+    
+    // Initialize PlacesService for details (needs a div element)
+    const div = document.createElement('div');
+    placesService = new window.google.maps.places.PlacesService(div);
+    console.log('🏗️ [AddressAutocomplete] ✅ PlacesService created:', !!placesService);
+    
+    console.log('🏗️ [AddressAutocomplete] ✅ Services initialized successfully');
+    return true;
+  } catch (error) {
+    console.error('🏗️ [AddressAutocomplete] ❌ Error initializing services:', error);
+    return false;
+  }
 };
 
 const loadGoogleMapsScript = () => {
@@ -302,14 +335,27 @@ const loadGoogleMapsScript = () => {
 
 onMounted(async () => {
   loading.value = true;
-  console.log('🏗️ [AddressAutocomplete] Mounting...');
+  console.log('🏗️ [AddressAutocomplete] 🚀 Mounting...');
   
   try {
+    console.log('🏗️ [AddressAutocomplete] Step 1: Loading Google Maps script...');
     await loadGoogleMapsScript();
-    initServices();
-    console.log('🏗️ [AddressAutocomplete] Mount complete - ready to use');
+    console.log('🏗️ [AddressAutocomplete] ✅ Step 1 complete: Script loaded');
+    
+    console.log('🏗️ [AddressAutocomplete] Step 2: Initializing services...');
+    const success = initServices();
+    
+    if (success) {
+      console.log('🏗️ [AddressAutocomplete] ✅ Step 2 complete: Services initialized');
+      console.log('🏗️ [AddressAutocomplete] ✅ Mount complete - READY TO USE');
+      console.log('🏗️ [AddressAutocomplete] autocompleteService:', !!autocompleteService);
+      console.log('🏗️ [AddressAutocomplete] placesService:', !!placesService);
+    } else {
+      console.error('🏗️ [AddressAutocomplete] ❌ Step 2 failed: Service initialization failed');
+    }
   } catch (error) {
-    console.error('🏗️ [AddressAutocomplete] Mount error:', error);
+    console.error('🏗️ [AddressAutocomplete] ❌ Mount error:', error);
+    console.error('🏗️ [AddressAutocomplete] Error details:', error.message, error.stack);
   } finally {
     loading.value = false;
   }

@@ -293,9 +293,7 @@
               label="Location/Address"
               :rules="[(val) => !!val || 'Location is required']"
               hint="Start typing an address and select from the dropdown"
-              @update:model-value="(val) => { console.log('📍 update:model-value fired:', val); newEvent.location = val; }"
               @place-selected="onNewEventPlaceSelected"
-              @selected="onNewEventPlaceSelected"
             />
 
             <div class="row q-gutter-md">
