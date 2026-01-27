@@ -109,7 +109,7 @@ onMounted(async () => {
 
   // Listen for place selection (primary approach)
   element.addEventListener('gmp-placeselect', async (event) => {
-    console.log('🎯 [SimpleAutocomplete] ✅ Place selected!');
+    console.log('🎯 [SimpleAutocomplete] ✅ gmp-placeselect EVENT FIRED!');
     const place = event.detail?.place;
     
     if (!place) {
@@ -123,24 +123,32 @@ onMounted(async () => {
       });
 
       const formattedAddress = place.formattedAddress || place.displayName;
-      console.log('🎯 [SimpleAutocomplete] Address:', formattedAddress);
+      console.log('🎯 [SimpleAutocomplete] ✅ Formatted address:', formattedAddress);
       
+      // EMIT BOTH EVENTS IMMEDIATELY
       emit('update:modelValue', formattedAddress);
-      console.log('🎯 [SimpleAutocomplete] ✅ Emitted to parent:', formattedAddress);
+      console.log('🎯 [SimpleAutocomplete] ✅ Emitted update:modelValue');
       
       const coordinates = place.location ? {
         lat: place.location.lat(),
         lng: place.location.lng(),
       } : null;
       
-      emit('place-selected', {
+      const placeDetails = {
         formattedAddress,
         coordinates,
         placeId: place.id,
-      });
+      };
+      
+      emit('place-selected', placeDetails);
+      console.log('🎯 [SimpleAutocomplete] ✅ Emitted place-selected:', placeDetails);
+      
+      // ALSO emit a generic 'selected' event as backup
+      emit('selected', placeDetails);
+      console.log('🎯 [SimpleAutocomplete] ✅ Emitted selected (backup)');
       
     } catch (error) {
-      console.error('🎯 [SimpleAutocomplete] Error:', error);
+      console.error('🎯 [SimpleAutocomplete] ❌ Error:', error);
     }
   });
 

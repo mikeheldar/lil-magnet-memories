@@ -293,7 +293,9 @@
               label="Location/Address"
               :rules="[(val) => !!val || 'Location is required']"
               hint="Start typing an address and select from the dropdown"
+              @update:model-value="(val) => { console.log('📍 update:model-value fired:', val); newEvent.location = val; }"
               @place-selected="onNewEventPlaceSelected"
+              @selected="onNewEventPlaceSelected"
             />
 
             <div class="row q-gutter-md">
@@ -451,7 +453,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { firebaseService } from '../services/firebaseService';
 import { marketEventService } from '../services/marketEventService.js';
@@ -532,6 +534,13 @@ export default {
 
     // New event form
     const newEvent = ref(initializeNewEvent());
+    
+    // Watch for location changes
+    watch(() => newEvent.value.location, (newVal, oldVal) => {
+      console.log('👀 [MarketEventsPage] WATCH TRIGGERED! newEvent.location changed');
+      console.log('👀 [MarketEventsPage] Old value:', oldVal);
+      console.log('👀 [MarketEventsPage] New value:', newVal);
+    });
 
     // Format date and time for display
     const formatDateTime = (dateTimeString) => {
@@ -782,12 +791,16 @@ export default {
     // Create new event
     const createEvent = async () => {
       // Debug: Log the current form values
-      console.log('Creating event with values:', {
+      console.log('🔥 [MarketEventsPage] CREATE EVENT CALLED');
+      console.log('🔥 [MarketEventsPage] Full newEvent object:', JSON.stringify(newEvent.value, null, 2));
+      console.log('🔥 [MarketEventsPage] Creating event with values:', {
         name: newEvent.value.name,
         location: newEvent.value.location,
         startDateTime: newEvent.value.startDateTime,
         endDateTime: newEvent.value.endDateTime,
       });
+      console.log('🔥 [MarketEventsPage] Location value type:', typeof newEvent.value.location);
+      console.log('🔥 [MarketEventsPage] Location value length:', newEvent.value.location?.length);
 
       if (
         !newEvent.value.name ||
@@ -1152,26 +1165,29 @@ export default {
 
     // Handle place selection for new event
     const onNewEventPlaceSelected = (placeDetails) => {
-      console.log('New event place selected:', placeDetails);
+      console.log('🚀 [MarketEventsPage] onNewEventPlaceSelected CALLED!');
+      console.log('🚀 [MarketEventsPage] Place details:', JSON.stringify(placeDetails));
+      console.log('🚀 [MarketEventsPage] BEFORE - newEvent.location:', newEvent.value.location);
       
       // FORCE set the location directly - bypass v-model
       newEvent.value.location = placeDetails.formattedAddress;
       
-      console.log('Current newEvent.location:', newEvent.value.location);
+      console.log('🚀 [MarketEventsPage] AFTER SET - newEvent.location:', newEvent.value.location);
       
       // Store additional details if needed
       if (placeDetails.coordinates) {
         newEvent.value.coordinates = placeDetails.coordinates;
         newEvent.value.placeId = placeDetails.placeId;
+        console.log('🚀 [MarketEventsPage] Stored coordinates:', placeDetails.coordinates);
       }
       
       // Force reactivity update
-      console.log('After place selected, newEvent.location:', newEvent.value.location);
+      console.log('🚀 [MarketEventsPage] Forcing reactivity...');
+      const oldEvent = newEvent.value;
+      newEvent.value = { ...oldEvent, location: placeDetails.formattedAddress };
       
-      // Trigger a manual update to ensure Vue detects the change
-      newEvent.value = { ...newEvent.value };
-      
-      console.log('After force update, newEvent.location:', newEvent.value.location);
+      console.log('🚀 [MarketEventsPage] FINAL - newEvent.location:', newEvent.value.location);
+      console.log('🚀 [MarketEventsPage] FINAL - Full newEvent:', newEvent.value);
     };
 
     // Handle place selection for editing event
