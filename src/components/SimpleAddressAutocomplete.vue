@@ -100,10 +100,32 @@ onMounted(async () => {
   console.log('🎯 [SimpleAutocomplete] Element found, setting up listener');
   console.log('🎯 [SimpleAutocomplete] Element:', element);
 
-  // LISTEN TO ALL EVENTS for debugging
-  ['gmp-placeselect', 'place-changed', 'place_changed', 'change', 'input', 'blur'].forEach(eventName => {
+  // Try to access value property directly
+  Object.defineProperty(element, 'onValueChange', {
+    set: function(value) {
+      console.log('🎯 [SimpleAutocomplete] ⚡ Value property changed:', value);
+      if (value) {
+        emit('update:modelValue', value);
+        emit('place-selected', { formattedAddress: value });
+      }
+    }
+  });
+
+  // LISTEN TO ALL POSSIBLE EVENTS
+  ['gmp-placeselect', 'place_changed', 'placeselect', 'select', 'change', 'input', 'blur', 'click'].forEach(eventName => {
     element.addEventListener(eventName, (e) => {
       console.log(`🎯 [SimpleAutocomplete] EVENT: ${eventName}`, e);
+      
+      // Try to get value on any event
+      if (eventName === 'blur' || eventName === 'change') {
+        const value = element.value || element.getAttribute('value');
+        console.log(`🎯 [SimpleAutocomplete] On ${eventName}, element.value:`, value);
+        if (value && value.length > 10) {
+          console.log(`🎯 [SimpleAutocomplete] ✅ FOUND VALUE ON ${eventName}:`, value);
+          emit('update:modelValue', value);
+          emit('place-selected', { formattedAddress: value });
+        }
+      }
     });
   });
 
