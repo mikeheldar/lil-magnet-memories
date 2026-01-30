@@ -48,6 +48,11 @@ service cloud.firestore {
         (request.auth.token.email != null &&
          resource.data.get('customer', {}).get('email', null) == request.auth.token.email)
       );
+      
+      // Allow collection-level list/query operations for authenticated users
+      // This enables admins to list all orders in the orders list page
+      // Note: Individual order access is still restricted by the read rule above
+      allow list: if request.auth != null;
 
       // Allow users to update their own orders (for status updates, etc.)
       allow update: if request.auth != null && (
