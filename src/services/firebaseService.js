@@ -10,6 +10,8 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  where,
+  limit,
 } from 'firebase/firestore';
 import {
   ref,
@@ -1585,7 +1587,8 @@ class FirebaseService {
   async getProducts(includeTesting = false) {
     try {
       const productsCollection = collection(db, 'products');
-      const q = query(productsCollection, orderBy('description', 'asc'));
+      // Order by sortOrder first, then by description as fallback
+      const q = query(productsCollection, orderBy('sortOrder', 'asc'), orderBy('description', 'asc'));
       const querySnapshot = await getDocs(q);
 
       const products = [];
@@ -1664,8 +1667,31 @@ class FirebaseService {
   async addProduct(productData) {
     try {
       const productsCollection = collection(db, 'products');
+      
+      // Get the highest sortOrder for products in the same category and collection
+      let maxSortOrder = -1;
+      const q = query(
+        productsCollection,
+        where('category', '==', productData.category || 'custom'),
+        where('collection', '==', productData.collection || 'Uncategorized'),
+        orderBy('sortOrder', 'desc'),
+        limit(1)
+      );
+      
+      try {
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const topProduct = snapshot.docs[0].data();
+          maxSortOrder = topProduct.sortOrder ?? -1;
+        }
+      } catch (queryError) {
+        // If query fails (e.g., missing index), just use default sort order
+        console.warn('Could not query for max sortOrder, using default:', queryError.message);
+      }
+      
       const docRef = await addDoc(productsCollection, {
         ...productData,
+        sortOrder: maxSortOrder + 1,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -1695,6 +1721,28 @@ class FirebaseService {
       await deleteDoc(productDoc);
     } catch (error) {
       console.error('Error deleting product:', error);
+      throw error;
+    }
+  }
+
+  async updateProductSortOrders(productUpdates) {
+    try {
+      // productUpdates is an array of { id, sortOrder }
+      // Update all products in a batch for efficiency
+      const batch = [];
+      for (const update of productUpdates) {
+        const productDoc = doc(db, 'products', update.id);
+        batch.push(
+          updateDoc(productDoc, {
+            sortOrder: update.sortOrder,
+            updatedAt: serverTimestamp(),
+          })
+        );
+      }
+      await Promise.all(batch);
+      console.log(`Updated sort order for ${productUpdates.length} products`);
+    } catch (error) {
+      console.error('Error updating product sort orders:', error);
       throw error;
     }
   }

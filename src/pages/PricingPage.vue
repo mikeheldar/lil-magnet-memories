@@ -63,93 +63,111 @@
               default-opened
               class="collection-group q-mb-sm"
             >
-              <q-list separator>
-                <q-item
-                  v-for="product in productsInCollection"
-                  :key="product.id"
-                  class="product-item"
-                >
-                  <q-item-section avatar>
-                    <!-- Show first image from images array or imageUrl -->
-                    <q-avatar 
-                      v-if="(product.images && product.images.length > 0) || product.imageUrl" 
-                      size="80px"
-                      square
-                    >
-                      <img 
-                        :src="product.images && product.images.length > 0 ? product.images[0] : product.imageUrl" 
-                        :alt="product.description"
-                        style="object-fit: cover; width: 100%; height: 100%;"
+              <draggable
+                v-model="productsByCollection[collectionName]"
+                @end="onDragEnd(collectionName)"
+                item-key="id"
+                :animation="200"
+                handle=".drag-handle"
+                class="draggable-list"
+              >
+                <template #item="{ element: product }">
+                  <q-item
+                    :key="product.id"
+                    class="product-item"
+                  >
+                    <q-item-section avatar>
+                      <q-icon 
+                        name="drag_indicator" 
+                        size="sm" 
+                        class="drag-handle cursor-move text-grey-6"
+                        style="cursor: grab;"
+                      >
+                        <q-tooltip>Drag to reorder</q-tooltip>
+                      </q-icon>
+                    </q-item-section>
+                    <q-item-section avatar>
+                      <!-- Show first image from images array or imageUrl -->
+                      <q-avatar 
+                        v-if="(product.images && product.images.length > 0) || product.imageUrl" 
+                        size="80px"
+                        square
+                      >
+                        <img 
+                          :src="product.images && product.images.length > 0 ? product.images[0] : product.imageUrl" 
+                          :alt="product.description"
+                          style="object-fit: cover; width: 100%; height: 100%;"
+                        />
+                      </q-avatar>
+                      <q-avatar 
+                        v-else 
+                        size="80px"
+                        square
+                        color="grey-3"
+                        icon="image"
                       />
-                    </q-avatar>
-                    <q-avatar 
-                      v-else 
-                      size="80px"
-                      square
-                      color="grey-3"
-                      icon="image"
-                    />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label class="text-h6">
-                      {{ product.description }}
-                      <q-chip
-                        v-if="product.isTesting"
-                        color="orange"
-                        text-color="white"
-                        size="sm"
-                        class="q-ml-sm"
-                      >
-                        Testing Only
-                      </q-chip>
-                      <q-chip
-                        v-if="product.isDefault"
-                        color="green"
-                        text-color="white"
-                        size="sm"
-                        class="q-ml-sm"
-                        icon="star"
-                      >
-                        Default
-                      </q-chip>
-                    </q-item-label>
-                    <q-item-label caption>
-                      <div class="q-mb-xs">
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label class="text-h6">
+                        {{ product.description }}
                         <q-chip
-                          :color="getCategoryColor(product.category)"
+                          v-if="product.isTesting"
+                          color="orange"
                           text-color="white"
                           size="sm"
+                          class="q-ml-sm"
                         >
-                          {{ getCategoryLabel(product.category) }}
+                          Testing Only
                         </q-chip>
-                      </div>
-                      <div
-                        v-for="(price, qty) in product.pricing"
-                        :key="qty"
-                        class="price-info"
-                      >
-                        {{ qty }} for ${{ price.toFixed(2) }}
-                      </div>
-                    </q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    <q-btn
-                      flat
-                      round
-                      icon="edit"
-                      color="primary"
-                      @click="editProduct(product.originalIndex)"
-                    />
-                    <q-btn
-                      flat
-                      round
-                      icon="delete"
-                      color="negative"
-                      @click="confirmDelete(product.originalIndex)"
-                    />
-                  </q-item-section>
-                </q-item>
-              </q-list>
+                        <q-chip
+                          v-if="product.isDefault"
+                          color="green"
+                          text-color="white"
+                          size="sm"
+                          class="q-ml-sm"
+                          icon="star"
+                        >
+                          Default
+                        </q-chip>
+                      </q-item-label>
+                      <q-item-label caption>
+                        <div class="q-mb-xs">
+                          <q-chip
+                            :color="getCategoryColor(product.category)"
+                            text-color="white"
+                            size="sm"
+                          >
+                            {{ getCategoryLabel(product.category) }}
+                          </q-chip>
+                        </div>
+                        <div
+                          v-for="(price, qty) in product.pricing"
+                          :key="qty"
+                          class="price-info"
+                        >
+                          {{ qty }} for ${{ price.toFixed(2) }}
+                        </div>
+                      </q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-btn
+                        flat
+                        round
+                        icon="edit"
+                        color="primary"
+                        @click="editProduct(product.originalIndex)"
+                      />
+                      <q-btn
+                        flat
+                        round
+                        icon="delete"
+                        color="negative"
+                        @click="confirmDelete(product.originalIndex)"
+                      />
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </draggable>
             </q-expansion-item>
           </div>
           <div v-else class="text-center q-pa-lg text-grey-6">
@@ -729,7 +747,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, nextTick } from 'vue';
+import { ref, onMounted, computed, nextTick, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { authService } from '../services/authService';
 import { useRouter } from 'vue-router';
@@ -737,10 +755,13 @@ import {
   firebaseService,
   DEFAULT_SHIPPING_OPTIONS,
 } from '../services/firebaseService.js';
+import draggable from 'vuedraggable';
 
 export default {
   name: 'PricingPage',
-  components: {},
+  components: {
+    draggable,
+  },
   setup() {
     const $q = useQuasar();
     const router = useRouter();
@@ -767,14 +788,18 @@ export default {
     const designerVisible = ref(true);
     const specialtyVisible = ref(true);
     const updatingVisibility = ref(false);
+    
+    // Group products by collection for draggable lists
+    const productsByCollection = ref({});
+    const savingSortOrder = ref(false);
 
     // Filter products by active category
     const filteredProducts = computed(() => {
       return products.value.filter(product => product.category === activeCategory.value);
     });
-
-    // Group filtered products by collection
-    const productsByCollection = computed(() => {
+    
+    // Update productsByCollection whenever products or category changes
+    const updateProductsByCollection = () => {
       const grouped = {};
       filteredProducts.value.forEach((product) => {
         const collection = product.collection || 'Uncategorized';
@@ -795,8 +820,8 @@ export default {
       sorted.forEach(key => {
         result[key] = grouped[key];
       });
-      return result;
-    });
+      productsByCollection.value = result;
+    };
 
     // Extract unique collections from all products
     const collectionOptions = computed(() => {
@@ -917,6 +942,16 @@ export default {
       }
       await Promise.all([loadProducts(), loadShippingOptions(), loadVisibilitySettings()]);
     });
+    
+    // Watch for category changes and update grouped products
+    watch(activeCategory, () => {
+      updateProductsByCollection();
+    });
+    
+    // Watch for product changes and update grouped products
+    watch(products, () => {
+      updateProductsByCollection();
+    }, { deep: true });
 
     const pricingEntries = computed(() => {
       if (!editingProduct.value) return [];
@@ -935,6 +970,7 @@ export default {
         // Admins see all products including testing ones
         const productsData = await firebaseService.getProducts(true);
         products.value = productsData || [];
+        updateProductsByCollection();
       } catch (error) {
         console.error('Error loading products:', error);
         safeNotify({
@@ -942,6 +978,52 @@ export default {
           message: 'Failed to load products',
           position: 'top',
         });
+      }
+    };
+    
+    // Handle drag end - save new sort order
+    const onDragEnd = async (collectionName) => {
+      if (savingSortOrder.value) return;
+      
+      savingSortOrder.value = true;
+      try {
+        // Get the reordered products from this collection
+        const reorderedProducts = productsByCollection.value[collectionName];
+        
+        // Create update array with new sort orders
+        const updates = reorderedProducts.map((product, index) => ({
+          id: product.id,
+          sortOrder: index
+        }));
+        
+        // Update in Firebase
+        await firebaseService.updateProductSortOrders(updates);
+        
+        // Update local products array with new sort orders
+        reorderedProducts.forEach((product, index) => {
+          const productInArray = products.value.find(p => p.id === product.id);
+          if (productInArray) {
+            productInArray.sortOrder = index;
+          }
+        });
+        
+        safeNotify({
+          type: 'positive',
+          message: 'Product order updated',
+          position: 'top',
+          timeout: 2000,
+        });
+      } catch (error) {
+        console.error('Error saving product sort order:', error);
+        safeNotify({
+          type: 'negative',
+          message: 'Failed to save product order',
+          position: 'top',
+        });
+        // Reload products to restore original order
+        await loadProducts();
+      } finally {
+        savingSortOrder.value = false;
       }
     };
 
@@ -1688,6 +1770,8 @@ export default {
       designerVisible,
       specialtyVisible,
       updateVisibility,
+      onDragEnd,
+      savingSortOrder,
     };
   },
 };
@@ -1713,12 +1797,47 @@ export default {
 .product-item {
   padding: 16px;
   min-height: 100px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  transition: background-color 0.2s;
+}
+
+.product-item:hover {
+  background: #f9f9f9;
 }
 
 .product-item img {
   object-fit: cover;
   width: 100%;
   height: 100%;
+}
+
+.drag-handle {
+  cursor: grab;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.draggable-list {
+  min-height: 50px;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+  background: #f0f0f0;
+}
+
+.sortable-drag {
+  opacity: 1;
+  cursor: grabbing;
 }
 
 .price-info {
