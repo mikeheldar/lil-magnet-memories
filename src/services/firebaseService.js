@@ -1587,8 +1587,8 @@ class FirebaseService {
   async getProducts(includeTesting = false) {
     try {
       const productsCollection = collection(db, 'products');
-      // Order by sortOrder first, then by description as fallback
-      const q = query(productsCollection, orderBy('sortOrder', 'asc'), orderBy('description', 'asc'));
+      // Order by sortOrder field (all products should have this now)
+      const q = query(productsCollection, orderBy('sortOrder', 'asc'));
       const querySnapshot = await getDocs(q);
 
       const products = [];
