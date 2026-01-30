@@ -46,14 +46,14 @@ service cloud.firestore {
       allow read: if request.auth != null && (
         resource.data.userId == request.auth.uid ||
         (request.auth.token.email != null &&
-         resource.data.customer?.email == request.auth.token.email)
+         resource.data.get('customer', {}).get('email', null) == request.auth.token.email)
       );
 
       // Allow users to update their own orders (for status updates, etc.)
       allow update: if request.auth != null && (
         resource.data.userId == request.auth.uid ||
         (request.auth.token.email != null &&
-         resource.data.customer?.email == request.auth.token.email)
+         resource.data.get('customer', {}).get('email', null) == request.auth.token.email)
       );
 
       // Allow delete for authenticated users (admin check in app code)
@@ -95,6 +95,36 @@ service cloud.firestore {
       allow read: if true;
       // Only authenticated users can write (admin check in app code)
       allow write: if request.auth != null;
+    }
+
+    // Reviews - Public read, authenticated write
+    match /reviews/{reviewId} {
+      // Anyone can read reviews (needed for landing page testimonials)
+      allow read: if true;
+      // Authenticated users can create reviews
+      allow create: if request.auth != null;
+      // Only authenticated users can update/delete (admin check in app code)
+      allow update, delete: if request.auth != null;
+    }
+
+    // User Carts - User can read/write their own cart
+    match /user_carts/{userId} {
+      // Users can read and write their own cart
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User Preferences - User can read/write their own preferences
+    match /user_preferences/{userId} {
+      // Users can read and write their own preferences
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Errored Transactions - Authenticated write only (for logging payment errors)
+    match /errored_transactions/{transactionId} {
+      // Only authenticated users can create error logs
+      allow create: if request.auth != null;
+      // Only authenticated users can read (admin check in app code)
+      allow read: if request.auth != null;
     }
 
     // Deny all other collections by default
