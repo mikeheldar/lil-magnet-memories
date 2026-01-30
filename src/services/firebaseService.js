@@ -1587,9 +1587,19 @@ class FirebaseService {
   async getProducts(includeTesting = false) {
     try {
       const productsCollection = collection(db, 'products');
-      // Order by sortOrder field (all products should have this now)
-      const q = query(productsCollection, orderBy('sortOrder', 'asc'));
-      const querySnapshot = await getDocs(q);
+      let querySnapshot;
+      
+      try {
+        // Try to order by sortOrder field
+        const q = query(productsCollection, orderBy('sortOrder', 'asc'));
+        querySnapshot = await getDocs(q);
+        console.log('✅ Products query with sortOrder succeeded:', querySnapshot.size, 'products');
+      } catch (sortOrderError) {
+        // Fallback: if sortOrder query fails, try without ordering
+        console.warn('⚠️ sortOrder query failed, falling back to unordered query:', sortOrderError.message);
+        querySnapshot = await getDocs(productsCollection);
+        console.log('✅ Products query without ordering succeeded:', querySnapshot.size, 'products');
+      }
 
       const products = [];
       querySnapshot.forEach((doc) => {
@@ -1603,10 +1613,22 @@ class FirebaseService {
         }
         products.push(productData);
       });
+      
+      // If we got products without ordering, sort them in memory
+      if (products.length > 0 && products[0].sortOrder !== undefined) {
+        products.sort((a, b) => {
+          const sortA = a.sortOrder ?? 999999;
+          const sortB = b.sortOrder ?? 999999;
+          return sortA - sortB;
+        });
+      }
 
+      console.log(`✅ Returning ${products.length} products (includeTesting: ${includeTesting})`);
       return products;
     } catch (error) {
       console.error('Error getting products:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
       throw error;
     }
   }
