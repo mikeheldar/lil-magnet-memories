@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "lil-magnet-memories",
+    "test": "lil-magnet-memories-test"
+  }
+}

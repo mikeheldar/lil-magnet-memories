@@ -1588,17 +1588,29 @@ class FirebaseService {
     try {
       const productsCollection = collection(db, 'products');
       let querySnapshot;
+      let usedSortOrder = false;
       
       try {
         // Try to order by sortOrder field
         const q = query(productsCollection, orderBy('sortOrder', 'asc'));
         querySnapshot = await getDocs(q);
         console.log('✅ Products query with sortOrder succeeded:', querySnapshot.size, 'products');
+        usedSortOrder = true;
+        
+        // If query succeeded but returned 0 products, fallback to unordered query
+        // This handles the case where products exist but don't have sortOrder field
+        if (querySnapshot.size === 0) {
+          console.warn('⚠️ sortOrder query returned 0 products, trying unordered query as fallback...');
+          querySnapshot = await getDocs(productsCollection);
+          console.log('✅ Unordered query returned:', querySnapshot.size, 'products');
+          usedSortOrder = false;
+        }
       } catch (sortOrderError) {
-        // Fallback: if sortOrder query fails, try without ordering
-        console.warn('⚠️ sortOrder query failed, falling back to unordered query:', sortOrderError.message);
+        // Fallback: if sortOrder query fails with error, try without ordering
+        console.warn('⚠️ sortOrder query failed with error, falling back to unordered query:', sortOrderError.message);
         querySnapshot = await getDocs(productsCollection);
         console.log('✅ Products query without ordering succeeded:', querySnapshot.size, 'products');
+        usedSortOrder = false;
       }
 
       const products = [];
@@ -1614,13 +1626,22 @@ class FirebaseService {
         products.push(productData);
       });
       
-      // If we got products without ordering, sort them in memory
-      if (products.length > 0 && products[0].sortOrder !== undefined) {
-        products.sort((a, b) => {
-          const sortA = a.sortOrder ?? 999999;
-          const sortB = b.sortOrder ?? 999999;
-          return sortA - sortB;
-        });
+      // Sort products in memory by sortOrder if available
+      // This handles both cases: products with sortOrder (sort by it) and without (sort by description)
+      if (products.length > 0) {
+        const hasSortOrder = products.some(p => p.sortOrder !== undefined);
+        if (hasSortOrder) {
+          products.sort((a, b) => {
+            const sortA = a.sortOrder ?? 999999;
+            const sortB = b.sortOrder ?? 999999;
+            return sortA - sortB;
+          });
+          console.log('📊 Sorted products by sortOrder in memory');
+        } else if (!usedSortOrder) {
+          // If no products have sortOrder, sort by description as fallback
+          products.sort((a, b) => (a.description || '').localeCompare(b.description || ''));
+          console.log('📊 Sorted products by description in memory (no sortOrder field)');
+        }
       }
 
       console.log(`✅ Returning ${products.length} products (includeTesting: ${includeTesting})`);
