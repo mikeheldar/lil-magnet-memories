@@ -133,7 +133,21 @@ const getSuggestions = async (input) => {
 
     console.log('🏗️ [AddressAutocomplete] Calling getPlacePredictions with request:', request);
 
+    // Set a timeout in case the callback never fires (API error)
+    const timeoutId = setTimeout(() => {
+      console.error('🏗️ [AddressAutocomplete] ❌ TIMEOUT - Callback never fired after 5 seconds');
+      console.error('🏗️ [AddressAutocomplete] This usually means ApiNotActivatedMapError or API restrictions');
+      console.error('🏗️ [AddressAutocomplete] Please check:');
+      console.error('   1. Maps JavaScript API is enabled in Google Cloud Console');
+      console.error('   2. API key has no HTTP referrer restrictions, or test.lilmagnetmemories.com is allowed');
+      console.error('   3. Billing is enabled for the Google Cloud project');
+      loading.value = false;
+      suggestions.value = [];
+    }, 5000);
+
     autocompleteService.getPlacePredictions(request, (predictions, status) => {
+      clearTimeout(timeoutId); // Cancel timeout if callback fires
+      
       console.log('🏗️ [AddressAutocomplete] ✅ Predictions callback fired!');
       console.log('🏗️ [AddressAutocomplete] Status:', status);
       console.log('🏗️ [AddressAutocomplete] Predictions:', predictions);
