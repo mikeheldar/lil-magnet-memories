@@ -288,17 +288,13 @@
               filled
             />
 
-            <q-input
+            <AddressAutocomplete
               v-model="newEvent.location"
               label="Location/Address"
               :rules="[(val) => !!val || 'Location is required']"
-              hint="Enter the full event address"
+              hint="Start typing an address..."
               filled
-            >
-              <template v-slot:prepend>
-                <q-icon name="place" />
-              </template>
-            </q-input>
+            />
 
             <div class="row q-gutter-md">
               <div class="col">
@@ -366,17 +362,13 @@
               filled
             />
 
-            <q-input
+            <AddressAutocomplete
               v-model="editingEvent.location"
               label="Location/Address"
               :rules="[(val) => !!val || 'Location is required']"
-              hint="Enter the full event address"
+              hint="Start typing an address..."
               filled
-            >
-              <template v-slot:prepend>
-                <q-icon name="place" />
-              </template>
-            </q-input>
+            />
 
             <div class="row q-gutter-md">
               <div class="col">
@@ -466,9 +458,13 @@ import { marketEventService } from '../services/marketEventService.js';
 import { authService } from '../services/authService';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import AddressAutocomplete from '../components/AddressAutocomplete.vue';
+
 export default {
   name: 'MarketEventsPage',
-  components: {},
+  components: {
+    AddressAutocomplete,
+  },
   setup() {
     const $q = useQuasar();
 
@@ -1146,8 +1142,6 @@ export default {
         eventToDelete.value = null;
       }
     };
-
-    // Removed autocomplete handlers - using simple text input now
 
     // Initialize
     onMounted(() => {
