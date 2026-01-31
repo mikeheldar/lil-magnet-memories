@@ -680,9 +680,37 @@ export default {
       const event = marketEventService.getCheckedInEvent();
       console.log('[Distance] Checking for active event:', event);
       
-      if (!event || !event.coordinates) {
-        console.log('[Distance] No active event or event has no coordinates');
+      if (!event) {
+        console.log('[Distance] No active event found');
         eventDistance.value = null;
+        return;
+      }
+      
+      // Show notification that event is live (even if no coordinates)
+      if (!event.coordinates) {
+        console.log('[Distance] Event has no coordinates, showing notification without distance');
+        eventDistance.value = null;
+        
+        // Show notification without distance (only once per page load)
+        if (!distanceNotificationShown.value) {
+          distanceNotificationShown.value = true;
+          $q.notify({
+            message: `Market Event Live! We're at ${event.name}`,
+            icon: 'event',
+            color: 'positive',
+            position: 'top',
+            timeout: 60000, // 1 minute (60,000 milliseconds)
+            actions: [
+              {
+                label: 'Dismiss',
+                color: 'white',
+                handler: () => {
+                  // Notification will be dismissed
+                }
+              }
+            ]
+          });
+        }
         return;
       }
 
@@ -730,6 +758,28 @@ export default {
       } catch (error) {
         console.error('[Distance] Error getting user location:', error);
         eventDistance.value = null;
+        
+        // Show notification even without distance (only once per page load)
+        if (!distanceNotificationShown.value) {
+          distanceNotificationShown.value = true;
+          console.log('[Distance] Showing notification without distance due to location error');
+          $q.notify({
+            message: `Market Event Live! We're at ${event.name}`,
+            icon: 'event',
+            color: 'positive',
+            position: 'top',
+            timeout: 60000, // 1 minute (60,000 milliseconds)
+            actions: [
+              {
+                label: 'Dismiss',
+                color: 'white',
+                handler: () => {
+                  // Notification will be dismissed
+                }
+              }
+            ]
+          });
+        }
       } finally {
         loadingLocation.value = false;
       }
