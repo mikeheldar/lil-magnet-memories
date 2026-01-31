@@ -679,6 +679,12 @@ export default {
       // Get the active event
       const event = marketEventService.getCheckedInEvent();
       console.log('[Distance] Checking for active event:', event);
+      console.log('[Distance] Event coordinates check:', {
+        hasEvent: !!event,
+        hasCoordinates: !!(event && event.coordinates),
+        coordinates: event?.coordinates,
+        fullEvent: event
+      });
       
       if (!event) {
         console.log('[Distance] No active event found');
@@ -689,6 +695,7 @@ export default {
       // Show notification that event is live (even if no coordinates)
       if (!event.coordinates) {
         console.log('[Distance] Event has no coordinates, showing notification without distance');
+        console.log('[Distance] Full event object:', JSON.stringify(event, null, 2));
         eventDistance.value = null;
         
         // Show notification without distance (only once per page load)

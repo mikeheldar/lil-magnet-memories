@@ -843,6 +843,8 @@ export default {
           isTesting: newEvent.value.isTesting || false,
         };
 
+        console.log('[Event Creation] Event data to save:', JSON.stringify(eventData, null, 2));
+
         // Create event in Firebase - real-time listener will update the list automatically
         await firebaseService.createMarketEvent(eventData);
 
@@ -970,6 +972,8 @@ export default {
           eventLink: editingEvent.value.eventLink || null,
           isTesting: editingEvent.value.isTesting || false,
         };
+
+        console.log('[Event Update] Event data to save:', JSON.stringify(eventData, null, 2));
 
         // Update event in Firebase - real-time listener will update the list automatically
         await firebaseService.updateMarketEvent(editingEvent.value.id, eventData);

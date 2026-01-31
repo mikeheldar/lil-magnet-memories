@@ -2226,6 +2226,7 @@ class FirebaseService {
       const eventDoc = {
         name: eventData.name,
         location: eventData.location,
+        coordinates: eventData.coordinates || null, // Add coordinates field
         startDateTime: eventData.startDateTime,
         endDateTime: eventData.endDateTime,
         eventLink: eventData.eventLink || null,
@@ -2237,6 +2238,8 @@ class FirebaseService {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
+
+      console.log('Creating market event with data:', JSON.stringify(eventDoc, null, 2));
 
       const docRef = await addDoc(collection(db, 'marketEvents'), eventDoc);
       console.log('Market event created with ID:', docRef.id);
