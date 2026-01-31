@@ -459,6 +459,7 @@ import { authService } from '../services/authService';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import AddressAutocomplete from '../components/AddressAutocomplete.vue';
+import { geocodeAddress } from '../utils/geolocation.js';
 
 export default {
   name: 'MarketEventsPage',
@@ -820,10 +821,22 @@ export default {
 
       creatingEvent.value = true;
       try {
+        // Geocode the address to get coordinates
+        let coordinates = null;
+        try {
+          console.log('[Geocoding] Attempting to geocode address:', newEvent.value.location);
+          coordinates = await geocodeAddress(newEvent.value.location);
+          console.log('[Geocoding] Success! Coordinates:', coordinates);
+        } catch (geocodeError) {
+          console.warn('[Geocoding] Failed to geocode address:', geocodeError.message);
+          // Continue without coordinates - not a critical error
+        }
+
         // Create event in Firebase
         const eventData = {
           name: newEvent.value.name,
           location: newEvent.value.location,
+          coordinates: coordinates, // Add coordinates if geocoding succeeded
           startDateTime: newEvent.value.startDateTime,
           endDateTime: newEvent.value.endDateTime,
           eventLink: newEvent.value.eventLink || null,
@@ -936,10 +949,22 @@ export default {
 
       creatingEvent.value = true;
       try {
+        // Geocode the address to get coordinates (if location changed)
+        let coordinates = null;
+        try {
+          console.log('[Geocoding] Attempting to geocode address:', editingEvent.value.location);
+          coordinates = await geocodeAddress(editingEvent.value.location);
+          console.log('[Geocoding] Success! Coordinates:', coordinates);
+        } catch (geocodeError) {
+          console.warn('[Geocoding] Failed to geocode address:', geocodeError.message);
+          // Continue without coordinates - not a critical error
+        }
+
         // Update event in Firebase
         const eventData = {
           name: editingEvent.value.name,
           location: editingEvent.value.location,
+          coordinates: coordinates, // Add/update coordinates if geocoding succeeded
           startDateTime: editingEvent.value.startDateTime,
           endDateTime: editingEvent.value.endDateTime,
           eventLink: editingEvent.value.eventLink || null,

@@ -102,3 +102,45 @@ export const getDistanceDescription = (meters) => {
     return 'Distance';
   }
 };
+
+/**
+ * Geocode an address to get coordinates
+ * Uses OpenStreetMap Nominatim API (free, no API key required)
+ * @param {string} address - The address to geocode
+ * @returns {Promise<{lat: number, lng: number}>} Coordinates
+ */
+export const geocodeAddress = async (address) => {
+  if (!address || address.trim() === '') {
+    throw new Error('Address is required');
+  }
+
+  try {
+    const encodedAddress = encodeURIComponent(address.trim());
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'LilMagnetMemories/1.0'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Geocoding service unavailable');
+    }
+
+    const data = await response.json();
+
+    if (data.length === 0) {
+      throw new Error('Address not found');
+    }
+
+    return {
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon)
+    };
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    throw error;
+  }
+};
