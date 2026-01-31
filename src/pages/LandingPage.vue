@@ -1,8 +1,8 @@
 <template>
   <q-page class="landing-page">
-    <!-- Market Event Banner: shown on extra-small and small screens (<1024px).
-         Banner is hidden on medium+ screens (gt-sm = 1024px+) where subheader has Market Event dropdown. -->
-    <div v-if="hasActiveEvent" class="market-event-banner lt-md">
+    <!-- Market Event Banner: shown on screens <768px, hidden when subheader appears at 768px+.
+         Visibility controlled by CSS media query to match subheader breakpoint. -->
+    <div v-if="hasActiveEvent" class="market-event-banner">
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
         <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
@@ -1379,19 +1379,19 @@ export default {
   display: none;
 }
 
-// Market event banner (only visible on small screens)
+// Market event banner (visible until subheader appears at 768px)
 .market-event-banner {
   padding: 16px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
   background: $positive; // Green for larger screens
   
-  // Hide on medium+ screens (gt-xs = > 599px)
-  @media (min-width: 600px) {
+  // Hide on 768px+ where subheader with Market Event dropdown appears
+  @media (min-width: 768px) {
     display: none !important;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 767px) {
     padding: 0 12px;
     height: 50px;
     background: $light-purple; // Light purple on small screens
