@@ -695,7 +695,7 @@ export default {
         if (!distanceNotificationShown.value) {
           distanceNotificationShown.value = true;
           $q.notify({
-            message: `Market Event Live! We're at ${event.name}`,
+            message: `[Scenario 1: No Coordinates] Market Event Live! We're at ${event.name}`,
             icon: 'event',
             color: 'positive',
             position: 'top',
@@ -739,7 +739,7 @@ export default {
         if (!distanceNotificationShown.value) {
           distanceNotificationShown.value = true;
           $q.notify({
-            message: `Market Event Live! You're ${formatDistance(distance)} from ${event.name}`,
+            message: `[Scenario 4: Success] Market Event Live! You're ${formatDistance(distance)} from ${event.name}`,
             icon: 'event',
             color: 'positive',
             position: 'top',
@@ -764,7 +764,7 @@ export default {
           distanceNotificationShown.value = true;
           console.log('[Distance] Showing notification without distance due to location error');
           $q.notify({
-            message: `Market Event Live! We're at ${event.name}`,
+            message: `[Scenario 2/3: Location Error] Market Event Live! We're at ${event.name}`,
             icon: 'event',
             color: 'positive',
             position: 'top',
