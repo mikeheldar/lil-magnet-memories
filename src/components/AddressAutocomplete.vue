@@ -316,13 +316,14 @@ const loadGoogleMapsScript = () => {
       return;
     }
 
-    const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+    // Use test-specific API key if available, otherwise fall back to production key
+    const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY_TEST || import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
-      reject(new Error('No API key'));
+      reject(new Error('No API key - set VITE_GOOGLE_PLACES_API_KEY_TEST or VITE_GOOGLE_PLACES_API_KEY'));
       return;
     }
 
-    console.log('🏗️ [AddressAutocomplete] Loading script...');
+    console.log('🏗️ [AddressAutocomplete] Loading script with API key from:', import.meta.env.VITE_GOOGLE_PLACES_API_KEY_TEST ? 'VITE_GOOGLE_PLACES_API_KEY_TEST' : 'VITE_GOOGLE_PLACES_API_KEY');
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;

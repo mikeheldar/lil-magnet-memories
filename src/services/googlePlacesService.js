@@ -3,7 +3,8 @@
  * Fetches business reviews from Google Places API
  */
 
-const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+// Get the appropriate API key based on environment
+const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY_TEST || import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 const PLACE_ID = import.meta.env.VITE_GOOGLE_PLACE_ID;
 
 export const googlePlacesService = {
