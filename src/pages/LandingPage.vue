@@ -677,17 +677,23 @@ export default {
     const calculateEventDistance = async () => {
       // Get the active event
       const event = marketEventService.getCheckedInEvent();
+      console.log('[Distance] Checking for active event:', event);
+      
       if (!event || !event.coordinates) {
-        console.log('No active event or event has no coordinates');
+        console.log('[Distance] No active event or event has no coordinates');
         eventDistance.value = null;
         return;
       }
 
+      console.log('[Distance] Event coordinates:', event.coordinates);
       loadingLocation.value = true;
+      
       try {
         // Get user's location
+        console.log('[Distance] Requesting user location...');
         const location = await getUserLocation();
         userLocation.value = location;
+        console.log('[Distance] User location:', location);
 
         // Calculate distance
         const distance = calculateDistance(
@@ -698,9 +704,9 @@ export default {
         );
 
         eventDistance.value = distance;
-        console.log(`Distance to event: ${distance}m (${formatDistance(distance)})`);
+        console.log(`[Distance] Distance from event: ${distance}m (${formatDistance(distance)})`);
       } catch (error) {
-        console.error('Error getting user location:', error);
+        console.error('[Distance] Error getting user location:', error);
         eventDistance.value = null;
       } finally {
         loadingLocation.value = false;
@@ -1025,6 +1031,7 @@ export default {
         
         // Recalculate distance when events change
         if (hasActiveEvent.value) {
+          console.log('[Distance] Event detected, calculating distance...');
           calculateEventDistance();
         }
       });
@@ -1043,7 +1050,10 @@ export default {
 
       // Calculate distance if there's an active event
       if (hasActiveEvent.value) {
+        console.log('[Distance] Initial check - active event found, calculating distance...');
         calculateEventDistance();
+      } else {
+        console.log('[Distance] Initial check - no active event found');
       }
 
       // Cleanup listeners on unmount
