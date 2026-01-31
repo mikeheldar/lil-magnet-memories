@@ -667,6 +667,7 @@ export default {
     const eventDistance = ref(null);
     const loadingLocation = ref(false);
     const userLocation = ref(null);
+    const distanceNotificationShown = ref(false);
 
     // Format distance for display
     const formatDistance = (meters) => {
@@ -705,6 +706,27 @@ export default {
 
         eventDistance.value = distance;
         console.log(`[Distance] Distance from event: ${distance}m (${formatDistance(distance)})`);
+        
+        // Show notification with distance (only once per page load)
+        if (!distanceNotificationShown.value) {
+          distanceNotificationShown.value = true;
+          $q.notify({
+            message: `Market Event Live! You're ${formatDistance(distance)} from ${event.name}`,
+            icon: 'event',
+            color: 'positive',
+            position: 'top',
+            timeout: 60000, // 1 minute (60,000 milliseconds)
+            actions: [
+              {
+                label: 'Dismiss',
+                color: 'white',
+                handler: () => {
+                  // Notification will be dismissed
+                }
+              }
+            ]
+          });
+        }
       } catch (error) {
         console.error('[Distance] Error getting user location:', error);
         eventDistance.value = null;
