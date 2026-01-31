@@ -1,7 +1,8 @@
 <template>
   <q-page class="landing-page">
-    <!-- Market Event Banner (only on small screens) -->
-    <div v-if="hasActiveEvent" class="market-event-banner lt-sm">
+    <!-- Market Event Banner: shown on all screens where subheader is hidden (xs only, <600px).
+         Banner is hidden when subheader appears (gt-xs = 600px+) so they swap. -->
+    <div v-if="hasActiveEvent" class="market-event-banner xs">
       <div class="market-event-content">
         <q-icon name="event" size="24px" class="q-mr-sm banner-icon" />
         <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
