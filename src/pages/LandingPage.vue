@@ -682,11 +682,13 @@ export default {
         return;
       }
       
-      // Show notification that event is live (even if no coordinates)
+      // Event has no coordinates - we can't determine distance
+      // Default to online mode (NOT at event) - user must manually toggle if they're actually there
       if (!event.coordinates) {
-        console.log('[Distance] Event has no coordinates, showing notification');
+        console.log('[Distance] Event has no coordinates - defaulting to online mode');
         console.log('[Distance] Full event object:', JSON.stringify(event, null, 2));
         eventDistance.value = null;
+        setCustomerType('online_customer');
         
         // Show notification without distance (only once per page load)
         if (!distanceNotificationShown.value) {
@@ -763,8 +765,13 @@ export default {
       } catch (error) {
         console.error('[Distance] Error getting user location:', error);
         eventDistance.value = null;
+
+        // Can't get user location - default to online mode (NOT at event)
+        // User must manually toggle if they're actually at the event
+        console.log('[Distance] Location unavailable - defaulting to online mode (user can manually toggle)');
+        setCustomerType('online_customer');
         
-        // Show notification even without distance (only once per page load)
+        // Show notification that event is live, but we don't know their distance (only once per page load)
         if (!distanceNotificationShown.value) {
           distanceNotificationShown.value = true;
           console.log('[Distance] Showing notification without distance due to location error');
