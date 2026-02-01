@@ -9,16 +9,6 @@
             <strong>Market Event Live!</strong>
           <span class="gt-xs">We're at {{ activeMarketEventName }}.</span>
           
-          <!-- Distance indicator -->
-          <span v-if="eventDistance !== null" class="distance-badge">
-            <q-icon name="location_on" size="16px" class="q-mr-xs" />
-            {{ formatDistance(eventDistance) }} away
-          </span>
-          <span v-else-if="loadingLocation" class="distance-badge">
-            <q-spinner size="14px" color="white" class="q-mr-xs" />
-            Getting location...
-          </span>
-          
           <a
             v-if="activeMarketEventLink"
             :href="activeMarketEventLink"
@@ -694,7 +684,7 @@ export default {
       
       // Show notification that event is live (even if no coordinates)
       if (!event.coordinates) {
-        console.log('[Distance] Event has no coordinates, showing notification without distance');
+        console.log('[Distance] Event has no coordinates, showing notification');
         console.log('[Distance] Full event object:', JSON.stringify(event, null, 2));
         eventDistance.value = null;
         
@@ -702,11 +692,10 @@ export default {
         if (!distanceNotificationShown.value) {
           distanceNotificationShown.value = true;
           $q.notify({
-            message: `[Scenario 1: No Coordinates] Market Event Live! We're at ${event.name}`,
+            message: `Market Event Live! We're at ${event.name}`,
             icon: 'event',
             color: 'positive',
             position: 'top',
-            timeout: 60000, // 1 minute (60,000 milliseconds)
             actions: [
               {
                 label: 'Dismiss',
@@ -742,15 +731,24 @@ export default {
         eventDistance.value = distance;
         console.log(`[Distance] Distance from event: ${distance}m (${formatDistance(distance)})`);
         
-        // Show notification with distance (only once per page load)
+        // Auto-toggle "at event" if within 300m
+        if (distance <= 300) {
+          console.log('[Distance] Within 300m - auto-enabling market event mode');
+          setCustomerType('market_customer');
+        } else {
+          console.log('[Distance] More than 300m away - defaulting to online mode');
+          // Don't auto-set to online if they're already a market customer
+          // Just let them keep their current setting
+        }
+        
+        // Show notification (only once per page load)
         if (!distanceNotificationShown.value) {
           distanceNotificationShown.value = true;
           $q.notify({
-            message: `[Scenario 4: Success] Market Event Live! You're ${formatDistance(distance)} from ${event.name}`,
+            message: `Market Event Live! We're at ${event.name}`,
             icon: 'event',
             color: 'positive',
             position: 'top',
-            timeout: 60000, // 1 minute (60,000 milliseconds)
             actions: [
               {
                 label: 'Dismiss',
@@ -771,11 +769,10 @@ export default {
           distanceNotificationShown.value = true;
           console.log('[Distance] Showing notification without distance due to location error');
           $q.notify({
-            message: `[Scenario 2/3: Location Error] Market Event Live! We're at ${event.name}`,
+            message: `Market Event Live! We're at ${event.name}`,
             icon: 'event',
             color: 'positive',
             position: 'top',
-            timeout: 60000, // 1 minute (60,000 milliseconds)
             actions: [
               {
                 label: 'Dismiss',
