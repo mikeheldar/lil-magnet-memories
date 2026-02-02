@@ -428,7 +428,7 @@ export default {
 
     // Easel image rotation
     const easelImages = [
-      '/easel-gallery/0042F3E9-FEC0-4DE4-8AEB-2F3E0AA3ED01_1_105_c.jpeg',
+      '/easel-gallery/0042F3E9-FEC0-4DE4-8AEB-2F3E0AA3ED01_1_105_c.jpg',
       '/easel-gallery/49965978-B29E-4978-A194-94A9FE037F63_1_105_c.jpeg',
       '/easel-gallery/4DEB76BA-4D82-4894-A5BE-AB981B5A7F52_1_105_c.jpeg',
       '/easel-gallery/A8D8FCA6-9449-4759-9F96-0CCA3D972047_1_102_o.jpeg',
