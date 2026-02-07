@@ -342,6 +342,7 @@ onUnmounted(() => {
   align-items: center;
   width: 100%;
   aspect-ratio: 1 / 1;
+  min-height: 300px; // Prevent collapse during image loading
   margin-bottom: 16px;
   overflow: hidden;
   background: #f5f5f5;
@@ -406,18 +407,21 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
+  min-height: 300px; // Match parent min-height
   overflow: hidden;
 }
 
 .slideshow-track {
   display: flex;
   height: 100%;
+  min-height: 300px; // Ensure track maintains height
   transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
 }
 
 .product-image {
   height: 100%;
+  min-height: 300px; // Reserve space before image loads
   flex: 0 0 auto;
   object-fit: cover;
   border-radius: 6px;

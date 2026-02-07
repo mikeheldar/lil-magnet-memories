@@ -201,6 +201,7 @@ onUnmounted(() => {
   align-items: center;
   width: 100%;
   aspect-ratio: 1 / 1;
+  min-height: 300px; // Prevent collapse during image loading
   margin-bottom: 16px;
   overflow: hidden;
   background: #f5f5f5;
@@ -210,6 +211,7 @@ onUnmounted(() => {
 .slideshow-image {
   width: 100%;
   height: 100%;
+  min-height: 300px; // Reserve space before image loads
   object-fit: cover;
   border-radius: 6px;
 }
