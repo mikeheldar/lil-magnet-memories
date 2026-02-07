@@ -2433,17 +2433,17 @@ class FirebaseService {
       if (adminConfigSnap.exists()) {
         const data = adminConfigSnap.data();
         return {
-          custom: data.productTypeVisibility?.custom !== false, // Default to true
-          designer: data.productTypeVisibility?.designer !== false,
-          specialty: data.productTypeVisibility?.specialty !== false,
+          custom: data.productTypeVisibility?.custom !== false, // Default to true (main product)
+          designer: data.productTypeVisibility?.designer === true, // Default to false
+          specialty: data.productTypeVisibility?.specialty === true, // Default to false
         };
       }
-      // Default: all enabled
-      return { custom: true, designer: true, specialty: true };
+      // Default: only custom enabled (designer and specialty hidden)
+      return { custom: true, designer: false, specialty: false };
     } catch (error) {
       console.error('Error getting product type visibility:', error);
-      // Default: all enabled on error
-      return { custom: true, designer: true, specialty: true };
+      // Default on error: only custom enabled (designer and specialty hidden)
+      return { custom: true, designer: false, specialty: false };
     }
   }
 
