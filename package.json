@@ -7,7 +7,9 @@
   "private": true,
   "scripts": {
     "dev": "quasar dev",
+    "dev:ssr": "quasar dev -m ssr",
     "build": "quasar build -m spa",
+    "build:ssr": "quasar build -m ssr",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "playwright test",

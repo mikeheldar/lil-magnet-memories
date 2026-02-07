@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { firebaseService } from '../services/firebaseService.js';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import { safeLocalStorage } from '../utils/ssrSafeStorage.js';
 
 const cartItems = ref([]);
 const CART_STORAGE_KEY = 'lil_magnet_cart';
@@ -14,7 +15,7 @@ let cartListenerUnsubscribe = null;
 // Load cart from localStorage on initialization (for anonymous users)
 const loadCartFromStorage = () => {
   try {
-    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    const stored = safeLocalStorage.getItem(CART_STORAGE_KEY);
     if (stored) {
       cartItems.value = JSON.parse(stored);
     }
@@ -29,7 +30,7 @@ const saveCart = async (items) => {
   try {
     // Always save to localStorage as backup (can include base64 for immediate display)
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      safeLocalStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
       console.log('🛒 Cart saved to localStorage:', items.length, 'items');
     } catch (localError) {
       console.error('❌ Error saving to localStorage (might be full):', localError);
@@ -94,10 +95,10 @@ const checkInitialAuthState = async () => {
         console.log('✅ Initial load: Cart from Firestore:', firestoreCart.length, 'items');
         cartItems.value = firestoreCart;
         currentUserId = user.uid;
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(firestoreCart));
+        safeLocalStorage.setItem(CART_STORAGE_KEY, JSON.stringify(firestoreCart));
       } else {
         // Check localStorage and merge if needed
-        const localCart = localStorage.getItem(CART_STORAGE_KEY);
+        const localCart = safeLocalStorage.getItem(CART_STORAGE_KEY);
         if (localCart) {
           const parsed = JSON.parse(localCart);
           if (parsed && parsed.length > 0) {
@@ -146,7 +147,7 @@ const setupCartListener = (userId) => {
         
         // Firestore items don't have base64 previews (removed to save space)
         // We need to preserve any base64 previews from localStorage for immediate display
-        const localCart = localStorage.getItem(CART_STORAGE_KEY);
+        const localCart = safeLocalStorage.getItem(CART_STORAGE_KEY);
         let localItems = [];
         if (localCart) {
           try {
@@ -206,7 +207,7 @@ const setupCartListener = (userId) => {
           isSyncingToFirestore = true;
           cartItems.value = mergedItems;
           // Update localStorage to keep in sync (with base64 previews)
-          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(mergedItems));
+          safeLocalStorage.setItem(CART_STORAGE_KEY, JSON.stringify(mergedItems));
           // Reset flag after a short delay to allow Vue reactivity to settle
           setTimeout(() => {
             isSyncingToFirestore = false;
@@ -226,31 +227,33 @@ const setupCartListener = (userId) => {
 };
 
 // Listen for auth state changes to load/sync cart
-onAuthStateChanged(auth, async (user) => {
-  console.log('🔄 Auth state changed in cart composable:', user ? (user.isAnonymous ? 'anonymous' : user.email) : 'logged out');
-  
-  // Clean up listener when user changes
-  if (cartListenerUnsubscribe) {
-    cartListenerUnsubscribe();
-    cartListenerUnsubscribe = null;
-  }
-  
-  if (user && !user.isAnonymous) {
-    // User logged in - load cart from Firestore and set up real-time listener
-    console.log('👤 User logged in, loading cart from Firestore for:', user.uid);
-    try {
-      const firestoreCart = await firebaseService.loadUserCart(user.uid);
-      console.log('📦 Firestore cart loaded:', firestoreCart?.length || 0, 'items');
-      
-      if (firestoreCart && firestoreCart.length > 0) {
-        console.log('✅ Loaded cart from Firestore for user:', user.uid, firestoreCart.length, 'items');
-        cartItems.value = firestoreCart;
-        currentUserId = user.uid;
-        // Also update localStorage to keep in sync
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(firestoreCart));
-      } else {
-        // No Firestore cart, but check localStorage for items added while anonymous
-        const localCart = localStorage.getItem(CART_STORAGE_KEY);
+// SSR Safety: Only run on client
+if (typeof window !== 'undefined') {
+  onAuthStateChanged(auth, async (user) => {
+    console.log('🔄 Auth state changed in cart composable:', user ? (user.isAnonymous ? 'anonymous' : user.email) : 'logged out');
+    
+    // Clean up listener when user changes
+    if (cartListenerUnsubscribe) {
+      cartListenerUnsubscribe();
+      cartListenerUnsubscribe = null;
+    }
+    
+    if (user && !user.isAnonymous) {
+      // User logged in - load cart from Firestore and set up real-time listener
+      console.log('👤 User logged in, loading cart from Firestore for:', user.uid);
+      try {
+        const firestoreCart = await firebaseService.loadUserCart(user.uid);
+        console.log('📦 Firestore cart loaded:', firestoreCart?.length || 0, 'items');
+        
+        if (firestoreCart && firestoreCart.length > 0) {
+          console.log('✅ Loaded cart from Firestore for user:', user.uid, firestoreCart.length, 'items');
+          cartItems.value = firestoreCart;
+          currentUserId = user.uid;
+          // Also update localStorage to keep in sync
+          safeLocalStorage.setItem(CART_STORAGE_KEY, JSON.stringify(firestoreCart));
+        } else {
+          // No Firestore cart, but check localStorage for items added while anonymous
+          const localCart = safeLocalStorage.getItem(CART_STORAGE_KEY);
         if (localCart) {
           const parsed = JSON.parse(localCart);
           if (parsed && parsed.length > 0) {
@@ -291,7 +294,7 @@ onAuthStateChanged(auth, async (user) => {
     console.log('👋 User logged out - clearing cart from session and Firestore');
     const previousUserId = currentUserId;
     cartItems.value = [];
-    localStorage.removeItem(CART_STORAGE_KEY);
+    safeLocalStorage.removeItem(CART_STORAGE_KEY);
     currentUserId = null;
     
     // Clear cart from Firestore for the logged-out user
@@ -304,7 +307,8 @@ onAuthStateChanged(auth, async (user) => {
       }
     }
   }
-});
+  });
+}
 
 export function useCart() {
   // Calculate price per unit based on quantity and pricing tiers
@@ -496,7 +500,7 @@ export function useCart() {
   const clearCart = async () => {
     cartItems.value = [];
     // Clear from localStorage
-    localStorage.removeItem(CART_STORAGE_KEY);
+    safeLocalStorage.removeItem(CART_STORAGE_KEY);
     // Clear from Firestore if user is logged in (not anonymous)
     const user = auth.currentUser;
     if (user && !user.isAnonymous && user.uid) {

@@ -11,22 +11,31 @@ import { USERS_CONFIG, USER_ROLES } from '../config/users';
 
 class AuthService {
   constructor() {
-    this.provider = new GoogleAuthProvider();
-    // Add additional scopes if needed
-    this.provider.addScope('email');
-    this.provider.addScope('profile');
+    // SSR Safety: Only initialize Firebase Auth on client
+    if (typeof window !== 'undefined') {
+      this.provider = new GoogleAuthProvider();
+      // Add additional scopes if needed
+      this.provider.addScope('email');
+      this.provider.addScope('profile');
+    } else {
+      this.provider = null;
+    }
+    
     this.user = null;
     this.listeners = [];
     this.adminListenerUnsubscribe = null;
 
-    // Initialize admin configuration
-    this.initializeAdminConfig()
-      .then(() => {
-        console.log('Admin config initialized successfully');
-      })
-      .catch((error) => {
-        console.error('Failed to initialize admin config:', error);
-      });
+    // SSR Safety: Only initialize admin config on client
+    if (typeof window !== 'undefined') {
+      // Initialize admin configuration
+      this.initializeAdminConfig()
+        .then(() => {
+          console.log('Admin config initialized successfully');
+        })
+        .catch((error) => {
+          console.error('Failed to initialize admin config:', error);
+        });
+    }
   }
 
   // Initialize admin configuration with real-time updates
@@ -49,6 +58,11 @@ class AuthService {
 
   // Sign in with Google
   async signInWithGoogle() {
+    // SSR Safety: Don't allow sign-in on server
+    if (typeof window === 'undefined') {
+      throw new Error('Authentication is only available on the client side');
+    }
+    
     try {
       console.log('Attempting Google sign-in...');
       console.log('Firebase Auth object:', auth);
@@ -292,6 +306,12 @@ class AuthService {
 
   // Initialize auth state listener
   init() {
+    // SSR Safety: Only run on client
+    if (typeof window === 'undefined') {
+      console.log('🖥️ [AuthService] Server-side context, skipping auth initialization');
+      return;
+    }
+    
     console.log('Initializing Firebase Auth...');
     
     // Immediately check for cached user (available synchronously on page load)

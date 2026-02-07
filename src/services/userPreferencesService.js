@@ -3,6 +3,7 @@ import { auth } from '../firebase/config.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import { safeLocalStorage } from '../utils/ssrSafeStorage.js';
 
 class UserPreferencesService {
   constructor() {
@@ -11,23 +12,26 @@ class UserPreferencesService {
     this.listeners = new Set();
     this.currentUserId = null;
 
-    // Listen for auth state changes to set up/tear down listeners
-    onAuthStateChanged(auth, async (user) => {
-      if (user && !user.isAnonymous) {
-        // User logged in - load preferences immediately, then set up Firestore listener
-        this.currentUserId = user.uid;
-        console.log('👤 User logged in, loading preferences for:', user.uid);
-        // Load preferences first to populate cache
-        await this.loadPreferences(user.uid);
-        // Then set up real-time listener
-        this.setupRealtimeListener(user.uid);
-      } else {
-        // User logged out or anonymous - clean up listener
-        this.cleanup();
-        this.currentUserId = null;
-        this.preferencesCache = null;
-      }
-    });
+    // SSR Safety: Only set up auth listener on client
+    if (typeof window !== 'undefined') {
+      // Listen for auth state changes to set up/tear down listeners
+      onAuthStateChanged(auth, async (user) => {
+        if (user && !user.isAnonymous) {
+          // User logged in - load preferences immediately, then set up Firestore listener
+          this.currentUserId = user.uid;
+          console.log('👤 User logged in, loading preferences for:', user.uid);
+          // Load preferences first to populate cache
+          await this.loadPreferences(user.uid);
+          // Then set up real-time listener
+          this.setupRealtimeListener(user.uid);
+        } else {
+          // User logged out or anonymous - clean up listener
+          this.cleanup();
+          this.currentUserId = null;
+          this.preferencesCache = null;
+        }
+      });
+    }
   }
 
   // Set up real-time Firestore listener for user preferences
@@ -151,7 +155,7 @@ class UserPreferencesService {
     
     // For anonymous users or if cache not loaded, use localStorage
     try {
-      const stored = localStorage.getItem(`user_preference_${key}`);
+      const stored = safeLocalStorage.getItem(`user_preference_${key}`);
       return stored !== null ? JSON.parse(stored) : defaultValue;
     } catch (error) {
       console.error(`Error reading preference ${key} from localStorage:`, error);
@@ -173,7 +177,7 @@ class UserPreferencesService {
     } else {
       // For anonymous users, save to localStorage
       try {
-        localStorage.setItem(`user_preference_${key}`, JSON.stringify(value));
+        safeLocalStorage.setItem(`user_preference_${key}`, JSON.stringify(value));
       } catch (error) {
         console.error(`Error saving preference ${key} to localStorage:`, error);
       }

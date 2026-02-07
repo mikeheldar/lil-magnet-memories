@@ -27,6 +27,12 @@ const getFirebaseConfig = () => {
 };
 
 const getApp = () => {
+  // SSR Safety: Only initialize Firebase on client side
+  if (typeof window === 'undefined') {
+    console.log('🖥️ [Firebase] Server-side context detected, skipping Firebase initialization');
+    return null;
+  }
+  
   if (!app) {
     const cfg = getFirebaseConfig();
     app = initializeApp(cfg);
@@ -81,10 +87,19 @@ if (appCheckSiteKey) {
 // Initialize Firestore (use default database - Firebase creates it automatically)
 // IMPORTANT: We're NOT enabling persistence to avoid offline mode issues
 // Lazy initialization to avoid accessing config during build time
+// SSR-Safe: Returns null on server, initializes on client
 let dbInstance = null;
 export const db = (() => {
+  // SSR Safety: Don't initialize on server
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  
   if (!dbInstance) {
-    dbInstance = getFirestore(getApp());
+    const firebaseApp = getApp();
+    if (firebaseApp) {
+      dbInstance = getFirestore(firebaseApp);
+    }
   }
   return dbInstance;
 })();
@@ -333,36 +348,69 @@ if (typeof window !== 'undefined') {
 }
 
 // Initialize Storage - lazy initialization using Proxy
+// SSR-Safe: Returns dummy object on server
 let storageInstance = null;
 export const storage = new Proxy({}, {
   get(target, prop) {
-    if (!storageInstance) {
-      storageInstance = getStorage(getApp());
+    // SSR Safety: Return null/undefined for storage methods on server
+    if (typeof window === 'undefined') {
+      return () => null;
     }
-    return storageInstance[prop];
+    
+    if (!storageInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        storageInstance = getStorage(firebaseApp);
+      }
+    }
+    return storageInstance ? storageInstance[prop] : undefined;
   },
   getOwnPropertyDescriptor(target, prop) {
-    if (!storageInstance) {
-      storageInstance = getStorage(getApp());
+    if (typeof window === 'undefined') {
+      return undefined;
     }
-    return Object.getOwnPropertyDescriptor(storageInstance, prop);
+    if (!storageInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        storageInstance = getStorage(firebaseApp);
+      }
+    }
+    return storageInstance ? Object.getOwnPropertyDescriptor(storageInstance, prop) : undefined;
   },
   ownKeys(target) {
-    if (!storageInstance) {
-      storageInstance = getStorage(getApp());
+    if (typeof window === 'undefined') {
+      return [];
     }
-    return Object.keys(storageInstance);
+    if (!storageInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        storageInstance = getStorage(firebaseApp);
+      }
+    }
+    return storageInstance ? Object.keys(storageInstance) : [];
   }
 });
 
 // Initialize Auth - lazy initialization using Proxy
 // Fixed to properly handle property descriptors and setters to avoid _canInitEmulator read-only error
+// SSR-Safe: Returns dummy object on server
 let authInstance = null;
 export const auth = new Proxy({}, {
   get(target, prop) {
-    if (!authInstance) {
-      authInstance = getAuth(getApp());
+    // SSR Safety: Return null/dummy for auth on server
+    if (typeof window === 'undefined') {
+      if (prop === 'currentUser') return null;
+      return () => null;
     }
+    
+    if (!authInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        authInstance = getAuth(firebaseApp);
+      }
+    }
+    if (!authInstance) return undefined;
+    
     const value = authInstance[prop];
     // If it's a function, bind it to the auth instance
     if (typeof value === 'function') {
@@ -371,9 +419,18 @@ export const auth = new Proxy({}, {
     return value;
   },
   set(target, prop, value) {
-    if (!authInstance) {
-      authInstance = getAuth(getApp());
+    if (typeof window === 'undefined') {
+      return true;
     }
+    
+    if (!authInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        authInstance = getAuth(firebaseApp);
+      }
+    }
+    if (!authInstance) return false;
+    
     // Check if property is read-only before trying to set it
     try {
       const descriptor = Object.getOwnPropertyDescriptor(authInstance, prop);
@@ -391,27 +448,53 @@ export const auth = new Proxy({}, {
     }
   },
   getOwnPropertyDescriptor(target, prop) {
-    if (!authInstance) {
-      authInstance = getAuth(getApp());
+    if (typeof window === 'undefined') {
+      return undefined;
     }
-    return Object.getOwnPropertyDescriptor(authInstance, prop);
+    if (!authInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        authInstance = getAuth(firebaseApp);
+      }
+    }
+    return authInstance ? Object.getOwnPropertyDescriptor(authInstance, prop) : undefined;
   },
   ownKeys(target) {
-    if (!authInstance) {
-      authInstance = getAuth(getApp());
+    if (typeof window === 'undefined') {
+      return [];
     }
-    return Object.keys(authInstance);
+    if (!authInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        authInstance = getAuth(firebaseApp);
+      }
+    }
+    return authInstance ? Object.keys(authInstance) : [];
   },
   has(target, prop) {
-    if (!authInstance) {
-      authInstance = getAuth(getApp());
+    if (typeof window === 'undefined') {
+      return false;
     }
-    return prop in authInstance;
+    if (!authInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        authInstance = getAuth(firebaseApp);
+      }
+    }
+    return authInstance ? (prop in authInstance) : false;
   },
   defineProperty(target, prop, descriptor) {
-    if (!authInstance) {
-      authInstance = getAuth(getApp());
+    if (typeof window === 'undefined') {
+      return true;
     }
+    if (!authInstance) {
+      const firebaseApp = getApp();
+      if (firebaseApp) {
+        authInstance = getAuth(firebaseApp);
+      }
+    }
+    if (!authInstance) return false;
+    
     // Check if property is read-only before trying to define it
     try {
       const existingDescriptor = Object.getOwnPropertyDescriptor(authInstance, prop);

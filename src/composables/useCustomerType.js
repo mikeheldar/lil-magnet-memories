@@ -5,6 +5,7 @@ import { authService } from '../services/authService.js';
 import { userPreferencesService } from '../services/userPreferencesService.js';
 import { auth } from '../firebase/config.js';
 import { onAuthStateChanged } from 'firebase/auth';
+import { safeLocalStorage } from '../utils/ssrSafeStorage.js';
 
 // Customer type constants
 export const CUSTOMER_TYPES = {
@@ -17,39 +18,42 @@ const STORAGE_KEY = 'lil-magnet-customer-type';
 
 // Initialize customer type from localStorage or default to online
 const customerType = ref(
-  localStorage.getItem(STORAGE_KEY) || CUSTOMER_TYPES.ONLINE
+  safeLocalStorage.getItem(STORAGE_KEY) || CUSTOMER_TYPES.ONLINE
 );
 
 class CustomerTypeService {
   constructor() {
     this.preferencesUnsubscribe = null;
     
-    // Listen for auth state changes to sync preferences
-    onAuthStateChanged(auth, async (user) => {
-      // Clean up existing listener
-      if (this.preferencesUnsubscribe) {
-        this.preferencesUnsubscribe();
-        this.preferencesUnsubscribe = null;
-      }
-      
-      if (user && !user.isAnonymous) {
-        // User logged in - wait a moment for preferences service to initialize
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        // Load from Firestore immediately
-        await this.loadFromFirestore(user.uid);
-        // Set up listener for real-time updates
-        this.preferencesUnsubscribe = userPreferencesService.addListener(async () => {
-          console.log('🔄 Customer type listener triggered - reloading from Firestore');
-          await this.loadFromFirestore(user.uid);
-        });
-      } else {
-        // User logged out or anonymous - use localStorage
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          customerType.value = stored;
+    // SSR Safety: Only set up auth listener on client
+    if (typeof window !== 'undefined') {
+      // Listen for auth state changes to sync preferences
+      onAuthStateChanged(auth, async (user) => {
+        // Clean up existing listener
+        if (this.preferencesUnsubscribe) {
+          this.preferencesUnsubscribe();
+          this.preferencesUnsubscribe = null;
         }
-      }
-    });
+        
+        if (user && !user.isAnonymous) {
+          // User logged in - wait a moment for preferences service to initialize
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          // Load from Firestore immediately
+          await this.loadFromFirestore(user.uid);
+          // Set up listener for real-time updates
+          this.preferencesUnsubscribe = userPreferencesService.addListener(async () => {
+            console.log('🔄 Customer type listener triggered - reloading from Firestore');
+            await this.loadFromFirestore(user.uid);
+          });
+        } else {
+          // User logged out or anonymous - use localStorage
+          const stored = safeLocalStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            customerType.value = stored;
+          }
+        }
+      });
+    }
   }
 
   async loadFromFirestore(userId) {
@@ -83,11 +87,11 @@ class CustomerTypeService {
         }
       }
       // Also update localStorage for consistency
-      localStorage.setItem(STORAGE_KEY, customerType.value);
+      safeLocalStorage.setItem(STORAGE_KEY, customerType.value);
     } catch (error) {
       console.error('Error loading customer type from Firestore:', error);
       // Fallback to localStorage
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = safeLocalStorage.getItem(STORAGE_KEY);
       if (stored) {
         customerType.value = stored;
       }
@@ -97,7 +101,7 @@ class CustomerTypeService {
   async setCustomerType(type) {
     if (Object.values(CUSTOMER_TYPES).includes(type)) {
       customerType.value = type;
-      localStorage.setItem(STORAGE_KEY, type);
+      safeLocalStorage.setItem(STORAGE_KEY, type);
       
       // For logged-in users, also save to Firestore
       const user = auth.currentUser;

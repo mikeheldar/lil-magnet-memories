@@ -5,6 +5,7 @@ import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import { safeLocalStorage } from '../utils/ssrSafeStorage.js';
 
 // Track if we've waited for auth state restoration on this page load
 let authStateWaitCompleted = false;
@@ -31,6 +32,12 @@ class MarketEventService {
 
   // Set up real-time Firestore listener for immediate updates
   setupRealtimeListener() {
+    // SSR Safety: Only run on client
+    if (typeof window === 'undefined') {
+      console.log('🖥️ [MarketEventService] Server-side context, skipping real-time listener setup');
+      return;
+    }
+    
     // Unsubscribe from existing listener if any
     if (this.listenerUnsubscribe) {
       this.listenerUnsubscribe();
@@ -211,7 +218,7 @@ class MarketEventService {
       console.error('Error loading events from Firebase:', error);
       // Fallback to localStorage for backward compatibility
       try {
-        const stored = localStorage.getItem('marketEvents');
+        const stored = safeLocalStorage.getItem('marketEvents');
         return stored ? JSON.parse(stored) : [];
       } catch (localError) {
         console.error('Error loading events from localStorage:', localError);

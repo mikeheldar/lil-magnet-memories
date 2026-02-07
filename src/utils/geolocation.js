@@ -48,7 +48,8 @@ export const formatDistance = (meters) => {
  */
 export const getUserLocation = () => {
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
+    // SSR Safety: navigator is only available on client
+    if (typeof window === 'undefined' || !navigator.geolocation) {
       reject(new Error('Geolocation is not supported by your browser'));
       return;
     }

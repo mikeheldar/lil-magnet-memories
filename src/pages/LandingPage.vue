@@ -390,6 +390,7 @@ import { useCustomerType } from '../composables/useCustomerType.js';
 import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
 import { ensureNetworkReady } from '../firebase/config.js';
 import { getUserLocation, calculateDistance, formatDistance as formatDistanceUtil } from '../utils/geolocation.js';
+import { safeLocalStorage } from '../utils/ssrSafeStorage.js';
 
 export default {
   name: 'LandingPage',
@@ -1090,12 +1091,12 @@ export default {
       // Always navigate to photo upload and let it select the default product
       // Clear any stored product selection so it uses the default
       try {
-        const savedData = localStorage.getItem('guestFormData');
+        const savedData = safeLocalStorage.getItem('guestFormData');
         if (savedData) {
           const parsed = JSON.parse(savedData);
           // Remove the selectedProductId to force default product selection
           delete parsed.selectedProductId;
-          localStorage.setItem('guestFormData', JSON.stringify(parsed));
+          safeLocalStorage.setItem('guestFormData', JSON.stringify(parsed));
         }
       } catch (error) {
         console.error('Error clearing stored product:', error);
