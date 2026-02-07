@@ -56,8 +56,8 @@ export const config = {
   get email() {
     const test = getIsTest();
     return {
-      from: test ? 'test@lilmagnetmemories.com' : 'lilmagnetmemories@gmail.com',
-      admin: test ? 'test-admin@lilmagnetmemories.com' : 'lilmagnetmemories@gmail.com',
+      from: test ? 'test@lilmagnetmemories.com' : 'info@lilmagnetmemories.com',
+      admin: test ? 'test-admin@lilmagnetmemories.com' : 'info@lilmagnetmemories.com',
     };
   }
 };

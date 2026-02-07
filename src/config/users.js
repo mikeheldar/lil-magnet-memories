@@ -17,7 +17,7 @@ export const USER_ROLES = {
 // Initial admin emails to seed on first load
 const INITIAL_ADMIN_EMAILS = [
   'michael.helmandarley@gmail.com',
-  'lilmagnetmemories@gmail.com',
+  'info@lilmagnetmemories.com',
 ];
 
 // User roles configuration
@@ -296,7 +296,7 @@ export const USERS_CONFIG = {
     // Don't allow removing initial admin roles
     const INITIAL_ADMIN_EMAILS = [
       'michael.helmandarley@gmail.com',
-      'lilmagnetmemories@gmail.com',
+      'info@lilmagnetmemories.com',
     ];
     if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
       throw new Error(`${email} is an initial admin and cannot be removed. Initial admins are hardcoded for security.`);

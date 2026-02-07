@@ -249,7 +249,7 @@ export default {
     // Initial admin emails (hardcoded for security)
     const INITIAL_ADMIN_EMAILS = [
       'michael.helmandarley@gmail.com',
-      'lilmagnetmemories@gmail.com',
+      'info@lilmagnetmemories.com',
     ];
 
     const isInitialAdmin = (email) => {
@@ -645,7 +645,7 @@ export default {
       // Show initial admins immediately (from hardcoded list) so UI appears fast
       const initialAdmins = [
         'michael.helmandarley@gmail.com',
-        'lilmagnetmemories@gmail.com',
+        'info@lilmagnetmemories.com',
       ];
       allUsers.value = initialAdmins.map(email => ({
         email,

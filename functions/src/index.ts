@@ -836,7 +836,7 @@ This email was automatically generated from your website order form.
   // Send the email
   const info = await transporter.sendMail({
     from: `"Lil Magnet Memories" <${emailConfig.user}>`,
-    to: 'lilmagnetmemories@gmail.com',
+    to: 'info@lilmagnetmemories.com',
     subject: subject,
     text: textContent,
     html: htmlContent,
@@ -1173,7 +1173,7 @@ This email was automatically generated from the contact form on your website.
   // Send the email
   const info = await transporter.sendMail({
     from: `"Lil Magnet Memories Contact Form" <${emailConfig.user}>`,
-    to: 'lilmagnetmemories@gmail.com',
+    to: 'info@lilmagnetmemories.com',
     replyTo: email, // Allow replying directly to the customer
     subject: emailSubject,
     text: textContent,

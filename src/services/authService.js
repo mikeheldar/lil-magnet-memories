@@ -169,7 +169,7 @@ class AuthService {
     const INITIAL_ADMIN_EMAILS = [
       'michael.helmandarley@gmail.com',
       'amy.helmandarley@gmail.com',
-      'lilmagnetmemories@gmail.com',
+      'info@lilmagnetmemories.com',
     ];
     if (INITIAL_ADMIN_EMAILS.includes(userEmail)) {
       return true;

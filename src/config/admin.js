@@ -35,7 +35,7 @@ export const ADMIN_CONFIG = {
     const INITIAL_ADMIN_EMAILS = [
       'michael.helmandarley@gmail.com',
       'amy.helmandarley@gmail.com',
-      'lilmagnetmemories@gmail.com',
+      'info@lilmagnetmemories.com',
     ];
     return INITIAL_ADMIN_EMAILS.includes(normalizedEmail);
   },

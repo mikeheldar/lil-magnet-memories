@@ -8,7 +8,7 @@
         <div class="text-body1 text-white flex items-center q-gutter-sm banner-text">
             <strong>Market Event Live!</strong>
           <span class="gt-xs">We're at {{ activeMarketEventName }}.</span>
-          
+
           <a
             v-if="activeMarketEventLink"
             :href="activeMarketEventLink"
@@ -377,10 +377,10 @@ import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
 import { googlePlacesService } from '../services/googlePlacesService.js';
-import { 
-  getGoogleReviewUrl, 
+import {
+  getGoogleReviewUrl,
   isGoogleReviewConfigured,
-  trackGoogleReviewClick 
+  trackGoogleReviewClick
 } from '../utils/googleReviews.js';
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
@@ -403,15 +403,15 @@ export default {
     const reviews = ref([]);
     const loadingReviews = ref(true); // Start as true to prevent showing "no reviews" before load completes
     const reviewsLoaded = ref(false); // Track if reviews have been loaded at least once
-    
+
     // Google Reviews state
     const googleReviews = ref([]);
     const loadingGoogleReviews = ref(true);
     const googleReviewUrl = computed(() => getGoogleReviewUrl());
-    
+
     const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
       useCustomerType();
-    
+
     // Use global product type visibility composable
     const { productTypeVisibility, visibilityLoaded, initializeVisibility } = useProductTypeVisibility();
 
@@ -521,7 +521,7 @@ export default {
       setTimeout(() => {
         isKenBurnsActive.value = true;
         console.log('▶️ [LandingPage Easel] Ken Burns started');
-        
+
         // Reset Ken Burns after animation completes (7s) so it's ready for next slide
         setTimeout(() => {
           isKenBurnsActive.value = false;
@@ -675,13 +675,13 @@ export default {
         coordinates: event?.coordinates,
         fullEvent: event
       });
-      
+
       if (!event) {
         console.log('[Distance] No active event found');
         eventDistance.value = null;
         return;
       }
-      
+
       // Event has no coordinates - we can't determine distance
       // Default to online mode (NOT at event) - user must manually toggle if they're actually there
       if (!event.coordinates) {
@@ -689,7 +689,7 @@ export default {
         console.log('[Distance] Full event object:', JSON.stringify(event, null, 2));
         eventDistance.value = null;
         setCustomerType('online_customer');
-        
+
         // Show notification without distance (only once per page load)
         if (!distanceNotificationShown.value) {
           distanceNotificationShown.value = true;
@@ -714,7 +714,7 @@ export default {
 
       console.log('[Distance] Event coordinates:', event.coordinates);
       loadingLocation.value = true;
-      
+
       try {
         // Get user's location
         console.log('[Distance] Requesting user location...');
@@ -732,7 +732,7 @@ export default {
 
         eventDistance.value = distance;
         console.log(`[Distance] Distance from event: ${distance}m (${formatDistance(distance)})`);
-        
+
         // Auto-toggle "at event" if within 300m
         if (distance <= 300) {
           console.log('[Distance] Within 300m - auto-enabling market event mode');
@@ -742,7 +742,7 @@ export default {
           // Don't auto-set to online if they're already a market customer
           // Just let them keep their current setting
         }
-        
+
         // Show notification (only once per page load)
         if (!distanceNotificationShown.value) {
           distanceNotificationShown.value = true;
@@ -770,7 +770,7 @@ export default {
         // User must manually toggle if they're actually at the event
         console.log('[Distance] Location unavailable - defaulting to online mode (user can manually toggle)');
         setCustomerType('online_customer');
-        
+
         // Show notification that event is live, but we don't know their distance (only once per page load)
         if (!distanceNotificationShown.value) {
           distanceNotificationShown.value = true;
@@ -867,19 +867,19 @@ export default {
         console.log('⏳ Waiting for Firestore network to be ready...');
         await ensureNetworkReady();
         console.log('✅ Firestore network ready, loading reviews...');
-        
+
         const reviewsData = await firebaseService.getReviews();
         // Use a new array reference to ensure reactivity
         reviews.value = Array.isArray(reviewsData) ? [...reviewsData] : [];
         console.log('✅ Reviews loaded:', reviews.value.length, 'total reviews');
-        
+
         // Wait for computed to update
         await nextTick();
-        
+
         const verifiedCount = verifiedReviews.value.length;
         console.log('✅ Verified reviews:', verifiedCount);
         console.log('✅ Reviews data:', reviews.value);
-        
+
         // Mark as loaded after a brief delay to ensure reactivity
         await nextTick();
         reviewsLoaded.value = true;
@@ -899,13 +899,13 @@ export default {
       console.log('═══════════════════════════════════════════');
       console.log('🚀 [LandingPage] loadGoogleReviews called');
       console.log('═══════════════════════════════════════════');
-      
+
       loadingGoogleReviews.value = true;
       try {
         // Try cache first
         console.log('📦 [LandingPage] Checking cache...');
         const cached = googlePlacesService.getCachedReviews();
-        
+
         if (cached && cached.length > 0) {
           console.log(`✅ [LandingPage] Found ${cached.length} cached reviews`);
           googleReviews.value = cached;
@@ -915,15 +915,15 @@ export default {
         } else {
           console.log('   No valid cache found');
         }
-        
+
         // Fetch fresh reviews in background
         console.log('🌐 [LandingPage] Fetching fresh reviews from API...');
         const fresh = await googlePlacesService.fetchReviews();
-        
+
         console.log('📥 [LandingPage] Fresh fetch complete');
         console.log('   Returned:', fresh ? fresh.length : 0, 'reviews');
         console.log('   Fresh reviews data:', fresh);
-        
+
         if (fresh && fresh.length > 0) {
           console.log(`✅ [LandingPage] Updating with ${fresh.length} fresh reviews`);
           googleReviews.value = fresh;
@@ -977,21 +977,21 @@ export default {
     // Combine verified internal reviews and Google reviews into one array
     const allReviewsCombined = computed(() => {
       const combined = [];
-      
+
       // Add verified internal reviews with source identifier
       if (verifiedReviews.value && verifiedReviews.value.length > 0) {
         verifiedReviews.value.forEach(review => {
           combined.push({ ...review, source: 'internal' });
         });
       }
-      
+
       // Add Google reviews with source identifier
       if (googleReviews.value && googleReviews.value.length > 0) {
         googleReviews.value.forEach(review => {
           combined.push({ ...review, source: 'google' });
         });
       }
-      
+
       return combined;
     });
 
@@ -1111,7 +1111,7 @@ export default {
         // Trigger reactivity when events change
         marketEventCheckTrigger.value++;
         console.log('🔄 Market events updated on landing page');
-        
+
         // Recalculate distance when events change
         if (hasActiveEvent.value) {
           console.log('[Distance] Event detected, calculating distance...');
@@ -1321,7 +1321,7 @@ export default {
       padding-top: 0 !important;
     }
   }
-  
+
   // Add 20px margin-top on all screens when subheader is present
   // This prevents text from touching the bottom of the subheader
   margin-top: 20px;
@@ -1468,7 +1468,7 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
   background: $positive; // Green for larger screens
-  
+
   // Hide on 768px+ where subheader with Market Event dropdown appears
   @media (min-width: 768px) {
     display: none !important;
@@ -1480,28 +1480,28 @@ export default {
     background: $light-purple; // Light purple on small screens
     display: flex;
     align-items: center;
-    
+
     // Darker text for better contrast on light purple background
     .banner-text {
       color: $dark !important;
-      
+
       strong {
         color: $dark !important;
       }
-      
+
       span {
         color: $dark !important;
       }
-      
+
       a {
         color: $primary !important;
       }
     }
-    
+
     .banner-icon {
       color: $dark !important;
     }
-    
+
     // Toggle should use dark color on light background
     .banner-toggle {
       .q-toggle__label {
@@ -1585,7 +1585,7 @@ export default {
   font-size: 0.85rem;
   white-space: nowrap;
   backdrop-filter: blur(4px);
-  
+
   @media (max-width: 600px) {
     font-size: 0.75rem;
     padding: 2px 6px;
@@ -2409,11 +2409,11 @@ export default {
 .google-review-card {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border: 1px solid #e8eaed;
-  
+
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
-  
+
   .google-review-text {
     line-height: 1.5;
     overflow: hidden;
@@ -2443,11 +2443,11 @@ export default {
   .q-rating__icon {
     color: $light-grey !important; // Light grey from design system
   }
-  
+
   .q-rating__icon--inactive {
     color: $light-grey !important; // Light grey for inactive stars
   }
-  
+
   .q-rating__icon--active {
     color: $light-grey !important; // Light grey for active stars (all inactive)
   }
@@ -2461,7 +2461,7 @@ export default {
   transform: translate(-50%, -50%);
   z-index: 100;
   pointer-events: auto;
-  
+
   // Make button wider on small screens
   @media (max-width: 599px) {
     width: 85% !important;
@@ -2472,13 +2472,13 @@ export default {
 .start-creating-button {
   position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  
+
   // Make button full width on small screens
   @media (max-width: 599px) {
     width: 100% !important;
     max-width: 100% !important;
   }
-  
+
   // Purple border with pulsing animation
   &::before {
     content: '';
@@ -2492,7 +2492,7 @@ export default {
     animation: pulse-border 2s ease-in-out infinite;
     pointer-events: none;
   }
-  
+
   // Outer glow effect
   &::after {
     content: '';

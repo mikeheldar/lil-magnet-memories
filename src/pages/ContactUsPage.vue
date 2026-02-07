@@ -86,8 +86,8 @@
           <div class="text-center q-mt-lg">
             <div class="text-body1 text-grey-7 q-mb-sm">or contact us at</div>
             <div class="text-body1">
-              <a href="mailto:lilmagnetmemories@gmail.com" class="text-primary">
-                lilmagnetmemories@gmail.com
+              <a href="mailto:info@lilmagnetmemories.com" class="text-primary">
+                info@lilmagnetmemories.com
               </a>
             </div>
           </div>
