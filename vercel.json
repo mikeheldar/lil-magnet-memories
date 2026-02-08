@@ -1,6 +1,20 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/spa",
+  "buildCommand": "npm run build:ssr",
+  "functions": {
+    "api/ssr.js": {
+      "maxDuration": 10
+    }
+  },
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/dist/ssr/client/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/ssr.js"
+    }
+  ],
   "headers": [
     {
       "source": "/.well-known/apple-developer-merchantid-domain-association",
