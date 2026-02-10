@@ -1083,36 +1083,19 @@ export default {
 
 /* Print-specific styles */
 @media print {
-  #q-app,
-  .q-layout,
-  .q-page-container,
-  .print-template-page {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important; /* Keep white for print view */
-  }
-
-  .q-header,
-  .q-layout__header,
-  .q-toolbar,
-  .q-drawer,
-  .q-footer,
-  .q-page-container > :not(.print-template-page) {
-    display: none !important;
-    visibility: hidden !important;
-  }
-
-  .print-page::after,
-  .print-page::before {
-    display: none !important;
-    content: none !important;
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   html,
   body {
+    width: 100%;
+    height: 100%;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
+    overflow: visible !important;
   }
 
   body * {
@@ -1124,253 +1107,271 @@ export default {
     visibility: visible !important;
   }
 
+  .print-container {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    left: 0 !important;
+    top: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #q-app,
+  .q-layout,
+  .q-page-container,
+  .print-template-page {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .q-header,
+  .q-layout__header,
+  .q-toolbar,
+  .q-drawer,
+  .q-footer,
+  .q-page-container > :not(.print-template-page),
+  .print-template-page > :not(.print-container) {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
   .print-controls {
     display: none !important;
     visibility: hidden !important;
   }
 
   .print-page-wrapper {
-    display: block;
-  }
-
-  .print-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-  }
-
-  body {
-    margin: 0;
-    padding: 0;
+    display: block !important;
+    width: 100% !important;
+    page-break-inside: avoid !important;
   }
 
   .print-page {
-    width: 8.5in;
-    height: 11in;
-    page-break-after: always;
-    margin: 0;
-    padding: var(--page-padding-y) var(--page-padding-x);
-    background: white;
-    border: none;
-    display: flex;
-    flex-direction: column;
+    width: 8.5in !important;
+    height: 11in !important;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    margin: 0 !important;
+    padding: var(--page-padding-y) var(--page-padding-x) !important;
+    background: white !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto !important;
   }
 
   .print-grid {
-    display: grid;
-    grid-template-columns: repeat(2, var(--outer-square-size));
-    grid-template-rows: repeat(3, var(--outer-square-size));
-    gap: var(--grid-gap);
-    justify-content: center;
-    flex: 0 0 auto;
-    min-height: 0;
-    margin-bottom: 0;
+    display: grid !important;
+    grid-template-columns: repeat(2, var(--outer-square-size)) !important;
+    grid-template-rows: repeat(3, var(--outer-square-size)) !important;
+    gap: var(--grid-gap) !important;
+    justify-content: center !important;
+    align-content: start !important;
+    width: 100% !important;
+    margin: 0 auto !important;
   }
 
   .print-square-container {
-    width: var(--outer-square-size);
-    height: var(--outer-square-size);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: var(--outer-square-size) !important;
+    height: var(--outer-square-size) !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    page-break-inside: avoid !important;
   }
 
   /* Outer cutting square template - dashed border for cutting guide */
   .outer-frame {
-    position: absolute;
-    width: var(--outer-square-size);
-    height: var(--outer-square-size);
-    pointer-events: none;
-    z-index: 1;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    margin: auto;
+    position: absolute !important;
+    width: var(--outer-square-size) !important;
+    height: var(--outer-square-size) !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    margin: auto !important;
   }
 
   .outer-frame rect {
-    fill: none;
-    stroke: #333;
-    stroke-width: 1;
-    stroke-dasharray: 4 4;
-    vector-effect: non-scaling-stroke;
+    fill: none !important;
+    stroke: #333 !important;
+    stroke-width: 1 !important;
+    stroke-dasharray: 4 4 !important;
+    vector-effect: non-scaling-stroke !important;
   }
 
   .outer-frame.secondary rect {
-    stroke-dasharray: none;
+    stroke-dasharray: none !important;
   }
 
   .outer-frame.secondary {
-    width: var(--outer-square-size-secondary);
-    height: var(--outer-square-size-secondary);
-    opacity: 0.6;
-    z-index: 0;
-    left: -3.5px;
-    top: -2px;
-    right: -2px;
-    bottom: -2px;
-    margin: auto;
+    width: var(--outer-square-size-secondary) !important;
+    height: var(--outer-square-size-secondary) !important;
+    opacity: 0.6 !important;
+    z-index: 0 !important;
+    left: -3.5px !important;
+    top: -2px !important;
+    right: -2px !important;
+    bottom: -2px !important;
+    margin: auto !important;
   }
 
   .outer-frame.primary {
-    left: -0.5px;
-    top: 0;
-    right: auto;
-    bottom: 0;
-    margin: 0;
+    left: -0.5px !important;
+    top: 0 !important;
+    right: auto !important;
+    bottom: 0 !important;
+    margin: 0 !important;
   }
 
-  /* Corner triangles for cutting alignment - upper corners */
+  /* Corner triangles for cutting alignment */
   .corner-triangle {
-    position: absolute;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-    z-index: 3;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+    z-index: 3 !important;
   }
 
   .corner-triangle-top-left {
-    top: 0;
-    left: 0;
-    border-top: var(--triangle-size) solid #333;
-    border-left: var(--triangle-size) solid #333;
-    border-right: var(--triangle-size) solid transparent;
-    border-bottom: var(--triangle-size) solid transparent;
+    top: 0 !important;
+    left: 0 !important;
+    border-top: var(--triangle-size) solid #333 !important;
+    border-left: var(--triangle-size) solid #333 !important;
+    border-right: var(--triangle-size) solid transparent !important;
+    border-bottom: var(--triangle-size) solid transparent !important;
   }
 
   .corner-triangle-top-right {
-    top: 0;
-    right: 0;
-    border-top: var(--triangle-size) solid #333;
-    border-right: var(--triangle-size) solid #333;
-    border-left: var(--triangle-size) solid transparent;
-    border-bottom: var(--triangle-size) solid transparent;
+    top: 0 !important;
+    right: 0 !important;
+    border-top: var(--triangle-size) solid #333 !important;
+    border-right: var(--triangle-size) solid #333 !important;
+    border-left: var(--triangle-size) solid transparent !important;
+    border-bottom: var(--triangle-size) solid transparent !important;
   }
 
   .corner-triangle-bottom-left {
-    bottom: 0;
-    left: 0;
-    border-bottom: var(--triangle-size) solid #333;
-    border-left: var(--triangle-size) solid #333;
-    border-right: var(--triangle-size) solid transparent;
-    border-top: var(--triangle-size) solid transparent;
+    bottom: 0 !important;
+    left: 0 !important;
+    border-bottom: var(--triangle-size) solid #333 !important;
+    border-left: var(--triangle-size) solid #333 !important;
+    border-right: var(--triangle-size) solid transparent !important;
+    border-top: var(--triangle-size) solid transparent !important;
   }
 
   .corner-triangle-bottom-right {
-    bottom: 0;
-    right: 0;
-    border-bottom: var(--triangle-size) solid #333;
-    border-right: var(--triangle-size) solid #333;
-    border-left: var(--triangle-size) solid transparent;
-    border-top: var(--triangle-size) solid transparent;
+    bottom: 0 !important;
+    right: 0 !important;
+    border-bottom: var(--triangle-size) solid #333 !important;
+    border-right: var(--triangle-size) solid #333 !important;
+    border-left: var(--triangle-size) solid transparent !important;
+    border-top: var(--triangle-size) solid transparent !important;
   }
 
   /* Border text labels */
   .border-text {
-    position: absolute;
-    color: #333;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    pointer-events: none;
-    z-index: 2;
-    white-space: nowrap;
+    position: absolute !important;
+    color: #333 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
+    white-space: nowrap !important;
   }
 
   .border-text-top {
-    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 3.8));
-    left: 50%;
-    transform: translate(-50%) rotate(180deg);
-    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
-    text-align: center;
+    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 3.8)) !important;
+    left: 50% !important;
+    transform: translate(-50%) rotate(180deg) !important;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2) !important;
+    text-align: center !important;
   }
 
   .border-text-bottom {
-    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4);
-    left: 50%;
-    transform: translate(-50%);
-    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
-    text-align: center;
+    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4) !important;
+    left: 50% !important;
+    transform: translate(-50%) !important;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2) !important;
+    text-align: center !important;
   }
 
   .border-text-left {
-    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
-    top: 30%;
-    transform: translateY(-50%) rotate(90deg);
-    transform-origin: left;
-    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
-    text-align: left;
+    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7) !important;
+    top: 30% !important;
+    transform: translateY(-50%) rotate(90deg) !important;
+    transform-origin: left !important;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2) !important;
+    text-align: left !important;
   }
 
   .border-text-right {
-    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7);
-    top: 30%;
-    transform: translateY(-50%) rotate(-90deg);
-    transform-origin: right;
-    width: calc(var(--outer-square-size) - var(--triangle-size) * 2);
-    text-align: right;
+    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7) !important;
+    top: 30% !important;
+    transform: translateY(-50%) rotate(-90deg) !important;
+    transform-origin: right !important;
+    width: calc(var(--outer-square-size) - var(--triangle-size) * 2) !important;
+    text-align: right !important;
   }
 
   .print-square {
-    width: var(--inner-square-size);
-    height: var(--inner-square-size);
-    border: 1px solid #333;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: white;
-    position: relative;
-    z-index: 2;
+    width: var(--inner-square-size) !important;
+    height: var(--inner-square-size) !important;
+    border: 1px solid #333 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    background: white !important;
+    position: relative !important;
+    z-index: 2 !important;
   }
 
   /* Test environment: blue border and guide lines */
   .print-square.test-environment {
-    border: 2px solid #1976d2; /* Blue border in test - 1px thicker */
+    border: 2px solid #1976d2 !important; /* Blue border in test - 1px thicker */
   }
 
-  /* Guide lines SVG - positioned absolutely to stay in place */
+  /* Guide lines SVG */
   .guide-lines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* Don't interfere with image dragging */
-    z-index: 1; /* Behind image but visible */
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
   }
 
   .image-wrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    user-select: none;
-    touch-action: none;
-  }
-
-  .image-wrapper:active {
-    cursor: grabbing;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .print-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    pointer-events: none;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
   }
 
   .selected-photo {
     border: 1px solid #333 !important;
-  }
-
-  .print-template-page > :not(.print-container) {
-    display: none !important;
   }
 }
 
