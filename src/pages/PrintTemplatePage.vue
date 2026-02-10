@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-md print-template-page">
-    <div class="text-center q-mb-lg">
+    <div class="text-center q-mb-lg no-print">
       <div v-if="orderNumber" class="text-body1 text-grey-7 q-mb-sm">
         Order #{{ orderNumber }}
       </div>
@@ -1098,13 +1098,31 @@ export default {
     overflow: visible !important;
   }
 
+  /* Hide everything by default */
   body * {
     visibility: hidden !important;
   }
 
+  /* Show only print container and its contents */
   .print-container,
   .print-container * {
     visibility: visible !important;
+  }
+
+  /* Explicitly hide screen-only elements */
+  .no-print,
+  .no-print *,
+  .q-header,
+  .q-layout__header,
+  .q-toolbar,
+  .q-drawer,
+  .q-footer,
+  .print-controls,
+  .print-controls * {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
   }
 
   .print-container {
@@ -1128,15 +1146,8 @@ export default {
     height: auto !important;
   }
 
-  .q-header,
-  .q-layout__header,
-  .q-toolbar,
-  .q-drawer,
-  .q-footer,
-  .q-page-container > :not(.print-template-page),
-  .print-template-page > :not(.print-container) {
-    display: none !important;
-    visibility: hidden !important;
+  .q-page {
+    padding: 0 !important;
   }
 
   .print-controls {
