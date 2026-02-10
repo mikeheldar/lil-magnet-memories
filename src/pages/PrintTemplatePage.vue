@@ -1090,8 +1090,8 @@ export default {
 
   html,
   body {
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
@@ -1108,11 +1108,10 @@ export default {
   }
 
   .print-container {
-    position: relative !important;
+    position: static !important;
+    display: block !important;
     width: 100% !important;
     height: auto !important;
-    left: 0 !important;
-    top: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -1121,6 +1120,7 @@ export default {
   .q-layout,
   .q-page-container,
   .print-template-page {
+    position: static !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
