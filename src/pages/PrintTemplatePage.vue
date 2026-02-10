@@ -1345,15 +1345,10 @@ export default {
     border: 2px solid #1976d2 !important; /* Blue border in test - 1px thicker */
   }
 
-  /* Guide lines SVG */
+  /* Guide lines SVG - HIDE in print */
   .guide-lines {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
+    display: none !important;
+    visibility: hidden !important;
   }
 
   .image-wrapper {
