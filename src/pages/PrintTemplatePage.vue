@@ -964,7 +964,7 @@ export default {
     // Handle print button click - hide non-print elements then open system print dialog
     const handlePrint = () => {
       // Programmatically hide Quasar layout elements before printing
-      const hideSelectors = '.q-header, .q-drawer, .q-drawer-container, .q-drawer__backdrop, .q-footer, .site-footer, .q-layout__section--marginal';
+      const hideSelectors = '.q-header, .q-drawer, .q-drawer-container, .q-drawer__backdrop, .q-footer, .site-footer, .q-layout__section--marginal, .drawer-header-fill, .drawer-menu-container';
       const elementsToHide = document.querySelectorAll(hideSelectors);
       const noPrintElements = document.querySelectorAll('.no-print, .print-controls');
 
@@ -1159,7 +1159,9 @@ export default {
   .q-layout__section--marginal,
   .q-footer,
   .site-footer,
-  .print-controls {
+  .print-controls,
+  .drawer-header-fill,
+  .drawer-menu-container {
     display: none !important;
   }
 
