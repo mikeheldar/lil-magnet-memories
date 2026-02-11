@@ -964,7 +964,7 @@ export default {
     // Handle print button click - hide non-print elements then open system print dialog
     const handlePrint = () => {
       // Programmatically hide Quasar layout elements before printing
-      const hideSelectors = '.q-header, .q-drawer, .q-drawer-container, .q-drawer__backdrop, .q-footer, .site-footer, .q-layout__section--marginal, .drawer-header-fill, .drawer-menu-container';
+      const hideSelectors = '.q-header, .q-drawer, .q-drawer-container, .q-drawer__backdrop, .q-footer, .site-footer, .q-layout__section--marginal, .drawer-header-fill, .drawer-menu-container, .drawer-under-header';
       const elementsToHide = document.querySelectorAll(hideSelectors);
       const noPrintElements = document.querySelectorAll('.no-print, .print-controls');
 
@@ -989,16 +989,17 @@ export default {
         pageContainer.style.paddingRight = '0px';
       }
 
-      // Print
-      window.print();
-
-      // Restore original styles after print dialog closes
-      originals.forEach(({ el, display }) => {
-        el.style.display = display;
-      });
-      if (pageContainer && origPadding !== null) {
-        pageContainer.style.cssText = origPadding;
-      }
+      // Defer print so hide styles are applied before browser captures print layout
+      setTimeout(() => {
+        window.print();
+        // Restore after print dialog closes (print() blocks until user dismisses)
+        originals.forEach(({ el, display }) => {
+          el.style.display = display;
+        });
+        if (pageContainer && origPadding !== null) {
+          pageContainer.style.cssText = origPadding;
+        }
+      }, 100);
     };
 
     // Parse photos and quantities from query parameters
@@ -1161,7 +1162,8 @@ export default {
   .site-footer,
   .print-controls,
   .drawer-header-fill,
-  .drawer-menu-container {
+  .drawer-menu-container,
+  .drawer-under-header {
     display: none !important;
   }
 
@@ -1401,9 +1403,9 @@ export default {
     z-index: 2 !important;
   }
 
-  /* Test environment: blue border and guide lines */
+  /* Test environment: use gray border in print (hide blue guide line) */
   .print-square.test-environment {
-    border: 2px solid #1976d2 !important; /* Blue border in test - 1px thicker */
+    border: 1px solid #333 !important;
   }
 
   /* Guide lines SVG - HIDE in print */
