@@ -1172,6 +1172,19 @@ export default {
   .print-controls {
     display: none !important;
     visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    overflow: hidden !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    flex: 0 0 0 !important;
   }
 
   .print-page-wrapper {
