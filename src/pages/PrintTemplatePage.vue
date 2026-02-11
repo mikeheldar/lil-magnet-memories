@@ -1133,11 +1133,15 @@ export default {
   .q-drawer,
   .q-footer,
   .print-controls,
-  .print-controls * {
+  .print-controls *,
+  .print-page-wrapper > :first-child:not(.print-page) {
     display: none !important;
     visibility: hidden !important;
     position: absolute !important;
     left: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
 
   .print-container {
@@ -1174,6 +1178,10 @@ export default {
     display: block !important;
     width: 100% !important;
     page-break-inside: avoid !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-direction: column !important;
   }
 
   .print-page {
