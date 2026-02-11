@@ -1156,17 +1156,57 @@ export default {
   #q-app,
   .q-layout,
   .q-page-container,
+  .q-page-container > *,
   .print-template-page {
     position: static !important;
     margin: 0 !important;
     padding: 0 !important;
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
     background: white !important;
     width: 100% !important;
     height: auto !important;
+    transform: none !important;
+    min-height: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   .q-page {
     padding: 0 !important;
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Override Quasar's inline layout offsets for header/drawer */
+  .q-page-container {
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    transform: none !important;
+  }
+
+  /* Hide Quasar layout sections that reserve space */
+  .q-header,
+  .q-layout__header,
+  .q-drawer,
+  .q-drawer-container,
+  .q-drawer__backdrop,
+  .q-layout__section--marginal,
+  .q-footer {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
   }
 
   .print-controls {
