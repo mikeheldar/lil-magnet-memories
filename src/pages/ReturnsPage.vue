@@ -82,27 +82,9 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
+import { useMeta } from 'quasar';
 
 const router = useRouter();
-</script>
-
-<style lang="scss" scoped>
-.returns-page {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-ul, ol {
-  padding-left: 20px;
-}
-
-li {
-  margin-bottom: 8px;
-}
-</style>
-
-<script setup>
-import { useMeta } from 'quasar';
 
 useMeta({
   title: 'Returns & Refunds - Lil Magnet Memories',
