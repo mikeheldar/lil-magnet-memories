@@ -1181,7 +1181,7 @@ export default {
     position: static !important;
     margin: 0 !important;
     padding: 0 !important;
-    flex-direction: column !important;
+    gap: 0 !important;
   }
 
   .print-page {
@@ -1189,13 +1189,15 @@ export default {
     height: 11in !important;
     page-break-after: always !important;
     page-break-inside: avoid !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: var(--page-padding-y) var(--page-padding-x) !important;
     background: white !important;
     border: none !important;
     display: flex !important;
     flex-direction: column !important;
-    position: relative !important;
+    position: static !important;
+    left: 0 !important;
+    top: 0 !important;
   }
 
   .print-page:last-child {
