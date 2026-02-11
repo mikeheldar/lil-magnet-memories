@@ -85,8 +85,23 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
+
+useMeta({
+  title: 'Shipping Information - Lil Magnet Memories',
+  meta: {
+    description: {
+      name: 'description',
+      content: 'Shipping information for custom photo magnets. Learn about delivery times, shipping costs, and pickup options at market events.'
+    },
+    keywords: {
+      name: 'keywords',
+      content: 'shipping, delivery, USPS, market pickup, shipping costs'
+    }
+  }
+});
 
 const loading = ref(true);
 const shippingOptions = ref([]);

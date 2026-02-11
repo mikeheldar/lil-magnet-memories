@@ -206,13 +206,27 @@
 <script>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 
 export default {
   name: 'PhotoManagementPage',
   setup() {
+    useMeta({
+      title: 'Photo Management - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Manage uploaded photos and orders. Admin interface for processing customer photo uploads.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const router = useRouter();
     const $q = useQuasar();
 

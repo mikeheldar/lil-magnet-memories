@@ -208,13 +208,27 @@
 <script>
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 
 export default {
   name: 'MagnetStudioSelectPage',
   setup() {
+    useMeta({
+      title: 'Select Magnet Type - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Choose your magnet type and start designing. Select from various sizes and styles for your custom photo magnets.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'select magnet, magnet types, choose magnet size'
+        }
+      }
+    });
+
     const router = useRouter();
     const $q = useQuasar();
 

@@ -99,9 +99,23 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 
 const $q = useQuasar();
+
+useMeta({
+  title: 'Contact Us - Lil Magnet Memories',
+  meta: {
+    description: {
+      name: 'description',
+      content: 'Get in touch with Lil Magnet Memories. We\'d love to hear from you! Email us at info@lilmagnetmemories.com or send us a message.'
+    },
+    keywords: {
+      name: 'keywords',
+      content: 'contact lil magnet memories, customer support, email, message'
+    }
+  }
+});
 const submitting = ref(false);
 const success = ref(false);
 const form = ref({

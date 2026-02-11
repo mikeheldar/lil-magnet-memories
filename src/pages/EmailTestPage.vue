@@ -90,11 +90,25 @@
 
 <script>
 import { ref, computed } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 
 export default {
   name: 'EmailTestPage',
   setup() {
+    useMeta({
+      title: 'Email Test - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Email testing and debugging tool.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
 
     const emailData = ref({

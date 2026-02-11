@@ -319,11 +319,25 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { firebaseService } from '../services/firebaseService.js';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 
 export default {
   name: 'ReviewsManagementPage',
   setup() {
+    useMeta({
+      title: 'Reviews Management - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Admin interface for managing customer reviews, testimonials, and feedback.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const reviews = ref([]);
     const loading = ref(true);

@@ -235,8 +235,25 @@
 </template>
 
 <script>
+import { useMeta } from 'quasar';
+
 export default {
   name: 'AboutPage',
+  setup() {
+    useMeta({
+      title: 'About Us - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Founded in 2025 by Amy Helman-Darley to sprinkle joy into the world—one magnetic memory at a time. Learn about our story and mission.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'about lil magnet memories, Amy Helman-Darley, custom magnet company, photo magnet business'
+        }
+      }
+    });
+  }
 };
 </script>
 

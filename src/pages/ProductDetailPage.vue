@@ -89,6 +89,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
@@ -101,6 +102,20 @@ export default {
     SimpleSlideshow,
   },
   setup() {
+    useMeta({
+      title: 'Product Details - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'View product details for custom photo magnets. See pricing, sizes, and options. Add to cart and start creating your memories.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'product details, magnet info, pricing, add to cart'
+        }
+      }
+    });
+
     const route = useRoute();
     const router = useRouter();
     const $q = useQuasar();

@@ -66,8 +66,22 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { authService } from '../services/authService';
+
+useMeta({
+  title: 'Newsletter Signup - Lil Magnet Memories',
+  meta: {
+    description: {
+      name: 'description',
+      content: 'Subscribe to our newsletter for special offers, new products, and updates from Lil Magnet Memories.'
+    },
+    keywords: {
+      name: 'keywords',
+      content: 'newsletter, subscribe, email list, special offers'
+    }
+  }
+});
 
 const $q = useQuasar();
 const submitting = ref(false);

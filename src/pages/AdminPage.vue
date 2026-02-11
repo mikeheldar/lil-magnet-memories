@@ -224,12 +224,26 @@
 import { ref, computed, onMounted } from 'vue';
 import { authService } from '../services/authService';
 import { USERS_CONFIG, USER_ROLES } from '../config/users';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { notificationService } from '../services/notificationService';
 
 export default {
   name: 'AdminPage',
   setup() {
+    useMeta({
+      title: 'Admin Dashboard - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Admin dashboard for managing users, products, orders, and settings for Lil Magnet Memories.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const currentUser = ref(null);
     const isAdmin = ref(false);

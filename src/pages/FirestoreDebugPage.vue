@@ -172,6 +172,7 @@
 
 <script>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useMeta } from 'quasar';
 import { 
   getLogs, 
   getSummary, 
@@ -183,6 +184,20 @@ import {
 export default {
   name: 'FirestoreDebugPage',
   setup() {
+    useMeta({
+      title: 'Firestore Debug - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Firestore debugging and logging tool.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const logs = ref([]);
     const summary = ref({});
     const offlineErrors = ref([]);

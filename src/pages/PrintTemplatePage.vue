@@ -300,11 +300,26 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useMeta } from 'quasar';
 import { config } from '../config/environment.js';
 
 export default {
   name: 'PrintTemplatePage',
   setup() {
+    useMeta({
+      title: 'Print Template - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Print template for custom photo magnets. Optimized layout for printing customer orders.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const route = useRoute();
     const photos = ref([]);
     const orderNumber = ref('');
@@ -1246,96 +1261,34 @@ export default {
     margin: 0 !important;
   }
 
-  /* Corner triangles for cutting alignment */
-  .corner-triangle {
+  /* Corner triangles for cutting alignment - HIDE in print */
+  .corner-triangle,
+  .corner-triangle-top-left,
+  .corner-triangle-top-right,
+  .corner-triangle-bottom-left,
+  .corner-triangle-bottom-right {
+    display: none !important;
+    visibility: hidden !important;
     position: absolute !important;
+    left: -9999px !important;
     width: 0 !important;
     height: 0 !important;
     pointer-events: none !important;
-    z-index: 3 !important;
   }
 
-  .corner-triangle-top-left {
-    top: 0 !important;
-    left: 0 !important;
-    border-top: var(--triangle-size) solid #333 !important;
-    border-left: var(--triangle-size) solid #333 !important;
-    border-right: var(--triangle-size) solid transparent !important;
-    border-bottom: var(--triangle-size) solid transparent !important;
-  }
 
-  .corner-triangle-top-right {
-    top: 0 !important;
-    right: 0 !important;
-    border-top: var(--triangle-size) solid #333 !important;
-    border-right: var(--triangle-size) solid #333 !important;
-    border-left: var(--triangle-size) solid transparent !important;
-    border-bottom: var(--triangle-size) solid transparent !important;
-  }
-
-  .corner-triangle-bottom-left {
-    bottom: 0 !important;
-    left: 0 !important;
-    border-bottom: var(--triangle-size) solid #333 !important;
-    border-left: var(--triangle-size) solid #333 !important;
-    border-right: var(--triangle-size) solid transparent !important;
-    border-top: var(--triangle-size) solid transparent !important;
-  }
-
-  .corner-triangle-bottom-right {
-    bottom: 0 !important;
-    right: 0 !important;
-    border-bottom: var(--triangle-size) solid #333 !important;
-    border-right: var(--triangle-size) solid #333 !important;
-    border-left: var(--triangle-size) solid transparent !important;
-    border-top: var(--triangle-size) solid transparent !important;
-  }
-
-  /* Border text labels */
-  .border-text {
-    position: absolute !important;
-    color: #333 !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.5px !important;
-    pointer-events: none !important;
-    z-index: 2 !important;
-    white-space: nowrap !important;
-  }
-
-  .border-text-top {
-    top: calc(((var(--outer-square-size) - var(--inner-square-size)) / 3.8)) !important;
-    left: 50% !important;
-    transform: translate(-50%) rotate(180deg) !important;
-    width: calc(var(--outer-square-size) - var(--triangle-size) * 2) !important;
-    text-align: center !important;
-  }
-
-  .border-text-bottom {
-    bottom: calc((var(--outer-square-size) - var(--inner-square-size)) / 4) !important;
-    left: 50% !important;
-    transform: translate(-50%) !important;
-    width: calc(var(--outer-square-size) - var(--triangle-size) * 2) !important;
-    text-align: center !important;
-  }
-
-  .border-text-left {
-    left: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7) !important;
-    top: 30% !important;
-    transform: translateY(-50%) rotate(90deg) !important;
-    transform-origin: left !important;
-    width: calc(var(--outer-square-size) - var(--triangle-size) * 2) !important;
-    text-align: left !important;
-  }
-
+  /* Border text labels - HIDE in print */
+  .border-text,
+  .border-text-top,
+  .border-text-bottom,
+  .border-text-left,
   .border-text-right {
-    right: calc((var(--outer-square-size) - var(--inner-square-size)) / 2.7) !important;
-    top: 30% !important;
-    transform: translateY(-50%) rotate(-90deg) !important;
-    transform-origin: right !important;
-    width: calc(var(--outer-square-size) - var(--triangle-size) * 2) !important;
-    text-align: right !important;
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
   }
+
 
   .print-square {
     width: var(--inner-square-size) !important;

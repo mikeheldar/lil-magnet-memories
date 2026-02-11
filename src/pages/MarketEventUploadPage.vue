@@ -587,7 +587,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
@@ -600,6 +600,20 @@ import { useCart } from '../composables/useCart.js';
 export default {
   name: 'MarketEventUploadPage',
   setup() {
+    useMeta({
+      title: 'Market Event Upload - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Upload photos for market event orders. Admin interface for processing in-person event orders.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const quasar = $q; // Capture in local variable for safe access
     const router = useRouter();

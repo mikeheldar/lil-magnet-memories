@@ -168,6 +168,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useMeta } from 'quasar';
 import { authService } from '../services/authService';
 import { marketEventService } from '../services/marketEventService.js';
 import { 
@@ -179,6 +180,20 @@ import {
 export default {
   name: 'ThankYouPage',
   setup() {
+    useMeta({
+      title: 'Order Confirmation - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Thank you for your order! Your custom photo magnets are being prepared. Check your email for order confirmation and updates.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'order confirmation, thank you, order complete'
+        }
+      }
+    });
+
     const router = useRouter();
     const route = useRoute();
 

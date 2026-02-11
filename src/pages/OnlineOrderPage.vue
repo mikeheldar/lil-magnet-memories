@@ -405,7 +405,7 @@
 
 <script>
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
@@ -414,6 +414,20 @@ import { useCart } from '../composables/useCart.js';
 export default {
   name: 'OnlineOrderPage',
   setup() {
+    useMeta({
+      title: 'Online Order - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Admin interface for managing online orders, processing payments, and tracking fulfillment.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const router = useRouter();
     const route = useRoute();

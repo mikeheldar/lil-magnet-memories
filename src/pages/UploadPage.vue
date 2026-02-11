@@ -390,7 +390,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
@@ -398,6 +398,20 @@ import { authService } from '../services/authService.js';
 export default {
   name: 'UploadPage',
   setup() {
+    useMeta({
+      title: 'Upload - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Admin interface for uploading and managing product images and assets.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const router = useRouter();
 

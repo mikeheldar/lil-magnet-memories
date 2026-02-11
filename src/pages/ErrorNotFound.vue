@@ -20,7 +20,24 @@
 </template>
 
 <script>
+import { useMeta } from 'quasar';
+
 export default {
   name: 'ErrorNotFound',
+  setup() {
+    useMeta({
+      title: '404 - Page Not Found - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'The page you are looking for could not be found.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+  }
 };
 </script>

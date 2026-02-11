@@ -265,13 +265,27 @@
 <script>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 
 export default {
   name: 'PhotoSelectorPage',
   setup() {
+    useMeta({
+      title: 'Photo Selector - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Admin interface for selecting and managing photos for print templates and order fulfillment.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const router = useRouter();
     const $q = useQuasar();
 

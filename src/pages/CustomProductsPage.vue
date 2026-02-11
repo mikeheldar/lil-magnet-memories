@@ -152,6 +152,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService';
 import SimpleSlideshow from '../components/SimpleSlideshow.vue';
@@ -162,6 +163,20 @@ export default {
     SimpleSlideshow,
   },
   setup() {
+    useMeta({
+      title: 'Custom Photo Magnets - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Create personalized magnets from your own photos. Choose from various sizes and styles. High-quality prints that capture your precious memories.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'custom photo magnets, personalized magnets, photo gifts, custom magnet sizes'
+        }
+      }
+    });
+
     const router = useRouter();
     const products = ref([]);
     const loading = ref(true);

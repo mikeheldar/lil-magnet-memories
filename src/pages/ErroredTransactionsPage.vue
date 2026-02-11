@@ -184,7 +184,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
@@ -193,6 +193,20 @@ import { db } from '../firebase/config.js';
 export default {
   name: 'ErroredTransactionsPage',
   setup() {
+    useMeta({
+      title: 'Errored Transactions - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Admin interface for viewing and managing failed payment transactions.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const loading = ref(false);
     const error = ref(null);

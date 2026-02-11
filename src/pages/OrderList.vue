@@ -566,7 +566,7 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import { config } from '../config/environment.js';
@@ -574,6 +574,20 @@ import { config } from '../config/environment.js';
 export default {
   name: 'OrderList',
   setup() {
+    useMeta({
+      title: 'Order Management - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Admin interface for managing customer orders, tracking order status, and processing fulfillment.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const orders = ref([]);
     const loading = ref(true);
     const error = ref(null);

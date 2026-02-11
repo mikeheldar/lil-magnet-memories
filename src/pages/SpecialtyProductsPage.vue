@@ -144,6 +144,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService';
 import SimpleSlideshow from '../components/SimpleSlideshow.vue';
@@ -154,6 +155,20 @@ export default {
     SimpleSlideshow,
   },
   setup() {
+    useMeta({
+      title: 'Specialty Products - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Discover specialty photo magnets with unique shapes, sizes, and finishes. Perfect for special occasions and memorable gifts.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'specialty magnets, unique magnets, special shapes, custom sizes'
+        }
+      }
+    });
+
     const router = useRouter();
     const products = ref([]);
     const loading = ref(true);

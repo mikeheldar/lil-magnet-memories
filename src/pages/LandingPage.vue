@@ -385,7 +385,7 @@ import {
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { userPreferencesService } from '../services/userPreferencesService.js';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { useCustomerType } from '../composables/useCustomerType.js';
 import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
 import { ensureNetworkReady } from '../firebase/config.js';
@@ -395,6 +395,33 @@ import { safeLocalStorage } from '../utils/ssrSafeStorage.js';
 export default {
   name: 'LandingPage',
   setup() {
+    // Set page-specific meta tags
+    useMeta({
+      title: 'Home - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Turn your precious memories into beautiful custom photo magnets. Perfect for gifts, events, and keepsakes. Order online or visit us at local market events.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'custom photo magnets, personalized magnets, photo gifts, magnet memories, custom gifts, market event magnets'
+        },
+        ogTitle: {
+          property: 'og:title',
+          content: 'Lil Magnet Memories - Custom Photo Magnets'
+        },
+        ogDescription: {
+          property: 'og:description',
+          content: 'Turn your precious memories into beautiful custom photo magnets'
+        },
+        ogImage: {
+          property: 'og:image',
+          content: 'https://lilmagnetmemories.com/assets/lil-magnet-memories-logo.png'
+        }
+      }
+    });
+
     const router = useRouter();
     const $q = useQuasar();
     const quasar = $q; // Capture in local variable for safe access

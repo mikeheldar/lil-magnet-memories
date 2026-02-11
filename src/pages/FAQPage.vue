@@ -55,6 +55,21 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMeta } from 'quasar';
+
+useMeta({
+  title: 'FAQ - Lil Magnet Memories',
+  meta: {
+    description: {
+      name: 'description',
+      content: 'Frequently asked questions about custom photo magnets. Learn about ordering, shipping, pricing, and our products.'
+    },
+    keywords: {
+      name: 'keywords',
+      content: 'magnet FAQ, custom magnet questions, shipping info, pricing questions'
+    }
+  }
+});
 
 const router = useRouter();
 

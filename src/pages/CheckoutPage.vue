@@ -819,7 +819,7 @@
 <script>
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { useCart } from '../composables/useCart.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
@@ -833,6 +833,20 @@ import { config as envConfig } from '../config/environment.js';
 export default {
   name: 'CheckoutPage',
   setup() {
+    useMeta({
+      title: 'Checkout - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Complete your custom photo magnet order. Secure checkout with credit card or cash payment options.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'checkout, payment, order completion, secure checkout'
+        }
+      }
+    });
+
     const router = useRouter();
     const route = useRoute();
     const $q = useQuasar();

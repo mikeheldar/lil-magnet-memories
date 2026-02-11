@@ -748,7 +748,7 @@
 
 <script>
 import { ref, onMounted, computed, nextTick, watch } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { authService } from '../services/authService';
 import { useRouter } from 'vue-router';
 import {
@@ -763,6 +763,20 @@ export default {
     draggable,
   },
   setup() {
+    useMeta({
+      title: 'Pricing - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'View and manage pricing for custom photo magnets. Bulk discounts available. Create and edit product pricing tiers.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'magnet pricing, bulk discounts, custom magnet costs, pricing tiers'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const router = useRouter();
     const products = ref([]);

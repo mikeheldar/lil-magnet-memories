@@ -248,12 +248,26 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { firebaseService } from '../services/firebaseService.js';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { config } from '../config/environment.js';
 
 export default {
   name: 'CustomersPage',
   setup() {
+    useMeta({
+      title: 'Customer Management - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Admin interface for managing customer information, orders, and contact details.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const orders = ref([]);
     const loading = ref(true);
     const error = ref(null);

@@ -336,6 +336,7 @@
 <script>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
@@ -344,6 +345,20 @@ import { db } from '../firebase/config.js';
 export default {
   name: 'CustomerOrdersPage',
   setup() {
+    useMeta({
+      title: 'Your Orders - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'View your order history and track your custom photo magnet orders. Check order status and details.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const router = useRouter();
     const orders = ref([]);
     const loading = ref(true);

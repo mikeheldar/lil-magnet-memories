@@ -130,8 +130,22 @@
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
+
+useMeta({
+  title: 'Leave a Review - Lil Magnet Memories',
+  meta: {
+    description: {
+      name: 'description',
+      content: 'Share your experience with Lil Magnet Memories. Leave a review and help others discover our custom photo magnets.'
+    },
+    keywords: {
+      name: 'keywords',
+      content: 'customer reviews, testimonials, leave review, feedback'
+    }
+  }
+});
 import { 
   getGoogleReviewUrl, 
   isGoogleReviewConfigured,

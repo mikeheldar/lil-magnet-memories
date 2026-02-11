@@ -452,7 +452,7 @@
 
 <script>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService';
 import { marketEventService } from '../services/marketEventService.js';
 import { authService } from '../services/authService';
@@ -467,6 +467,20 @@ export default {
     AddressAutocomplete,
   },
   setup() {
+    useMeta({
+      title: 'Market Events Admin - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Create and manage market events. Admin interface for scheduling and tracking market event attendance.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
 
     // Reactive data

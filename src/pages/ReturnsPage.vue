@@ -100,3 +100,21 @@ li {
   margin-bottom: 8px;
 }
 </style>
+
+<script setup>
+import { useMeta } from 'quasar';
+
+useMeta({
+  title: 'Returns & Refunds - Lil Magnet Memories',
+  meta: {
+    description: {
+      name: 'description',
+      content: 'Our return and refund policy for custom photo magnets. Learn about our satisfaction guarantee and how to request returns or refunds.'
+    },
+    keywords: {
+      name: 'keywords',
+      content: 'returns, refunds, return policy, money back guarantee'
+    }
+  }
+});
+</script>

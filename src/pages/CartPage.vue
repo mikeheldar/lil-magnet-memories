@@ -216,12 +216,27 @@
 import { useCart } from '../composables/useCart.js';
 import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
+import { useMeta } from 'quasar';
 import { auth } from '../firebase/config.js';
 import { firebaseService } from '../services/firebaseService.js';
 
 export default {
   name: 'CartPage',
   setup() {
+    useMeta({
+      title: 'Shopping Cart - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'View your shopping cart and review your custom photo magnet order. Update quantities and proceed to checkout.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'shopping cart, cart, order review, checkout'
+        }
+      }
+    });
+
     const router = useRouter();
     const { cartItems, cartSubtotal, updateQuantity, removeFromCart } =
       useCart();

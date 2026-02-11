@@ -307,7 +307,7 @@
 
 <script>
 import { ref, computed } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import axios from 'axios';
 import {
   testCatalog,
@@ -320,6 +320,20 @@ import { testGridService } from '../services/testGridService';
 export default {
   name: 'TestRunnerPage',
   setup() {
+    useMeta({
+      title: 'Test Runner - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Test runner for development and debugging.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const selectedSuite = ref(null);
     const selectedCategory = ref(null);

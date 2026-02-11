@@ -216,13 +216,27 @@
 <script>
 import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 
 export default {
   name: 'MagnetStudioPage',
   setup() {
+    useMeta({
+      title: 'Magnet Studio - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Design your custom photo magnet. Add text, adjust layout, and personalize your memories in our Magnet Studio.'
+        },
+        keywords: {
+          name: 'keywords',
+          content: 'magnet studio, design magnets, customize magnets, photo editor'
+        }
+      }
+    });
+
     const router = useRouter();
     const route = useRoute();
     const $q = useQuasar();

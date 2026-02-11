@@ -241,12 +241,26 @@
 <script>
 import { ref, computed } from 'vue';
 import { firebaseTest } from '../services/firebaseTest';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { config } from '../config/environment.js';
 
 export default {
   name: 'FirebaseDiagnostic',
   setup() {
+    useMeta({
+      title: 'Firebase Diagnostic - Lil Magnet Memories',
+      meta: {
+        description: {
+          name: 'description',
+          content: 'Firebase connection and database diagnostic tool.'
+        },
+        robots: {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      }
+    });
+
     const $q = useQuasar();
     const connectionTestLoading = ref(false);
     const basicWriteTestLoading = ref(false);

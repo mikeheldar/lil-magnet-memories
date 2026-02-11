@@ -220,7 +220,22 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMeta } from 'quasar';
 import { marketEventService } from '../services/marketEventService.js';
+
+useMeta({
+  title: 'Event Calendar - Lil Magnet Memories',
+  meta: {
+    description: {
+      name: 'description',
+      content: 'Find Lil Magnet Memories at upcoming market events. See our event calendar, locations, and dates. Visit us in person for custom photo magnets!'
+    },
+    keywords: {
+      name: 'keywords',
+      content: 'market events, event calendar, local markets, in-person shopping, market schedule'
+    }
+  }
+});
 
 const router = useRouter();
 const loading = ref(true);
