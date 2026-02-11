@@ -961,9 +961,44 @@ export default {
       photoTransforms.value = {};
     };
 
-    // Handle print button click - open system print dialog
+    // Handle print button click - hide non-print elements then open system print dialog
     const handlePrint = () => {
+      // Programmatically hide Quasar layout elements before printing
+      const hideSelectors = '.q-header, .q-drawer, .q-drawer-container, .q-drawer__backdrop, .q-footer, .q-layout__section--marginal';
+      const elementsToHide = document.querySelectorAll(hideSelectors);
+      const noPrintElements = document.querySelectorAll('.no-print, .print-controls');
+
+      // Store original display values and hide
+      const originals = [];
+      elementsToHide.forEach(el => {
+        originals.push({ el, display: el.style.display });
+        el.style.display = 'none';
+      });
+      noPrintElements.forEach(el => {
+        originals.push({ el, display: el.style.display });
+        el.style.display = 'none';
+      });
+
+      // Reset q-page-container inline padding (Quasar sets this dynamically)
+      const pageContainer = document.querySelector('.q-page-container');
+      let origPadding = null;
+      if (pageContainer) {
+        origPadding = pageContainer.style.cssText;
+        pageContainer.style.paddingTop = '0px';
+        pageContainer.style.paddingLeft = '0px';
+        pageContainer.style.paddingRight = '0px';
+      }
+
+      // Print
       window.print();
+
+      // Restore original styles after print dialog closes
+      originals.forEach(({ el, display }) => {
+        el.style.display = display;
+      });
+      if (pageContainer && origPadding !== null) {
+        pageContainer.style.cssText = origPadding;
+      }
     };
 
     // Parse photos and quantities from query parameters
@@ -1113,51 +1148,27 @@ export default {
     overflow: visible !important;
   }
 
-  /* Hide everything by default */
-  body * {
-    visibility: hidden !important;
-  }
-
-  /* Show only print container and its contents */
-  .print-container,
-  .print-container * {
-    visibility: visible !important;
-  }
-
-  /* Explicitly hide screen-only elements */
+  /* Hide ALL non-print elements with display:none so they take ZERO space */
   .no-print,
-  .no-print *,
   .q-header,
   .q-layout__header,
   .q-toolbar,
   .q-drawer,
+  .q-drawer-container,
+  .q-drawer__backdrop,
+  .q-layout__section--marginal,
   .q-footer,
-  .print-controls,
-  .print-controls *,
-  .print-page-wrapper > :first-child:not(.print-page) {
+  .print-controls {
     display: none !important;
-    visibility: hidden !important;
-    position: absolute !important;
-    left: -9999px !important;
-    width: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
   }
 
-  .print-container {
-    position: static !important;
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
+  /* Reset ALL Quasar layout wrappers - remove padding/margin/transforms */
   #q-app,
   .q-layout,
   .q-page-container,
-  .q-page-container > *,
+  .q-page,
   .print-template-page {
+    display: block !important;
     position: static !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -1168,63 +1179,20 @@ export default {
     background: white !important;
     width: 100% !important;
     height: auto !important;
-    transform: none !important;
     min-height: 0 !important;
+    transform: none !important;
     border: none !important;
     box-shadow: none !important;
+    overflow: visible !important;
   }
 
-  .q-page {
-    padding: 0 !important;
-    padding-top: 0 !important;
-    padding-left: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Override Quasar's inline layout offsets for header/drawer */
-  .q-page-container {
-    padding-top: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    margin-top: 0 !important;
-    margin-left: 0 !important;
-    transform: none !important;
-  }
-
-  /* Hide Quasar layout sections that reserve space */
-  .q-header,
-  .q-layout__header,
-  .q-drawer,
-  .q-drawer-container,
-  .q-drawer__backdrop,
-  .q-layout__section--marginal,
-  .q-footer {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    position: absolute !important;
-    left: -9999px !important;
-    top: -9999px !important;
-  }
-
-  .print-controls {
-    display: none !important;
-    visibility: hidden !important;
-    width: 0 !important;
-    height: 0 !important;
+  .print-container {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    position: absolute !important;
-    left: -9999px !important;
-    top: -9999px !important;
-    overflow: hidden !important;
-    max-width: 0 !important;
-    max-height: 0 !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    flex: 0 0 0 !important;
   }
 
   .print-page-wrapper {
