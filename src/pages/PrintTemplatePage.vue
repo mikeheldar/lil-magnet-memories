@@ -1403,9 +1403,9 @@ export default {
     z-index: 2 !important;
   }
 
-  /* Test environment: use gray border in print (hide blue guide line) */
+  /* Test environment: hide blue guide line from print output */
   .print-square.test-environment {
-    border: 1px solid #333 !important;
+    border: none !important;
   }
 
   /* Guide lines SVG - HIDE in print */
