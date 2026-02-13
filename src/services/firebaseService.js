@@ -2180,6 +2180,19 @@ class FirebaseService {
         console.log('Order email sent successfully');
       } catch (emailError) {
         console.error('Failed to send order email:', emailError);
+        await this.logTransactionError({
+          errorType: 'admin_order_email_failed',
+          errorMessage: emailError?.message || 'Failed to send admin order email',
+          errorDetails: {
+            stack: emailError?.stack,
+            orderNumber: orderData.orderNumber,
+          },
+          transactionData: {
+            orderNumber: orderData.orderNumber,
+            customerEmail: orderData.customer?.email,
+            customerName: `${orderData.customer?.firstName || ''} ${orderData.customer?.lastName || ''}`.trim(),
+          },
+        });
         // Don't throw error - order was saved successfully
       }
 
@@ -2206,6 +2219,21 @@ class FirebaseService {
           console.log('Status update email sent successfully');
         } catch (statusEmailError) {
           console.error('Failed to send status update email:', statusEmailError);
+          await this.logTransactionError({
+            errorType: 'customer_confirmation_email_failed',
+            errorMessage:
+              statusEmailError?.message ||
+              'Failed to send customer confirmation email (pay_at_event)',
+            errorDetails: {
+              stack: statusEmailError?.stack,
+              orderNumber: orderData.orderNumber,
+            },
+            transactionData: {
+              orderNumber: orderData.orderNumber,
+              customerEmail: orderData.customer?.email,
+              customerName: `${orderData.customer?.firstName || ''} ${orderData.customer?.lastName || ''}`.trim(),
+            },
+          });
           // Don't throw error - order was saved successfully
         }
       }
@@ -2218,28 +2246,47 @@ class FirebaseService {
     }
   }
 
-  // Update order payment status and payment details
-  async updateOrderPaymentStatus(orderId, updates) {
-    try {
-      if (!orderId) {
-        throw new Error('Order ID is required to update payment status');
-      }
-
-      const orderRef = doc(db, 'orders', orderId);
-      const updateData = {
-        ...updates,
-        updatedAt: serverTimestamp(),
-      };
-
-      // Remove undefined values
-      const cleanedUpdateData = this.removeUndefinedValues(updateData);
-
-      await updateDoc(orderRef, cleanedUpdateData);
-      console.log('✅ Order payment status updated:', orderId);
-    } catch (error) {
-      console.error('Error updating order payment status:', error);
-      throw error;
+  // Update order payment status and payment details (with retry for reliability)
+  async updateOrderPaymentStatus(orderId, updates, retryCount = 3) {
+    if (!orderId) {
+      throw new Error('Order ID is required to update payment status');
     }
+
+    const orderRef = doc(db, 'orders', orderId);
+    const updateData = {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    };
+
+    // Remove undefined values
+    const cleanedUpdateData = this.removeUndefinedValues(updateData);
+
+    let lastError;
+    for (let attempt = 1; attempt <= retryCount; attempt++) {
+      try {
+        console.log(
+          `💾 Updating order ${orderId} payment status (attempt ${attempt}/${retryCount})...`
+        );
+        await updateDoc(orderRef, cleanedUpdateData);
+        console.log('✅ Order payment status updated:', orderId, {
+          status: updates.status,
+          paymentOptionStatus: updates.paymentOption?.status,
+        });
+        return;
+      } catch (error) {
+        lastError = error;
+        console.error(
+          `❌ Order payment status update failed (attempt ${attempt}/${retryCount}):`,
+          error.message
+        );
+        if (attempt < retryCount) {
+          const delayMs = 500 * attempt;
+          console.log(`⏳ Retrying in ${delayMs}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+      }
+    }
+    throw lastError;
   }
 
   // Market Events Methods

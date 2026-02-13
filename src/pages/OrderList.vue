@@ -998,6 +998,8 @@ export default {
           return 'orange';
         case 'paid':
           return 'blue';
+        case 'pending_payment':
+          return 'orange';
         case 'in_progress':
           return 'blue';
         case 'completed':
@@ -1015,6 +1017,8 @@ export default {
           return 'new order submitted';
         case 'paid':
           return 'paid';
+        case 'pending_payment':
+          return 'pending payment';
         case 'in_progress':
           return 'in progress';
         case 'completed':

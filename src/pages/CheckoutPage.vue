@@ -4478,12 +4478,33 @@ export default {
                 .then(() =>
                   console.log('✅ Customer confirmation email sent')
                 )
-                .catch((confirmEmailError) =>
+                .catch(async (confirmEmailError) => {
                   console.error(
                     '⚠️ Failed to send customer confirmation email:',
                     confirmEmailError
-                  )
-                );
+                  );
+                  try {
+                    await firebaseService.logTransactionError({
+                      errorType: 'customer_confirmation_email_failed',
+                      errorMessage:
+                        confirmEmailError?.message ||
+                        'Failed to send customer confirmation email (card/apple pay)',
+                      errorDetails: {
+                        stack: confirmEmailError?.stack,
+                        orderNumber,
+                        savedOrderId,
+                      },
+                      transactionData: {
+                        orderNumber,
+                        customerEmail: customerInfo.value.email,
+                        customerName: `${customerInfo.value.firstName || ''} ${customerInfo.value.lastName || ''}`.trim(),
+                        paymentMethod: selectedPaymentOption.value,
+                      },
+                    });
+                  } catch (logErr) {
+                    console.error('Failed to log email error:', logErr);
+                  }
+                });
             } catch (updateError) {
               console.error(
                 '⚠️ Failed to update order with payment details:',
