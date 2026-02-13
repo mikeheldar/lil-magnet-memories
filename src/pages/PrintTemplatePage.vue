@@ -224,9 +224,8 @@
                   'test-environment': isTestEnvironment
                 }"
               >
-                <!-- Guide lines for test environment - window with window effect -->
+                <!-- Guide lines for cutting alignment - shown in all environments -->
                 <svg
-                  v-if="isTestEnvironment"
                   class="guide-lines"
                   viewBox="0 0 100 100"
                   preserveAspectRatio="none"

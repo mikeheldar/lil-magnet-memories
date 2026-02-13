@@ -2165,6 +2165,30 @@ class FirebaseService {
         // Don't throw error - order was saved successfully
       }
 
+      // Send customer confirmation for pay-at-event (order complete when saved; no payment step)
+      if (orderData.paymentOption?.type === 'pay_at_event') {
+        try {
+          await this.sendStatusUpdateEmail({
+            firstName: orderData.customer.firstName,
+            lastName: orderData.customer.lastName,
+            email: orderData.customer.email,
+            orderNumber: orderData.orderNumber,
+            status: 'new',
+            photos: [],
+            quantities: orderData.cartItems.map((item) => item.quantity || 1),
+            totalMagnets: orderData.cartItems.reduce(
+              (sum, item) => sum + (item.quantity || 1),
+              0
+            ),
+            shippingOption: orderData.shippingOption || null,
+          });
+          console.log('Status update email sent successfully');
+        } catch (statusEmailError) {
+          console.error('Failed to send status update email:', statusEmailError);
+          // Don't throw error - order was saved successfully
+        }
+      }
+
       // Return the document ID so we can update it later
       return docRef.id;
     } catch (error) {

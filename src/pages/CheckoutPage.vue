@@ -4432,6 +4432,30 @@ export default {
                 status: finalOrderStatus,
               });
               console.log('✅ Order updated with payment details');
+
+              // Send customer confirmation email (everything received: order saved + payment complete)
+              try {
+                await firebaseService.sendStatusUpdateEmail({
+                  firstName: customerInfo.value.firstName,
+                  lastName: customerInfo.value.lastName,
+                  email: customerInfo.value.email,
+                  orderNumber,
+                  status: 'new',
+                  photos: [],
+                  quantities: cartItemsSnapshot.map((item) =>
+                    getCartItemQuantity(item)
+                  ),
+                  totalMagnets,
+                  shippingOption: shippingOptionPayload || null,
+                });
+                console.log('✅ Customer confirmation email sent');
+              } catch (confirmEmailError) {
+                console.error(
+                  '⚠️ Failed to send customer confirmation email:',
+                  confirmEmailError
+                );
+                // Don't fail the flow - order and payment are complete
+              }
             } catch (updateError) {
               console.error(
                 '⚠️ Failed to update order with payment details:',
