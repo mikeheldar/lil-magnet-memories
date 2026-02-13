@@ -4324,14 +4324,17 @@ export default {
         let squarePaymentDetails = null;
         let paymentOptionPayload = initialPaymentOptionPayload; // Start with initial payload, will be updated after payment
 
-        if (selectedPaymentOption.value === 'square_card') {
+        // Use applePayToken as reliable indicator - selectedPaymentOption can be reset by watchers during async flow
+        const isApplePayFlow = !!applePayToken.value;
+
+        if (selectedPaymentOption.value === 'square_card' && !isApplePayFlow) {
           squarePaymentDetails = await processSquareCardPayment(orderNumber);
           logProcessingTime('Square card payment processed');
-        } else if (
-          selectedPaymentOption.value === 'apple_pay' &&
-          applePayToken.value
-        ) {
-          console.log('💳 Processing Apple Pay payment with token...');
+        } else if (isApplePayFlow) {
+          console.log('💳 Processing Apple Pay payment with token...', {
+            hasToken: !!applePayToken.value,
+            selectedPaymentOption: selectedPaymentOption.value,
+          });
           try {
             squarePaymentDetails = await processApplePayPayment(
               orderNumber,
@@ -4433,8 +4436,16 @@ export default {
 
         // Update paymentOptionPayload with payment details if payment was processed
         if (squarePaymentDetails) {
+          console.log('📋 Payment successful, updating order and sending email', {
+            paymentType: isApplePayFlow ? 'apple_pay' : selectedPaymentOption.value,
+            savedOrderId,
+            status: squarePaymentDetails.status,
+          });
+          const effectivePaymentType = isApplePayFlow
+            ? 'apple_pay'
+            : selectedPaymentOption.value;
           paymentOptionPayload = {
-            type: selectedPaymentOption.value,
+            type: effectivePaymentType,
             processor: paymentProcessor,
             paymentId: squarePaymentDetails.id,
             paidAt: squarePaymentDetails.createdAt || new Date().toISOString(),
@@ -4459,52 +4470,6 @@ export default {
               });
               logProcessingTime('Order updated with payment details');
               console.log('✅ Order updated with payment details');
-
-              // Send customer confirmation email in background (don't block navigation)
-              const { photos, quantities } =
-                extractPhotosFromCartItems(cartItemsSnapshot);
-              firebaseService
-                .sendStatusUpdateEmail({
-                  firstName: customerInfo.value.firstName,
-                  lastName: customerInfo.value.lastName,
-                  email: customerInfo.value.email,
-                  orderNumber,
-                  status: 'new',
-                  photos,
-                  quantities,
-                  totalMagnets,
-                  shippingOption: shippingOptionPayload || null,
-                })
-                .then(() =>
-                  console.log('✅ Customer confirmation email sent')
-                )
-                .catch(async (confirmEmailError) => {
-                  console.error(
-                    '⚠️ Failed to send customer confirmation email:',
-                    confirmEmailError
-                  );
-                  try {
-                    await firebaseService.logTransactionError({
-                      errorType: 'customer_confirmation_email_failed',
-                      errorMessage:
-                        confirmEmailError?.message ||
-                        'Failed to send customer confirmation email (card/apple pay)',
-                      errorDetails: {
-                        stack: confirmEmailError?.stack,
-                        orderNumber,
-                        savedOrderId,
-                      },
-                      transactionData: {
-                        orderNumber,
-                        customerEmail: customerInfo.value.email,
-                        customerName: `${customerInfo.value.firstName || ''} ${customerInfo.value.lastName || ''}`.trim(),
-                        paymentMethod: selectedPaymentOption.value,
-                      },
-                    });
-                  } catch (logErr) {
-                    console.error('Failed to log email error:', logErr);
-                  }
-                });
             } catch (updateError) {
               console.error(
                 '⚠️ Failed to update order with payment details:',
@@ -4524,11 +4489,59 @@ export default {
                 transactionData: {
                   orderNumber,
                   amount: orderTotal.value,
-                  paymentMethod: selectedPaymentOption.value,
+                  paymentMethod: effectivePaymentType,
                   customerEmail: customerInfo.value.email,
                 },
               });
             }
+
+            // Send customer confirmation email regardless of status update success
+            // Payment went through - customer always gets their confirmation
+            const { photos, quantities } =
+              extractPhotosFromCartItems(cartItemsSnapshot);
+            firebaseService
+              .sendStatusUpdateEmail({
+                firstName: customerInfo.value.firstName,
+                lastName: customerInfo.value.lastName,
+                email: customerInfo.value.email,
+                orderNumber,
+                status: 'new',
+                photos,
+                quantities,
+                totalMagnets,
+                shippingOption: shippingOptionPayload || null,
+              })
+              .then(() =>
+                console.log('✅ Customer confirmation email sent')
+              )
+              .catch(async (confirmEmailError) => {
+                console.error(
+                  '⚠️ Failed to send customer confirmation email:',
+                  confirmEmailError
+                );
+                try {
+                  await firebaseService.logTransactionError({
+                    errorType: 'customer_confirmation_email_failed',
+                    errorMessage:
+                      confirmEmailError?.message ||
+                      'Failed to send customer confirmation email (card/apple pay)',
+                    errorDetails: {
+                      stack: confirmEmailError?.stack,
+                      orderNumber,
+                      savedOrderId,
+                    },
+                    transactionData: {
+                      orderNumber,
+                      customerEmail: customerInfo.value.email,
+                      customerName: `${customerInfo.value.firstName || ''} ${customerInfo.value.lastName || ''}`.trim(),
+                      paymentMethod: effectivePaymentType,
+                    },
+                  });
+                } catch (logErr) {
+                  console.error('Failed to log email error:', logErr);
+                }
+              });
+            console.log('📧 Customer confirmation email triggered for', effectivePaymentType);
           }
         } else if (selectedPaymentOption.value === 'pay_at_event') {
           // For pay-at-tent, store the amount they should pay
