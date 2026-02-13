@@ -4149,6 +4149,23 @@ export default {
       return 0;
     };
 
+    const extractPhotosFromCartItems = (items) => {
+      const photos = [];
+      const quantities = [];
+      for (const item of items) {
+        if (item.isCustomUpload && item.photos?.length) {
+          for (let i = 0; i < item.photos.length; i++) {
+            const photo = item.photos[i];
+            if (photo.url) {
+              photos.push({ name: photo.name || 'Photo', url: photo.url });
+              quantities.push(item.photoQuantities?.[i] ?? photo.quantity ?? 1);
+            }
+          }
+        }
+      }
+      return { photos, quantities };
+    };
+
     const placeOrder = async () => {
       // For Apple Pay, skip validation if we have a token (payment already authorized)
       // This handles the case where Apple Pay button is clicked and token is received
@@ -4193,6 +4210,12 @@ export default {
 
       submitting.value = true;
       let navigationSucceeded = false;
+      const processingStartTime = Date.now();
+      const logProcessingTime = (label) => {
+        const elapsed = Date.now() - processingStartTime;
+        console.log(`⏱️ [Checkout] ${label}: ${elapsed}ms (total)`);
+        return elapsed;
+      };
 
       try {
         showValidationErrors.value = false;
@@ -4287,6 +4310,7 @@ export default {
         let savedOrderId = null;
         try {
           savedOrderId = await firebaseService.saveCartOrder(initialOrderData);
+          logProcessingTime('Order saved to Firestore');
           console.log('✅ Order saved to Firestore with ID:', savedOrderId);
         } catch (saveError) {
           console.error('❌ Failed to save order to Firestore:', saveError);
@@ -4302,6 +4326,7 @@ export default {
 
         if (selectedPaymentOption.value === 'square_card') {
           squarePaymentDetails = await processSquareCardPayment(orderNumber);
+          logProcessingTime('Square card payment processed');
         } else if (
           selectedPaymentOption.value === 'apple_pay' &&
           applePayToken.value
@@ -4386,6 +4411,7 @@ export default {
             throw userFriendlyError;
           }
 
+          logProcessingTime('Apple Pay payment processed');
           console.log('✅ Apple Pay payment processed successfully:', {
             paymentId: squarePaymentDetails.id,
             status: squarePaymentDetails.status,
@@ -4431,31 +4457,33 @@ export default {
                 paymentOption: paymentOptionPayload,
                 status: finalOrderStatus,
               });
+              logProcessingTime('Order updated with payment details');
               console.log('✅ Order updated with payment details');
 
-              // Send customer confirmation email (everything received: order saved + payment complete)
-              try {
-                await firebaseService.sendStatusUpdateEmail({
+              // Send customer confirmation email in background (don't block navigation)
+              const { photos, quantities } =
+                extractPhotosFromCartItems(cartItemsSnapshot);
+              firebaseService
+                .sendStatusUpdateEmail({
                   firstName: customerInfo.value.firstName,
                   lastName: customerInfo.value.lastName,
                   email: customerInfo.value.email,
                   orderNumber,
                   status: 'new',
-                  photos: [],
-                  quantities: cartItemsSnapshot.map((item) =>
-                    getCartItemQuantity(item)
-                  ),
+                  photos,
+                  quantities,
                   totalMagnets,
                   shippingOption: shippingOptionPayload || null,
-                });
-                console.log('✅ Customer confirmation email sent');
-              } catch (confirmEmailError) {
-                console.error(
-                  '⚠️ Failed to send customer confirmation email:',
-                  confirmEmailError
+                })
+                .then(() =>
+                  console.log('✅ Customer confirmation email sent')
+                )
+                .catch((confirmEmailError) =>
+                  console.error(
+                    '⚠️ Failed to send customer confirmation email:',
+                    confirmEmailError
+                  )
                 );
-                // Don't fail the flow - order and payment are complete
-              }
             } catch (updateError) {
               console.error(
                 '⚠️ Failed to update order with payment details:',
@@ -4543,6 +4571,13 @@ export default {
 
         // Ensure dialog is closed before navigating
         showOrderSuccessDialog.value = false;
+
+        logProcessingTime('Ready to navigate to receipt');
+        console.log(
+          '⏱️ [Checkout] Total processing time before receipt:',
+          Date.now() - processingStartTime,
+          'ms'
+        );
 
         // Navigate to thank you page (same for both Apple Pay and credit card payments)
         // Keep submitting=true until navigation completes - button will stay spinning

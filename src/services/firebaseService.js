@@ -1974,6 +1974,24 @@ class FirebaseService {
     return obj;
   }
 
+  // Extract photos and quantities from cart items for email
+  extractPhotosFromCartItems(cartItems) {
+    const photos = [];
+    const quantities = [];
+    for (const item of cartItems) {
+      if (item.isCustomUpload && item.photos?.length) {
+        for (let i = 0; i < item.photos.length; i++) {
+          const photo = item.photos[i];
+          if (photo.url) {
+            photos.push({ name: photo.name || 'Photo', url: photo.url });
+            quantities.push(item.photoQuantities?.[i] ?? photo.quantity ?? 1);
+          }
+        }
+      }
+    }
+    return { photos, quantities };
+  }
+
   // Clean cart items for Firestore - remove File objects, base64 previews, and other non-serializable data
   // CRITICAL: Preserve totalCost, pricing, and totalPrice for proper order total calculation
   cleanCartItemsForFirestore(cartItems) {
@@ -2168,14 +2186,17 @@ class FirebaseService {
       // Send customer confirmation for pay-at-event (order complete when saved; no payment step)
       if (orderData.paymentOption?.type === 'pay_at_event') {
         try {
+          const { photos, quantities } = this.extractPhotosFromCartItems(
+            orderData.cartItems || []
+          );
           await this.sendStatusUpdateEmail({
             firstName: orderData.customer.firstName,
             lastName: orderData.customer.lastName,
             email: orderData.customer.email,
             orderNumber: orderData.orderNumber,
             status: 'new',
-            photos: [],
-            quantities: orderData.cartItems.map((item) => item.quantity || 1),
+            photos,
+            quantities,
             totalMagnets: orderData.cartItems.reduce(
               (sum, item) => sum + (item.quantity || 1),
               0

@@ -925,9 +925,9 @@ async function sendLilMagnetStatusUpdateEmail(params: {
 
   switch (status) {
     case 'new':
-      statusMessage = 'Your order has been received and is ready to start! 🎉';
+      statusMessage = 'Your order has been received.';
       statusEmoji = '✨';
-      excitementLevel = 'Exciting news';
+      excitementLevel = 'Thank you for your order';
       break;
     case 'in_progress':
       statusMessage = 'Your magnets are being created right now! 🎨';
