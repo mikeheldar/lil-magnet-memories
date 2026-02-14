@@ -143,7 +143,7 @@ export default {
 
         // Call Firebase Cloud Function to send email
         const response = await fetch(
-          `${config.apiBaseUrl}/send-order-email`,
+          `${config.paymentsAndEmailApiBaseUrl}/send-order-email`,
           {
             method: 'POST',
             headers: {

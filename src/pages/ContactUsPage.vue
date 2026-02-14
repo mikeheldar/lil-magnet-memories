@@ -145,7 +145,7 @@ const onSubmit = async () => {
   submitting.value = true;
   try {
     const response = await fetch(
-      `${config.apiBaseUrl}/send-contact-email`,
+      `${config.paymentsAndEmailApiBaseUrl}/send-contact-email`,
       {
         method: 'POST',
         headers: {

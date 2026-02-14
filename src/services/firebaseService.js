@@ -1285,7 +1285,7 @@ class FirebaseService {
   async sendOrderEmail(orderData) {
     try {
       const response = await fetch(
-        `${config.apiBaseUrl}/send-order-email`,
+        `${config.paymentsAndEmailApiBaseUrl}/send-order-email`,
         {
           method: 'POST',
           headers: {
@@ -1311,7 +1311,7 @@ class FirebaseService {
   async sendStatusUpdateEmail(orderData) {
     try {
       const response = await fetch(
-        `${config.apiBaseUrl}/send-status-update-email`,
+        `${config.paymentsAndEmailApiBaseUrl}/send-status-update-email`,
         {
           method: 'POST',
           headers: {
@@ -1338,7 +1338,7 @@ class FirebaseService {
       let response;
       try {
         response = await fetch(
-          `${config.apiBaseUrl}/payments/create`,
+          `${config.paymentsAndEmailApiBaseUrl}/payments/create`,
           {
             method: 'POST',
             headers: {

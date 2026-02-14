@@ -61,10 +61,16 @@ export const config = {
     };
   },
 
-  // Cloud Functions API base URL - matches Firebase project (test vs production)
+  // Cloud Functions API base URL - matches Firebase project (for Firestore operations like order update)
   get apiBaseUrl() {
     const projectId = this.firebase.projectId || 'lil-magnet-memories';
     return `https://us-central1-${projectId}.cloudfunctions.net/api`;
+  },
+
+  // Payments and email API - always use production (Square + Gmail only configured there)
+  // On test site, payments/emails hit production; order update uses apiBaseUrl (test) so it finds the order
+  get paymentsAndEmailApiBaseUrl() {
+    return 'https://us-central1-lil-magnet-memories.cloudfunctions.net/api';
   },
 };
 
