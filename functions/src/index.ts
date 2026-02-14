@@ -139,6 +139,7 @@ app.get('/', (req, res) => {
       sendStatusUpdateEmail: '/send-status-update-email',
       sendContactEmail: '/send-contact-email',
       createPayment: '/payments/create',
+      updateOrderPaymentStatus: '/orders/update-payment-status',
     },
   });
 });
@@ -368,6 +369,88 @@ app.post('/send-contact-email', async (req, res) => {
     return res.status(500).json({
       error: 'Failed to send contact email',
       details: error.message || 'Unknown error occurred',
+    });
+  }
+});
+
+// Update order payment status - uses Admin SDK to bypass Firestore security rules
+// Required for guest checkout where client cannot update orders directly
+app.post('/orders/update-payment-status', async (req, res) => {
+  try {
+    const { orderId, paymentOption, status, error } = req.body;
+
+    if (!orderId || typeof orderId !== 'string') {
+      return res.status(400).json({
+        error: 'Missing or invalid orderId',
+      });
+    }
+
+    const updateData: Record<string, any> = {
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (paymentOption !== undefined) {
+      updateData.paymentOption = paymentOption;
+    }
+    if (status !== undefined) {
+      updateData.status = status;
+    }
+    if (error !== undefined) {
+      updateData.paymentError = error;
+    }
+
+    // Optionally verify payment with Square when paymentId is present
+    if (paymentOption?.paymentId) {
+      try {
+        const client = getSquareClient();
+        const getPaymentResponse = await client.payments.get({
+          paymentId: paymentOption.paymentId,
+        });
+        const payment = getPaymentResponse.payment;
+        if (!payment || payment.status !== 'COMPLETED') {
+          console.warn(
+            `[ORDERS/UPDATE-PAYMENT] Payment ${paymentOption.paymentId} not completed:`,
+            payment?.status
+          );
+          return res.status(400).json({
+            error: 'Payment verification failed - payment not completed',
+          });
+        }
+      } catch (verifyError: any) {
+        console.error(
+          '[ORDERS/UPDATE-PAYMENT] Square payment verification failed:',
+          verifyError?.message
+        );
+        return res.status(400).json({
+          error: 'Payment verification failed',
+          details: verifyError?.message,
+        });
+      }
+    }
+
+    const orderRef = admin.firestore().collection('orders').doc(orderId);
+
+    const orderDoc = await orderRef.get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({
+        error: 'Order not found',
+        orderId,
+      });
+    }
+
+    await orderRef.update(updateData);
+
+    console.log('✅ [ORDERS/UPDATE-PAYMENT] Order updated:', orderId, {
+      status: updateData.status,
+      hasPaymentOption: !!updateData.paymentOption,
+    });
+
+    return res.json({ success: true, orderId });
+  } catch (error: any) {
+    console.error('[ORDERS/UPDATE-PAYMENT] Error:', error?.message);
+    return res.status(500).json({
+      error: 'Failed to update order payment status',
+      details: error?.message,
     });
   }
 });

@@ -2246,20 +2246,19 @@ class FirebaseService {
     }
   }
 
-  // Update order payment status and payment details (with retry for reliability)
+  // Update order payment status and payment details (via Cloud Function)
+  // Uses Cloud Function to bypass Firestore security rules - required for guest checkout
   async updateOrderPaymentStatus(orderId, updates, retryCount = 3) {
     if (!orderId) {
       throw new Error('Order ID is required to update payment status');
     }
 
-    const orderRef = doc(db, 'orders', orderId);
-    const updateData = {
-      ...updates,
-      updatedAt: serverTimestamp(),
+    const payload = {
+      orderId,
+      paymentOption: updates.paymentOption,
+      status: updates.status,
+      error: updates.error,
     };
-
-    // Remove undefined values
-    const cleanedUpdateData = this.removeUndefinedValues(updateData);
 
     let lastError;
     for (let attempt = 1; attempt <= retryCount; attempt++) {
@@ -2267,7 +2266,21 @@ class FirebaseService {
         console.log(
           `💾 Updating order ${orderId} payment status (attempt ${attempt}/${retryCount})...`
         );
-        await updateDoc(orderRef, cleanedUpdateData);
+        const response = await fetch(
+          'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/orders/update-payment-status',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(result.error || result.details || `HTTP ${response.status}`);
+        }
+
         console.log('✅ Order payment status updated:', orderId, {
           status: updates.status,
           paymentOptionStatus: updates.paymentOption?.status,
