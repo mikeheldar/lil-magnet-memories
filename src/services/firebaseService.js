@@ -1285,7 +1285,7 @@ class FirebaseService {
   async sendOrderEmail(orderData) {
     try {
       const response = await fetch(
-        'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/send-order-email',
+        `${config.apiBaseUrl}/send-order-email`,
         {
           method: 'POST',
           headers: {
@@ -1311,7 +1311,7 @@ class FirebaseService {
   async sendStatusUpdateEmail(orderData) {
     try {
       const response = await fetch(
-        'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/send-status-update-email',
+        `${config.apiBaseUrl}/send-status-update-email`,
         {
           method: 'POST',
           headers: {
@@ -1338,7 +1338,7 @@ class FirebaseService {
       let response;
       try {
         response = await fetch(
-          'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/payments/create',
+          `${config.apiBaseUrl}/payments/create`,
           {
             method: 'POST',
             headers: {
@@ -2267,7 +2267,7 @@ class FirebaseService {
           `💾 Updating order ${orderId} payment status (attempt ${attempt}/${retryCount})...`
         );
         const response = await fetch(
-          'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/orders/update-payment-status',
+          `${config.apiBaseUrl}/orders/update-payment-status`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

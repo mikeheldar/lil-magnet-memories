@@ -100,6 +100,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useQuasar, useMeta } from 'quasar';
+import { config } from '../config/environment.js';
 
 const $q = useQuasar();
 
@@ -144,7 +145,7 @@ const onSubmit = async () => {
   submitting.value = true;
   try {
     const response = await fetch(
-      'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/send-contact-email',
+      `${config.apiBaseUrl}/send-contact-email`,
       {
         method: 'POST',
         headers: {

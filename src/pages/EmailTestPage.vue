@@ -91,6 +91,7 @@
 <script>
 import { ref, computed } from 'vue';
 import { useQuasar, useMeta } from 'quasar';
+import { config } from '../config/environment.js';
 
 export default {
   name: 'EmailTestPage',
@@ -142,7 +143,7 @@ export default {
 
         // Call Firebase Cloud Function to send email
         const response = await fetch(
-          'https://us-central1-lil-magnet-memories.cloudfunctions.net/api/send-order-email',
+          `${config.apiBaseUrl}/send-order-email`,
           {
             method: 'POST',
             headers: {

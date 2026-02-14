@@ -59,7 +59,13 @@ export const config = {
       from: test ? 'test@lilmagnetmemories.com' : 'info@lilmagnetmemories.com',
       admin: test ? 'test-admin@lilmagnetmemories.com' : 'info@lilmagnetmemories.com',
     };
-  }
+  },
+
+  // Cloud Functions API base URL - matches Firebase project (test vs production)
+  get apiBaseUrl() {
+    const projectId = this.firebase.projectId || 'lil-magnet-memories';
+    return `https://us-central1-${projectId}.cloudfunctions.net/api`;
+  },
 };
 
 export default config;
