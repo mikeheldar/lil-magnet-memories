@@ -308,8 +308,9 @@ app.post('/orders/update-payment-status', async (req, res) => {
         if (error !== undefined) {
             updateData.paymentError = error;
         }
-        // Optionally verify payment with Square when paymentId is present
-        if (paymentOption === null || paymentOption === void 0 ? void 0 : paymentOption.paymentId) {
+        // Optionally verify payment with Square when paymentId is present AND Square is configured
+        // Skip verification if Square isn't configured (e.g. test project) - payment already succeeded client-side
+        if ((paymentOption === null || paymentOption === void 0 ? void 0 : paymentOption.paymentId) && squareConfig.access_token) {
             try {
                 const client = getSquareClient();
                 const getPaymentResponse = await client.payments.get({
@@ -330,6 +331,9 @@ app.post('/orders/update-payment-status', async (req, res) => {
                     details: verifyError === null || verifyError === void 0 ? void 0 : verifyError.message,
                 });
             }
+        }
+        else if ((paymentOption === null || paymentOption === void 0 ? void 0 : paymentOption.paymentId) && !squareConfig.access_token) {
+            console.log('[ORDERS/UPDATE-PAYMENT] Skipping Square verification (not configured) - proceeding with update');
         }
         const orderRef = admin.firestore().collection('orders').doc(orderId);
         const orderDoc = await orderRef.get();
