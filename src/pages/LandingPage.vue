@@ -97,77 +97,71 @@
     </div>
 
     <div class="landing-container">
-      <!-- How It Works Section -->
+      <!-- How It Works Section - Journey style with connecting line -->
       <div class="how-it-works-section q-mb-xl">
-        <div class="text-h4 text-center q-mb-lg text-primary">How It Works</div>
+        <div class="text-h4 text-center q-mb-sm text-primary">How It Works</div>
         <div class="text-body1 text-center text-grey-7 q-mb-xl">
-          Create personalized magnets in just a few simple steps
+          Creating your custom magnets is as easy as 1-2-3-4
         </div>
 
-        <!-- How It Works Steps -->
-        <div class="row q-col-gutter-md q-mb-lg">
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-card class="step-card text-center">
-              <q-card-section>
-                <div class="step-number">1</div>
-                <q-icon name="photo" size="36px" class="text-primary q-mb-md" />
-                <div class="text-h6 q-mb-sm">Select Product Type</div>
-                <div class="text-body2 text-grey-7">
-                  Choose your preferred magnet style and size
-                </div>
-              </q-card-section>
-            </q-card>
+        <!-- Journey steps with connecting line -->
+        <div class="how-it-works-journey">
+          <div class="journey-step">
+            <div class="journey-step-icon journey-step-1">
+              <q-icon name="cloud_upload" size="32px" />
+              <span class="journey-step-badge">1</span>
+            </div>
+            <div class="journey-step-content">
+              <div class="text-subtitle1 text-weight-bold q-mb-xs">Upload Your Photos</div>
+              <div class="text-body2 text-grey-7">
+                Simply upload your favorite photos from your phone or computer
+              </div>
+            </div>
           </div>
 
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-card class="step-card text-center">
-              <q-card-section>
-                <div class="step-number">2</div>
-                <q-icon
-                  name="create"
-                  size="36px"
-                  class="text-primary q-mb-md"
-                />
-                <div class="text-h6 q-mb-sm">Create Your Magnets</div>
-                <div class="text-body2 text-grey-7">
-                  Upload photos and select quantity for best pricing
-                </div>
-              </q-card-section>
-            </q-card>
+          <div class="journey-connector" aria-hidden="true"></div>
+
+          <div class="journey-step">
+            <div class="journey-step-icon journey-step-2">
+              <q-icon name="palette" size="32px" />
+              <span class="journey-step-badge">2</span>
+            </div>
+            <div class="journey-step-content">
+              <div class="text-subtitle1 text-weight-bold q-mb-xs">Customize</div>
+              <div class="text-body2 text-grey-7">
+                Choose your magnet size, shape, and add optional text or borders
+              </div>
+            </div>
           </div>
 
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-card class="step-card text-center">
-              <q-card-section>
-                <div class="step-number">3</div>
-                <q-icon
-                  name="payment"
-                  size="36px"
-                  class="text-primary q-mb-md"
-                />
-                <div class="text-h6 q-mb-sm">Delivery & Payment</div>
-                <div class="text-body2 text-grey-7">
-                  Pay online or at market event pickup
-                </div>
-              </q-card-section>
-            </q-card>
+          <div class="journey-connector" aria-hidden="true"></div>
+
+          <div class="journey-step">
+            <div class="journey-step-icon journey-step-3">
+              <q-icon name="local_shipping" size="32px" />
+              <span class="journey-step-badge">3</span>
+            </div>
+            <div class="journey-step-content">
+              <div class="text-subtitle1 text-weight-bold q-mb-xs">We Print & Ship</div>
+              <div class="text-body2 text-grey-7">
+                We print your magnets with premium quality and ship within 24 hours
+              </div>
+            </div>
           </div>
 
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-card class="step-card text-center">
-              <q-card-section>
-                <div class="step-number">4</div>
-                <q-icon
-                  name="local_shipping"
-                  size="36px"
-                  class="text-primary q-mb-md"
-                />
-                <div class="text-h6 q-mb-sm">Get Your Magnets</div>
-                <div class="text-body2 text-grey-7">
-                  Shipped to you or pickup at market event
-                </div>
-              </q-card-section>
-            </q-card>
+          <div class="journey-connector" aria-hidden="true"></div>
+
+          <div class="journey-step">
+            <div class="journey-step-icon journey-step-4">
+              <q-icon name="favorite" size="32px" />
+              <span class="journey-step-badge">4</span>
+            </div>
+            <div class="journey-step-content">
+              <div class="text-subtitle1 text-weight-bold q-mb-xs">Enjoy!</div>
+              <div class="text-body2 text-grey-7">
+                Display your memories on any magnetic surface and smile every day
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1945,41 +1939,95 @@ export default {
   margin-bottom: 60px;
 }
 
-.step-card {
-  height: 100%;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* How It Works - Journey style (not clickable) */
+.how-it-works-journey {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.journey-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+  max-width: 200px;
+  cursor: default;
+  user-select: none;
+}
+
+.journey-step-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   position: relative;
+  flex-shrink: 0;
+}
 
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  }
+.journey-step-1 { background: #e91e8c; }  /* pink */
+.journey-step-2 { background: #7c4dff; }  /* purple */
+.journey-step-3 { background: #2196f3; }  /* blue */
+.journey-step-4 { background: #f44336; }   /* red */
 
-  .step-number {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 32px;
-    height: 32px;
-    background: #2c3e50 !important; // Dark blue-grey from palette (no purple)
-    border-radius: 50%;
-    display: flex;
+.journey-step-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: white;
+  color: #333;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.journey-step-content {
+  text-align: center;
+  margin-top: 12px;
+  padding: 0 8px;
+}
+
+.journey-connector {
+  flex: 1 1 40px;
+  min-width: 40px;
+  height: 2px;
+  background: linear-gradient(to right, #b39ddb 0%, #ce93d8 100%);
+  margin-top: 31px;
+  align-self: flex-start;
+}
+
+@media (max-width: 768px) {
+  .how-it-works-journey {
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 1rem;
-    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.3); // Shadow matching dark blue-grey
-    z-index: 10;
   }
 
-  .q-card-section {
-    padding-top: 24px;
-    padding-bottom: 16px;
+  .journey-step {
+    max-width: 220px;
   }
 
-  .q-icon {
+  .journey-connector {
+    width: 2px;
+    height: 24px;
+    min-width: 2px;
+    max-width: 2px;
+    margin: 8px 0;
     margin-top: 8px;
+    background: linear-gradient(to bottom, #b39ddb 0%, #ce93d8 100%);
   }
 }
 
