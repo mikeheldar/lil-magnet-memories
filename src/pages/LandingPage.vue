@@ -1331,7 +1331,7 @@ export default {
   flex-direction: column; // Stack logo container and hero-content vertically
   align-items: stretch; // Stretch children to full width
   justify-content: flex-start;
-  padding: 0 10px 20px 10px; // Reduced bottom padding from 40px to 20px to reduce space
+  padding: 0 10px 0 10px; // No bottom padding - gap handled by landing-container
   padding-top: 0 !important; // Ensure no top padding on any screen size
 
   // Remove test environment top padding override
@@ -1431,7 +1431,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 12px !important; // Reduced from 50px to 12px to reduce space below dots
+  margin-bottom: 0 !important; // No margin - gap handled by landing-container
 }
 
 .hero-text {
@@ -1702,7 +1702,7 @@ export default {
   width: 100%;
   max-width: 100%;
   overflow: visible; // Allow shadows from easel images to extend
-  margin-bottom: 12px !important; // Reduced from 25px to 12px to reduce space below dots
+  margin-bottom: 0 !important; // No margin - gap handled by landing-container
 }
 
 .easel-container {
@@ -1927,7 +1927,7 @@ export default {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 10px 20px 20px 20px; // Reduced top padding from 20px to 10px and bottom from 40px to 20px to consolidate space
+  padding: 20px 20px 20px 20px; // 20px top = gap between easel dots and first section
   background: white;
 }
 
@@ -2407,7 +2407,7 @@ export default {
 
 @media (max-width: 599px) {
   .hero-section {
-    padding: 10px 15px 100px 15px !important; // Reduced top padding to minimize whitespace
+    padding: 10px 15px 0 15px !important; // No bottom padding - gap handled by landing-container
     overflow-x: hidden;
     &.test-environment {
       padding-top: 15px !important; // Slightly more in test, but still reduced
@@ -2465,7 +2465,7 @@ export default {
   }
 
   .landing-container {
-    padding: 10px;
+    padding: 20px 10px 10px 10px; // 20px top = gap between easel dots and first section
   }
 
   .logo-section {
