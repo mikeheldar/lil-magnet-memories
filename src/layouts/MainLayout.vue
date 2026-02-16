@@ -27,21 +27,15 @@
           />
         </q-btn>
 
-        <!-- Market Event Mode Toggle (only when event is live) -->
-        <div v-if="hasActiveEvent" class="q-mr-md">
-          <q-btn
-            flat
-            dense
-            :color="isMarketCustomer ? 'green' : 'blue'"
-            text-color="white"
-            size="sm"
-            :icon="isMarketCustomer ? 'store' : 'shopping_bag'"
-            @click="toggleCustomerMode"
-            class="customer-mode-toggle"
+        <!-- Market Event Mode Indicator (display only, not clickable) -->
+        <div v-if="hasActiveEvent" class="q-mr-md market-event-indicator">
+          <div
+            class="market-event-indicator-inner"
+            :class="{ 'market-mode': isMarketCustomer, 'online-mode': !isMarketCustomer }"
           >
+            <q-icon :name="isMarketCustomer ? 'store' : 'shopping_bag'" size="20px" />
             <span class="gt-xs q-ml-xs">{{ isMarketCustomer ? 'Market' : 'Online' }}</span>
-            <q-tooltip>{{ isMarketCustomer ? 'Switch to Online Mode' : 'Switch to Market Event Mode' }}</q-tooltip>
-          </q-btn>
+          </div>
         </div>
 
         <!-- Page title in center -->
@@ -2235,12 +2229,29 @@ html, body {
   position: relative;
 }
 
-.customer-mode-toggle {
+.market-event-indicator {
+  cursor: default;
+  user-select: none;
+}
+
+.market-event-indicator-inner {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.75rem;
   padding: 4px 8px;
   min-height: 28px;
+  border-radius: 4px;
   opacity: 0.9;
-  transition: opacity 0.2s;
+
+  &.market-mode {
+    background: #4caf50;
+    color: white;
+  }
+
+  &.online-mode {
+    background: #2196f3;
+    color: white;
+  }
 }
 
 // Shop section styles

@@ -97,6 +97,8 @@
     </div>
 
     <div class="landing-container">
+      <!-- Sections: Shop Our Products appears above How It Works on small screens -->
+      <div class="landing-sections-wrapper">
       <!-- How It Works Section - Journey style with connecting line -->
       <div class="how-it-works-section q-mb-xl">
         <div class="text-h4 text-center q-mb-sm text-primary">How It Works</div>
@@ -166,7 +168,7 @@
         </div>
       </div>
 
-      <!-- Product Type Links Section -->
+      <!-- Product Type Links Section (above How It Works on small screens) -->
       <div class="product-links-section q-mb-xl">
         <div class="text-h4 text-center q-mb-lg text-primary">
           Shop Our Products
@@ -210,6 +212,7 @@
           </div>
         </div>
       </div>
+      </div><!-- end landing-sections-wrapper -->
 
       <!-- Reviews Section -->
       <div class="reviews-section q-mb-xl">
@@ -1928,6 +1931,26 @@ export default {
   background: white;
 }
 
+.landing-sections-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* On small screens: Shop Our Products above How It Works */
+@media (max-width: 768px) {
+  .landing-sections-wrapper {
+    flex-direction: column;
+  }
+
+  .product-links-section {
+    order: -1;
+  }
+
+  .how-it-works-section {
+    order: 1;
+  }
+}
+
 .how-it-works-section {
   margin-top: 10px; // Push down to avoid being covered by green section above
   margin-bottom: 60px;
@@ -1944,11 +1967,12 @@ export default {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0;
   max-width: 1000px;
   margin: 0 auto;
   padding: 0 16px;
+  width: 100%;
 }
 
 .journey-step {
@@ -2003,31 +2027,111 @@ export default {
 
 .journey-connector {
   flex: 1 1 40px;
-  min-width: 40px;
+  min-width: 24px;
   height: 2px;
   background: linear-gradient(to right, #b39ddb 0%, #ce93d8 100%);
   margin-top: 31px;
   align-self: flex-start;
+  position: relative;
 }
 
-@media (max-width: 768px) {
+.journey-connector::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid #ce93d8;
+}
+
+/* Shrink on smaller screens - stay horizontal, scale down */
+@media (max-width: 900px) {
   .how-it-works-journey {
-    flex-direction: column;
-    align-items: center;
+    transform: scale(0.9);
+    transform-origin: center top;
   }
 
   .journey-step {
-    max-width: 220px;
+    max-width: 160px;
+  }
+
+  .journey-step-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .journey-step-icon :deep(.q-icon) {
+    font-size: 24px !important;
+  }
+
+  .journey-step-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
   }
 
   .journey-connector {
-    width: 2px;
-    height: 24px;
-    min-width: 2px;
-    max-width: 2px;
-    margin: 8px 0;
-    margin-top: 8px;
-    background: linear-gradient(to bottom, #b39ddb 0%, #ce93d8 100%);
+    margin-top: 25px;
+  }
+}
+
+@media (max-width: 600px) {
+  .how-it-works-journey {
+    transform: scale(0.65);
+    transform-origin: center top;
+    padding: 0 8px;
+  }
+
+  .journey-step {
+    max-width: 110px;
+  }
+
+  .journey-step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+
+  .journey-step-icon :deep(.q-icon) {
+    font-size: 18px !important;
+  }
+
+  .journey-step-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: -4px;
+    right: -4px;
+  }
+
+  .journey-step-content .text-subtitle1 {
+    font-size: 0.75rem;
+  }
+
+  .journey-step-content .text-body2 {
+    font-size: 0.65rem;
+  }
+
+  .journey-connector {
+    margin-top: 19px;
+    min-width: 12px;
+  }
+
+  .journey-connector::after {
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 5px;
+  }
+}
+
+@media (max-width: 380px) {
+  .how-it-works-journey {
+    transform: scale(0.4);
+    transform-origin: center top;
   }
 }
 
