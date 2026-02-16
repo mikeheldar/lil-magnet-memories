@@ -1954,6 +1954,10 @@ export default {
 .how-it-works-section {
   margin-top: 10px; // Push down to avoid being covered by green section above
   margin-bottom: 60px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 0; // Gap handled by reviews-section margin-top
+  }
 }
 
 .custom-products-section,
@@ -2547,6 +2551,10 @@ export default {
 // Reviews Section
 .reviews-section {
   margin-top: 3rem;
+
+  @media (max-width: 768px) {
+    margin-top: 20px; // ~20px gap between How It Works and reviews on small screens
+  }
 }
 
 .review-card {
