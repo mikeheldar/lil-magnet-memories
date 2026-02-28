@@ -26,6 +26,12 @@ const getFirebaseConfig = () => {
   return firebaseConfig;
 };
 
+// Set by getApp() on init failure so UI can show a message instead of blank page
+export function getFirebaseInitError() {
+  if (typeof window === 'undefined') return null;
+  return window.__FIREBASE_INIT_ERROR__ || null;
+}
+
 const getApp = () => {
   // SSR Safety: Only initialize Firebase on client side
   if (typeof window === 'undefined') {
@@ -34,19 +40,30 @@ const getApp = () => {
   }
   
   if (!app) {
-    const cfg = getFirebaseConfig();
-    app = initializeApp(cfg);
-
-// Log which bucket is being used (for debugging test vs prod)
-    // Only log if window is available (runtime, not build time)
-    if (typeof window !== 'undefined') {
-      console.log('Firebase Storage Bucket:', cfg.storageBucket);
-      console.log('Firebase Project ID:', cfg.projectId);
-console.log('Environment:', config.environment);
-      if (config.isTest && cfg.projectId !== 'lil-magnet-memories') {
-        console.warn('⚠️ Test environment is using a different Firebase project:', cfg.projectId);
-  console.warn('⚠️ Make sure this project exists and is configured, or set VITE_FIREBASE_PROJECT_ID_TEST=lil-magnet-memories to use the same project');
-}
+    try {
+      const cfg = getFirebaseConfig();
+      if (!cfg?.apiKey || !cfg?.projectId) {
+        const msg = 'Firebase env vars missing. For test.lilmagnetmemories.com set VITE_IS_TEST_ENVIRONMENT=true and VITE_FIREBASE_*_TEST in Vercel.';
+        window.__FIREBASE_INIT_ERROR__ = msg;
+        console.error('[Firebase]', msg);
+        return null;
+      }
+      app = initializeApp(cfg);
+      // Log which bucket is being used (for debugging test vs prod)
+      if (typeof window !== 'undefined') {
+        console.log('Firebase Storage Bucket:', cfg.storageBucket);
+        console.log('Firebase Project ID:', cfg.projectId);
+        console.log('Environment:', config.environment);
+        if (config.isTest && cfg.projectId !== 'lil-magnet-memories') {
+          console.warn('⚠️ Test environment is using a different Firebase project:', cfg.projectId);
+          console.warn('⚠️ Make sure this project exists and is configured, or set VITE_FIREBASE_PROJECT_ID_TEST=lil-magnet-memories to use the same project');
+        }
+      }
+    } catch (err) {
+      const msg = err?.message || String(err);
+      window.__FIREBASE_INIT_ERROR__ = msg;
+      console.error('[Firebase] Initialization failed:', err);
+      return null;
     }
   }
   return app;
