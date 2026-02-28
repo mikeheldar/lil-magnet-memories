@@ -6,8 +6,9 @@
       :style="headerInlineStyle"
     >
       <q-toolbar :class="{ 'drawer-open': leftDrawerOpen }">
-        <!-- Menu button (always visible) - hamburger icon -->
+        <!-- Menu button (hidden on medium+ when drawer is permanent; logo shows in its place) -->
         <q-btn
+          v-if="!drawerPermanent"
           flat
           dense
           @click="toggleLeftDrawer"
@@ -17,7 +18,7 @@
           <q-icon name="menu" />
         </q-btn>
 
-        <!-- Logo on the left -->
+        <!-- Logo on the left (visible at same breakpoint as drawer permanent, replaces hamburger) -->
         <q-btn flat dense @click="$router.push('/')" class="q-mr-md header-element-responsive logo-header-btn">
           <img
             src="/assets/lil-magnet-memories-logo.png"
@@ -386,12 +387,13 @@
       <!-- Drawer background only - menu is in fixed container outside drawer -->
     </q-drawer>
 
-    <!-- Drawer header fill - always at top (0,0), behind header when visible, only visible when drawer is open -->
+    <!-- Drawer header fill - always at top (0,0), behind header when visible, only visible when drawer is open; close button hidden when drawer is permanent -->
     <div
       v-show="leftDrawerOpen"
       class="drawer-header-fill"
     >
       <q-btn
+        v-if="!drawerPermanent"
         flat
         dense
         icon="menu"
@@ -964,7 +966,10 @@ export default {
     const $q = useQuasar();
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
-    const leftDrawerOpen = ref(false);
+    // Breakpoint 801px matches CSS: logo shows when >800px; above this drawer is open by default and hamburger hidden
+    const DRAWER_PERMANENT_BREAKPOINT = 801;
+    const drawerPermanent = ref(typeof window !== 'undefined' ? window.innerWidth >= DRAWER_PERMANENT_BREAKPOINT : false);
+    const leftDrawerOpen = ref(typeof window !== 'undefined' ? window.innerWidth >= DRAWER_PERMANENT_BREAKPOINT : false);
     const drawerMenuContainerRef = ref(null);
     const { cartItemCount } = useCart();
 
@@ -1300,6 +1305,11 @@ export default {
       }
     });
 
+    // Keep drawer open when drawerPermanent (medium+); prevent closing
+    watch([leftDrawerOpen, drawerPermanent], ([open, permanent]) => {
+      if (permanent && !open) leftDrawerOpen.value = true;
+    });
+
     onMounted(() => {
       // Ensure header is visible on initial page load
       const initialScrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -1312,8 +1322,15 @@ export default {
       // Add scroll listener for header hide/show behavior
       window.addEventListener('scroll', handleScroll, { passive: true });
 
-      // Listen for window resize to handle screen size changes
+      // Listen for window resize: drawer permanent breakpoint (801px) + small screen scroll lock
       const handleResize = () => {
+        const permanent = window.innerWidth >= DRAWER_PERMANENT_BREAKPOINT;
+        drawerPermanent.value = permanent;
+        if (permanent) {
+          leftDrawerOpen.value = true;
+        } else {
+          leftDrawerOpen.value = false;
+        }
         const isSmall = window.innerWidth <= 599;
         if (isSmall) {
           // On small screens, prevent scrolling only if drawer is open
@@ -1649,6 +1666,7 @@ export default {
       isAuthenticated,
       isAdmin,
       leftDrawerOpen,
+      drawerPermanent,
       drawerMenuContainerRef,
       userProfile,
       toggleLeftDrawer,

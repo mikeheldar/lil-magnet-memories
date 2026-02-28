@@ -114,8 +114,8 @@
               <span class="journey-step-badge">1</span>
             </div>
             <div class="journey-step-content">
-              <div class="text-subtitle1 text-weight-bold q-mb-xs">Upload Your Photos</div>
-              <div class="text-body2 text-grey-7">
+              <div class="journey-step-title text-subtitle1 text-weight-bold q-mb-xs">Upload Your Photos</div>
+              <div class="journey-step-desc text-body2 text-grey-7">
                 Simply upload your favorite photos from your phone or computer
               </div>
             </div>
@@ -129,8 +129,8 @@
               <span class="journey-step-badge">2</span>
             </div>
             <div class="journey-step-content">
-              <div class="text-subtitle1 text-weight-bold q-mb-xs">Customize</div>
-              <div class="text-body2 text-grey-7">
+              <div class="journey-step-title text-subtitle1 text-weight-bold q-mb-xs">Customize</div>
+              <div class="journey-step-desc text-body2 text-grey-7">
                 Choose your magnet size, shape, and add optional text or borders
               </div>
             </div>
@@ -144,8 +144,8 @@
               <span class="journey-step-badge">3</span>
             </div>
             <div class="journey-step-content">
-              <div class="text-subtitle1 text-weight-bold q-mb-xs">We Print & Ship</div>
-              <div class="text-body2 text-grey-7">
+              <div class="journey-step-title text-subtitle1 text-weight-bold q-mb-xs">We Print & Ship</div>
+              <div class="journey-step-desc text-body2 text-grey-7">
                 We print your magnets with premium quality and ship within 24 hours
               </div>
             </div>
@@ -159,8 +159,8 @@
               <span class="journey-step-badge">4</span>
             </div>
             <div class="journey-step-content">
-              <div class="text-subtitle1 text-weight-bold q-mb-xs">Enjoy!</div>
-              <div class="text-body2 text-grey-7">
+              <div class="journey-step-title text-subtitle1 text-weight-bold q-mb-xs">Enjoy!</div>
+              <div class="journey-step-desc text-body2 text-grey-7">
                 Display your memories on any magnetic surface and smile every day
               </div>
             </div>
@@ -2052,10 +2052,20 @@ export default {
   border-left: 8px solid #ce93d8;
 }
 
-/* Shrink on smaller screens - stay horizontal, scale down */
+/* Small screens: hide paragraph text, slightly bigger icons & titles, stay in one line */
+@media (max-width: 768px) {
+  .journey-step-desc {
+    display: none;
+  }
+
+  .journey-step-content .journey-step-title {
+    margin-bottom: 0;
+  }
+}
+
 @media (max-width: 900px) {
   .how-it-works-journey {
-    transform: scale(0.9);
+    transform: scale(0.92);
     transform-origin: center top;
   }
 
@@ -2064,65 +2074,67 @@ export default {
   }
 
   .journey-step-icon {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
   }
 
   .journey-step-icon :deep(.q-icon) {
-    font-size: 24px !important;
+    font-size: 28px !important;
+  }
+
+  .journey-step-badge {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  .journey-step-content .journey-step-title {
+    font-size: 0.95rem;
+  }
+
+  .journey-connector {
+    margin-top: 27px;
+  }
+}
+
+@media (max-width: 600px) {
+  .how-it-works-journey {
+    transform: scale(0.82);
+    transform-origin: center top;
+    padding: 0 6px;
+  }
+
+  .journey-step {
+    max-width: 82px;
+  }
+
+  .journey-step-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .journey-step-icon :deep(.q-icon) {
+    font-size: 26px !important;
   }
 
   .journey-step-badge {
     width: 20px;
     height: 20px;
     font-size: 10px;
+    top: -5px;
+    right: -5px;
+  }
+
+  .journey-step-content .journey-step-title {
+    font-size: 0.9rem;
+    line-height: 1.2;
   }
 
   .journey-connector {
-    margin-top: 25px;
-  }
-}
-
-@media (max-width: 600px) {
-  .how-it-works-journey {
-    transform: scale(0.65);
-    transform-origin: center top;
-    padding: 0 8px;
-  }
-
-  .journey-step {
-    max-width: 110px;
-  }
-
-  .journey-step-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-  }
-
-  .journey-step-icon :deep(.q-icon) {
-    font-size: 18px !important;
-  }
-
-  .journey-step-badge {
-    width: 16px;
-    height: 16px;
-    font-size: 9px;
-    top: -4px;
-    right: -4px;
-  }
-
-  .journey-step-content .text-subtitle1 {
-    font-size: 0.75rem;
-  }
-
-  .journey-step-content .text-body2 {
-    font-size: 0.65rem;
-  }
-
-  .journey-connector {
-    margin-top: 19px;
-    min-width: 12px;
+    margin-top: 23px;
+    min-width: 10px;
+    flex: 1 1 20px;
   }
 
   .journey-connector::after {
@@ -2134,8 +2146,12 @@ export default {
 
 @media (max-width: 380px) {
   .how-it-works-journey {
-    transform: scale(0.4);
+    transform: scale(0.72);
     transform-origin: center top;
+  }
+
+  .journey-step-content .journey-step-title {
+    font-size: 0.8rem;
   }
 }
 

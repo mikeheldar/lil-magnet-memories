@@ -24,13 +24,15 @@
       <!-- Product Detail -->
       <div v-else class="product-detail-container">
         <div class="row q-col-gutter-lg">
-          <!-- Product Image -->
-          <div class="col-12 col-md-6">
-            <SimpleSlideshow
-              :image-url="product.imageUrl"
-              :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
-              :alt="product.description"
-            />
+          <!-- Product Image (20% smaller on md+ so it doesn't go to the edge) -->
+          <div class="col-12 col-md-6 product-image-col">
+            <div class="product-image-wrapper">
+              <SimpleSlideshow
+                :image-url="product.imageUrl"
+                :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
+                :alt="product.description"
+              />
+            </div>
           </div>
 
           <!-- Product Info -->
@@ -213,6 +215,15 @@ export default {
 
 .product-detail-container {
   margin-top: 2rem;
+}
+
+/* On medium and large screens, limit image to 80% width (20% smaller) so it doesn't touch the edges */
+@media (min-width: 768px) {
+  .product-image-wrapper {
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .product-pricing-section {

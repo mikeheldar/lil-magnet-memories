@@ -1,6 +1,8 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist/spa",
+  "installCommand": "npm install",
+  "framework": null,
   "headers": [
     {
       "source": "/.well-known/apple-developer-merchantid-domain-association",
@@ -55,7 +57,7 @@
       "destination": "/.well-known/apple-developer-merchantid-domain-association.txt"
     },
     {
-      "source": "/((?!assets/)(?!api/)(?!.well-known/).*)",
+      "source": "/((?!assets/)(?!api/)(?!.well-known/)(?!.*\\.(js|css|mjs|ico|png|jpg|jpeg|gif|svg|woff2?|ttf|map)$).*)",
       "destination": "/index.html"
     }
   ]
