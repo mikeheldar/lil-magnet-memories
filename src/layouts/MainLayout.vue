@@ -1960,9 +1960,15 @@ html body .q-layout .q-drawer.drawer-under-header {
     width: calc(100% - 300px) !important;
     right: 0 !important;
   }
-  // Do NOT add margin-left/width to q-page-container or site-footer: Quasar already
-  // shifts the main content right by the drawer width (300px). Adding it here caused
-  // a double offset (content shifted right by 600px / one extra drawer width).
+  // Footer is not in the same Quasar-shifted wrapper as the page container, so it needs
+  // explicit shift when drawer is permanent (page container is shifted by Quasar).
+  .q-layout.drawer-permanent .site-footer {
+    margin-left: 300px;
+    width: calc(100% - 300px);
+    max-width: calc(100% - 300px);
+    box-sizing: border-box;
+  }
+  // Do NOT add margin-left/width to q-page-container: Quasar already shifts it.
   // Hero easel uses 100vw + calc(-50vw + 50%); in this column that misaligns. Keep in column.
   .q-layout.drawer-permanent .easel-container {
     width: 100% !important;
