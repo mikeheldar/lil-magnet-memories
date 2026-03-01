@@ -1963,6 +1963,9 @@ html body .q-layout .q-drawer.drawer-under-header {
   .q-layout.drawer-permanent .q-page-container,
   .q-layout.drawer-permanent .site-footer {
     margin-left: 300px;
+    width: calc(100% - 300px);
+    max-width: calc(100% - 300px);
+    box-sizing: border-box;
   }
 }
 
