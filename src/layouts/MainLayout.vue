@@ -1960,10 +1960,22 @@ html body .q-layout .q-drawer.drawer-under-header {
     width: calc(100% - 300px) !important;
     right: 0 !important;
   }
-  // Don't add margin/width to q-page-container or site-footer when drawer is permanent:
-  // Quasar already shifts the main content area right when the drawer is open, so our
-  // header/sub-nav positioning (left: 300px; width: calc(100% - 300px)) matches that.
-  // Adding margin-left here would double the offset and push content too far right.
+  // With breakpoint=0 Quasar may not shift main content; define the column so
+  // .landing-container (max-width 1200px, margin 0 auto) centers in it.
+  .q-layout.drawer-permanent .q-page-container,
+  .q-layout.drawer-permanent .site-footer {
+    margin-left: 300px;
+    width: calc(100% - 300px);
+    max-width: calc(100% - 300px);
+    box-sizing: border-box;
+  }
+  // Hero easel uses 100vw + calc(-50vw + 50%); in this column that misaligns. Keep in column.
+  .q-layout.drawer-permanent .easel-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
 }
 
 // Ensure body/html can scroll to absolute top
