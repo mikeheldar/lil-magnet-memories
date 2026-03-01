@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh lpR fFf">
+  <q-layout view="hHh lpR fFf" :class="{ 'drawer-permanent': drawerPermanent }">
     <q-header
       elevated
       :class="[headerClasses, { 'header-hidden': !headerVisible }]"
@@ -1945,6 +1945,24 @@ html body .q-layout .q-drawer.drawer-under-header {
   // Medium+ screens: header (64px) + sub-nav (48px) - no extra spacing
   @media (min-width: 768px) {
     padding-top: calc(64px + 48px) !important;
+  }
+}
+
+// When drawer is permanent (medium+), push entire site right so nothing is covered by the left drawer
+@media (min-width: 801px) {
+  .q-layout.drawer-permanent .q-header {
+    left: 300px !important;
+    width: calc(100% - 300px) !important;
+    right: 0 !important;
+  }
+  .q-layout.drawer-permanent .sub-navigation-bar {
+    left: 300px !important;
+    width: calc(100% - 300px) !important;
+    right: 0 !important;
+  }
+  .q-layout.drawer-permanent .q-page-container,
+  .q-layout.drawer-permanent .site-footer {
+    margin-left: 300px;
   }
 }
 
