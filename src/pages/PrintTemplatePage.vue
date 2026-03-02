@@ -33,8 +33,12 @@
 
     <!-- Print Pages Container -->
     <div class="print-container">
-      <!-- Sticky floating toolbar (stays visible when scrolling) -->
-      <div class="print-controls-float">
+      <!-- Generate pages (6 photos per page) -->
+      <div
+        v-for="(page, pageIndex) in pages"
+        :key="pageIndex"
+        class="print-page-wrapper"
+      >
         <div class="print-controls">
           <!-- Section: Fine Adjustments -->
           <div class="controls-section">
@@ -48,80 +52,80 @@
                 <span class="value" :title="selectedPhotoLabel">{{ selectedPhotoLabel }}</span>
               </div>
               <div class="controls-group">
-                <div class="controls-row">
-                  <q-btn
-                    dense
-                    round
-                    icon="zoom_in"
-                    color="primary"
-                    @click="adjustScale(zoomStep)"
-                    :disable="!selectedPhotoKey"
-                  />
-                  <q-btn
-                    dense
-                    round
-                    icon="zoom_out"
-                    color="primary"
-                    @click="adjustScale(-zoomStep)"
-                    :disable="!selectedPhotoKey"
-                  />
-                </div>
-                <div class="controls-row move-controls">
-                  <q-btn
-                    dense
-                    round
-                    icon="keyboard_arrow_up"
-                    color="primary"
-                    @click="adjustPosition('y', moveStep * -1)"
-                    :disable="!selectedPhotoKey"
-                  />
-                  <div class="controls-row-horizontal">
-                    <q-btn
-                      dense
-                      round
-                      icon="keyboard_arrow_left"
-                      color="primary"
-                      @click="adjustPosition('x', moveStep * -1)"
-                      :disable="!selectedPhotoKey"
-                    />
-                    <q-btn
-                      dense
-                      round
-                      icon="keyboard_arrow_right"
-                      color="primary"
-                      @click="adjustPosition('x', moveStep)"
-                      :disable="!selectedPhotoKey"
-                    />
-                  </div>
-                  <q-btn
-                    dense
-                    round
-                    icon="keyboard_arrow_down"
-                    color="primary"
-                    @click="adjustPosition('y', moveStep)"
-                    :disable="!selectedPhotoKey"
-                  />
-                </div>
-                <div class="controls-row">
-                  <q-btn
-                    dense
-                    color="negative"
-                    icon="restart_alt"
-                    label="Reset Selected"
-                    @click="resetSelectedTransform"
-                    :disable="!selectedPhotoKey"
-                  />
-                </div>
-                <div class="controls-row q-mt-sm">
-                  <q-btn
-                    dense
-                    color="primary"
-                    icon="zoom_in"
-                    label="Auto Zoom"
-                    @click="autoZoom"
-                    :disable="!selectedPhotoKey"
-                  />
-                </div>
+            <div class="controls-row">
+              <q-btn
+                dense
+                round
+                icon="zoom_in"
+                color="primary"
+                @click="adjustScale(zoomStep)"
+                :disable="!selectedPhotoKey"
+              />
+              <q-btn
+                dense
+                round
+                icon="zoom_out"
+                color="primary"
+                @click="adjustScale(-zoomStep)"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
+            <div class="controls-row move-controls">
+              <q-btn
+                dense
+                round
+                icon="keyboard_arrow_up"
+                color="primary"
+                @click="adjustPosition('y', moveStep * -1)"
+                :disable="!selectedPhotoKey"
+              />
+              <div class="controls-row-horizontal">
+                <q-btn
+                  dense
+                  round
+                  icon="keyboard_arrow_left"
+                  color="primary"
+                  @click="adjustPosition('x', moveStep * -1)"
+                  :disable="!selectedPhotoKey"
+                />
+                <q-btn
+                  dense
+                  round
+                  icon="keyboard_arrow_right"
+                  color="primary"
+                  @click="adjustPosition('x', moveStep)"
+                  :disable="!selectedPhotoKey"
+                />
+              </div>
+              <q-btn
+                dense
+                round
+                icon="keyboard_arrow_down"
+                color="primary"
+                @click="adjustPosition('y', moveStep)"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
+            <div class="controls-row">
+              <q-btn
+                dense
+                color="negative"
+                icon="restart_alt"
+                label="Reset Selected"
+                @click="resetSelectedTransform"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
+            <div class="controls-row q-mt-sm">
+              <q-btn
+                dense
+                color="primary"
+                icon="zoom_in"
+                label="Auto Zoom"
+                @click="autoZoom"
+                :disable="!selectedPhotoKey"
+              />
+            </div>
               </div>
             </div>
           </div>
@@ -133,54 +137,53 @@
             </div>
             <div v-show="sectionColorOpen" class="controls-section-body">
               <div class="q-mt-sm">
-                <div class="text-caption q-mb-xs">Brightness</div>
-                <q-slider
-                  v-model="getColorSettings().brightness"
-                  :min="0"
-                  :max="200"
-                  :step="1"
-                  :label-value="`${getColorSettings().brightness}%`"
-                  @update:model-value="updateColorSettings"
-                  :disable="!selectedPhotoKey"
-                  dense
-                />
-              </div>
-              <div class="q-mt-sm">
-                <div class="text-caption q-mb-xs">Contrast</div>
-                <q-slider
-                  v-model="getColorSettings().contrast"
-                  :min="0"
-                  :max="200"
-                  :step="1"
-                  :label-value="`${getColorSettings().contrast}%`"
-                  @update:model-value="updateColorSettings"
-                  :disable="!selectedPhotoKey"
-                  dense
-                />
-              </div>
-              <div class="q-mt-sm">
-                <div class="text-caption q-mb-xs">Saturation</div>
-                <q-slider
-                  v-model="getColorSettings().saturation"
-                  :min="0"
-                  :max="200"
-                  :step="1"
-                  :label-value="`${getColorSettings().saturation}%`"
-                  @update:model-value="updateColorSettings"
-                  :disable="!selectedPhotoKey"
-                  dense
-                />
-              </div>
-              <div class="controls-row q-mt-sm">
-                <q-btn
-                  dense
-                  color="primary"
-                  icon="restart_alt"
-                  label="Reset Color"
-                  @click="resetColorSettings"
-                  :disable="!selectedPhotoKey"
-                />
-              </div>
+              <div class="text-caption q-mb-xs">Brightness</div>
+              <q-slider
+                v-model="getColorSettings().brightness"
+                :min="0"
+                :max="200"
+                :step="1"
+                :label-value="`${getColorSettings().brightness}%`"
+                @update:model-value="updateColorSettings"
+                :disable="!selectedPhotoKey"
+                dense
+              />
+            </div>
+            <div class="q-mt-sm">
+              <div class="text-caption q-mb-xs">Contrast</div>
+              <q-slider
+                v-model="getColorSettings().contrast"
+                :min="0"
+                :max="200"
+                :step="1"
+                :label-value="`${getColorSettings().contrast}%`"
+                @update:model-value="updateColorSettings"
+                :disable="!selectedPhotoKey"
+                dense
+              />
+            </div>
+            <div class="q-mt-sm">
+              <div class="text-caption q-mb-xs">Saturation</div>
+              <q-slider
+                v-model="getColorSettings().saturation"
+                :min="0"
+                :max="200"
+                :step="1"
+                :label-value="`${getColorSettings().saturation}%`"
+                @update:model-value="updateColorSettings"
+                :disable="!selectedPhotoKey"
+                dense
+              />
+            </div>
+            <div class="controls-row q-mt-sm">
+              <q-btn
+                dense
+                color="primary"
+                icon="restart_alt"
+                label="Reset Color"
+                @click="resetColorSettings"
+                :disable="!selectedPhotoKey"
+              />
             </div>
           </div>
           <!-- Section: Custom border frame -->
@@ -212,13 +215,6 @@
             </div>
           </div>
         </div>
-      </div>
-      <!-- Generate pages (6 photos per page) -->
-      <div
-        v-for="(page, pageIndex) in pages"
-        :key="pageIndex"
-        class="print-page-wrapper"
-      >
         <div class="print-page">
           <div class="print-grid">
             <div
@@ -437,7 +433,7 @@ export default {
     const borderFrameList = ref([]);
     const showBorderFrameDialog = ref(false);
 
-    // Collapsible toolbar sections (Color default collapsed so full toolbar fits)
+    // Collapsible toolbar sections (Color default collapsed)
     const sectionFineOpen = ref(true);
     const sectionColorOpen = ref(false);
     const sectionBorderOpen = ref(true);
@@ -1841,14 +1837,6 @@ export default {
     flex-shrink: 0;
   }
 
-  /* Sticky wrapper so toolbar stays visible when scrolling */
-  .print-controls-float {
-    position: sticky;
-    top: 16px;
-    z-index: 10;
-    align-self: flex-start;
-  }
-
   .print-controls {
     width: 180px;
     padding: 1rem;
@@ -1856,6 +1844,10 @@ export default {
     border: 1px solid #d0d0d0;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 80px;
+    left: 0;
+    align-self: flex-start;
   }
 
   .controls-section {
