@@ -185,6 +185,7 @@
                 :disable="!selectedPhotoKey"
               />
             </div>
+            </div>
           </div>
           <!-- Section: Custom border frame -->
           <div class="controls-section">
