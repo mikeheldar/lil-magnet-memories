@@ -182,9 +182,9 @@
                 dense
                 color="primary"
                 icon="photo_frame"
-                :label="selectedBorderFrame ? selectedBorderFrame : 'Choose border…'"
+                :label="selectedBorderFrame ? borderFrameDisplayName(selectedBorderFrame) : 'Choose border…'"
                 @click="openBorderFrameDialog"
-                class="full-width"
+                class="full-width border-frame-btn"
               />
               <q-btn
                 v-if="selectedBorderFrame"
@@ -345,7 +345,7 @@
                 :alt="filename"
                 class="border-frame-thumb"
               />
-              <span class="q-ml-sm text-body2">{{ filename }}</span>
+              <span class="q-ml-sm text-body2">{{ borderFrameDisplayName(filename) }}</span>
             </div>
             <q-btn
               flat
@@ -443,6 +443,10 @@ export default {
       selectedBorderFrame.value = filename;
       showBorderFrameDialog.value = false;
     };
+
+    // Display name for border frame (strip file extension)
+    const borderFrameDisplayName = (filename) =>
+      filename ? filename.replace(/\.[^.]+$/, '') : '';
 
     // Get unique photo identifier
     const getPhotoKey = (photo) => {
@@ -1213,6 +1217,7 @@ export default {
       showBorderFrameDialog,
       openBorderFrameDialog,
       selectBorderFrame,
+      borderFrameDisplayName,
     };
   },
 };
@@ -1879,6 +1884,13 @@ export default {
     border: 2px solid #1976d2;
   }
 
+  /* Custom border frame button: padding so label doesn't touch edges, slightly smaller text */
+  .border-frame-btn {
+    min-height: 40px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.85rem;
+  }
   /* Custom border frame dialog */
   .border-frame-list {
     max-height: 60vh;
