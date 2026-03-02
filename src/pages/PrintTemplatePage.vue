@@ -174,6 +174,29 @@
               />
             </div>
           </div>
+          <!-- Custom border frame -->
+          <div class="controls-group q-mt-md" style="border-top: 1px solid #d0d0d0; padding-top: 0.75rem;">
+            <div class="controls-header" style="font-size: 0.9rem;">Custom border frame</div>
+            <div class="q-mt-sm">
+              <q-btn
+                dense
+                color="primary"
+                icon="photo_frame"
+                :label="selectedBorderFrame ? selectedBorderFrame : 'Choose border…'"
+                @click="openBorderFrameDialog"
+                class="full-width"
+              />
+              <q-btn
+                v-if="selectedBorderFrame"
+                dense
+                flat
+                color="grey"
+                label="Remove frame"
+                @click="selectedBorderFrame = null"
+                class="full-width q-mt-xs"
+              />
+            </div>
+          </div>
         </div>
         <div class="print-page">
           <div class="print-grid">
@@ -287,12 +310,56 @@
                     @error="handleImageError($event, page[gridIndex])"
                   />
                 </div>
+                <div
+                  v-if="selectedBorderFrame"
+                  class="border-frame-overlay"
+                  :style="{ backgroundImage: `url(/custom-border-frames/${selectedBorderFrame})` }"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Custom border frame picker dialog -->
+    <q-dialog v-model="showBorderFrameDialog" persistent>
+      <q-card style="min-width: 320px; max-width: 90vw;">
+        <q-card-section>
+          <div class="text-h6">Choose border frame</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <div v-if="borderFrameList.length === 0" class="text-body2 text-grey-7">
+            No border frames available. Add PNGs to public/custom-border-frames and list.json.
+          </div>
+          <div v-else class="border-frame-list">
+            <div
+              v-for="filename in borderFrameList"
+              :key="filename"
+              class="border-frame-option row items-center q-pa-sm q-mb-sm"
+              :class="{ 'border-frame-option-selected': selectedBorderFrame === filename }"
+              @click="selectBorderFrame(filename)"
+            >
+              <img
+                :src="`/custom-border-frames/${filename}`"
+                :alt="filename"
+                class="border-frame-thumb"
+              />
+              <span class="q-ml-sm text-body2">{{ filename }}</span>
+            </div>
+            <q-btn
+              flat
+              label="None"
+              @click="selectBorderFrame(null)"
+              class="full-width q-mt-sm"
+            />
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -344,8 +411,38 @@ export default {
     // Color settings for photos
     const photoColorSettings = ref({}); // key -> { brightness, contrast, saturation }
 
+    // Custom border frame: selected filename (null = no frame)
+    const selectedBorderFrame = ref(null);
+    const borderFrameList = ref([]);
+    const showBorderFrameDialog = ref(false);
+
     // Image dimensions storage: key -> { width, height }
     const photoDimensions = ref({});
+
+    // Load list of border frame filenames from manifest
+    const loadBorderFrameList = async () => {
+      try {
+        const res = await fetch('/custom-border-frames/list.json');
+        if (!res.ok) {
+          borderFrameList.value = [];
+          return;
+        }
+        const list = await res.json();
+        borderFrameList.value = Array.isArray(list) ? list : [];
+      } catch (e) {
+        borderFrameList.value = [];
+      }
+    };
+
+    const openBorderFrameDialog = async () => {
+      if (borderFrameList.value.length === 0) await loadBorderFrameList();
+      showBorderFrameDialog.value = true;
+    };
+
+    const selectBorderFrame = (filename) => {
+      selectedBorderFrame.value = filename;
+      showBorderFrameDialog.value = false;
+    };
 
     // Get unique photo identifier
     const getPhotoKey = (photo) => {
@@ -1110,6 +1207,12 @@ export default {
       handleImageLoad,
       autoZoom,
       isTestEnvironment, // Computed property for test environment check
+      // Custom border frame
+      selectedBorderFrame,
+      borderFrameList,
+      showBorderFrameDialog,
+      openBorderFrameDialog,
+      selectBorderFrame,
     };
   },
 };
@@ -1427,6 +1530,19 @@ export default {
     object-fit: contain !important;
   }
 
+  .border-frame-overlay {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-size: contain !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
+  }
+
   .selected-photo {
     border: 1px solid #333 !important;
   }
@@ -1669,6 +1785,19 @@ export default {
     pointer-events: none;
   }
 
+  .border-frame-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: 2;
+  }
+
   .print-footer {
     text-align: center;
     padding-top: 0.15in;
@@ -1748,6 +1877,31 @@ export default {
 
   .selected-photo {
     border: 2px solid #1976d2;
+  }
+
+  /* Custom border frame dialog */
+  .border-frame-list {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .border-frame-option {
+    cursor: pointer;
+    border-radius: 8px;
+    border: 2px solid transparent;
+  }
+  .border-frame-option:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .border-frame-option-selected {
+    border-color: #1976d2;
+    background: rgba(25, 118, 210, 0.08);
+  }
+  .border-frame-thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    background: #f5f5f5;
+    border-radius: 4px;
   }
 }
 </style>

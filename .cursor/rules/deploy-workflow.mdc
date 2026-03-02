@@ -1,0 +1,18 @@
+---
+description: Always push changes to test and trigger Vercel preview build
+alwaysApply: true
+---
+
+# Deploy Workflow
+
+After making any code changes to this project:
+
+1. **Commit** all modified files with a clear, descriptive message
+2. **Push** to `test-environment` branch: `git push origin test-environment`
+3. This triggers the Vercel preview build automatically
+
+Do not wait for manual review—apply and push unless the change affects:
+- Build config
+- CI/CD
+- Auth/security
+- Database migrations
