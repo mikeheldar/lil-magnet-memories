@@ -1924,15 +1924,12 @@ export default {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 20px 20px 20px 20px; // 20px top = gap between easel dots and first section
+  padding: 0 20px 20px 20px; // No top padding – sections wrapper at top, no gap below dots
   background: white;
 }
 
-/* Medium and large: simple flow – easel pictures → dots → How it Works; no overlap, minimal gap, dots in view */
+/* Medium and large: sections at top of container */
 @media (min-width: 769px) {
-  .landing-container {
-    padding-top: 8px !important; // Minimal gap between dots and How it Works
-  }
   .how-it-works-section {
     margin-top: 0 !important;
     padding-top: 0;
@@ -1952,7 +1949,7 @@ export default {
 
   .product-links-section {
     order: -1;
-    margin-top: 0; // 10px gap from easel comes from .landing-container padding-top
+    margin-top: 0;
   }
 
   .how-it-works-section {
@@ -2494,9 +2491,9 @@ export default {
     margin-right: auto;
   }
 
-  /* Half-height spacing above/below Shop Our Products (q-mb-xl is ~48px; half = 24px / 1.5rem) */
+  /* Sections at top of container; half-height spacing below Shop Our Products only */
   .landing-container {
-    padding: 1.5rem 10px 1.5rem 10px;
+    padding: 0 10px 1.5rem 10px; // No top padding – sections at top
     background: #ffffff !important;
   }
 
