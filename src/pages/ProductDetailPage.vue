@@ -278,7 +278,10 @@ export default {
   }
   .product-image-col {
     order: 0;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    justify-content: center;
   }
   .product-info-col {
     order: 1;

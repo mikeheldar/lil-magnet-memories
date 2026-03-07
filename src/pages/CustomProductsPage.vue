@@ -389,10 +389,14 @@ export default {
   }
   .product-image-col {
     order: 0; /* image first */
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    justify-content: center;
   }
   .product-info-col {
     order: 1; /* title, pricing, buttons below the picture */
+    align-self: stretch;
   }
   /* Image at 80% of previous size (was 400px) so it’s not tiny */
   .product-image-slideshow-small {

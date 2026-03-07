@@ -2486,42 +2486,36 @@ export default {
     margin-right: auto;
   }
 
-  /* Force white so no tint shows in gaps; shrink orange bands to zero */
-  .landing-page {
-    background: #ffffff !important;
-  }
-
+  /* Orange bands at half height (q-mb-xl is ~48px; half = 24px / 1.5rem) */
   .landing-container {
-    padding: 0 10px 10px 10px; // No top padding so Shop Our Products sits right under easel on small screens
-    background: #ffffff !important;
+    padding: 1.5rem 10px 1.5rem 10px; // Top/bottom = half-height orange bands on small screens
+    background: #fce8d6 !important; // Light orange/peach so bands are visible
   }
 
   .landing-sections-wrapper {
-    background: #ffffff !important;
+    background: transparent !important;
   }
 
-  /* Shrink vertical space to zero above/below Shop Our Products (override q-mb-xl) */
   .product-links-section {
     margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    margin-bottom: 1.5rem !important; // Half of q-mb-xl (~48px)
     padding-top: 0 !important;
     padding-bottom: 0 !important;
-    background: #ffffff !important;
+    background: #ffffff !important; // Card area stays white
   }
 
   .how-it-works-section {
     margin-top: 0;
-    background: #ffffff !important;
+    background: transparent !important;
     display: none !important; // Hidden on small screens
   }
 
-  /* No gap below product card so orange band is gone */
   .reviews-section {
-    margin-top: 0 !important;
+    margin-top: 0 !important; // Band height comes from landing-container padding-bottom
   }
 
   .collection-group {
-    background: #ffffff !important;
+    background: #f9f9f9 !important;
   }
 
   .logo-section {
