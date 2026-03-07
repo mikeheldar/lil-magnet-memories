@@ -2486,29 +2486,42 @@ export default {
     margin-right: auto;
   }
 
+  /* Force white so no tint shows in gaps; shrink orange bands to zero */
+  .landing-page {
+    background: #ffffff !important;
+  }
+
   .landing-container {
     padding: 0 10px 10px 10px; // No top padding so Shop Our Products sits right under easel on small screens
-    background: #ffffff !important; // No orange/tinted bands on small screens
+    background: #ffffff !important;
   }
 
   .landing-sections-wrapper {
     background: #ffffff !important;
   }
 
+  /* Shrink vertical space to zero above/below Shop Our Products (override q-mb-xl) */
   .product-links-section {
-    margin-top: 0;
-    padding-top: 4px;
-    background: #ffffff !important; // No orange section above/below
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    background: #ffffff !important;
   }
 
   .how-it-works-section {
     margin-top: 0;
-    background: #ffffff !important; // No orange band below product cards
-    display: none !important; // Remove orange/colored band (journey steps) on small screens
+    background: #ffffff !important;
+    display: none !important; // Hidden on small screens
+  }
+
+  /* No gap below product card so orange band is gone */
+  .reviews-section {
+    margin-top: 0 !important;
   }
 
   .collection-group {
-    background: #ffffff !important; // No gray/orange band from collection wrapper
+    background: #ffffff !important;
   }
 
   .logo-section {

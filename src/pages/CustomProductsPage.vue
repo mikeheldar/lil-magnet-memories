@@ -57,19 +57,30 @@
                       >
                         {{ product.detailedDescription }}
                       </div>
-                      <div class="product-pricing-inline">
-                        <div class="text-caption text-grey-8 q-mb-xs">
-                          Pricing:
-                        </div>
-                        <div
-                          v-for="(price, qty) in product.pricing"
-                          :key="qty"
-                          class="text-body2 q-mb-xs"
-                        >
-                          <strong>{{ qty }}x</strong> for
-                          <strong class="text-primary"
-                            >${{ price.toFixed(2) }}</strong
+                      <div
+                        class="product-pricing-inline"
+                        :class="{ 'pricing-one-tier': product.pricing && Object.keys(product.pricing).length === 1 }"
+                      >
+                        <span class="text-caption text-grey-8">Pricing:</span>
+                        <template v-if="product.pricing && Object.keys(product.pricing).length === 1">
+                          <span
+                            v-for="(price, qty) in product.pricing"
+                            :key="qty"
+                            class="text-body2"
                           >
+                            <strong>{{ qty }}x</strong> for
+                            <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                          </span>
+                        </template>
+                        <div v-else class="pricing-value-block">
+                          <div
+                            v-for="(price, qty) in product.pricing"
+                            :key="qty"
+                            class="text-body2 q-mb-xs"
+                          >
+                            <strong>{{ qty }}x</strong> for
+                            <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                          </div>
                         </div>
                       </div>
                       <div class="product-actions row no-wrap q-gutter-sm">
@@ -124,19 +135,30 @@
                   >
                     {{ product.detailedDescription }}
                   </div>
-                  <div class="product-pricing-inline">
-                    <div class="text-caption text-grey-8 q-mb-xs">
-                      Pricing:
-                    </div>
-                    <div
-                      v-for="(price, qty) in product.pricing"
-                      :key="qty"
-                      class="text-body2 q-mb-xs"
-                    >
-                      <strong>{{ qty }}x</strong> for
-                      <strong class="text-primary"
-                        >${{ price.toFixed(2) }}</strong
+                  <div
+                    class="product-pricing-inline"
+                    :class="{ 'pricing-one-tier': product.pricing && Object.keys(product.pricing).length === 1 }"
+                  >
+                    <span class="text-caption text-grey-8">Pricing:</span>
+                    <template v-if="product.pricing && Object.keys(product.pricing).length === 1">
+                      <span
+                        v-for="(price, qty) in product.pricing"
+                        :key="qty"
+                        class="text-body2"
                       >
+                        <strong>{{ qty }}x</strong> for
+                        <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                      </span>
+                    </template>
+                    <div v-else class="pricing-value-block">
+                      <div
+                        v-for="(price, qty) in product.pricing"
+                        :key="qty"
+                        class="text-body2 q-mb-xs"
+                      >
+                        <strong>{{ qty }}x</strong> for
+                        <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                      </div>
                     </div>
                   </div>
                   <div class="product-actions row no-wrap q-gutter-sm">
@@ -324,6 +346,16 @@ export default {
 .product-pricing-inline {
   margin-top: 4px;
   margin-bottom: 0.5rem;
+}
+.product-pricing-inline.pricing-one-tier {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+.product-pricing-inline .pricing-value-block {
+  margin-top: 2px;
 }
 @media (max-width: 599px) {
   .product-title {

@@ -36,33 +36,48 @@
             </div>
           </div>
 
-          <!-- Product Info (below image on small screens) -->
+          <!-- Product Info (below image on small screens) – same setup as multi-product first section -->
           <div class="col-12 col-md-6 product-info-col">
-            <div class="text-h4 text-primary q-mb-md">
+            <div class="product-title text-h6 text-primary q-mb-sm">
               {{ product.description }}
             </div>
 
             <div
               v-if="product.detailedDescription"
-              class="text-body1 text-grey-8 q-mb-lg"
+              class="text-body2 text-grey-7 product-desc q-mb-sm"
             >
               {{ product.detailedDescription }}
             </div>
 
-            <div class="product-pricing-section q-mb-lg">
-              <div class="text-h6 q-mb-md">Pricing</div>
-              <div
-                v-for="(price, qty) in product.pricing"
-                :key="qty"
-                class="text-body1 q-mb-sm"
-              >
-                <strong>{{ qty }}x</strong> for
-                <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+            <div
+              class="product-pricing-inline q-mb-sm"
+              :class="{ 'pricing-one-tier': product.pricing && Object.keys(product.pricing).length === 1 }"
+            >
+              <span class="text-caption text-grey-8">Pricing:</span>
+              <template v-if="product.pricing && Object.keys(product.pricing).length === 1">
+                <span
+                  v-for="(price, qty) in product.pricing"
+                  :key="qty"
+                  class="text-body2"
+                >
+                  <strong>{{ qty }}x</strong> for
+                  <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                </span>
+              </template>
+              <div v-else class="pricing-value-block">
+                <div
+                  v-for="(price, qty) in product.pricing"
+                  :key="qty"
+                  class="text-body2 q-mb-xs"
+                >
+                  <strong>{{ qty }}x</strong> for
+                  <strong class="text-primary">${{ price.toFixed(2) }}</strong>
+                </div>
               </div>
             </div>
 
-            <!-- CTA Button -->
-            <div class="q-mt-xl">
+            <!-- CTA Button (reduced top margin so button is visible above the fold) -->
+            <div class="product-detail-actions q-mt-md">
               <q-btn
                 v-if="product.category === 'custom'"
                 color="primary"
@@ -217,6 +232,16 @@ export default {
 .product-detail-container {
   margin-top: 2rem;
 }
+@media (max-width: 599px) {
+  .product-detail-page .page-container {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: 1rem;
+  }
+  .product-detail-container {
+    margin-top: 1rem;
+  }
+}
 
 /* On medium and large screens, limit image to 80% width (20% smaller) so it doesn't touch the edges */
 @media (min-width: 768px) {
@@ -227,10 +252,22 @@ export default {
   }
 }
 
-.product-pricing-section {
-  padding: 1.5rem;
-  background: #f5f5f5;
-  border-radius: 8px;
+/* Same compact pricing as multi-product page; single tier inline next to "Pricing:" */
+.product-pricing-inline {
+  margin-top: 2px;
+}
+.product-pricing-inline.pricing-one-tier {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+.product-pricing-inline .pricing-value-block {
+  margin-top: 2px;
+}
+.product-detail-actions {
+  margin-bottom: 1rem;
 }
 
 /* Small screens: same as multi-product page – image 320px square on top, title/pricing/buttons below */
