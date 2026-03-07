@@ -1717,12 +1717,13 @@ export default {
   margin-top: 0;
   position: relative; // Ensure dots can be positioned relative to container
   padding-top: 0;
-  padding-bottom: 60px; // Add padding at bottom to make room for dots (20px gap + 40px for dot height/padding)
+  padding-bottom: 30px; // Half of previous (60px) – room for dots, white strip
   margin-bottom: 0;
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   overflow: visible; // Allow dots to be visible below container
+  background: #ffffff; // Strip below image is white, not green
 
   img {
     display: block;
@@ -1750,9 +1751,9 @@ export default {
     // Transform-based Ken Burns animation (no need to change object-position)
   }
 
-  // Pull dots up a bit so they're not covered by content below (stay in padding area, no overflow)
+  // Pull dots up a bit so they're not covered (stay in reduced padding area)
   .easel-carousel-dots {
-    top: calc(100% - 44px) !important; // Slightly higher in bottom padding (was 100% - 6px)
+    top: calc(100% - 22px) !important; // Centered in 25px padding strip
   }
 }
 
@@ -1863,7 +1864,8 @@ export default {
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
   overflow: visible !important; // Allow dots to be visible below
-  padding-bottom: 50px !important; // Add padding to prevent dots from being cut off
+  padding-bottom: 25px !important; // Half of previous (50px) – strip below image
+  background: #ffffff !important; // Strip is white, not green
 }
 
 // Small screens: maintain wide format but ensure it fits
