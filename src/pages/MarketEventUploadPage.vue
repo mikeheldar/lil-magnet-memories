@@ -1679,12 +1679,18 @@ export default {
 }
 @media (max-width: 599px) {
   .order-summary-dialog-card {
-    max-height: 78vh;
+    max-height: 58vh;
     min-width: 100%;
     margin: 0 8px;
   }
+  /* Large clearance so Cancel, Confirm Order stay above browser nav bar */
+  .order-summary-dialog-actions {
+    padding-bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 48px)) !important;
+  }
 }
-.order-summary-dialog-actions {
-  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
+@media (min-width: 600px) {
+  .order-summary-dialog-actions {
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
+  }
 }
 </style>
