@@ -1379,7 +1379,7 @@ export default {
     );
   position: relative;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: visible; // No inner scroll – page scrolls as one; dots visible without scrolling easel area
 }
 
 .hero-logo-container {
@@ -1740,11 +1740,11 @@ export default {
   flex: 1; // Take up available space in flex container
 }
 
-// On medium and large screens, ensure easel aligns properly
+// On medium and large screens: no inner scroll; easel height so image + dots fit in viewport
 @media (min-width: 600px) {
   .easel-container {
-    align-items: flex-start !important; // Align to top
-    max-height: 620px !important; // Keep 620px max height
+    align-items: flex-start !important;
+    max-height: 50vh !important; // So image + dots fit in viewport without scrolling easel area
   }
 
   .easel-image {
@@ -1855,11 +1855,10 @@ export default {
   will-change: transform;
 }
 
-// All screen sizes: full width, edge to edge, wide rectangular format
+// All screen sizes: full width, edge to edge; max-height set in media queries (50vh medium+ so dots visible without scroll)
 .easel-container {
   width: 100vw !important; // Full viewport width, edge to edge
   max-width: 100vw !important;
-  max-height: 620px !important; // Set max height to 620px on all screens
   margin-left: calc(-50vw + 50%) !important; // Break out of container to be edge-to-edge
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
