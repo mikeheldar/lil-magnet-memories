@@ -15,7 +15,7 @@
       </div>
 
       <!-- Products List -->
-      <div v-else-if="customProducts.length > 0" class="q-mb-xl">
+      <div v-else-if="customProducts.length > 0" class="products-list q-mb-xl">
         <!-- Multiple collections: show in collapsible groups -->
         <template v-if="Object.keys(customProductsByCollection).length > 1">
           <q-expansion-item
@@ -35,9 +35,9 @@
                 class="q-mb-md"
               >
                 <q-card class="product-card-row" @click="goToProductDetail(product)">
-                  <q-card-section class="row items-center q-gutter-md">
+                  <q-card-section class="product-card-section row items-center q-gutter-md">
                     <!-- Product Image -->
-                    <div class="col-auto">
+                    <div class="col-auto product-image-col">
                       <SimpleSlideshow
                         :image-url="product.imageUrl"
                         :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
@@ -102,9 +102,9 @@
             class="q-mb-md"
           >
             <q-card class="product-card-row" @click="goToProductDetail(product)">
-              <q-card-section class="row items-center q-gutter-md">
+              <q-card-section class="product-card-section row items-center q-gutter-md">
                 <!-- Product Image -->
-                <div class="col-auto">
+                <div class="col-auto product-image-col">
                   <SimpleSlideshow
                     :image-url="product.imageUrl"
                     :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
@@ -298,7 +298,10 @@ export default {
     margin-bottom: 0.15rem;
   }
   .page-subtitle {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem; /* Clear space so product image never overlaps this text */
+  }
+  .products-list {
+    margin-top: 0.5rem; /* Keep gap between subtitle and first product card */
   }
 }
 
@@ -339,18 +342,38 @@ export default {
   flex-wrap: nowrap;
 }
 
-/* Limit product image width; 20% smaller on small screens so View Details / Purchase stay visible */
+/* Limit product image width; smaller on small screens so everything fits without scroll */
 .product-image-slideshow-small {
   max-width: 500px;
   width: 100%;
 }
 @media (max-width: 599px) {
+  /* Card: column layout so image on top, then title/buttons – removes empty space under image */
+  .product-card-section {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+  .product-image-col {
+    order: 1;
+    margin: 0 auto; /* center the smaller image */
+  }
+  /* Smaller image so subtitle isn't covered and buttons fit on screen */
   .product-image-slideshow-small {
-    max-width: 400px; /* 20% smaller than 500px */
+    max-width: 280px;
     width: 100%;
   }
+  /* Constrain slideshow height so it doesn't dominate (override component min-height) */
+  .product-image-slideshow-small :deep(.slideshow-wrapper),
+  .product-image-slideshow-small :deep(.slideshow-image) {
+    max-height: 160px !important;
+    min-height: 120px !important;
+    height: 160px !important;
+    object-fit: contain;
+  }
   .product-card-row :deep(.q-card-section) {
-    padding: 12px;
+    padding: 10px;
   }
 }
 </style>
