@@ -28,17 +28,6 @@
           />
         </q-btn>
 
-        <!-- Market Event Mode Indicator (display only, not clickable) -->
-        <div v-if="hasActiveEvent" class="q-mr-md market-event-indicator">
-          <div
-            class="market-event-indicator-inner"
-            :class="{ 'market-mode': isMarketCustomer, 'online-mode': !isMarketCustomer }"
-          >
-            <q-icon :name="isMarketCustomer ? 'store' : 'shopping_bag'" size="20px" />
-            <span class="gt-xs q-ml-xs">{{ isMarketCustomer ? 'Market' : 'Online' }}</span>
-          </div>
-        </div>
-
         <!-- Page title in center -->
         <q-toolbar-title class="text-center no-ellipsis" :style="headerTitleStyle">
           <span
@@ -2275,31 +2264,6 @@ html, body {
   flex-shrink: 0 !important;
   z-index: 100 !important;
   position: relative;
-}
-
-.market-event-indicator {
-  cursor: default;
-  user-select: none;
-}
-
-.market-event-indicator-inner {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.75rem;
-  padding: 4px 8px;
-  min-height: 28px;
-  border-radius: 4px;
-  opacity: 0.9;
-
-  &.market-mode {
-    background: #4caf50;
-    color: white;
-  }
-
-  &.online-mode {
-    background: #2196f3;
-    color: white;
-  }
 }
 
 // Shop section styles
