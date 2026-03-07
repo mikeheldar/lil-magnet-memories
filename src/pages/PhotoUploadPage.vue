@@ -598,7 +598,7 @@
           </q-card-section>
 
           <q-card-actions
-            align="right"
+            align="center"
             class="q-pa-md order-summary-dialog-actions"
             style="flex-shrink: 0; border-top: 1px solid rgba(0, 0, 0, 0.12)"
           >
@@ -2643,9 +2643,21 @@ export default {
     padding-bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 48px)) !important;
   }
 }
+.order-summary-dialog-actions {
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+}
 @media (min-width: 600px) {
   .order-summary-dialog-actions {
     padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+@media (max-width: 599px) {
+  .order-summary-dialog-actions .q-btn {
+    min-width: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 12px;
   }
 }
 </style>
