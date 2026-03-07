@@ -1938,6 +1938,16 @@ export default {
   background: white;
 }
 
+/* Medium and large: How It Works starts just below easel dots, visible without scrolling */
+@media (min-width: 769px) {
+  .landing-container {
+    padding-top: 12px !important; // Minimal gap below dots
+  }
+  .how-it-works-section {
+    margin-top: 0 !important; // Top of section aligns to just below dots
+  }
+}
+
 .landing-sections-wrapper {
   display: flex;
   flex-direction: column;
