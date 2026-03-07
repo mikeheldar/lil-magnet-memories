@@ -1717,7 +1717,7 @@ export default {
   margin-top: 0;
   position: relative; // Ensure dots can be positioned relative to container
   padding-top: 0;
-  padding-bottom: 30px; // Half of previous (60px) – room for dots, white strip
+  padding-bottom: 28px; // Compact strip for dots (matches override below)
   margin-bottom: 0;
   cursor: pointer;
   -webkit-user-select: none;
@@ -1751,9 +1751,9 @@ export default {
     // Transform-based Ken Burns animation (no need to change object-position)
   }
 
-  // Pull dots up a bit so they're not covered (stay in reduced padding area)
+  // Dots sit in compact strip below image (no overlap, visible without scrolling)
   .easel-carousel-dots {
-    top: calc(100% - 22px) !important; // Centered in 25px padding strip
+    top: calc(100% - 20px) !important; // Centered in 28px strip
   }
 }
 
@@ -1864,8 +1864,8 @@ export default {
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
   overflow: visible !important; // Allow dots to be visible below
-  padding-bottom: 25px !important; // Half of previous (50px) – strip below image
-  background: #ffffff !important; // Strip is white, not green
+  padding-bottom: 28px !important; // Compact strip for dots only (no heavy whitespace)
+  background: #ffffff !important; // Strip is white
 }
 
 // Small screens: maintain wide format but ensure it fits
@@ -1938,13 +1938,14 @@ export default {
   background: white;
 }
 
-/* Medium and large: How It Works starts just below easel dots, visible without scrolling */
+/* Medium and large: simple flow – easel pictures → dots → How it Works; no overlap, minimal gap, dots in view */
 @media (min-width: 769px) {
   .landing-container {
-    padding-top: 12px !important; // Minimal gap below dots
+    padding-top: 8px !important; // Minimal gap between dots and How it Works
   }
   .how-it-works-section {
-    margin-top: 0 !important; // Top of section aligns to just below dots
+    margin-top: 0 !important;
+    padding-top: 0;
   }
 }
 
