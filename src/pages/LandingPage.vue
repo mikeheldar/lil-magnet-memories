@@ -42,7 +42,7 @@
       <!-- Content: text and easel gallery side-by-side on wide screens -->
       <div class="hero-content">
         <div class="hero-text">
-          <h1 class="hero-title">Turn Your Memories Into Beautiful Magnets!</h1>
+          <h1 class="hero-title">Turn Your Memories Into Magnets!</h1>
 
         </div>
 
@@ -2516,7 +2516,7 @@ export default {
   .product-links-section {
     margin-top: 0 !important;
     margin-bottom: 1.5rem !important; // Half of q-mb-xl (~48px)
-    padding-top: 0 !important;
+    padding-top: 10px !important; // Space above "Shop our products" so it doesn't touch pictures
     padding-bottom: 0 !important;
     background: #ffffff !important; // Card area stays white
   }
