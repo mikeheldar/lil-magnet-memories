@@ -1739,7 +1739,7 @@ export default {
   flex: 1; // Take up available space in flex container
 }
 
-// On medium and large screens, ensure easel aligns properly
+// On medium and large screens, ensure easel aligns properly; dots overlay image so they're not covered by products
 @media (min-width: 600px) {
   .easel-container {
     align-items: flex-start !important; // Align to top
@@ -1748,6 +1748,14 @@ export default {
 
   .easel-image {
     // Transform-based Ken Burns animation (no need to change object-position)
+  }
+
+  // Move dots up so they're inside the easel (overlaying image), centered and visible—not covered by products section
+  .easel-carousel-dots {
+    top: auto !important;
+    bottom: 74px !important; // Overlay image (50px above container padding-bottom so dots sit on image)
+    left: 50% !important;
+    transform: translateX(-50%) !important;
   }
 }
 
