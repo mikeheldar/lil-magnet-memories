@@ -46,8 +46,8 @@
                       />
                     </div>
 
-                    <!-- Product Info -->
-                    <div class="col">
+                    <!-- Product Info (below image on small screens) -->
+                    <div class="col product-info-col">
                       <div class="product-title text-h6">
                         {{ product.description }}
                       </div>
@@ -113,8 +113,8 @@
                   />
                 </div>
 
-                <!-- Product Info -->
-                <div class="col">
+                <!-- Product Info (below image on small screens) -->
+                <div class="col product-info-col">
                   <div class="product-title text-h6">
                     {{ product.description }}
                   </div>
@@ -348,7 +348,7 @@ export default {
   width: 100%;
 }
 @media (max-width: 599px) {
-  /* Card: column layout so image on top, then title/buttons – removes empty space under image */
+  /* Card: column layout – image on top, then title/pricing, then View Details & Purchase below */
   .product-card-section {
     flex-direction: column !important;
     align-items: stretch !important;
@@ -356,20 +356,22 @@ export default {
     gap: 8px !important;
   }
   .product-image-col {
-    order: 1;
-    margin: 0 auto; /* center the smaller image */
+    order: 0; /* image first */
+    margin: 0 auto;
   }
-  /* Smaller image so subtitle isn't covered and buttons fit on screen */
+  .product-info-col {
+    order: 1; /* title, pricing, buttons below the picture */
+  }
+  /* Image at 80% of previous size (was 400px) so it’s not tiny */
   .product-image-slideshow-small {
-    max-width: 280px;
+    max-width: 400px;
     width: 100%;
   }
-  /* Constrain slideshow height so it doesn't dominate (override component min-height) */
   .product-image-slideshow-small :deep(.slideshow-wrapper),
   .product-image-slideshow-small :deep(.slideshow-image) {
-    max-height: 160px !important;
-    min-height: 120px !important;
-    height: 160px !important;
+    max-height: 200px !important;
+    min-height: 140px !important;
+    height: 200px !important;
     object-fit: contain;
   }
   .product-card-row :deep(.q-card-section) {
