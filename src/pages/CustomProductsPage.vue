@@ -298,10 +298,10 @@ export default {
     margin-bottom: 0.15rem;
   }
   .page-subtitle {
-    margin-bottom: 0.75rem; /* Clear space so product image never overlaps this text */
+    margin-bottom: 1rem; /* Space so product list doesn't cover "Create personalized magnets..." */
   }
   .products-list {
-    margin-top: 0.5rem; /* Keep gap between subtitle and first product card */
+    margin-top: 1.25rem; /* Move product list down so it doesn't cover the subtitle text */
   }
 }
 
@@ -364,15 +364,24 @@ export default {
   }
   /* Image at 80% of previous size (was 400px) so it’s not tiny */
   .product-image-slideshow-small {
-    max-width: 400px;
-    width: 100%;
+    width: 320px !important;
+    max-width: 320px !important;
+    height: 320px !important;
   }
-  .product-image-slideshow-small :deep(.slideshow-wrapper),
+  .product-image-slideshow-small :deep(.slideshow-wrapper) {
+    width: 320px !important;
+    height: 320px !important;
+    max-width: 320px !important;
+    max-height: 320px !important;
+    min-height: 320px !important;
+  }
   .product-image-slideshow-small :deep(.slideshow-image) {
-    max-height: 200px !important;
-    min-height: 140px !important;
-    height: 200px !important;
-    object-fit: contain;
+    width: 320px !important;
+    height: 320px !important;
+    max-width: 320px !important;
+    max-height: 320px !important;
+    min-height: 320px !important;
+    object-fit: cover;
   }
   .product-card-row :deep(.q-card-section) {
     padding: 10px;
