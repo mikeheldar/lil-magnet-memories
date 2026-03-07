@@ -1,10 +1,10 @@
 <template>
   <q-page class="custom-products-page">
     <div class="page-container q-pa-lg">
-      <div class="text-h4 text-center q-mb-lg text-primary">
+      <div class="page-header text-h4 text-center text-primary">
         Custom Photo Magnets
       </div>
-      <div class="text-body1 text-center text-grey-7 q-mb-xl">
+      <div class="page-subtitle text-body1 text-center text-grey-7">
         Create personalized magnets from your own photos
       </div>
 
@@ -48,16 +48,16 @@
 
                     <!-- Product Info -->
                     <div class="col">
-                      <div class="text-h6 q-mb-sm">
+                      <div class="product-title text-h6">
                         {{ product.description }}
                       </div>
                       <div
                         v-if="product.detailedDescription"
-                        class="text-body2 text-grey-7 q-mb-sm"
+                        class="text-body2 text-grey-7 product-desc"
                       >
                         {{ product.detailedDescription }}
                       </div>
-                      <div class="product-pricing-inline q-mb-md">
+                      <div class="product-pricing-inline">
                         <div class="text-caption text-grey-8 q-mb-xs">
                           Pricing:
                         </div>
@@ -72,12 +72,21 @@
                           >
                         </div>
                       </div>
-                      <q-btn
-                        color="primary"
-                        label="View Details"
-                        icon="arrow_forward"
-                        @click.stop="goToProductDetail(product)"
-                      />
+                      <div class="product-actions row no-wrap q-gutter-sm">
+                        <q-btn
+                          color="primary"
+                          label="View Details"
+                          icon="arrow_forward"
+                          @click.stop="goToProductDetail(product)"
+                        />
+                        <q-btn
+                          outline
+                          color="primary"
+                          label="Purchase"
+                          icon="add_shopping_cart"
+                          @click.stop="goToPurchase(product)"
+                        />
+                      </div>
                     </div>
                   </q-card-section>
                 </q-card>
@@ -106,16 +115,16 @@
 
                 <!-- Product Info -->
                 <div class="col">
-                  <div class="text-h6 q-mb-sm">
+                  <div class="product-title text-h6">
                     {{ product.description }}
                   </div>
                   <div
                     v-if="product.detailedDescription"
-                    class="text-body2 text-grey-7 q-mb-sm"
+                    class="text-body2 text-grey-7 product-desc"
                   >
                     {{ product.detailedDescription }}
                   </div>
-                  <div class="product-pricing-inline q-mb-md">
+                  <div class="product-pricing-inline">
                     <div class="text-caption text-grey-8 q-mb-xs">
                       Pricing:
                     </div>
@@ -130,12 +139,21 @@
                       >
                     </div>
                   </div>
-                  <q-btn
-                    color="primary"
-                    label="View Details"
-                    icon="arrow_forward"
-                    @click.stop="goToProductDetail(product)"
-                  />
+                  <div class="product-actions row no-wrap q-gutter-sm">
+                    <q-btn
+                      color="primary"
+                      label="View Details"
+                      icon="arrow_forward"
+                      @click.stop="goToProductDetail(product)"
+                    />
+                    <q-btn
+                      outline
+                      color="primary"
+                      label="Purchase"
+                      icon="add_shopping_cart"
+                      @click.stop="goToPurchase(product)"
+                    />
+                  </div>
                 </div>
               </q-card-section>
             </q-card>
@@ -242,6 +260,10 @@ export default {
       router.push(`/product/custom/${product.id}`);
     };
 
+    const goToPurchase = (product) => {
+      router.push({ path: '/photo-upload', query: { productId: product.id } });
+    };
+
     onMounted(() => {
       loadProducts();
     });
@@ -252,6 +274,7 @@ export default {
       customProductsByCollection,
       loading,
       goToProductDetail,
+      goToPurchase,
     };
   },
 };
@@ -261,6 +284,22 @@ export default {
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Tighter spacing for header and subtitle */
+.page-header {
+  margin-bottom: 0.25rem;
+}
+.page-subtitle {
+  margin-bottom: 1rem;
+}
+@media (max-width: 599px) {
+  .page-header {
+    margin-bottom: 0.15rem;
+  }
+  .page-subtitle {
+    margin-bottom: 0.5rem;
+  }
 }
 
 .product-card-row {
@@ -273,13 +312,45 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.product-title {
+  margin-bottom: 0.25rem;
+}
+.product-desc {
+  margin-bottom: 0.35rem;
+}
 .product-pricing-inline {
-  margin-top: 8px;
+  margin-top: 4px;
+  margin-bottom: 0.5rem;
+}
+@media (max-width: 599px) {
+  .product-title {
+    margin-bottom: 0.2rem;
+  }
+  .product-desc {
+    margin-bottom: 0.25rem;
+  }
+  .product-pricing-inline {
+    margin-top: 2px;
+    margin-bottom: 0.35rem;
+  }
 }
 
-/* Limit product image width */
+.product-actions {
+  flex-wrap: nowrap;
+}
+
+/* Limit product image width; 20% smaller on small screens so View Details / Purchase stay visible */
 .product-image-slideshow-small {
   max-width: 500px;
   width: 100%;
+}
+@media (max-width: 599px) {
+  .product-image-slideshow-small {
+    max-width: 400px; /* 20% smaller than 500px */
+    width: 100%;
+  }
+  .product-card-row :deep(.q-card-section) {
+    padding: 12px;
+  }
 }
 </style>

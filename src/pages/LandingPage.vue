@@ -1936,7 +1936,7 @@ export default {
   flex-direction: column;
 }
 
-/* On small screens: Shop Our Products above How It Works */
+/* On small screens: Shop Our Products above How It Works, tight to easel */
 @media (max-width: 768px) {
   .landing-sections-wrapper {
     flex-direction: column;
@@ -1944,6 +1944,7 @@ export default {
 
   .product-links-section {
     order: -1;
+    margin-top: 0; // 10px gap from easel comes from .landing-container padding-top
   }
 
   .how-it-works-section {
@@ -2485,7 +2486,11 @@ export default {
   }
 
   .landing-container {
-    padding: 20px 10px 10px 10px; // 20px top = gap between easel dots and first section
+    padding: 10px 10px 10px 10px; // 10px top = tight gap between easel and Shop Our Products on small devices
+  }
+
+  .product-links-section {
+    margin-top: 0; // No extra gap; landing-container padding provides 10px below easel
   }
 
   .logo-section {
