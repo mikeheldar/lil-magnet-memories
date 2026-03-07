@@ -2486,10 +2486,10 @@ export default {
     margin-right: auto;
   }
 
-  /* Orange bands at half height (q-mb-xl is ~48px; half = 24px / 1.5rem) */
+  /* Half-height spacing above/below Shop Our Products (q-mb-xl is ~48px; half = 24px / 1.5rem) */
   .landing-container {
-    padding: 1.5rem 10px 1.5rem 10px; // Top/bottom = half-height orange bands on small screens
-    background: #fce8d6 !important; // Light orange/peach so bands are visible
+    padding: 1.5rem 10px 1.5rem 10px;
+    background: #ffffff !important;
   }
 
   .landing-sections-wrapper {
