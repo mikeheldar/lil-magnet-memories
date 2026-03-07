@@ -1715,15 +1715,14 @@ export default {
   justify-content: flex-start;
   align-items: center;
   margin-top: 0;
-  position: relative; // Ensure dots can be positioned relative to container
   padding-top: 0;
-  padding-bottom: 28px; // Compact strip for dots (matches override below)
+  padding-bottom: 0; // Dots are in-flow below image, no padding needed
   margin-bottom: 0;
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  overflow: visible; // Allow dots to be visible below container
-  background: #ffffff; // Strip below image is white, not green
+  overflow: visible;
+  background: #ffffff;
 
   img {
     display: block;
@@ -1738,6 +1737,7 @@ export default {
   height: 100%;
   overflow: hidden !important; // Clip images during transition
   flex: 1; // Take up available space in flex container
+  min-height: 0; // Allow flex item to shrink so dots stay in view
 }
 
 // On medium and large screens: no inner scroll; easel height so image + dots fit in viewport
@@ -1751,10 +1751,6 @@ export default {
     // Transform-based Ken Burns animation (no need to change object-position)
   }
 
-  // Dots sit in compact strip below image (no overlap, visible without scrolling)
-  .easel-carousel-dots {
-    top: calc(100% - 20px) !important; // Centered in 28px strip
-  }
 }
 
 // Image fills the wide rectangular container - simple, no animations
@@ -1862,9 +1858,8 @@ export default {
   margin-left: calc(-50vw + 50%) !important; // Break out of container to be edge-to-edge
   margin-right: calc(-50vw + 50%) !important;
   aspect-ratio: 16 / 9 !important; // Wide rectangular format
-  overflow: visible !important; // Allow dots to be visible below
-  padding-bottom: 28px !important; // Compact strip for dots only (no heavy whitespace)
-  background: #ffffff !important; // Strip is white
+  overflow: visible !important;
+  background: #ffffff !important;
 }
 
 // Small screens: maintain wide format but ensure it fits
@@ -1876,30 +1871,26 @@ export default {
     margin-right: calc(-50vw + 50%) !important;
     aspect-ratio: 16 / 9 !important;
     overflow: visible !important; // Allow dots to be visible below
-    padding-bottom: 0 !important; // No padding needed - dots are absolutely positioned 20px below image
+    padding-bottom: 0 !important; // Dots are in-flow below image
   }
 }
 
-// Carousel dots - positioned below the image, always visible
+// Carousel dots - in document flow below image so next section cannot cover them
 .easel-carousel-dots {
-  position: absolute;
-  top: calc(100% - 6px) !important; // Position 6px above bottom (reduced from 12px to reduce space)
-  left: 50%;
-  transform: translateX(-50%);
+  flex-shrink: 0;
   display: flex !important;
   justify-content: center;
   align-items: center;
-  gap: 12px !important; // Slightly larger gap for better visibility
-  z-index: 10 !important;
-  width: fit-content; // Fit content width
-  padding: 8px 16px; // Add padding for better visibility
-  padding-bottom: 10px !important; // Extra bottom padding to ensure dots aren't cut off
+  gap: 12px !important;
+  width: fit-content;
+  margin: 12px auto 16px auto; // Space above and below, centered
+  padding: 8px 16px;
   box-sizing: border-box;
-  white-space: nowrap; // Keep dots on one line
-  pointer-events: auto; // Ensure dots are clickable
-  background: rgba(255, 255, 255, 0.9); // Light background to make dots stand out
-  border-radius: 20px; // Rounded background
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Subtle shadow for visibility
+  white-space: nowrap;
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .carousel-dot {
@@ -2577,21 +2568,11 @@ export default {
     object-position: center center;
   }
 
-  // Ensure dots are visible 20px below the image on small screens
+  // Dots stay in flow on small screens too (no absolute positioning)
   .easel-carousel-dots {
-    position: absolute !important;
-    top: calc(100% + 20px) !important; // Position exactly 20px below the image wrapper
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    display: flex !important;
-    justify-content: center !important;
-    gap: 12px !important;
-    z-index: 10 !important;
-    width: fit-content !important;
-    padding: 12px 16px !important; // Add padding for better visibility
-    background: rgba(255, 255, 255, 0.95) !important; // More opaque background for visibility
-    border-radius: 20px !important; // Rounded background
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important; // Stronger shadow for visibility
+    padding: 12px 16px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
   }
 }
 
