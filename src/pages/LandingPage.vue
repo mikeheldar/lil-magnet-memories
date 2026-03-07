@@ -2486,11 +2486,12 @@ export default {
   }
 
   .landing-container {
-    padding: 10px 10px 10px 10px; // 10px top = tight gap between easel and Shop Our Products on small devices
+    padding: 0 10px 10px 10px; // No top padding so Shop Our Products sits right under easel on small screens
   }
 
   .product-links-section {
-    margin-top: 0; // No extra gap; landing-container padding provides 10px below easel
+    margin-top: 0;
+    padding-top: 4px; // Minimal gap so Shop Our Products sits right under easel
   }
 
   .logo-section {
