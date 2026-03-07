@@ -23,20 +23,21 @@
 
       <!-- Product Detail -->
       <div v-else class="product-detail-container">
-        <div class="row q-col-gutter-lg">
-          <!-- Product Image (20% smaller on md+ so it doesn't go to the edge) -->
+        <div class="row q-col-gutter-lg product-detail-section">
+          <!-- Product Image (20% smaller on md+ so it doesn't go to the edge; 320px square on small screens) -->
           <div class="col-12 col-md-6 product-image-col">
             <div class="product-image-wrapper">
               <SimpleSlideshow
                 :image-url="product.imageUrl"
                 :image-urls="product.images && product.images.length > 0 ? product.images : (product.imageUrls || [])"
                 :alt="product.description"
+                class="product-image-slideshow-small"
               />
             </div>
           </div>
 
-          <!-- Product Info -->
-          <div class="col-12 col-md-6">
+          <!-- Product Info (below image on small screens) -->
+          <div class="col-12 col-md-6 product-info-col">
             <div class="text-h4 text-primary q-mb-md">
               {{ product.description }}
             </div>
@@ -230,5 +231,40 @@ export default {
   padding: 1.5rem;
   background: #f5f5f5;
   border-radius: 8px;
+}
+
+/* Small screens: same as multi-product page – image 320px square on top, title/pricing/buttons below */
+@media (max-width: 599px) {
+  .product-detail-section {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .product-image-col {
+    order: 0;
+    margin: 0 auto;
+  }
+  .product-info-col {
+    order: 1;
+  }
+  .product-image-slideshow-small {
+    width: 320px !important;
+    max-width: 320px !important;
+    height: 320px !important;
+  }
+  .product-image-slideshow-small :deep(.slideshow-wrapper) {
+    width: 320px !important;
+    height: 320px !important;
+    max-width: 320px !important;
+    max-height: 320px !important;
+    min-height: 320px !important;
+  }
+  .product-image-slideshow-small :deep(.slideshow-image) {
+    width: 320px !important;
+    height: 320px !important;
+    max-width: 320px !important;
+    max-height: 320px !important;
+    min-height: 320px !important;
+    object-fit: cover;
+  }
 }
 </style>

@@ -1936,7 +1936,7 @@ export default {
   flex-direction: column;
 }
 
-/* On small screens: Shop Our Products above How It Works, tight to easel */
+/* On small screens: Shop Our Products above How It Works, tight to easel; hide orange bands */
 @media (max-width: 768px) {
   .landing-sections-wrapper {
     flex-direction: column;
@@ -1951,6 +1951,7 @@ export default {
     order: 1;
   }
 }
+
 
 .how-it-works-section {
   margin-top: 10px; // Push down to avoid being covered by green section above
@@ -2487,11 +2488,27 @@ export default {
 
   .landing-container {
     padding: 0 10px 10px 10px; // No top padding so Shop Our Products sits right under easel on small screens
+    background: #ffffff !important; // No orange/tinted bands on small screens
+  }
+
+  .landing-sections-wrapper {
+    background: #ffffff !important;
   }
 
   .product-links-section {
     margin-top: 0;
-    padding-top: 4px; // Minimal gap so Shop Our Products sits right under easel
+    padding-top: 4px;
+    background: #ffffff !important; // No orange section above/below
+  }
+
+  .how-it-works-section {
+    margin-top: 0;
+    background: #ffffff !important; // No orange band below product cards
+    display: none !important; // Remove orange/colored band (journey steps) on small screens
+  }
+
+  .collection-group {
+    background: #ffffff !important; // No gray/orange band from collection wrapper
   }
 
   .logo-section {
