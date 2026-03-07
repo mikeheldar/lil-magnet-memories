@@ -389,7 +389,10 @@
 
       <!-- Order Summary Dialog -->
       <q-dialog v-model="showOrderSummary" persistent>
-        <q-card style="min-width: 400px; max-height: 90vh; display: flex; flex-direction: column;">
+        <q-card
+          class="order-summary-dialog-card"
+          style="min-width: 400px; max-height: 90vh; display: flex; flex-direction: column;"
+        >
           <q-card-section class="row items-center">
             <q-avatar icon="assignment" color="primary" text-color="white" />
             <span class="q-ml-sm text-h6">Order Summary</span>
@@ -459,7 +462,7 @@
             </div>
           </q-card-section>
 
-          <q-card-actions align="right" class="q-pa-md" style="flex-shrink: 0; border-top: 1px solid rgba(0,0,0,0.12);">
+          <q-card-actions align="right" class="q-pa-md order-summary-dialog-actions" style="flex-shrink: 0; border-top: 1px solid rgba(0,0,0,0.12);">
             <q-btn
               flat
               label="Cancel"
@@ -1666,5 +1669,22 @@ export default {
   height: 60px;
   object-fit: contain;
   display: block;
+}
+</style>
+
+<style lang="scss">
+/* Order Summary dialog (teleported to body): keep action buttons visible on mobile */
+.order-summary-dialog-card {
+  max-height: min(90vh, 85dvh);
+}
+@media (max-width: 599px) {
+  .order-summary-dialog-card {
+    max-height: 78vh;
+    min-width: 100%;
+    margin: 0 8px;
+  }
+}
+.order-summary-dialog-actions {
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
 }
 </style>
