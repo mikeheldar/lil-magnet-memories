@@ -80,12 +80,12 @@
                 aria-label="Go to image"
               />
             </div>
-            <!-- Start Creating Magnets Now button (shown when checked into event) -->
+            <!-- Start Creating Magnets Now button (shown when checked into event); shorter label on small screens -->
             <div v-if="hasActiveEvent && isCustomerAtEvent" class="start-creating-button-wrapper">
               <q-btn
                 color="primary"
                 size="lg"
-                label="Start Creating Magnets Now"
+                :label="startCreatingButtonLabel"
                 icon="camera_alt"
                 class="start-creating-button"
                 @click.stop="handleStartCreating"
@@ -443,6 +443,12 @@ export default {
     // Customer at event toggle - sync with customer type
     // Check if we're in test environment
     const isTestEnvironment = computed(() => config.isTest);
+
+    // Small screen: shorter button label when at event
+    const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200);
+    const startCreatingButtonLabel = computed(() =>
+      windowWidth.value <= 599 ? 'Create Magnets Now' : 'Start Creating Magnets Now'
+    );
 
     const isCustomerAtEvent = computed({
       get: () => isMarketCustomer.value,
@@ -1131,6 +1137,10 @@ export default {
 
     // Check if user is already authenticated
     onMounted(async () => {
+      const updateWindowWidth = () => { windowWidth.value = window.innerWidth; };
+      updateWindowWidth();
+      window.addEventListener('resize', updateWindowWidth);
+
       // Set up real-time listener for immediate updates
       marketEventUnsubscribe = marketEventService.addListener(() => {
         // Trigger reactivity when events change
@@ -1166,6 +1176,7 @@ export default {
 
       // Cleanup listeners on unmount
       onUnmounted(() => {
+        window.removeEventListener('resize', updateWindowWidth);
         if (marketEventUnsubscribe) {
           marketEventUnsubscribe();
           marketEventUnsubscribe = null;
@@ -1284,6 +1295,7 @@ export default {
       nextImage,
       previousImage,
       toggleCustomerAtEvent,
+      startCreatingButtonLabel,
       handleStartCreating,
       handleTouchStart,
       handleTouchMove,
@@ -2565,11 +2577,9 @@ export default {
     object-position: center center;
   }
 
-  // Dots stay in flow on small screens too (no absolute positioning)
+  // Hide carousel dots on small screens to give images more space
   .easel-carousel-dots {
-    padding: 12px 16px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    display: none !important;
   }
 }
 
