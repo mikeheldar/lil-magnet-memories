@@ -176,8 +176,8 @@
                       <q-icon name="shopping_cart" class="q-mr-xs" />
                       Event Orders
                     </div>
-                    <div class="row q-gutter-md">
-                      <div class="col-4">
+                    <div class="row q-gutter-md event-order-cards no-wrap">
+                      <div class="col event-order-card-col">
                         <q-card flat bordered class="stat-card">
                           <q-card-section class="text-center">
                             <div class="text-h6 text-weight-bold text-primary">
@@ -189,7 +189,7 @@
                           </q-card-section>
                         </q-card>
                       </div>
-                      <div class="col-4">
+                      <div class="col event-order-card-col">
                         <q-card flat bordered class="stat-card">
                           <q-card-section class="text-center">
                             <div class="text-h6 text-weight-bold text-primary">
@@ -201,7 +201,7 @@
                           </q-card-section>
                         </q-card>
                       </div>
-                      <div class="col-4">
+                      <div class="col event-order-card-col">
                         <q-card flat bordered class="stat-card">
                           <q-card-section class="text-center">
                             <div class="text-h6 text-weight-bold text-primary">
@@ -767,20 +767,23 @@ export default {
       }
     };
 
-    // Get total magnets for an event
+    // Get total magnets for an event (sum of all magnets in all orders)
     const getEventTotalMagnets = (eventId) => {
       const eventOrders = getEventOrders(eventId);
       return eventOrders.reduce((total, order) => {
-        // Handle different order structures
-        if (order.totalMagnets) {
-          return total + order.totalMagnets;
-        } else if (order.photos?.length) {
-          return total + order.photos.length;
-        } else if (order.cartItems) {
-          // Calculate from cart items
-          return order.cartItems.reduce((itemTotal, item) => {
-            return itemTotal + (item.totalMagnets || item.photos?.length || 0);
+        // Prefer order-level totalMagnets if set
+        if (order.totalMagnets != null && !isNaN(order.totalMagnets)) {
+          return total + Number(order.totalMagnets);
+        }
+        if (order.cartItems?.length) {
+          const orderMagnets = order.cartItems.reduce((itemTotal, item) => {
+            const qty = item.quantity ?? item.totalMagnets ?? (item.photos?.length || 0);
+            return itemTotal + (Number(qty) || 0);
           }, 0);
+          return total + orderMagnets;
+        }
+        if (order.photos?.length) {
+          return total + order.photos.length;
         }
         return total;
       }, 0);
@@ -1323,6 +1326,16 @@ export default {
   padding: 1rem;
   border-radius: 8px;
   border: 1px solid #e9ecef;
+}
+
+/* Keep Event Orders three cards on one line */
+.event-order-cards {
+  flex-wrap: nowrap !important;
+}
+.event-order-card-col {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
 }
 
 .stat-card {
