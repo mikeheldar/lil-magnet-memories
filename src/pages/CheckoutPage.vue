@@ -382,6 +382,36 @@
                     </div>
                     <div class="text-body2" v-else>—</div>
                   </div>
+                  <!-- Promo code -->
+                  <div class="q-mt-md q-mb-sm">
+                    <div class="row q-gutter-sm items-center no-wrap" v-if="!appliedPromoCode">
+                      <q-input
+                        v-model="promoCodeInput"
+                        label="Promo code"
+                        dense
+                        outlined
+                        class="col"
+                        :disable="applyingPromo"
+                        @keyup.enter="applyPromoCode"
+                      />
+                      <q-btn
+                        color="primary"
+                        label="Apply"
+                        :loading="applyingPromo"
+                        :disable="!promoCodeInput.trim()"
+                        @click="applyPromoCode"
+                      />
+                    </div>
+                    <div v-else class="row items-center justify-between">
+                      <div class="text-body2 text-positive">
+                        Promo ({{ appliedPromoCode }}): -${{ promoDiscount.toFixed(2) }}
+                      </div>
+                      <q-btn flat dense size="sm" label="Remove" color="primary" @click="removePromoCode" />
+                    </div>
+                    <div v-if="promoMessage" class="text-caption q-mt-xs" :class="promoMessageSuccess ? 'text-positive' : 'text-negative'">
+                      {{ promoMessage }}
+                    </div>
+                  </div>
                   <q-separator class="q-my-md" />
                   <div class="row justify-between">
                     <div class="text-h6">Total:</div>
@@ -930,6 +960,12 @@ export default {
     const showValidationErrors = ref(false);
     const showOtherShippingOptions = ref(false);
     const switchToMarketEventPickup = ref(false);
+    const promoCodeInput = ref('');
+    const appliedPromoCode = ref(null);
+    const appliedPromo = ref(null);
+    const promoMessage = ref('');
+    const promoMessageSuccess = ref(false);
+    const applyingPromo = ref(false);
 
     // Determine if this checkout is from market event upload (vs online order)
     const isFromMarketEventUpload = computed(() => {
@@ -1736,7 +1772,18 @@ export default {
       return options;
     });
 
-    // Calculate order total
+    // Promo discount (percent or fixed off subtotal)
+    const promoDiscount = computed(() => {
+      const promo = appliedPromo.value;
+      if (!promo || cartItems.value.length === 0) return 0;
+      const subtotal = cartSubtotal.value;
+      if (promo.type === 'percent') {
+        return Math.min(subtotal * (promo.value / 100), subtotal);
+      }
+      return Math.min(Number(promo.value) || 0, subtotal);
+    });
+
+    // Calculate order total (subtotal + shipping - promo)
     const orderTotal = computed(() => {
       // Always calculate from cart if cart has items (more accurate)
       // Only use customTotal if cart is empty (for direct market event orders without cart)
@@ -1746,8 +1793,8 @@ export default {
         if (selectedShippingDetails.value?.type === 'shipping') {
           total += shippingCost.value;
         }
-        // TODO: Add tax calculation if needed
-        return total;
+        total -= promoDiscount.value;
+        return Math.max(0, total);
       }
 
       // If cart is empty, use customTotal from query (for market event orders without cart)
@@ -1761,6 +1808,40 @@ export default {
       // Fallback to 0 if no cart and no customTotal
       return 0;
     });
+
+    const applyPromoCode = async () => {
+      const code = (promoCodeInput.value || '').trim();
+      if (!code) return;
+      promoMessage.value = '';
+      applyingPromo.value = true;
+      try {
+        const result = await firebaseService.validatePromoCode(code);
+        if (result.valid) {
+          appliedPromoCode.value = code.toUpperCase();
+          appliedPromo.value = { type: result.type, value: result.value };
+          promoMessage.value = 'Code applied.';
+          promoMessageSuccess.value = true;
+        } else {
+          appliedPromoCode.value = null;
+          appliedPromo.value = null;
+          promoMessage.value = result.message || 'Code expired or invalid.';
+          promoMessageSuccess.value = false;
+        }
+      } catch (e) {
+        appliedPromoCode.value = null;
+        appliedPromo.value = null;
+        promoMessage.value = 'Could not validate code.';
+        promoMessageSuccess.value = false;
+      } finally {
+        applyingPromo.value = false;
+      }
+    };
+
+    const removePromoCode = () => {
+      appliedPromoCode.value = null;
+      appliedPromo.value = null;
+      promoMessage.value = '';
+    };
 
     // Auto-select payment option when shipping option list updates
     watch(
@@ -4298,7 +4379,8 @@ export default {
           paymentOption: initialPaymentOptionPayload,
           subtotal: cartSubtotal.value,
           shipping: shippingCost.value,
-          tax: 0, // TODO: Calculate tax if needed
+          promoCode: appliedPromoCode.value || null,
+          promoDiscount: promoDiscount.value || 0,
           totalAmount: orderTotal.value,
           shippingTimeline: shippingTimeline.value,
           status: initialOrderStatus,
@@ -4754,6 +4836,14 @@ export default {
       requiresShippingAddress,
       requiresBillingAddress,
       orderTotal,
+      promoCodeInput,
+      appliedPromoCode,
+      promoDiscount,
+      promoMessage,
+      promoMessageSuccess,
+      applyingPromo,
+      applyPromoCode,
+      removePromoCode,
       canPlaceOrder,
       submitting,
       checkedInEvent,

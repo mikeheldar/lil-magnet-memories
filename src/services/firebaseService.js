@@ -12,6 +12,7 @@ import {
   setDoc,
   where,
   limit,
+  Timestamp,
 } from 'firebase/firestore';
 import {
   ref,
@@ -2563,6 +2564,108 @@ class FirebaseService {
     } catch (error) {
       console.error('Error updating product type visibility:', error);
       throw error;
+    }
+  }
+
+  // --- Promo codes (admin CRUD + checkout validation) ---
+  static PROMO_CODES_COLLECTION = 'promo_codes';
+
+  async getPromoCodes() {
+    try {
+      const coll = collection(db, FirebaseService.PROMO_CODES_COLLECTION);
+      const q = query(coll, orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => ({
+        id: d.id,
+        code: d.id,
+        ...d.data(),
+        createdAt: d.data().createdAt?.toDate?.() ?? d.data().createdAt,
+        updatedAt: d.data().updatedAt?.toDate?.() ?? d.data().updatedAt,
+        validFrom: d.data().validFrom?.toDate?.() ?? d.data().validFrom,
+        validUntil: d.data().validUntil?.toDate?.() ?? d.data().validUntil,
+      }));
+    } catch (error) {
+      console.error('Error getting promo codes:', error);
+      throw error;
+    }
+  }
+
+  async createPromoCode({ code, type, value, validFrom, validUntil, active = true }) {
+    try {
+      const normalizedCode = String(code).trim().toUpperCase();
+      if (!normalizedCode) throw new Error('Promo code is required');
+      const id = normalizedCode;
+      const ref = doc(db, FirebaseService.PROMO_CODES_COLLECTION, id);
+      const now = serverTimestamp();
+      const data = {
+        code: normalizedCode,
+        type: type === 'fixed' ? 'fixed' : 'percent',
+        value: Number(value),
+        active: !!active,
+        createdAt: now,
+        updatedAt: now,
+      };
+      if (validFrom != null) data.validFrom = validFrom instanceof Date ? Timestamp.fromDate(validFrom) : validFrom;
+      if (validUntil != null) data.validUntil = validUntil instanceof Date ? Timestamp.fromDate(validUntil) : validUntil;
+      await setDoc(ref, data);
+      return { id, ...data };
+    } catch (error) {
+      console.error('Error creating promo code:', error);
+      throw error;
+    }
+  }
+
+  async updatePromoCode(id, fields) {
+    try {
+      const ref = doc(db, FirebaseService.PROMO_CODES_COLLECTION, id);
+      const updates = { updatedAt: serverTimestamp() };
+      Object.keys(fields).forEach((key) => {
+        const v = fields[key];
+        if (v === undefined) return;
+        if (key === 'code') updates.code = String(v).trim().toUpperCase();
+        else if (key === 'validFrom') updates.validFrom = v instanceof Date ? Timestamp.fromDate(v) : v;
+        else if (key === 'validUntil') updates.validUntil = v instanceof Date ? Timestamp.fromDate(v) : v;
+        else updates[key] = v;
+      });
+      await updateDoc(ref, updates);
+    } catch (error) {
+      console.error('Error updating promo code:', error);
+      throw error;
+    }
+  }
+
+  async deletePromoCode(id) {
+    try {
+      const ref = doc(db, FirebaseService.PROMO_CODES_COLLECTION, id);
+      await updateDoc(ref, { active: false, updatedAt: serverTimestamp() });
+    } catch (error) {
+      console.error('Error deleting (deactivating) promo code:', error);
+      throw error;
+    }
+  }
+
+  async validatePromoCode(code) {
+    try {
+      const normalized = String(code).trim().toUpperCase();
+      if (!normalized) return { valid: false, message: 'Please enter a code.' };
+      const ref = doc(db, FirebaseService.PROMO_CODES_COLLECTION, normalized);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return { valid: false, message: 'Code not found or invalid.' };
+      const data = snap.data();
+      if (data.active !== true) return { valid: false, message: 'Code expired or invalid.' };
+      const now = new Date();
+      if (data.validFrom && data.validFrom.toDate && data.validFrom.toDate() > now)
+        return { valid: false, message: 'Code not yet valid.' };
+      if (data.validUntil && data.validUntil.toDate && data.validUntil.toDate() < now)
+        return { valid: false, message: 'Code expired or invalid.' };
+      return {
+        valid: true,
+        type: data.type === 'fixed' ? 'fixed' : 'percent',
+        value: Number(data.value),
+      };
+    } catch (error) {
+      console.error('Error validating promo code:', error);
+      return { valid: false, message: 'Code could not be validated.' };
     }
   }
 }

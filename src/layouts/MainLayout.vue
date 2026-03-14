@@ -955,10 +955,22 @@ export default {
     const $q = useQuasar();
     const isAuthenticated = ref(false);
     const isAdmin = ref(false);
-    // Breakpoint 801px matches CSS: logo shows when >800px; above this drawer is open by default and hamburger hidden
+    const isOperator = ref(false);
+    // Breakpoint 801px: drawer permanent only when screen wide AND (admin or operator)
     const DRAWER_PERMANENT_BREAKPOINT = 801;
-    const drawerPermanent = ref(typeof window !== 'undefined' ? window.innerWidth >= DRAWER_PERMANENT_BREAKPOINT : false);
-    const leftDrawerOpen = ref(typeof window !== 'undefined' ? window.innerWidth >= DRAWER_PERMANENT_BREAKPOINT : false);
+    const drawerPermanent = ref(false);
+    const leftDrawerOpen = ref(false);
+
+    const updateDrawerVisibility = () => {
+      const screenWideEnough = typeof window !== 'undefined' && window.innerWidth >= DRAWER_PERMANENT_BREAKPOINT;
+      const showPermanent = screenWideEnough && (isAdmin.value || isOperator.value);
+      drawerPermanent.value = showPermanent;
+      if (showPermanent) {
+        leftDrawerOpen.value = true;
+      } else {
+        leftDrawerOpen.value = false;
+      }
+    };
     const drawerMenuContainerRef = ref(null);
     const { cartItemCount } = useCart();
 
@@ -1311,15 +1323,9 @@ export default {
       // Add scroll listener for header hide/show behavior
       window.addEventListener('scroll', handleScroll, { passive: true });
 
-      // Listen for window resize: drawer permanent breakpoint (801px) + small screen scroll lock
+      // Listen for window resize: drawer permanent only for admin/operator on big screens
       const handleResize = () => {
-        const permanent = window.innerWidth >= DRAWER_PERMANENT_BREAKPOINT;
-        drawerPermanent.value = permanent;
-        if (permanent) {
-          leftDrawerOpen.value = true;
-        } else {
-          leftDrawerOpen.value = false;
-        }
+        updateDrawerVisibility();
         const isSmall = window.innerWidth <= 599;
         if (isSmall) {
           // On small screens, prevent scrolling only if drawer is open
@@ -1549,6 +1555,11 @@ export default {
         };
         // Set admin status immediately for faster UI rendering
         isAdmin.value = authService.isAdmin();
+        authService.isOperator().then((op) => {
+          isOperator.value = op;
+          updateDrawerVisibility();
+        }).catch(() => { updateDrawerVisibility(); });
+        updateDrawerVisibility();
         console.log('✅ [MainLayout] User already authenticated, admin status:', isAdmin.value);
       }
 
@@ -1590,6 +1601,11 @@ export default {
           };
           // Check admin status immediately (sync check is fast and works offline)
           isAdmin.value = authService.isAdmin();
+          authService.isOperator().then((op) => {
+            isOperator.value = op;
+            updateDrawerVisibility();
+          }).catch(() => { updateDrawerVisibility(); });
+          updateDrawerVisibility();
           console.log('Admin status updated (immediate):', isAdmin.value);
 
           // Reload products if user just authenticated (they might be admin and need to see testing products)
@@ -1606,6 +1622,7 @@ export default {
               if (adminStatus !== isAdmin.value) {
                 isAdmin.value = adminStatus;
                 console.log('Admin status updated (async):', adminStatus);
+                updateDrawerVisibility();
                 // Reload products if admin status changed (user might need to see testing products)
                 if (adminStatus && products.value.length === 0) {
                   console.log('🔄 [MainLayout] User is admin, reloading products...');
@@ -1623,6 +1640,8 @@ export default {
             email: null,
           };
           isAdmin.value = false;
+          isOperator.value = false;
+          updateDrawerVisibility();
         }
       });
 
@@ -1654,6 +1673,7 @@ export default {
       openEventLink,
       isAuthenticated,
       isAdmin,
+      isOperator,
       leftDrawerOpen,
       drawerPermanent,
       drawerMenuContainerRef,

@@ -178,6 +178,76 @@
         <q-card class="q-mt-md">
           <q-card-section>
             <div class="row items-center justify-between q-mb-sm">
+              <div class="text-h5">Promo Codes</div>
+              <q-btn
+                color="primary"
+                label="Add Promo Code"
+                icon="add"
+                size="sm"
+                @click="addPromoCode"
+              />
+            </div>
+            <div class="text-body2 text-grey-7 q-mb-md">
+              Create percent or fixed discounts. Customers enter codes at checkout.
+            </div>
+            <q-inner-loading :showing="loadingPromoCodes">
+              <q-spinner size="32px" color="primary" />
+            </q-inner-loading>
+            <q-table
+              v-if="!loadingPromoCodes"
+              :rows="promoCodes"
+              :columns="promoCodeColumns"
+              row-key="id"
+              flat
+              dense
+              class="promo-codes-table"
+            >
+              <template v-slot:body-cell-type="props">
+                <q-td :props="props">
+                  <q-chip
+                    :color="props.row.type === 'percent' ? 'primary' : 'secondary'"
+                    text-color="white"
+                    size="sm"
+                  >
+                    {{ props.row.type === 'percent' ? props.row.value + '%' : '$' + props.row.value }}
+                  </q-chip>
+                </q-td>
+              </template>
+              <template v-slot:body-cell-validity="props">
+                <q-td :props="props">
+                  <span v-if="props.row.validFrom || props.row.validUntil">
+                    {{ formatPromoDate(props.row.validFrom) }} – {{ formatPromoDate(props.row.validUntil) || 'Until deleted' }}
+                  </span>
+                  <span v-else class="text-grey-7">Until deleted</span>
+                </q-td>
+              </template>
+              <template v-slot:body-cell-active="props">
+                <q-td :props="props">
+                  <q-chip
+                    :color="props.row.active ? 'positive' : 'grey'"
+                    text-color="white"
+                    size="sm"
+                  >
+                    {{ props.row.active ? 'Active' : 'Inactive' }}
+                  </q-chip>
+                </q-td>
+              </template>
+              <template v-slot:body-cell-actions="props">
+                <q-td :props="props">
+                  <q-btn flat round dense icon="edit" color="primary" size="sm" @click="editPromoCode(props.row)" />
+                  <q-btn flat round dense icon="delete" color="negative" size="sm" @click="confirmPromoDelete(props.row)" />
+                </q-td>
+              </template>
+            </q-table>
+            <div v-if="!loadingPromoCodes && !promoCodes.length" class="text-center text-grey-7 q-pa-md">
+              No promo codes yet. Click "Add Promo Code" to create one.
+            </div>
+          </q-card-section>
+        </q-card>
+
+        <q-card class="q-mt-md">
+          <q-card-section>
+            <div class="row items-center justify-between q-mb-sm">
               <div class="text-h5">Shipping Options</div>
               <div class="q-gutter-sm">
                 <q-btn
@@ -743,6 +813,114 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="promoCodeDialog" persistent>
+      <q-card style="min-width: 360px">
+        <q-card-section>
+          <div class="text-h6 q-mb-md">
+            {{ promoCodeEditId ? 'Edit Promo Code' : 'New Promo Code' }}
+          </div>
+          <q-input
+            v-model="editingPromoCode.code"
+            label="Code *"
+            filled
+            class="q-mb-md"
+            :readonly="!!promoCodeEditId"
+            hint="Uppercase, no spaces. Cannot change after create."
+          />
+          <q-select
+            v-model="editingPromoCode.type"
+            :options="[
+              { label: 'Percent off', value: 'percent' },
+              { label: 'Fixed amount off', value: 'fixed' },
+            ]"
+            label="Type *"
+            filled
+            class="q-mb-md"
+          />
+          <q-input
+            v-model.number="editingPromoCode.value"
+            type="number"
+            :label="editingPromoCode.type === 'percent' ? 'Percent (0–100) *' : 'Amount ($) *'"
+            :prefix="editingPromoCode.type === 'percent' ? '' : '$'"
+            :suffix="editingPromoCode.type === 'percent' ? '%' : ''"
+            filled
+            min="0"
+            :max="editingPromoCode.type === 'percent' ? 100 : undefined"
+            class="q-mb-md"
+          />
+          <div class="row q-col-gutter-sm q-mb-md">
+            <div class="col-6">
+              <q-input
+                v-model="editingPromoCode.validFrom"
+                label="Valid from"
+                filled
+                dense
+                clearable
+                hint="Optional"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                      <q-date v-model="editingPromoCode.validFrom" mask="YYYY-MM-DD">
+                        <div class="row items-center justify-end">
+                          <q-btn v-close-popup label="OK" color="primary" flat />
+                        </div>
+                      </q-date>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+            </div>
+            <div class="col-6">
+              <q-input
+                v-model="editingPromoCode.validUntil"
+                label="Valid until"
+                filled
+                dense
+                clearable
+                hint="Optional"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                      <q-date v-model="editingPromoCode.validUntil" mask="YYYY-MM-DD">
+                        <div class="row items-center justify-end">
+                          <q-btn v-close-popup label="OK" color="primary" flat />
+                        </div>
+                      </q-date>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+            </div>
+          </div>
+          <q-toggle
+            v-model="editingPromoCode.active"
+            label="Active"
+            class="q-mb-sm"
+          />
+          <div v-if="promoCodeError" class="text-negative q-mt-sm">{{ promoCodeError }}</div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" @click="closePromoCodeDialog" />
+          <q-btn color="primary" label="Save" @click="savePromoCode" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="promoDeleteDialog" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="local_offer" color="negative" text-color="white" />
+          <span class="q-ml-sm">Deactivate promo code "{{ promoDeleteCode }}" ? It will no longer apply at checkout.</span>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup @click="promoDeleteDialog = false" />
+          <q-btn flat label="Deactivate" color="negative" @click="deletePromoCode" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -795,7 +973,24 @@ export default {
     const editingShippingOption = ref(null);
     const shippingDeleteDialog = ref(false);
     const shippingDeleteIndex = ref(-1);
+    const promoCodes = ref([]);
+    const loadingPromoCodes = ref(false);
+    const promoCodeDialog = ref(false);
+    const editingPromoCode = ref({ code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true });
+    const promoCodeEditId = ref(null);
+    const promoCodeError = ref('');
+    const promoDeleteDialog = ref(false);
+    const promoDeleteId = ref(null);
+    const promoDeleteCode = ref('');
     const activeCategory = ref('custom');
+
+    const promoCodeColumns = [
+      { name: 'code', label: 'Code', field: 'code', align: 'left' },
+      { name: 'type', label: 'Discount', field: 'type', align: 'left' },
+      { name: 'validity', label: 'Valid', field: 'validity', align: 'left' },
+      { name: 'active', label: 'Status', field: 'active', align: 'left' },
+      { name: 'actions', label: '', field: 'actions', align: 'right' },
+    ];
     
     // Product type visibility settings
     const customVisible = ref(true);
@@ -954,7 +1149,7 @@ export default {
         router.push('/');
         return;
       }
-      await Promise.all([loadProducts(), loadShippingOptions(), loadVisibilitySettings()]);
+      await Promise.all([loadProducts(), loadShippingOptions(), loadVisibilitySettings(), loadPromoCodes()]);
     });
     
     // Watch for category changes and update grouped products
@@ -1038,6 +1233,138 @@ export default {
         await loadProducts();
       } finally {
         savingSortOrder.value = false;
+      }
+    };
+
+    const loadPromoCodes = async () => {
+      loadingPromoCodes.value = true;
+      try {
+        promoCodes.value = await firebaseService.getPromoCodes();
+      } catch (error) {
+        console.error('Error loading promo codes:', error);
+        safeNotify({ type: 'negative', message: 'Failed to load promo codes', position: 'top' });
+      } finally {
+        loadingPromoCodes.value = false;
+      }
+    };
+
+    const formatPromoDate = (val) => {
+      if (!val) return null;
+      const d = val instanceof Date ? val : (val.toDate ? val.toDate() : new Date(val));
+      return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+    };
+
+    const addPromoCode = () => {
+      promoCodeEditId.value = null;
+      editingPromoCode.value = { code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true };
+      promoCodeError.value = '';
+      promoCodeDialog.value = true;
+    };
+
+    const editPromoCode = (row) => {
+      promoCodeEditId.value = row.id;
+      editingPromoCode.value = {
+        code: row.code,
+        type: row.type || 'percent',
+        value: Number(row.value) || 0,
+        validFrom: formatPromoDate(row.validFrom) || null,
+        validUntil: formatPromoDate(row.validUntil) || null,
+        active: row.active !== false,
+      };
+      promoCodeError.value = '';
+      promoCodeDialog.value = true;
+    };
+
+    const closePromoCodeDialog = () => {
+      promoCodeDialog.value = false;
+      promoCodeEditId.value = null;
+      editingPromoCode.value = { code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true };
+      promoCodeError.value = '';
+    };
+
+    const savePromoCode = async () => {
+      const p = editingPromoCode.value;
+      promoCodeError.value = '';
+      const code = String(p.code || '').trim().toUpperCase();
+      if (!code) {
+        promoCodeError.value = 'Code is required.';
+        return;
+      }
+      if (p.value == null || p.value === '' || Number(p.value) < 0) {
+        promoCodeError.value = 'Value must be greater than 0.';
+        return;
+      }
+      const numVal = Number(p.value);
+      if (p.type === 'percent' && numVal > 100) {
+        promoCodeError.value = 'Percent cannot exceed 100.';
+        return;
+      }
+      let validFrom = null;
+      let validUntil = null;
+      if (p.validFrom) {
+        validFrom = new Date(p.validFrom);
+        if (isNaN(validFrom.getTime())) validFrom = null;
+      }
+      if (p.validUntil) {
+        validUntil = new Date(p.validUntil);
+        if (isNaN(validUntil.getTime())) validUntil = null;
+      }
+      if (validFrom && validUntil && validUntil <= validFrom) {
+        promoCodeError.value = 'Valid until must be after valid from.';
+        return;
+      }
+      try {
+        if (promoCodeEditId.value) {
+          await firebaseService.updatePromoCode(promoCodeEditId.value, {
+            type: p.type,
+            value: numVal,
+            validFrom: validFrom || undefined,
+            validUntil: validUntil || undefined,
+            active: p.active,
+          });
+          safeNotify({ type: 'positive', message: 'Promo code updated', position: 'top' });
+        } else {
+          await firebaseService.createPromoCode({
+            code,
+            type: p.type,
+            value: numVal,
+            validFrom: validFrom || undefined,
+            validUntil: validUntil || undefined,
+            active: p.active,
+          });
+          safeNotify({ type: 'positive', message: 'Promo code created', position: 'top' });
+        }
+        closePromoCodeDialog();
+        await loadPromoCodes();
+      } catch (error) {
+        console.error('Error saving promo code:', error);
+        promoCodeError.value = error.message || 'Failed to save promo code.';
+      }
+    };
+
+    const confirmPromoDelete = (row) => {
+      promoDeleteId.value = row.id;
+      promoDeleteCode.value = row.code || row.id;
+      promoDeleteDialog.value = true;
+    };
+
+    const deletePromoCode = async () => {
+      const id = promoDeleteId.value;
+      if (!id) {
+        promoDeleteDialog.value = false;
+        return;
+      }
+      try {
+        await firebaseService.deletePromoCode(id);
+        safeNotify({ type: 'positive', message: 'Promo code deactivated', position: 'top' });
+        await loadPromoCodes();
+      } catch (error) {
+        console.error('Error deactivating promo code:', error);
+        safeNotify({ type: 'negative', message: 'Failed to deactivate promo code', position: 'top' });
+      } finally {
+        promoDeleteDialog.value = false;
+        promoDeleteId.value = null;
+        promoDeleteCode.value = '';
       }
     };
 
@@ -1786,6 +2113,23 @@ export default {
       updateVisibility,
       onDragEnd,
       savingSortOrder,
+      promoCodes,
+      loadingPromoCodes,
+      promoCodeColumns,
+      promoCodeDialog,
+      editingPromoCode,
+      promoCodeEditId,
+      promoCodeError,
+      promoDeleteDialog,
+      promoDeleteId,
+      promoDeleteCode,
+      addPromoCode,
+      editPromoCode,
+      closePromoCodeDialog,
+      savePromoCode,
+      formatPromoDate,
+      confirmPromoDelete,
+      deletePromoCode,
     };
   },
 };
