@@ -205,11 +205,11 @@
               <template v-slot:body-cell-type="props">
                 <q-td :props="props">
                   <q-chip
-                    :color="props.row.type === 'percent' ? 'primary' : 'secondary'"
+                    :color="props.row.type === 'percent' ? 'primary' : props.row.type === 'fixed_total' ? 'teal' : 'secondary'"
                     text-color="white"
                     size="sm"
                   >
-                    {{ props.row.type === 'percent' ? props.row.value + '%' : '$' + props.row.value }}
+                    {{ props.row.type === 'percent' ? props.row.value + '%' : props.row.type === 'fixed_total' ? 'Total $' + props.row.value : '$' + props.row.value }}
                   </q-chip>
                 </q-td>
               </template>
@@ -833,7 +833,10 @@
             :options="[
               { label: 'Percent off', value: 'percent' },
               { label: 'Fixed amount off', value: 'fixed' },
+              { label: 'Fixed cart total', value: 'fixed_total' },
             ]"
+            emit-value
+            map-options
             label="Type *"
             filled
             class="q-mb-md"
@@ -841,9 +844,9 @@
           <q-input
             v-model.number="editingPromoCode.value"
             type="number"
-            :label="editingPromoCode.type === 'percent' ? 'Percent (0–100) *' : 'Amount ($) *'"
-            :prefix="editingPromoCode.type === 'percent' ? '' : '$'"
-            :suffix="editingPromoCode.type === 'percent' ? '%' : ''"
+            :label="promoValueLabel"
+            :prefix="promoValuePrefix"
+            :suffix="promoValueSuffix"
             filled
             min="0"
             :max="editingPromoCode.type === 'percent' ? 100 : undefined"
@@ -1254,6 +1257,15 @@ export default {
       return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
     };
 
+    const promoValueLabel = computed(() => {
+      const t = editingPromoCode.value?.type;
+      if (t === 'percent') return 'Percent (0–100) *';
+      if (t === 'fixed_total') return 'Cart total ($) *';
+      return 'Amount off ($) *';
+    });
+    const promoValuePrefix = computed(() => (editingPromoCode.value?.type === 'percent' ? '' : '$'));
+    const promoValueSuffix = computed(() => (editingPromoCode.value?.type === 'percent' ? '%' : ''));
+
     const addPromoCode = () => {
       promoCodeEditId.value = null;
       editingPromoCode.value = { code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true };
@@ -1297,6 +1309,11 @@ export default {
       const numVal = Number(p.value);
       if (p.type === 'percent' && numVal > 100) {
         promoCodeError.value = 'Percent cannot exceed 100.';
+        return;
+      }
+      const validTypes = ['percent', 'fixed', 'fixed_total'];
+      if (!validTypes.includes(p.type)) {
+        promoCodeError.value = 'Invalid promo type.';
         return;
       }
       let validFrom = null;
@@ -2128,6 +2145,9 @@ export default {
       closePromoCodeDialog,
       savePromoCode,
       formatPromoDate,
+      promoValueLabel,
+      promoValuePrefix,
+      promoValueSuffix,
       confirmPromoDelete,
       deletePromoCode,
     };

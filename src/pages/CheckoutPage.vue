@@ -1772,13 +1772,18 @@ export default {
       return options;
     });
 
-    // Promo discount (percent or fixed off subtotal)
+    // Promo discount: percent/fixed off subtotal, or fixed_total makes total = min(value, subtotal + shipping)
     const promoDiscount = computed(() => {
       const promo = appliedPromo.value;
       if (!promo || cartItems.value.length === 0) return 0;
       const subtotal = cartSubtotal.value;
       if (promo.type === 'percent') {
         return Math.min(subtotal * (promo.value / 100), subtotal);
+      }
+      if (promo.type === 'fixed_total') {
+        const totalBefore = subtotal + (selectedShippingDetails.value?.type === 'shipping' ? shippingCost.value : 0);
+        const fixedTotal = Math.max(0, Number(promo.value) || 0);
+        return totalBefore - Math.min(fixedTotal, totalBefore);
       }
       return Math.min(Number(promo.value) || 0, subtotal);
     });

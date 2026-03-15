@@ -2599,7 +2599,7 @@ class FirebaseService {
       const now = serverTimestamp();
       const data = {
         code: normalizedCode,
-        type: type === 'fixed' ? 'fixed' : 'percent',
+        type: ['percent', 'fixed', 'fixed_total'].includes(type) ? type : 'percent',
         value: Number(value),
         active: !!active,
         createdAt: now,
@@ -2658,9 +2658,10 @@ class FirebaseService {
         return { valid: false, message: 'Code not yet valid.' };
       if (data.validUntil && data.validUntil.toDate && data.validUntil.toDate() < now)
         return { valid: false, message: 'Code expired or invalid.' };
+      const promoType = ['percent', 'fixed', 'fixed_total'].includes(data.type) ? data.type : 'percent';
       return {
         valid: true,
-        type: data.type === 'fixed' ? 'fixed' : 'percent',
+        type: promoType,
         value: Number(data.value),
       };
     } catch (error) {
