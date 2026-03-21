@@ -252,19 +252,15 @@
                 />
               </svg>
 
-              <!-- Corner triangles: white fill + black outline (saves ink vs solid fill) -->
-              <svg class="corner-triangle-svg corner-triangle-svg--tl" viewBox="0 0 100 100" aria-hidden="true">
-                <polygon points="0,0 100,0 0,100" fill="#ffffff" stroke="#333333" stroke-width="4" stroke-linejoin="miter" vector-effect="non-scaling-stroke" />
-              </svg>
-              <svg class="corner-triangle-svg corner-triangle-svg--tr" viewBox="0 0 100 100" aria-hidden="true">
-                <polygon points="100,0 0,0 100,100" fill="#ffffff" stroke="#333333" stroke-width="4" stroke-linejoin="miter" vector-effect="non-scaling-stroke" />
-              </svg>
-              <svg class="corner-triangle-svg corner-triangle-svg--bl" viewBox="0 0 100 100" aria-hidden="true">
-                <polygon points="0,100 0,0 100,100" fill="#ffffff" stroke="#333333" stroke-width="4" stroke-linejoin="miter" vector-effect="non-scaling-stroke" />
-              </svg>
-              <svg class="corner-triangle-svg corner-triangle-svg--br" viewBox="0 0 100 100" aria-hidden="true">
-                <polygon points="100,100 0,100 100,0" fill="#ffffff" stroke="#333333" stroke-width="4" stroke-linejoin="miter" vector-effect="non-scaling-stroke" />
-              </svg>
+              <!-- Corner triangles: original 34px border geometry; outer #333 outline, inner #fff fill (saves ink) -->
+              <div class="corner-triangle corner-triangle-outer corner-triangle-top-left" aria-hidden="true"></div>
+              <div class="corner-triangle corner-triangle-inner corner-triangle-inner-top-left" aria-hidden="true"></div>
+              <div class="corner-triangle corner-triangle-outer corner-triangle-top-right" aria-hidden="true"></div>
+              <div class="corner-triangle corner-triangle-inner corner-triangle-inner-top-right" aria-hidden="true"></div>
+              <div class="corner-triangle corner-triangle-outer corner-triangle-bottom-left" aria-hidden="true"></div>
+              <div class="corner-triangle corner-triangle-inner corner-triangle-inner-bottom-left" aria-hidden="true"></div>
+              <div class="corner-triangle corner-triangle-outer corner-triangle-bottom-right" aria-hidden="true"></div>
+              <div class="corner-triangle corner-triangle-inner corner-triangle-inner-bottom-right" aria-hidden="true"></div>
 
               <!-- Border text labels -->
               <div class="border-text border-text-top">Li'l Magnet Memories</div>
@@ -1533,34 +1529,92 @@ export default {
     margin: 0 !important;
   }
 
-  /* Corner triangles: SVG white fill + black stroke (saves ink) */
-  .corner-triangle-svg {
+  /* Corner triangles: original border-trick size (--triangle-size); outer #333, inner #fff */
+  .corner-triangle {
     position: absolute !important;
-    width: var(--triangle-size) !important;
-    height: var(--triangle-size) !important;
+    width: 0 !important;
+    height: 0 !important;
     pointer-events: none !important;
+  }
+
+  .corner-triangle-outer {
     z-index: 3 !important;
-    overflow: visible !important;
   }
 
-  .corner-triangle-svg--tl {
+  .corner-triangle-inner {
+    z-index: 4 !important;
+  }
+
+  .corner-triangle-top-left {
     top: 0 !important;
     left: 0 !important;
+    border-top: var(--triangle-size) solid #333 !important;
+    border-left: var(--triangle-size) solid #333 !important;
+    border-right: var(--triangle-size) solid transparent !important;
+    border-bottom: var(--triangle-size) solid transparent !important;
   }
 
-  .corner-triangle-svg--tr {
+  .corner-triangle-inner-top-left {
+    top: 1px !important;
+    left: 1px !important;
+    border-top: calc(var(--triangle-size) - 2px) solid #fff !important;
+    border-left: calc(var(--triangle-size) - 2px) solid #fff !important;
+    border-right: calc(var(--triangle-size) - 2px) solid transparent !important;
+    border-bottom: calc(var(--triangle-size) - 2px) solid transparent !important;
+  }
+
+  .corner-triangle-top-right {
     top: 0 !important;
     right: 0 !important;
+    border-top: var(--triangle-size) solid #333 !important;
+    border-right: var(--triangle-size) solid #333 !important;
+    border-left: var(--triangle-size) solid transparent !important;
+    border-bottom: var(--triangle-size) solid transparent !important;
   }
 
-  .corner-triangle-svg--bl {
+  .corner-triangle-inner-top-right {
+    top: 1px !important;
+    right: 1px !important;
+    border-top: calc(var(--triangle-size) - 2px) solid #fff !important;
+    border-right: calc(var(--triangle-size) - 2px) solid #fff !important;
+    border-left: calc(var(--triangle-size) - 2px) solid transparent !important;
+    border-bottom: calc(var(--triangle-size) - 2px) solid transparent !important;
+  }
+
+  .corner-triangle-bottom-left {
     bottom: 0 !important;
     left: 0 !important;
+    border-bottom: var(--triangle-size) solid #333 !important;
+    border-left: var(--triangle-size) solid #333 !important;
+    border-right: var(--triangle-size) solid transparent !important;
+    border-top: var(--triangle-size) solid transparent !important;
   }
 
-  .corner-triangle-svg--br {
+  .corner-triangle-inner-bottom-left {
+    bottom: 1px !important;
+    left: 1px !important;
+    border-bottom: calc(var(--triangle-size) - 2px) solid #fff !important;
+    border-left: calc(var(--triangle-size) - 2px) solid #fff !important;
+    border-right: calc(var(--triangle-size) - 2px) solid transparent !important;
+    border-top: calc(var(--triangle-size) - 2px) solid transparent !important;
+  }
+
+  .corner-triangle-bottom-right {
     bottom: 0 !important;
     right: 0 !important;
+    border-bottom: var(--triangle-size) solid #333 !important;
+    border-right: var(--triangle-size) solid #333 !important;
+    border-left: var(--triangle-size) solid transparent !important;
+    border-top: var(--triangle-size) solid transparent !important;
+  }
+
+  .corner-triangle-inner-bottom-right {
+    bottom: 1px !important;
+    right: 1px !important;
+    border-bottom: calc(var(--triangle-size) - 2px) solid #fff !important;
+    border-right: calc(var(--triangle-size) - 2px) solid #fff !important;
+    border-left: calc(var(--triangle-size) - 2px) solid transparent !important;
+    border-top: calc(var(--triangle-size) - 2px) solid transparent !important;
   }
 
   /* Border text labels */
@@ -1789,33 +1843,91 @@ export default {
     margin: 0;
   }
 
-  .corner-triangle-svg {
+  .corner-triangle {
     position: absolute;
-    width: var(--triangle-size);
-    height: var(--triangle-size);
+    width: 0;
+    height: 0;
     pointer-events: none;
+  }
+
+  .corner-triangle-outer {
     z-index: 3;
-    overflow: visible;
   }
 
-  .corner-triangle-svg--tl {
+  .corner-triangle-inner {
+    z-index: 4;
+  }
+
+  .corner-triangle-top-left {
     top: 0;
     left: 0;
+    border-top: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid transparent;
+    border-bottom: var(--triangle-size) solid transparent;
   }
 
-  .corner-triangle-svg--tr {
+  .corner-triangle-inner-top-left {
+    top: 1px;
+    left: 1px;
+    border-top: calc(var(--triangle-size) - 2px) solid #fff;
+    border-left: calc(var(--triangle-size) - 2px) solid #fff;
+    border-right: calc(var(--triangle-size) - 2px) solid transparent;
+    border-bottom: calc(var(--triangle-size) - 2px) solid transparent;
+  }
+
+  .corner-triangle-top-right {
     top: 0;
     right: 0;
+    border-top: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid transparent;
+    border-bottom: var(--triangle-size) solid transparent;
   }
 
-  .corner-triangle-svg--bl {
+  .corner-triangle-inner-top-right {
+    top: 1px;
+    right: 1px;
+    border-top: calc(var(--triangle-size) - 2px) solid #fff;
+    border-right: calc(var(--triangle-size) - 2px) solid #fff;
+    border-left: calc(var(--triangle-size) - 2px) solid transparent;
+    border-bottom: calc(var(--triangle-size) - 2px) solid transparent;
+  }
+
+  .corner-triangle-bottom-left {
     bottom: 0;
     left: 0;
+    border-bottom: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid transparent;
+    border-top: var(--triangle-size) solid transparent;
   }
 
-  .corner-triangle-svg--br {
+  .corner-triangle-inner-bottom-left {
+    bottom: 1px;
+    left: 1px;
+    border-bottom: calc(var(--triangle-size) - 2px) solid #fff;
+    border-left: calc(var(--triangle-size) - 2px) solid #fff;
+    border-right: calc(var(--triangle-size) - 2px) solid transparent;
+    border-top: calc(var(--triangle-size) - 2px) solid transparent;
+  }
+
+  .corner-triangle-bottom-right {
     bottom: 0;
     right: 0;
+    border-bottom: var(--triangle-size) solid #333;
+    border-right: var(--triangle-size) solid #333;
+    border-left: var(--triangle-size) solid transparent;
+    border-top: var(--triangle-size) solid transparent;
+  }
+
+  .corner-triangle-inner-bottom-right {
+    bottom: 1px;
+    right: 1px;
+    border-bottom: calc(var(--triangle-size) - 2px) solid #fff;
+    border-right: calc(var(--triangle-size) - 2px) solid #fff;
+    border-left: calc(var(--triangle-size) - 2px) solid transparent;
+    border-top: calc(var(--triangle-size) - 2px) solid transparent;
   }
 
   /* Border text labels */
