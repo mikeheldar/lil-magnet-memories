@@ -31,14 +31,9 @@
       </div>
     </div>
 
-    <!-- Print Pages Container -->
+    <!-- Print Pages Container: single sticky tools column + all pages -->
     <div class="print-container">
-      <!-- Generate pages (6 photos per page) -->
-      <div
-        v-for="(page, pageIndex) in pages"
-        :key="pageIndex"
-        class="print-page-wrapper"
-      >
+      <div class="print-workspace">
         <div class="print-controls">
           <!-- Section: Fine Adjustments -->
           <div class="controls-section">
@@ -216,13 +211,19 @@
             </div>
           </div>
         </div>
-        <div class="print-page">
-          <div class="print-grid">
-            <div
-              v-for="(photo, gridIndex) in 6"
-              :key="`${pageIndex}-${gridIndex}`"
-              class="print-square-container"
-            >
+        <div class="print-pages-column">
+          <div
+            v-for="(page, pageIndex) in pages"
+            :key="pageIndex"
+            class="print-page-wrapper"
+          >
+            <div class="print-page">
+              <div class="print-grid">
+                <div
+                  v-for="(photo, gridIndex) in 6"
+                  :key="`${pageIndex}-${gridIndex}`"
+                  class="print-square-container"
+                >
               <!-- Outer cutting square template -->
               <svg class="outer-frame primary" viewBox="0 0 100 100">
                 <rect
@@ -339,6 +340,8 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- Custom border frame picker dialog -->
     <q-dialog v-model="showBorderFrameDialog" persistent>
@@ -1333,6 +1336,15 @@ export default {
     padding: 0 !important;
   }
 
+  .print-workspace,
+  .print-pages-column {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
   .print-page-wrapper {
     display: block !important;
     width: 100% !important;
@@ -1582,18 +1594,38 @@ export default {
 /* Screen styles */
 @media screen {
   .print-container {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem 1rem 2rem;
+    box-sizing: border-box;
+  }
+
+  .print-workspace {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .print-pages-column {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
-    padding: 1.5rem;
+    flex: 1;
+    min-width: 0;
   }
 
   .print-page-wrapper {
-    display: flex;
-    gap: 1.5rem;
-    align-items: flex-start;
+    display: block;
     position: relative;
+    width: 100%;
+    max-width: 100%;
   }
 
   .print-page {
@@ -1838,17 +1870,43 @@ export default {
     flex-shrink: 0;
   }
 
+  /* Sticky tools: single column; top clears site header (matches MainLayout ~84px / 64px) */
   .print-controls {
     width: 180px;
+    flex-shrink: 0;
     padding: 1rem;
     background: white;
     border: 1px solid #d0d0d0;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     position: sticky;
-    top: 80px;
+    top: calc(84px + 8px + env(safe-area-inset-top, 0px));
     left: 0;
     align-self: flex-start;
+    z-index: 100;
+    max-height: calc(100vh - 84px - 8px - env(safe-area-inset-top, 0px) - 16px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (min-width: 1024px) {
+    .print-controls {
+      top: calc(64px + 8px + env(safe-area-inset-top, 0px));
+      max-height: calc(100vh - 64px - 8px - env(safe-area-inset-top, 0px) - 16px);
+    }
+  }
+
+  /* Narrow screens: stack tools above pages; sticky still keeps tools under header */
+  @media (max-width: 900px) {
+    .print-workspace {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .print-controls {
+      width: 100%;
+      max-width: 320px;
+    }
   }
 
   .controls-section {
