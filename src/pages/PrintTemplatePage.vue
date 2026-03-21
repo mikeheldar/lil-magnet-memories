@@ -34,7 +34,13 @@
     <!-- Print Pages Container: single sticky tools column + all pages -->
     <div class="print-container">
       <div class="print-workspace">
-        <div class="print-controls">
+        <!-- In-flow spacer: fixed panel is positioned from this rect (layout uses transform; sticky breaks) -->
+        <div
+          ref="printToolsSpacerRef"
+          class="print-tools-spacer no-print"
+          aria-hidden="true"
+        />
+        <div ref="printToolsPanelRef" class="print-controls print-controls--fixed">
           <!-- Section: Fine Adjustments -->
           <div class="controls-section">
             <div class="controls-section-header" @click="sectionFineOpen = !sectionFineOpen">
@@ -385,7 +391,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMeta } from 'quasar';
 import { config } from '../config/environment.js';
@@ -441,6 +447,27 @@ export default {
     const sectionFineOpen = ref(true);
     const sectionColorOpen = ref(false);
     const sectionBorderOpen = ref(true);
+
+    // Fixed-position print tools (Quasar layout transform breaks position: sticky)
+    const printToolsSpacerRef = ref(null);
+    const printToolsPanelRef = ref(null);
+    let printToolsResizeObserver = null;
+
+    const updatePrintToolsFixedPosition = () => {
+      const spacer = printToolsSpacerRef.value;
+      const panel = printToolsPanelRef.value;
+      if (!spacer || !panel) return;
+      const r = spacer.getBoundingClientRect();
+      panel.style.left = `${Math.round(r.left)}px`;
+      panel.style.width = `${Math.round(r.width)}px`;
+      // Stacked layout: reserve vertical space so content isn't hidden under fixed panel
+      const stacked = window.matchMedia('(max-width: 900px)').matches;
+      if (stacked) {
+        spacer.style.minHeight = `${Math.ceil(panel.offsetHeight)}px`;
+      } else {
+        spacer.style.minHeight = '';
+      }
+    };
 
     // Image dimensions storage: key -> { width, height }
     const photoDimensions = ref({});
@@ -1092,7 +1119,9 @@ export default {
       // Programmatically hide Quasar layout elements before printing
       const hideSelectors = '.q-header, .q-drawer, .q-drawer-container, .q-drawer__backdrop, .q-footer, .site-footer, .q-layout__section--marginal, .drawer-header-fill, .drawer-menu-container, .drawer-under-header';
       const elementsToHide = document.querySelectorAll(hideSelectors);
-      const noPrintElements = document.querySelectorAll('.no-print, .print-controls');
+      const noPrintElements = document.querySelectorAll(
+        '.no-print, .print-controls, .print-tools-spacer'
+      );
 
       // Store original display values and hide
       const originals = [];
@@ -1195,9 +1224,34 @@ export default {
 
     onMounted(() => {
       parseOrderData();
+      nextTick(() => {
+        requestAnimationFrame(() => {
+          updatePrintToolsFixedPosition();
+          requestAnimationFrame(updatePrintToolsFixedPosition);
+        });
+      });
+      window.addEventListener('scroll', updatePrintToolsFixedPosition, true);
+      window.addEventListener('resize', updatePrintToolsFixedPosition);
+      if (typeof ResizeObserver !== 'undefined') {
+        nextTick(() => {
+          const spacer = printToolsSpacerRef.value;
+          if (spacer) {
+            printToolsResizeObserver = new ResizeObserver(updatePrintToolsFixedPosition);
+            printToolsResizeObserver.observe(spacer);
+            const panel = printToolsPanelRef.value;
+            if (panel) printToolsResizeObserver.observe(panel);
+          }
+        });
+      }
     });
 
     onUnmounted(() => {
+      window.removeEventListener('scroll', updatePrintToolsFixedPosition, true);
+      window.removeEventListener('resize', updatePrintToolsFixedPosition);
+      if (printToolsResizeObserver) {
+        printToolsResizeObserver.disconnect();
+        printToolsResizeObserver = null;
+      }
       // Clean up document listeners if component unmounts while dragging
       if (isDragging.value) {
         document.removeEventListener('mousemove', handleDocumentMouseMove);
@@ -1247,6 +1301,8 @@ export default {
       sectionFineOpen,
       sectionColorOpen,
       sectionBorderOpen,
+      printToolsSpacerRef,
+      printToolsPanelRef,
     };
   },
 };
@@ -1343,6 +1399,10 @@ export default {
     margin: 0 !important;
     padding: 0 !important;
     gap: 0 !important;
+  }
+
+  .print-tools-spacer {
+    display: none !important;
   }
 
   .print-page-wrapper {
@@ -1601,6 +1661,12 @@ export default {
     box-sizing: border-box;
   }
 
+  .print-tools-spacer {
+    width: 180px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
+
   .print-workspace {
     display: flex;
     flex-direction: row;
@@ -1610,6 +1676,7 @@ export default {
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
+    position: relative;
   }
 
   .print-pages-column {
@@ -1870,41 +1937,48 @@ export default {
     flex-shrink: 0;
   }
 
-  /* Sticky tools: single column; top clears site header (matches MainLayout ~84px / 64px) */
-  .print-controls {
-    width: 180px;
-    flex-shrink: 0;
+  /*
+   * Fixed tools panel: Quasar's q-layout applies transform on an ancestor, which breaks
+   * position:sticky. We sync left/width from .print-tools-spacer via JS.
+   * Top matches MainLayout: 84px header (xs), 64px header + 48px sub-nav (md+).
+   */
+  .print-controls.print-controls--fixed {
+    position: fixed;
+    z-index: 2500;
+    box-sizing: border-box;
+    margin: 0;
+    top: calc(84px + 8px + env(safe-area-inset-top, 0px));
+    max-height: calc(100vh - 84px - 8px - env(safe-area-inset-top, 0px) - 16px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 1rem;
     background: white;
     border: 1px solid #d0d0d0;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    position: sticky;
-    top: calc(84px + 8px + env(safe-area-inset-top, 0px));
-    left: 0;
-    align-self: flex-start;
-    z-index: 100;
-    max-height: calc(100vh - 84px - 8px - env(safe-area-inset-top, 0px) - 16px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
-  @media (min-width: 1024px) {
-    .print-controls {
-      top: calc(64px + 8px + env(safe-area-inset-top, 0px));
-      max-height: calc(100vh - 64px - 8px - env(safe-area-inset-top, 0px) - 16px);
+  @media (min-width: 768px) {
+    .print-controls.print-controls--fixed {
+      top: calc(64px + 48px + 8px + env(safe-area-inset-top, 0px));
+      max-height: calc(100vh - 64px - 48px - 8px - env(safe-area-inset-top, 0px) - 16px);
     }
   }
 
-  /* Narrow screens: stack tools above pages; sticky still keeps tools under header */
   @media (max-width: 900px) {
     .print-workspace {
       flex-direction: column;
       align-items: center;
     }
 
-    .print-controls {
+    .print-tools-spacer {
       width: 100%;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .print-controls.print-controls--fixed {
       max-width: 320px;
     }
   }
