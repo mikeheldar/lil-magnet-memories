@@ -453,14 +453,42 @@ export default {
     const printToolsPanelRef = ref(null);
     let printToolsResizeObserver = null;
 
+    /** Sync fixed print tools: horizontal = spacer (scrolls with layout); vertical = under header until footer. */
     const updatePrintToolsFixedPosition = () => {
       const spacer = printToolsSpacerRef.value;
       const panel = printToolsPanelRef.value;
       if (!spacer || !panel) return;
+
       const r = spacer.getBoundingClientRect();
       panel.style.left = `${Math.round(r.left)}px`;
       panel.style.width = `${Math.round(r.width)}px`;
-      // Stacked layout: reserve vertical space so content isn't hidden under fixed panel
+
+      const mdUp = window.matchMedia('(min-width: 768px)').matches;
+      const minTop = mdUp ? 64 + 48 + 8 : 84 + 8;
+      const footerGap = 12;
+      const viewportPad = 16;
+      const minPanelScrollHeight = 120;
+
+      const panelH = panel.offsetHeight || 0;
+      const footer = document.querySelector('.site-footer');
+
+      let top = minTop;
+      if (footer && panelH > 0) {
+        const fr = footer.getBoundingClientRect();
+        const maxTopSoBottomClearsFooter = fr.top - footerGap - panelH;
+        top = Math.min(minTop, maxTopSoBottomClearsFooter);
+      }
+      top = Math.max(0, top);
+      panel.style.top = `${Math.round(top)}px`;
+
+      let maxH = window.innerHeight - top - viewportPad;
+      if (footer) {
+        const fr = footer.getBoundingClientRect();
+        maxH = Math.min(maxH, fr.top - top - footerGap);
+      }
+      maxH = Math.max(minPanelScrollHeight, maxH);
+      panel.style.maxHeight = `${Math.round(maxH)}px`;
+
       const stacked = window.matchMedia('(max-width: 900px)').matches;
       if (stacked) {
         spacer.style.minHeight = `${Math.ceil(panel.offsetHeight)}px`;
@@ -1938,17 +1966,15 @@ export default {
   }
 
   /*
-   * Fixed tools panel: Quasar's q-layout applies transform on an ancestor, which breaks
-   * position:sticky. We sync left/width from .print-tools-spacer via JS.
-   * Top matches MainLayout: 84px header (xs), 64px header + 48px sub-nav (md+).
+   * Fixed tools panel: Quasar layout transform breaks position:sticky.
+   * JS sets left/width from spacer (horizontal tracks layout / scroll) and
+   * top/max-height so it sits under the header but stops above .site-footer.
    */
   .print-controls.print-controls--fixed {
     position: fixed;
     z-index: 2500;
     box-sizing: border-box;
     margin: 0;
-    top: calc(84px + 8px + env(safe-area-inset-top, 0px));
-    max-height: calc(100vh - 84px - 8px - env(safe-area-inset-top, 0px) - 16px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 1rem;
@@ -1956,13 +1982,6 @@ export default {
     border: 1px solid #d0d0d0;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  }
-
-  @media (min-width: 768px) {
-    .print-controls.print-controls--fixed {
-      top: calc(64px + 48px + 8px + env(safe-area-inset-top, 0px));
-      max-height: calc(100vh - 64px - 48px - 8px - env(safe-area-inset-top, 0px) - 16px);
-    }
   }
 
   @media (max-width: 900px) {
