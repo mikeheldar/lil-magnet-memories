@@ -339,6 +339,16 @@
                 Map pin ready
               </q-chip>
               <q-chip
+                v-else-if="createShowPlaceNoCoords"
+                dense
+                color="deep-orange"
+                text-color="white"
+                size="sm"
+                icon="place"
+              >
+                Address set — Google returned no coordinates
+              </q-chip>
+              <q-chip
                 v-else
                 dense
                 color="warning"
@@ -348,6 +358,22 @@
               >
                 No map pin yet — required to save
               </q-chip>
+            </div>
+            <div
+              v-if="createCoordPreview"
+              class="text-body2 q-pa-sm rounded-borders bg-grey-2 q-mb-sm"
+            >
+              <strong>Coordinates:</strong>
+              {{ formatCoordPair(createCoordPreview) }}
+              <span class="text-caption text-grey-7 q-ml-xs">
+                ({{ createCoordPreviewSourceLabel }})
+              </span>
+            </div>
+            <div
+              v-else-if="createShowPlaceNoCoords"
+              class="text-caption text-deep-orange q-mb-sm"
+            >
+              Use “Use my location” or enter latitude/longitude below.
             </div>
             <div class="row q-gutter-sm q-mb-md">
               <q-btn
@@ -477,6 +503,16 @@
                 Map pin ready
               </q-chip>
               <q-chip
+                v-else-if="editShowPlaceNoCoords"
+                dense
+                color="deep-orange"
+                text-color="white"
+                size="sm"
+                icon="place"
+              >
+                Address set — Google returned no coordinates
+              </q-chip>
+              <q-chip
                 v-else-if="editLocationUnchanged"
                 dense
                 color="info"
@@ -496,6 +532,22 @@
               >
                 Address changed — set a new pin (pick place, GPS, or manual)
               </q-chip>
+            </div>
+            <div
+              v-if="editCoordPreview"
+              class="text-body2 q-pa-sm rounded-borders bg-grey-2 q-mb-sm"
+            >
+              <strong>Coordinates:</strong>
+              {{ formatCoordPair(editCoordPreview) }}
+              <span class="text-caption text-grey-7 q-ml-xs">
+                ({{ editCoordPreviewSourceLabel }})
+              </span>
+            </div>
+            <div
+              v-else-if="editShowPlaceNoCoords"
+              class="text-caption text-deep-orange q-mb-sm"
+            >
+              Use “Use my location” or enter latitude/longitude below.
             </div>
             <div class="row q-gutter-sm q-mb-md">
               <q-btn
@@ -751,8 +803,13 @@ export default {
       const lat = coords.lat != null ? coords.lat : coords.latitude;
       const lng = coords.lng != null ? coords.lng : coords.longitude;
       if (lat == null || lng == null) return '';
-      return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+      return `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
     };
+
+    const coordsObjValid = (p) =>
+      p != null &&
+      !Number.isNaN(Number(p.lat)) &&
+      !Number.isNaN(Number(p.lng));
 
     const createPendingCoords = ref(null);
     const createManualLat = ref('');
@@ -791,31 +848,40 @@ export default {
     };
 
     const onCreatePlaceSelected = (placeData) => {
-      if (
+      const addr =
+        placeData?.formattedAddress ||
+        placeData?.formatted_address ||
+        '';
+      if (addr) {
+        newEvent.value = { ...newEvent.value, location: addr };
+      }
+      // Selecting a place always overwrites GPS / manual coords
+      createManualLat.value = '';
+      createManualLng.value = '';
+
+      const hasGeom =
         placeData?.coordinates != null &&
         placeData.coordinates.lat != null &&
-        placeData.coordinates.lng != null
-      ) {
+        placeData.coordinates.lng != null;
+
+      if (hasGeom) {
         createPendingCoords.value = {
           lat: Number(placeData.coordinates.lat),
           lng: Number(placeData.coordinates.lng),
         };
-        createAnchorAddress.value =
-          placeData.formattedAddress ||
-          placeData.formatted_address ||
-          newEvent.value.location ||
-          '';
+        createAnchorAddress.value = addr || newEvent.value.location || '';
         createCoordsSource.value = 'place';
       } else {
         createPendingCoords.value = null;
-        createCoordsSource.value = null;
-        createAnchorAddress.value = '';
+        createAnchorAddress.value = addr || newEvent.value.location || '';
+        createCoordsSource.value = 'place_no_coords';
       }
     };
 
     const onCreateLocationInput = (val) => {
+      const src = createCoordsSource.value;
       if (
-        createCoordsSource.value === 'place' &&
+        (src === 'place' || src === 'place_no_coords') &&
         createAnchorAddress.value &&
         val !== createAnchorAddress.value
       ) {
@@ -826,31 +892,41 @@ export default {
     };
 
     const onEditPlaceSelected = (placeData) => {
-      if (
+      const addr =
+        placeData?.formattedAddress ||
+        placeData?.formatted_address ||
+        '';
+      if (addr && editingEvent.value) {
+        editingEvent.value = { ...editingEvent.value, location: addr };
+      }
+      editManualLat.value = '';
+      editManualLng.value = '';
+
+      const hasGeom =
         placeData?.coordinates != null &&
         placeData.coordinates.lat != null &&
-        placeData.coordinates.lng != null
-      ) {
+        placeData.coordinates.lng != null;
+
+      if (hasGeom) {
         editPendingCoords.value = {
           lat: Number(placeData.coordinates.lat),
           lng: Number(placeData.coordinates.lng),
         };
         editAnchorAddress.value =
-          placeData.formattedAddress ||
-          placeData.formatted_address ||
-          editingEvent.value?.location ||
-          '';
+          addr || editingEvent.value?.location || '';
         editCoordsSource.value = 'place';
       } else {
         editPendingCoords.value = null;
-        editCoordsSource.value = null;
-        editAnchorAddress.value = '';
+        editAnchorAddress.value =
+          addr || editingEvent.value?.location || '';
+        editCoordsSource.value = 'place_no_coords';
       }
     };
 
     const onEditLocationInput = (val) => {
+      const src = editCoordsSource.value;
       if (
-        editCoordsSource.value === 'place' &&
+        (src === 'place' || src === 'place_no_coords') &&
         editAnchorAddress.value &&
         val !== editAnchorAddress.value
       ) {
@@ -864,6 +940,8 @@ export default {
       loadingCreateLocation.value = true;
       try {
         const loc = await getUserLocation();
+        createManualLat.value = '';
+        createManualLng.value = '';
         createPendingCoords.value = { lat: loc.lat, lng: loc.lng };
         createCoordsSource.value = 'gps';
         createAnchorAddress.value = '';
@@ -890,6 +968,8 @@ export default {
       loadingEditLocation.value = true;
       try {
         const loc = await getUserLocation();
+        editManualLat.value = '';
+        editManualLng.value = '';
         editPendingCoords.value = { lat: loc.lat, lng: loc.lng };
         editCoordsSource.value = 'gps';
         editAnchorAddress.value = '';
@@ -912,14 +992,58 @@ export default {
       }
     };
 
+    const createShowPlaceNoCoords = computed(
+      () => createCoordsSource.value === 'place_no_coords'
+    );
+
+    const createCoordPreview = computed(() => {
+      if (
+        createCoordsSource.value === 'place' &&
+        coordsObjValid(createPendingCoords.value)
+      ) {
+        return createPendingCoords.value;
+      }
+      const manual = parseManualCoords(
+        createManualLat.value,
+        createManualLng.value
+      );
+      if (manual) return manual;
+      if (
+        createCoordsSource.value === 'gps' &&
+        coordsObjValid(createPendingCoords.value)
+      ) {
+        return createPendingCoords.value;
+      }
+      return null;
+    });
+
+    const createCoordPreviewSourceLabel = computed(() => {
+      if (
+        createCoordsSource.value === 'place' &&
+        coordsObjValid(createPendingCoords.value)
+      ) {
+        return 'selected place (Google)';
+      }
+      if (parseManualCoords(createManualLat.value, createManualLng.value)) {
+        return 'manual entry';
+      }
+      if (createCoordsSource.value === 'gps') return 'your device (GPS)';
+      return '';
+    });
+
     const createDialogPinReady = computed(() => {
+      if (
+        createCoordsSource.value === 'place' &&
+        coordsObjValid(createPendingCoords.value)
+      ) {
+        return true;
+      }
       if (parseManualCoords(createManualLat.value, createManualLng.value)) {
         return true;
       }
       if (
-        createPendingCoords.value != null &&
-        !Number.isNaN(Number(createPendingCoords.value.lat)) &&
-        !Number.isNaN(Number(createPendingCoords.value.lng))
+        createCoordsSource.value === 'gps' &&
+        coordsObjValid(createPendingCoords.value)
       ) {
         return true;
       }
@@ -931,34 +1055,80 @@ export default {
       return editingEvent.value.location === editOriginalLocation.value;
     });
 
-    const editManualOk = computed(
-      () =>
-        parseManualCoords(editManualLat.value, editManualLng.value) != null
+    const editShowPlaceNoCoords = computed(
+      () => editCoordsSource.value === 'place_no_coords'
     );
 
-    const editDialogPinReady = computed(() => {
-      if (editManualOk.value) return true;
+    const editCoordPreview = computed(() => {
       if (
-        editPendingCoords.value != null &&
-        !Number.isNaN(Number(editPendingCoords.value.lat)) &&
-        !Number.isNaN(Number(editPendingCoords.value.lng))
+        editCoordsSource.value === 'place' &&
+        coordsObjValid(editPendingCoords.value)
+      ) {
+        return editPendingCoords.value;
+      }
+      const manual = parseManualCoords(editManualLat.value, editManualLng.value);
+      if (manual) return manual;
+      if (
+        editCoordsSource.value === 'gps' &&
+        coordsObjValid(editPendingCoords.value)
+      ) {
+        return editPendingCoords.value;
+      }
+      return null;
+    });
+
+    const editCoordPreviewSourceLabel = computed(() => {
+      if (
+        editCoordsSource.value === 'place' &&
+        coordsObjValid(editPendingCoords.value)
+      ) {
+        return 'selected place (Google)';
+      }
+      if (parseManualCoords(editManualLat.value, editManualLng.value)) {
+        return 'manual entry';
+      }
+      if (editCoordsSource.value === 'gps') return 'your device (GPS)';
+      return '';
+    });
+
+    const editDialogPinReady = computed(() => {
+      if (editLocationUnchanged.value) return true;
+      if (
+        editCoordsSource.value === 'place' &&
+        coordsObjValid(editPendingCoords.value)
       ) {
         return true;
       }
-      if (editLocationUnchanged.value) return true;
+      if (parseManualCoords(editManualLat.value, editManualLng.value)) {
+        return true;
+      }
+      if (
+        editCoordsSource.value === 'gps' &&
+        coordsObjValid(editPendingCoords.value)
+      ) {
+        return true;
+      }
       return false;
     });
 
     const resolveCoordinatesForCreate = () => {
+      if (
+        createCoordsSource.value === 'place' &&
+        coordsObjValid(createPendingCoords.value)
+      ) {
+        return {
+          lat: Number(createPendingCoords.value.lat),
+          lng: Number(createPendingCoords.value.lng),
+        };
+      }
       const manual = parseManualCoords(
         createManualLat.value,
         createManualLng.value
       );
       if (manual) return manual;
       if (
-        createPendingCoords.value &&
-        !Number.isNaN(Number(createPendingCoords.value.lat)) &&
-        !Number.isNaN(Number(createPendingCoords.value.lng))
+        createCoordsSource.value === 'gps' &&
+        coordsObjValid(createPendingCoords.value)
       ) {
         return {
           lat: Number(createPendingCoords.value.lat),
@@ -1219,10 +1389,11 @@ export default {
 
     // Create new event
     const createEvent = async () => {
+      const locationTrim = String(newEvent.value.location || '').trim();
 
       if (
         !newEvent.value.name ||
-        !newEvent.value.location ||
+        !locationTrim ||
         !newEvent.value.startDateTime ||
         !newEvent.value.endDateTime
       ) {
@@ -1230,7 +1401,7 @@ export default {
           $q.notify({
             type: 'negative',
             message: 'Please fill in all fields',
-            caption: `Missing: ${!newEvent.value.name ? 'Name ' : ''}${!newEvent.value.location ? 'Location ' : ''}${!newEvent.value.startDateTime ? 'Start Time ' : ''}${!newEvent.value.endDateTime ? 'End Time' : ''}`,
+            caption: `Missing: ${!newEvent.value.name ? 'Name ' : ''}${!locationTrim ? 'Location ' : ''}${!newEvent.value.startDateTime ? 'Start Time ' : ''}${!newEvent.value.endDateTime ? 'End Time' : ''}`,
             position: 'top',
           });
         } catch (error) {
@@ -1276,7 +1447,7 @@ export default {
 
         const eventData = {
           name: newEvent.value.name,
-          location: newEvent.value.location,
+          location: locationTrim,
           coordinates,
           startDateTime: newEvent.value.startDateTime,
           endDateTime: newEvent.value.endDateTime,
@@ -1360,9 +1531,12 @@ export default {
 
     // Update event
     const updateEvent = async () => {
+      const editLocationTrim = String(
+        editingEvent.value?.location || ''
+      ).trim();
       if (
         !editingEvent.value.name ||
-        !editingEvent.value.location ||
+        !editLocationTrim ||
         !editingEvent.value.startDateTime ||
         !editingEvent.value.endDateTime
       ) {
@@ -1370,12 +1544,19 @@ export default {
           $q.notify({
             type: 'negative',
             message: 'Please fill in all fields',
+            caption: !editLocationTrim ? 'Location is required' : undefined,
             position: 'top',
           });
         } catch (error) {
           console.error('Notification error:', error);
         }
         return;
+      }
+      if (editLocationTrim !== editingEvent.value.location) {
+        editingEvent.value = {
+          ...editingEvent.value,
+          location: editLocationTrim,
+        };
       }
 
       // Validate that end time is after start time
@@ -1405,12 +1586,19 @@ export default {
           editingEvent.value.location === editOriginalLocation.value;
 
         let coordinatesPayload;
-        if (manual) {
+        if (
+          editCoordsSource.value === 'place' &&
+          coordsObjValid(editPendingCoords.value)
+        ) {
+          coordinatesPayload = {
+            lat: Number(editPendingCoords.value.lat),
+            lng: Number(editPendingCoords.value.lng),
+          };
+        } else if (manual) {
           coordinatesPayload = manual;
         } else if (
-          editPendingCoords.value &&
-          !Number.isNaN(Number(editPendingCoords.value.lat)) &&
-          !Number.isNaN(Number(editPendingCoords.value.lng))
+          editCoordsSource.value === 'gps' &&
+          coordsObjValid(editPendingCoords.value)
         ) {
           coordinatesPayload = {
             lat: Number(editPendingCoords.value.lat),
@@ -1695,7 +1883,13 @@ export default {
       eventHasCoordinates,
       formatCoordPair,
       createDialogPinReady,
+      createShowPlaceNoCoords,
+      createCoordPreview,
+      createCoordPreviewSourceLabel,
       editDialogPinReady,
+      editShowPlaceNoCoords,
+      editCoordPreview,
+      editCoordPreviewSourceLabel,
       editLocationUnchanged,
       createShowManualCoords,
       editShowManualCoords,

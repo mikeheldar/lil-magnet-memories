@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed, onUnmounted } from 'vue';
+import { ref, onMounted, watch, computed, onUnmounted, nextTick } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -176,18 +176,15 @@ const initAutocomplete = async () => {
       console.log('📍 [GooglePlacesAutocomplete] Place selected:', formattedAddress);
       
       // Update internal value first
-      inputValue.value = formattedAddress;
+      inputValue.value = formattedAddress || '';
       
-      // FORCE multiple emissions to ensure it gets through
-      emit('update:modelValue', formattedAddress);
+      // nextTick so parent v-model on nested refs (e.g. newEvent.location) reliably updates
+      await nextTick();
+      emit('update:modelValue', formattedAddress || '');
+      await nextTick();
+      emit('update:modelValue', formattedAddress || '');
       
-      // Wait a tick
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
-      // Emit again to be absolutely sure
-      emit('update:modelValue', formattedAddress);
-      
-      console.log('📍 [GooglePlacesAutocomplete] Emitted update:modelValue TWICE with:', formattedAddress);
+      console.log('📍 [GooglePlacesAutocomplete] Emitted update:modelValue with:', formattedAddress);
       
       // Update the input element value to ensure it's displayed
       if (inputElement) {
