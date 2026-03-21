@@ -2,15 +2,16 @@
 
 ## Overview
 
-The Google Places Autocomplete feature has been integrated into the Market Events page to provide automatic address detection and validation when creating or editing market events.
+Market Events uses **`GooglePlacesAutocomplete.vue`**, which loads the Maps JavaScript API with the **`gmp-place-autocomplete`** web component and **`place.fetchFields`** (Places API surface recommended for new Google Cloud projects). Legacy `PlacesService` / `AutocompleteService` are **not** used on this page.
+
+Coordinates from the selected place are saved on the `marketEvents` document as `coordinates: { lat, lng }` (required on **create**). Operators can also set the pin with **Use my location** or **manual lat/lng**. See [Places migration overview](https://developers.google.com/maps/documentation/javascript/places-migration-overview).
 
 ## Features
 
-- **Auto-complete Address Input**: As users type an address, Google provides suggestions
-- **Address Auto-detection**: Automatically detects and formats full addresses
-- **Address Components**: Extracts detailed address information (street, city, state, zip, coordinates)
-- **Real-time Validation**: Ensures addresses are valid and properly formatted
-- **User-friendly**: Familiar Google autocomplete interface
+- **Auto-complete**: `gmp-place-autocomplete` suggestions (establishments and geocodes)
+- **Map pin from Google**: Selecting a suggestion sets accurate coordinates (no Nominatim on this flow)
+- **Fallbacks**: Browser geolocation and manual latitude/longitude on create/edit
+- **Event list**: Each card shows **Pin set** vs **No map pin** for “at event” distance behavior
 
 ## How It Works
 
@@ -37,7 +38,7 @@ The Google Places Autocomplete feature has been integrated into the Market Event
 - `label`: Input field label
 - `rules`: Validation rules
 - `hint`: Helper text
-- `types`: Place types to search for (default: ['address'])
+- `types`: Place types (default: `['establishment', 'geocode']` for venues + addresses). Market Events passes the same via `marketEventPlaceTypes`.
 
 **Events:**
 - `update:modelValue`: Emitted when address changes
@@ -45,59 +46,39 @@ The Google Places Autocomplete feature has been integrated into the Market Event
 
 #### Integration in MarketEventsPage.vue
 
-```vue
-<GooglePlacesAutocomplete
-  v-model="newEvent.location"
-  label="Location/Address"
-  :rules="[(val) => !!val || 'Location is required']"
-  hint="Start typing an address and select from the dropdown"
-  @place-selected="onNewEventPlaceSelected"
-/>
-```
+Create and edit dialogs use `GooglePlacesAutocomplete` with `@place-selected` and `@update:model-value` to track pins. Saving **requires** a pin on create (suggestion, GPS, or manual). On **edit**, if the address string is unchanged, `coordinates` are omitted from the Firestore update so existing pins are not wiped; if the address changes, a new pin must be supplied the same ways.
 
-#### Place Selection Handler
+#### Place Selection Handler (summary)
 
-```javascript
-const onNewEventPlaceSelected = (placeDetails) => {
-  // placeDetails contains:
-  // - formattedAddress: Full formatted address string
-  // - addressComponents: Broken down components (street, city, state, zip, country)
-  // - coordinates: { lat, lng }
-  // - placeId: Google Place ID
-  // - name: Place name (if applicable)
-  
-  // Store coordinates and place ID for future use
-  if (placeDetails.coordinates) {
-    newEvent.value.coordinates = placeDetails.coordinates;
-    newEvent.value.placeId = placeDetails.placeId;
-  }
-};
-```
+`place-selected` emits `{ formattedAddress, addressComponents, coordinates: { lat, lng }, placeId, name }`. The page stores pending coordinates until save (and clears place-derived pins if the user edits the address text after a selection).
 
 ## Setup Requirements
 
 ### Environment Variables
 
-Add your Google Places API key to `.env`:
+Add your Google API key(s) to `.env`:
 
 ```env
-VITE_GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
+VITE_GOOGLE_PLACES_API_KEY=your_production_key
+# Optional: test/staging host uses this when set (same pattern as other test env vars)
+VITE_GOOGLE_PLACES_API_KEY_TEST=your_test_key
 ```
+
+The component loads **`VITE_GOOGLE_PLACES_API_KEY_TEST`** first when present, otherwise **`VITE_GOOGLE_PLACES_API_KEY`**.
 
 ### Google Cloud Console Setup
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the following APIs:
-   - **Places API** (for autocomplete)
-   - **Maps JavaScript API** (for loading the library)
-4. Create API credentials:
-   - Go to "APIs & Services" → "Credentials"
-   - Click "Create Credentials" → "API Key"
-   - Restrict the API key:
-     - **Application restrictions**: Set to your domain(s)
-     - **API restrictions**: Restrict to Places API and Maps JavaScript API
-5. Copy the API key to your `.env` file
+2. Select the project tied to your key
+3. Enable APIs required for **`gmp-place-autocomplete`** and **`Place.fetchFields`** (see current [Places API documentation](https://developers.google.com/maps/documentation/javascript/places)); typically:
+   - **Maps JavaScript API**
+   - **Places API (New)** / Places-related products as shown in the console for your billing account  
+   New Google Cloud customers may **not** have access to legacy `PlacesService` without migration — the web component path avoids that.
+4. **Billing** must be enabled for production use
+5. **Credentials** → API key:
+   - **Application restrictions**: HTTP referrers — include production domain, `localhost`, and test hostnames (e.g. `test.lilmagnetmemories.com`)
+   - **API restrictions**: Restrict to the Maps/Places APIs you enabled above
+6. Copy the key into `.env` and redeploy the SPA
 
 ### API Key Security
 
@@ -118,21 +99,17 @@ A "session" starts when the user begins typing and ends when they select a place
 
 ## Future Enhancements
 
-Potential future improvements:
-- Store coordinates in Firebase for map display
-- Add map preview when creating events
-- Use coordinates for distance calculations
-- Add geocoding for existing events without coordinates
-- Display event locations on an interactive map
+- Migrate other pages still on `AddressAutocomplete.vue` (legacy) to this component or programmatic Places (New) APIs
+- Optional static map preview on the event card
 
 ## Troubleshooting
 
 ### Common Issues
 
 **"Google Maps JavaScript API not loaded"**
-- Check that `VITE_GOOGLE_PLACES_API_KEY` is set in `.env`
+- Check that `VITE_GOOGLE_PLACES_API_KEY` or `VITE_GOOGLE_PLACES_API_KEY_TEST` is set in `.env`
 - Verify the API key is valid
-- Ensure Places API and Maps JavaScript API are enabled in Google Cloud Console
+- Ensure the correct Places (New) + Maps JavaScript APIs are enabled for the project
 
 **Autocomplete dropdown not appearing**
 - Check browser console for errors
@@ -154,6 +131,7 @@ Enable detailed logging by checking the browser console. The component logs:
 
 ## Additional Resources
 
-- [Google Places Autocomplete Documentation](https://developers.google.com/maps/documentation/javascript/place-autocomplete)
+- [Places migration overview (JavaScript)](https://developers.google.com/maps/documentation/javascript/places-migration-overview)
+- [Legacy vs new Places](https://developers.google.com/maps/legacy)
 - [Google Places API Pricing](https://developers.google.com/maps/billing/gmp-billing#places-product)
 - [API Key Best Practices](https://developers.google.com/maps/api-security-best-practices)

@@ -96,6 +96,34 @@
                           class="q-mr-xs"
                         />
                         <span class="text-body2">{{ event.location }}</span>
+                        <q-chip
+                          v-if="eventHasCoordinates(event)"
+                          dense
+                          color="positive"
+                          text-color="white"
+                          size="sm"
+                          icon="pin_drop"
+                          class="q-ml-sm"
+                        >
+                          Pin set
+                        </q-chip>
+                        <q-chip
+                          v-else
+                          dense
+                          color="warning"
+                          text-color="black"
+                          size="sm"
+                          icon="location_off"
+                          class="q-ml-sm"
+                        >
+                          No map pin — “at event” distance won’t work
+                        </q-chip>
+                        <div
+                          v-if="eventHasCoordinates(event)"
+                          class="text-caption text-grey-6 q-mt-xs q-pl-sm"
+                        >
+                          {{ formatCoordPair(event.coordinates) }}
+                        </div>
                       </div>
                       <div v-if="event.eventLink" class="col-12">
                         <q-icon
@@ -288,13 +316,77 @@
               filled
             />
 
-            <AddressAutocomplete
+            <GooglePlacesAutocomplete
               v-model="newEvent.location"
               label="Location/Address"
+              :types="marketEventPlaceTypes"
               :rules="[(val) => !!val || 'Location is required']"
-              hint="Start typing an address..."
+              hint="Search for a venue or address — pick a suggestion for an accurate map pin"
               filled
+              @place-selected="onCreatePlaceSelected"
+              @update:model-value="onCreateLocationInput"
             />
+
+            <div class="q-mt-sm q-mb-xs">
+              <q-chip
+                v-if="createDialogPinReady"
+                dense
+                color="positive"
+                text-color="white"
+                size="sm"
+                icon="pin_drop"
+              >
+                Map pin ready
+              </q-chip>
+              <q-chip
+                v-else
+                dense
+                color="warning"
+                text-color="black"
+                size="sm"
+                icon="warning"
+              >
+                No map pin yet — required to save
+              </q-chip>
+            </div>
+            <div class="row q-gutter-sm q-mb-md">
+              <q-btn
+                outline
+                color="primary"
+                dense
+                icon="my_location"
+                label="Use my location"
+                :loading="loadingCreateLocation"
+                @click="useMyLocationForCreate"
+              />
+              <q-btn
+                flat
+                dense
+                color="grey-8"
+                :label="createShowManualCoords ? 'Hide manual coordinates' : 'Enter coordinates manually'"
+                @click="createShowManualCoords = !createShowManualCoords"
+              />
+            </div>
+            <div v-show="createShowManualCoords" class="row q-gutter-md q-mb-md">
+              <div class="col">
+                <q-input
+                  v-model="createManualLat"
+                  label="Latitude"
+                  hint="-90 to 90"
+                  filled
+                  dense
+                />
+              </div>
+              <div class="col">
+                <q-input
+                  v-model="createManualLng"
+                  label="Longitude"
+                  hint="-180 to 180"
+                  filled
+                  dense
+                />
+              </div>
+            </div>
 
             <div class="row q-gutter-md">
               <div class="col">
@@ -362,13 +454,87 @@
               filled
             />
 
-            <AddressAutocomplete
+            <GooglePlacesAutocomplete
               v-model="editingEvent.location"
               label="Location/Address"
+              :types="marketEventPlaceTypes"
               :rules="[(val) => !!val || 'Location is required']"
-              hint="Start typing an address..."
+              hint="Search for a venue or address — pick a suggestion to update the pin"
               filled
+              @place-selected="onEditPlaceSelected"
+              @update:model-value="onEditLocationInput"
             />
+
+            <div class="q-mt-sm q-mb-xs">
+              <q-chip
+                v-if="editDialogPinReady"
+                dense
+                color="positive"
+                text-color="white"
+                size="sm"
+                icon="pin_drop"
+              >
+                Map pin ready
+              </q-chip>
+              <q-chip
+                v-else-if="editLocationUnchanged"
+                dense
+                color="info"
+                text-color="white"
+                size="sm"
+                icon="info"
+              >
+                Address unchanged — existing pin will be kept
+              </q-chip>
+              <q-chip
+                v-else
+                dense
+                color="warning"
+                text-color="black"
+                size="sm"
+                icon="warning"
+              >
+                Address changed — set a new pin (pick place, GPS, or manual)
+              </q-chip>
+            </div>
+            <div class="row q-gutter-sm q-mb-md">
+              <q-btn
+                outline
+                color="primary"
+                dense
+                icon="my_location"
+                label="Use my location"
+                :loading="loadingEditLocation"
+                @click="useMyLocationForEdit"
+              />
+              <q-btn
+                flat
+                dense
+                color="grey-8"
+                :label="editShowManualCoords ? 'Hide manual coordinates' : 'Enter coordinates manually'"
+                @click="editShowManualCoords = !editShowManualCoords"
+              />
+            </div>
+            <div v-show="editShowManualCoords" class="row q-gutter-md q-mb-md">
+              <div class="col">
+                <q-input
+                  v-model="editManualLat"
+                  label="Latitude"
+                  hint="-90 to 90"
+                  filled
+                  dense
+                />
+              </div>
+              <div class="col">
+                <q-input
+                  v-model="editManualLng"
+                  label="Longitude"
+                  hint="-180 to 180"
+                  filled
+                  dense
+                />
+              </div>
+            </div>
 
             <div class="row q-gutter-md">
               <div class="col">
@@ -458,13 +624,13 @@ import { marketEventService } from '../services/marketEventService.js';
 import { authService } from '../services/authService';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
-import AddressAutocomplete from '../components/AddressAutocomplete.vue';
-import { geocodeAddress } from '../utils/geolocation.js';
+import GooglePlacesAutocomplete from '../components/GooglePlacesAutocomplete.vue';
+import { getUserLocation } from '../utils/geolocation.js';
 
 export default {
   name: 'MarketEventsPage',
   components: {
-    AddressAutocomplete,
+    GooglePlacesAutocomplete,
   },
   setup() {
     useMeta({
@@ -547,6 +713,260 @@ export default {
 
     // New event form
     const newEvent = ref(initializeNewEvent());
+
+    const marketEventPlaceTypes = ['establishment', 'geocode'];
+
+    const parseManualCoords = (latStr, lngStr) => {
+      const lat = parseFloat(String(latStr ?? '').trim());
+      const lng = parseFloat(String(lngStr ?? '').trim());
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+      if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+      return { lat, lng };
+    };
+
+    const normalizeEventCoordinates = (event) => {
+      const c = event?.coordinates;
+      if (!c) return null;
+      const lat =
+        c.lat != null
+          ? Number(c.lat)
+          : c.latitude != null
+            ? Number(c.latitude)
+            : NaN;
+      const lng =
+        c.lng != null
+          ? Number(c.lng)
+          : c.longitude != null
+            ? Number(c.longitude)
+            : NaN;
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+      return { lat, lng };
+    };
+
+    const eventHasCoordinates = (event) =>
+      normalizeEventCoordinates(event) != null;
+
+    const formatCoordPair = (coords) => {
+      if (!coords) return '';
+      const lat = coords.lat != null ? coords.lat : coords.latitude;
+      const lng = coords.lng != null ? coords.lng : coords.longitude;
+      if (lat == null || lng == null) return '';
+      return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+    };
+
+    const createPendingCoords = ref(null);
+    const createManualLat = ref('');
+    const createManualLng = ref('');
+    const createAnchorAddress = ref('');
+    const createCoordsSource = ref(null);
+    const createShowManualCoords = ref(false);
+    const loadingCreateLocation = ref(false);
+
+    const editPendingCoords = ref(null);
+    const editManualLat = ref('');
+    const editManualLng = ref('');
+    const editOriginalLocation = ref('');
+    const editAnchorAddress = ref('');
+    const editCoordsSource = ref(null);
+    const editShowManualCoords = ref(false);
+    const loadingEditLocation = ref(false);
+
+    const resetCreateCoordinateState = () => {
+      createPendingCoords.value = null;
+      createManualLat.value = '';
+      createManualLng.value = '';
+      createAnchorAddress.value = '';
+      createCoordsSource.value = null;
+      createShowManualCoords.value = false;
+    };
+
+    const resetEditCoordinateState = () => {
+      editPendingCoords.value = null;
+      editManualLat.value = '';
+      editManualLng.value = '';
+      editOriginalLocation.value = '';
+      editAnchorAddress.value = '';
+      editCoordsSource.value = null;
+      editShowManualCoords.value = false;
+    };
+
+    const onCreatePlaceSelected = (placeData) => {
+      if (
+        placeData?.coordinates != null &&
+        placeData.coordinates.lat != null &&
+        placeData.coordinates.lng != null
+      ) {
+        createPendingCoords.value = {
+          lat: Number(placeData.coordinates.lat),
+          lng: Number(placeData.coordinates.lng),
+        };
+        createAnchorAddress.value =
+          placeData.formattedAddress ||
+          placeData.formatted_address ||
+          newEvent.value.location ||
+          '';
+        createCoordsSource.value = 'place';
+      } else {
+        createPendingCoords.value = null;
+        createCoordsSource.value = null;
+        createAnchorAddress.value = '';
+      }
+    };
+
+    const onCreateLocationInput = (val) => {
+      if (
+        createCoordsSource.value === 'place' &&
+        createAnchorAddress.value &&
+        val !== createAnchorAddress.value
+      ) {
+        createPendingCoords.value = null;
+        createCoordsSource.value = null;
+        createAnchorAddress.value = '';
+      }
+    };
+
+    const onEditPlaceSelected = (placeData) => {
+      if (
+        placeData?.coordinates != null &&
+        placeData.coordinates.lat != null &&
+        placeData.coordinates.lng != null
+      ) {
+        editPendingCoords.value = {
+          lat: Number(placeData.coordinates.lat),
+          lng: Number(placeData.coordinates.lng),
+        };
+        editAnchorAddress.value =
+          placeData.formattedAddress ||
+          placeData.formatted_address ||
+          editingEvent.value?.location ||
+          '';
+        editCoordsSource.value = 'place';
+      } else {
+        editPendingCoords.value = null;
+        editCoordsSource.value = null;
+        editAnchorAddress.value = '';
+      }
+    };
+
+    const onEditLocationInput = (val) => {
+      if (
+        editCoordsSource.value === 'place' &&
+        editAnchorAddress.value &&
+        val !== editAnchorAddress.value
+      ) {
+        editPendingCoords.value = null;
+        editCoordsSource.value = null;
+        editAnchorAddress.value = '';
+      }
+    };
+
+    const useMyLocationForCreate = async () => {
+      loadingCreateLocation.value = true;
+      try {
+        const loc = await getUserLocation();
+        createPendingCoords.value = { lat: loc.lat, lng: loc.lng };
+        createCoordsSource.value = 'gps';
+        createAnchorAddress.value = '';
+        $q.notify({
+          type: 'positive',
+          message: 'Location captured',
+          caption: `${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`,
+          position: 'top',
+        });
+      } catch (e) {
+        console.error(e);
+        $q.notify({
+          type: 'negative',
+          message: 'Could not get your location',
+          caption: e.message || 'Allow location permission and try again',
+          position: 'top',
+        });
+      } finally {
+        loadingCreateLocation.value = false;
+      }
+    };
+
+    const useMyLocationForEdit = async () => {
+      loadingEditLocation.value = true;
+      try {
+        const loc = await getUserLocation();
+        editPendingCoords.value = { lat: loc.lat, lng: loc.lng };
+        editCoordsSource.value = 'gps';
+        editAnchorAddress.value = '';
+        $q.notify({
+          type: 'positive',
+          message: 'Location captured',
+          caption: `${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`,
+          position: 'top',
+        });
+      } catch (e) {
+        console.error(e);
+        $q.notify({
+          type: 'negative',
+          message: 'Could not get your location',
+          caption: e.message || 'Allow location permission and try again',
+          position: 'top',
+        });
+      } finally {
+        loadingEditLocation.value = false;
+      }
+    };
+
+    const createDialogPinReady = computed(() => {
+      if (parseManualCoords(createManualLat.value, createManualLng.value)) {
+        return true;
+      }
+      if (
+        createPendingCoords.value != null &&
+        !Number.isNaN(Number(createPendingCoords.value.lat)) &&
+        !Number.isNaN(Number(createPendingCoords.value.lng))
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    const editLocationUnchanged = computed(() => {
+      if (!editingEvent.value) return false;
+      return editingEvent.value.location === editOriginalLocation.value;
+    });
+
+    const editManualOk = computed(
+      () =>
+        parseManualCoords(editManualLat.value, editManualLng.value) != null
+    );
+
+    const editDialogPinReady = computed(() => {
+      if (editManualOk.value) return true;
+      if (
+        editPendingCoords.value != null &&
+        !Number.isNaN(Number(editPendingCoords.value.lat)) &&
+        !Number.isNaN(Number(editPendingCoords.value.lng))
+      ) {
+        return true;
+      }
+      if (editLocationUnchanged.value) return true;
+      return false;
+    });
+
+    const resolveCoordinatesForCreate = () => {
+      const manual = parseManualCoords(
+        createManualLat.value,
+        createManualLng.value
+      );
+      if (manual) return manual;
+      if (
+        createPendingCoords.value &&
+        !Number.isNaN(Number(createPendingCoords.value.lat)) &&
+        !Number.isNaN(Number(createPendingCoords.value.lng))
+      ) {
+        return {
+          lat: Number(createPendingCoords.value.lat),
+          lng: Number(createPendingCoords.value.lng),
+        };
+      }
+      return null;
+    };
 
     // Format date and time for display
     const formatDateTime = (dateTimeString) => {
@@ -838,22 +1258,26 @@ export default {
 
       creatingEvent.value = true;
       try {
-        // Geocode the address to get coordinates
-        let coordinates = null;
-        try {
-          console.log('[Geocoding] Attempting to geocode address:', newEvent.value.location);
-          coordinates = await geocodeAddress(newEvent.value.location);
-          console.log('[Geocoding] Success! Coordinates:', coordinates);
-        } catch (geocodeError) {
-          console.warn('[Geocoding] Failed to geocode address:', geocodeError.message);
-          // Continue without coordinates - not a critical error
+        const coordinates = resolveCoordinatesForCreate();
+        if (!coordinates) {
+          try {
+            $q.notify({
+              type: 'warning',
+              message: 'Map pin required',
+              caption:
+                'Pick a place from suggestions, use “Use my location”, or enter latitude/longitude.',
+              position: 'top',
+            });
+          } catch (notifyErr) {
+            console.error('Notification error:', notifyErr);
+          }
+          return;
         }
 
-        // Create event in Firebase
         const eventData = {
           name: newEvent.value.name,
           location: newEvent.value.location,
-          coordinates: coordinates, // Add coordinates if geocoding succeeded
+          coordinates,
           startDateTime: newEvent.value.startDateTime,
           endDateTime: newEvent.value.endDateTime,
           eventLink: newEvent.value.eventLink || null,
@@ -900,6 +1324,7 @@ export default {
     // Open create event dialog with fresh defaults
     const openCreateEventDialog = () => {
       newEvent.value = initializeNewEvent();
+      resetCreateCoordinateState();
       showCreateEventDialog.value = true;
     };
 
@@ -907,10 +1332,12 @@ export default {
     const cancelCreateEvent = () => {
       showCreateEventDialog.value = false;
       newEvent.value = initializeNewEvent();
+      resetCreateCoordinateState();
     };
 
     // Open edit event dialog
     const openEditEventDialog = (event) => {
+      resetEditCoordinateState();
       editingEvent.value = {
         id: event.id,
         name: event.name,
@@ -920,6 +1347,7 @@ export default {
         eventLink: event.eventLink || '',
         isTesting: event.isTesting || false,
       };
+      editOriginalLocation.value = event.location || '';
       showEditEventDialog.value = true;
     };
 
@@ -927,6 +1355,7 @@ export default {
     const cancelEditEvent = () => {
       showEditEventDialog.value = false;
       editingEvent.value = null;
+      resetEditCoordinateState();
     };
 
     // Update event
@@ -968,27 +1397,53 @@ export default {
 
       creatingEvent.value = true;
       try {
-        // Geocode the address to get coordinates (if location changed)
-        let coordinates = null;
-        try {
-          console.log('[Geocoding] Attempting to geocode address:', editingEvent.value.location);
-          coordinates = await geocodeAddress(editingEvent.value.location);
-          console.log('[Geocoding] Success! Coordinates:', coordinates);
-        } catch (geocodeError) {
-          console.warn('[Geocoding] Failed to geocode address:', geocodeError.message);
-          // Continue without coordinates - not a critical error
+        const manual = parseManualCoords(
+          editManualLat.value,
+          editManualLng.value
+        );
+        const locationUnchanged =
+          editingEvent.value.location === editOriginalLocation.value;
+
+        let coordinatesPayload;
+        if (manual) {
+          coordinatesPayload = manual;
+        } else if (
+          editPendingCoords.value &&
+          !Number.isNaN(Number(editPendingCoords.value.lat)) &&
+          !Number.isNaN(Number(editPendingCoords.value.lng))
+        ) {
+          coordinatesPayload = {
+            lat: Number(editPendingCoords.value.lat),
+            lng: Number(editPendingCoords.value.lng),
+          };
+        } else if (locationUnchanged) {
+          coordinatesPayload = undefined;
+        } else {
+          try {
+            $q.notify({
+              type: 'negative',
+              message: 'Set a map pin for the new address',
+              caption:
+                'Pick a place from the list, use GPS, or enter coordinates manually.',
+              position: 'top',
+            });
+          } catch (notifyErr) {
+            console.error('Notification error:', notifyErr);
+          }
+          return;
         }
 
-        // Update event in Firebase
         const eventData = {
           name: editingEvent.value.name,
           location: editingEvent.value.location,
-          coordinates: coordinates, // Add/update coordinates if geocoding succeeded
           startDateTime: editingEvent.value.startDateTime,
           endDateTime: editingEvent.value.endDateTime,
           eventLink: editingEvent.value.eventLink || null,
           isTesting: editingEvent.value.isTesting || false,
         };
+        if (coordinatesPayload !== undefined) {
+          eventData.coordinates = coordinatesPayload;
+        }
 
         console.log('[Event Update] Event data to save:', JSON.stringify(eventData, null, 2));
 
@@ -1235,6 +1690,27 @@ export default {
       undoCheckOut,
       confirmDeleteEvent,
       deleteEvent,
+
+      marketEventPlaceTypes,
+      eventHasCoordinates,
+      formatCoordPair,
+      createDialogPinReady,
+      editDialogPinReady,
+      editLocationUnchanged,
+      createShowManualCoords,
+      editShowManualCoords,
+      createManualLat,
+      createManualLng,
+      editManualLat,
+      editManualLng,
+      loadingCreateLocation,
+      loadingEditLocation,
+      onCreatePlaceSelected,
+      onCreateLocationInput,
+      onEditPlaceSelected,
+      onEditLocationInput,
+      useMyLocationForCreate,
+      useMyLocationForEdit,
     };
   },
 };

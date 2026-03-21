@@ -47,7 +47,8 @@ const props = defineProps({
   },
   types: {
     type: Array,
-    default: () => ['address'], // Can be 'address', 'establishment', 'geocode', etc.
+    // establishment + geocode helps venues (breweries, etc.) and street addresses
+    default: () => ['establishment', 'geocode'],
   },
 });
 
@@ -313,13 +314,25 @@ const loadGoogleMapsScript = () => {
     }
 
     // Load the script with the new loading parameter for web components
-    const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+    const apiKey =
+      import.meta.env.VITE_GOOGLE_PLACES_API_KEY_TEST ||
+      import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
-      reject(new Error('VITE_GOOGLE_PLACES_API_KEY not found in environment variables'));
+      reject(
+        new Error(
+          'Set VITE_GOOGLE_PLACES_API_KEY_TEST or VITE_GOOGLE_PLACES_API_KEY'
+        )
+      );
       return;
     }
 
-    console.log('📍 [GooglePlacesAutocomplete] Creating new script tag...');
+    console.log(
+      '📍 [GooglePlacesAutocomplete] Creating new script tag (key from',
+      import.meta.env.VITE_GOOGLE_PLACES_API_KEY_TEST
+        ? 'VITE_GOOGLE_PLACES_API_KEY_TEST'
+        : 'VITE_GOOGLE_PLACES_API_KEY',
+      ')...'
+    );
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
     script.async = true;
@@ -356,7 +369,13 @@ const loadGoogleMapsScript = () => {
 onMounted(async () => {
   loading.value = true;
   console.log('📍 [GooglePlacesAutocomplete] Component mounted');
-  console.log('📍 [GooglePlacesAutocomplete] API Key present:', !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY);
+  console.log(
+    '📍 [GooglePlacesAutocomplete] API Key present:',
+    !!(
+      import.meta.env.VITE_GOOGLE_PLACES_API_KEY_TEST ||
+      import.meta.env.VITE_GOOGLE_PLACES_API_KEY
+    )
+  );
   
   try {
     console.log('📍 [GooglePlacesAutocomplete] Loading Google Maps script...');
