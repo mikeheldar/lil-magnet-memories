@@ -226,8 +226,8 @@
             <div class="print-page">
               <div class="print-grid">
                 <div
-                  v-for="(photo, gridIndex) in 6"
-                  :key="`${pageIndex}-${gridIndex}`"
+                  v-for="(photo, gridIndex) in page"
+                  :key="`${pageIndex}-${gridIndex}-${getPhotoKey(photo)}`"
                   class="print-square-container"
                 >
               <!-- Outer cutting square template -->
@@ -252,11 +252,19 @@
                 />
               </svg>
 
-              <!-- Corner triangles for cutting alignment -->
-              <div class="corner-triangle corner-triangle-top-left"></div>
-              <div class="corner-triangle corner-triangle-top-right"></div>
-              <div class="corner-triangle corner-triangle-bottom-left"></div>
-              <div class="corner-triangle corner-triangle-bottom-right"></div>
+              <!-- Corner triangles: white fill + black outline (saves ink vs solid fill) -->
+              <svg class="corner-triangle-svg corner-triangle-svg--tl" viewBox="0 0 100 100" aria-hidden="true">
+                <polygon points="0,0 100,0 0,100" fill="#ffffff" stroke="#333333" stroke-width="4" stroke-linejoin="miter" vector-effect="non-scaling-stroke" />
+              </svg>
+              <svg class="corner-triangle-svg corner-triangle-svg--tr" viewBox="0 0 100 100" aria-hidden="true">
+                <polygon points="100,0 0,0 100,100" fill="#ffffff" stroke="#333333" stroke-width="4" stroke-linejoin="miter" vector-effect="non-scaling-stroke" />
+              </svg>
+              <svg class="corner-triangle-svg corner-triangle-svg--bl" viewBox="0 0 100 100" aria-hidden="true">
+                <polygon points="0,100 0,0 100,100" fill="#ffffff" stroke="#333333" stroke-width="4" stroke-linejoin="miter" vector-effect="non-scaling-stroke" />
+              </svg>
+              <svg class="corner-triangle-svg corner-triangle-svg--br" viewBox="0 0 100 100" aria-hidden="true">
+                <polygon points="100,100 0,100 100,0" fill="#ffffff" stroke="#333333" stroke-width="4" stroke-linejoin="miter" vector-effect="non-scaling-stroke" />
+              </svg>
 
               <!-- Border text labels -->
               <div class="border-text border-text-top">Li'l Magnet Memories</div>
@@ -268,7 +276,7 @@
               <div
                 class="print-square"
                 :class="{
-                  'selected-photo': isPhotoSelected(page[gridIndex]),
+                  'selected-photo': isPhotoSelected(photo),
                   'test-environment': isTestEnvironment
                 }"
               >
@@ -318,21 +326,20 @@
                   />
                 </svg>
                 <div
-                  v-if="page[gridIndex]"
                   class="image-wrapper"
-                  :style="getImageStyle(page[gridIndex])"
-                  @mousedown="startDrag($event, page[gridIndex])"
-                  @touchstart="startDrag($event, page[gridIndex])"
-                  @wheel.prevent="handleWheel($event, page[gridIndex])"
-                  @click.stop="selectPhoto(page[gridIndex])"
+                  :style="getImageStyle(photo)"
+                  @mousedown="startDrag($event, photo)"
+                  @touchstart="startDrag($event, photo)"
+                  @wheel.prevent="handleWheel($event, photo)"
+                  @click.stop="selectPhoto(photo)"
                 >
                   <img
-                    :src="getImageSource(page[gridIndex])"
-                    :alt="page[gridIndex].name || `Photo ${gridIndex + 1}`"
+                    :src="getImageSource(photo)"
+                    :alt="photo.name || `Photo ${gridIndex + 1}`"
                     class="print-image"
                     draggable="false"
-                    @load="handleImageLoad($event, page[gridIndex])"
-                    @error="handleImageError($event, page[gridIndex])"
+                    @load="handleImageLoad($event, photo)"
+                    @error="handleImageError($event, photo)"
                   />
                 </div>
                 <div
@@ -1228,18 +1235,13 @@ export default {
       }
     };
 
-    // Organize photos into pages (6 per page)
+    // Organize photos into pages (max 6 per sheet); no null padding — only real photos render
     const pages = computed(() => {
       const pagesArray = [];
       const photosPerPage = 6;
 
       for (let i = 0; i < photos.value.length; i += photosPerPage) {
-        const pagePhotos = photos.value.slice(i, i + photosPerPage);
-        // Pad with nulls if less than 6 photos
-        while (pagePhotos.length < photosPerPage) {
-          pagePhotos.push(null);
-        }
-        pagesArray.push(pagePhotos);
+        pagesArray.push(photos.value.slice(i, i + photosPerPage));
       }
 
       return pagesArray;
@@ -1331,6 +1333,7 @@ export default {
       sectionBorderOpen,
       printToolsSpacerRef,
       printToolsPanelRef,
+      getPhotoKey,
     };
   },
 };
@@ -1466,7 +1469,7 @@ export default {
   .print-grid {
     display: grid !important;
     grid-template-columns: repeat(2, var(--outer-square-size)) !important;
-    grid-template-rows: repeat(3, var(--outer-square-size)) !important;
+    grid-auto-rows: var(--outer-square-size) !important;
     gap: var(--grid-gap) !important;
     justify-content: center !important;
     align-content: start !important;
@@ -1530,49 +1533,34 @@ export default {
     margin: 0 !important;
   }
 
-  /* Corner triangles for cutting alignment */
-  .corner-triangle {
+  /* Corner triangles: SVG white fill + black stroke (saves ink) */
+  .corner-triangle-svg {
     position: absolute !important;
-    width: 0 !important;
-    height: 0 !important;
+    width: var(--triangle-size) !important;
+    height: var(--triangle-size) !important;
     pointer-events: none !important;
     z-index: 3 !important;
+    overflow: visible !important;
   }
 
-  .corner-triangle-top-left {
+  .corner-triangle-svg--tl {
     top: 0 !important;
     left: 0 !important;
-    border-top: var(--triangle-size) solid #333 !important;
-    border-left: var(--triangle-size) solid #333 !important;
-    border-right: var(--triangle-size) solid transparent !important;
-    border-bottom: var(--triangle-size) solid transparent !important;
   }
 
-  .corner-triangle-top-right {
+  .corner-triangle-svg--tr {
     top: 0 !important;
     right: 0 !important;
-    border-top: var(--triangle-size) solid #333 !important;
-    border-right: var(--triangle-size) solid #333 !important;
-    border-left: var(--triangle-size) solid transparent !important;
-    border-bottom: var(--triangle-size) solid transparent !important;
   }
 
-  .corner-triangle-bottom-left {
+  .corner-triangle-svg--bl {
     bottom: 0 !important;
     left: 0 !important;
-    border-bottom: var(--triangle-size) solid #333 !important;
-    border-left: var(--triangle-size) solid #333 !important;
-    border-right: var(--triangle-size) solid transparent !important;
-    border-top: var(--triangle-size) solid transparent !important;
   }
 
-  .corner-triangle-bottom-right {
+  .corner-triangle-svg--br {
     bottom: 0 !important;
     right: 0 !important;
-    border-bottom: var(--triangle-size) solid #333 !important;
-    border-right: var(--triangle-size) solid #333 !important;
-    border-left: var(--triangle-size) solid transparent !important;
-    border-top: var(--triangle-size) solid transparent !important;
   }
 
   /* Border text labels */
@@ -1737,9 +1725,10 @@ export default {
   .print-grid {
     display: grid;
     grid-template-columns: repeat(2, var(--outer-square-size));
-    grid-template-rows: repeat(3, var(--outer-square-size));
+    grid-auto-rows: var(--outer-square-size);
     gap: var(--grid-gap);
     justify-content: center;
+    align-content: start;
     flex: 0 0 auto;
     min-height: 0;
     margin-bottom: 0;
@@ -1800,49 +1789,33 @@ export default {
     margin: 0;
   }
 
-  /* Corner triangles for cutting alignment - upper corners */
-  .corner-triangle {
+  .corner-triangle-svg {
     position: absolute;
-    width: 0;
-    height: 0;
+    width: var(--triangle-size);
+    height: var(--triangle-size);
     pointer-events: none;
     z-index: 3;
+    overflow: visible;
   }
 
-  .corner-triangle-top-left {
+  .corner-triangle-svg--tl {
     top: 0;
     left: 0;
-    border-top: var(--triangle-size) solid #333;
-    border-left: var(--triangle-size) solid #333;
-    border-right: var(--triangle-size) solid transparent;
-    border-bottom: var(--triangle-size) solid transparent;
   }
 
-  .corner-triangle-top-right {
+  .corner-triangle-svg--tr {
     top: 0;
     right: 0;
-    border-top: var(--triangle-size) solid #333;
-    border-right: var(--triangle-size) solid #333;
-    border-left: var(--triangle-size) solid transparent;
-    border-bottom: var(--triangle-size) solid transparent;
   }
 
-  .corner-triangle-bottom-left {
+  .corner-triangle-svg--bl {
     bottom: 0;
     left: 0;
-    border-bottom: var(--triangle-size) solid #333;
-    border-left: var(--triangle-size) solid #333;
-    border-right: var(--triangle-size) solid transparent;
-    border-top: var(--triangle-size) solid transparent;
   }
 
-  .corner-triangle-bottom-right {
+  .corner-triangle-svg--br {
     bottom: 0;
     right: 0;
-    border-bottom: var(--triangle-size) solid #333;
-    border-right: var(--triangle-size) solid #333;
-    border-left: var(--triangle-size) solid transparent;
-    border-top: var(--triangle-size) solid transparent;
   }
 
   /* Border text labels */
