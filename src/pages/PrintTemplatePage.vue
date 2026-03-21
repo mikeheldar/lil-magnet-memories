@@ -341,7 +341,7 @@
                 <div
                   v-if="selectedBorderFrame"
                   class="border-frame-overlay"
-                  :style="{ backgroundImage: `url(/custom-border-frames/${selectedBorderFrame})` }"
+                  :style="{ backgroundImage: `url(\"${borderFrameAssetUrl(selectedBorderFrame)}\")` }"
                 />
               </div>
             </div>
@@ -371,7 +371,7 @@
               @click="selectBorderFrame(filename)"
             >
               <img
-                :src="`/custom-border-frames/${filename}`"
+                :src="borderFrameAssetUrl(filename)"
                 :alt="filename"
                 class="border-frame-thumb"
               />
@@ -444,6 +444,8 @@ export default {
     // Custom border frame: selected filename (null = no frame)
     const selectedBorderFrame = ref(null);
     const borderFrameList = ref([]);
+    /** Bumped in list.json when replacing PNGs under the same filename (cache bust). */
+    const borderFrameAssetsVersion = ref('');
     const showBorderFrameDialog = ref(false);
 
     // Collapsible toolbar sections (Color default collapsed)
@@ -506,16 +508,43 @@ export default {
     // Load list of border frame filenames from manifest
     const loadBorderFrameList = async () => {
       try {
-        const res = await fetch('/custom-border-frames/list.json');
+        const res = await fetch('/custom-border-frames/list.json', {
+          cache: 'no-store',
+        });
         if (!res.ok) {
           borderFrameList.value = [];
+          borderFrameAssetsVersion.value = '';
           return;
         }
         const list = await res.json();
-        borderFrameList.value = Array.isArray(list) ? list : [];
+        let frames = [];
+        let version = '';
+        if (Array.isArray(list)) {
+          frames = list;
+        } else if (list && typeof list === 'object') {
+          frames = Array.isArray(list.frames)
+            ? list.frames
+            : Array.isArray(list.files)
+              ? list.files
+              : [];
+          const raw =
+            list.v ?? list.version ?? list.cacheBust ?? list.cacheVersion;
+          version = raw != null && raw !== '' ? String(raw) : '';
+        }
+        borderFrameList.value = frames;
+        borderFrameAssetsVersion.value = version;
       } catch (e) {
         borderFrameList.value = [];
+        borderFrameAssetsVersion.value = '';
       }
+    };
+
+    /** Public URL for a frame PNG; query v busts CDN/browser cache when file path unchanged. */
+    const borderFrameAssetUrl = (filename) => {
+      if (!filename) return '';
+      const base = `/custom-border-frames/${encodeURIComponent(filename)}`;
+      const v = borderFrameAssetsVersion.value;
+      return v ? `${base}?v=${encodeURIComponent(v)}` : base;
     };
 
     const openBorderFrameDialog = async () => {
@@ -1250,6 +1279,7 @@ export default {
 
     onMounted(() => {
       parseOrderData();
+      loadBorderFrameList();
       nextTick(() => {
         requestAnimationFrame(() => {
           updatePrintToolsFixedPosition();
@@ -1320,6 +1350,7 @@ export default {
       // Custom border frame
       selectedBorderFrame,
       borderFrameList,
+      borderFrameAssetUrl,
       showBorderFrameDialog,
       openBorderFrameDialog,
       selectBorderFrame,
