@@ -8,7 +8,7 @@ Coordinates from the selected place are saved on the `marketEvents` document as 
 
 ## Features
 
-- **Auto-complete**: `gmp-place-autocomplete` suggestions (establishments and geocodes)
+- **Auto-complete**: `gmp-place-autocomplete` (new widget). Default type filter `establishment` + `geocode` is expressed by **not** setting `includedPrimaryTypes` (so both venues and addresses can appear). Do **not** use the legacy `types` HTML attribute — it throws on the new API.
 - **Map pin from Google**: Selecting a suggestion sets accurate coordinates (no Nominatim on this flow)
 - **Fallbacks**: Browser geolocation and manual latitude/longitude on create/edit
 - **Event list**: Each card shows **Pin set** vs **No map pin** for “at event” distance behavior
@@ -38,7 +38,7 @@ Coordinates from the selected place are saved on the `marketEvents` document as 
 - `label`: Input field label
 - `rules`: Validation rules
 - `hint`: Helper text
-- `types`: Place types (default: `['establishment', 'geocode']` for venues + addresses). Market Events passes the same via `marketEventPlaceTypes`.
+- `types`: Intended primary types for the new widget. If the list includes legacy `geocode`, the component **omits** `includedPrimaryTypes` so predictions are not over-restricted. Otherwise up to 5 strings are passed as `includedPrimaryTypes` on the element. Market Events uses `marketEventPlaceTypes = ['establishment', 'geocode']` → no `includedPrimaryTypes` (all types, biased by IP/region).
 
 **Events:**
 - `update:modelValue`: Emitted when address changes

@@ -75,9 +75,82 @@ watch(() => props.modelValue, (newVal) => {
   }
 });
 
+/** Resolve DOM node for gmp-place-autocomplete (Vue ref quirks). */
+function resolveAutocompleteEl() {
+  const v = autocompleteRef.value;
+  if (!v) return null;
+  if (v instanceof HTMLElement) return v;
+  if (v.$el instanceof HTMLElement) return v.$el;
+  return v;
+}
+
+function findInnerInput(host) {
+  if (!host) return null;
+  let input = host.querySelector?.('input');
+  if (input) return input;
+  if (host.shadowRoot) {
+    input = host.shadowRoot.querySelector('input');
+    if (input) return input;
+  }
+  return null;
+}
+
+/** Wait until gmp-place-autocomplete exposes its internal input (shadow DOM). */
+function waitForInnerInput(host, { timeoutMs = 3000, intervalMs = 50 } = {}) {
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const tick = () => {
+      const input = findInnerInput(host);
+      if (input) {
+        resolve(input);
+        return;
+      }
+      if (Date.now() - started >= timeoutMs) {
+        resolve(null);
+        return;
+      }
+      requestAnimationFrame(() => setTimeout(tick, intervalMs));
+    };
+    tick();
+  });
+}
+
+/** Legacy Autocomplete used (establishment|geocode). New widget uses includedPrimaryTypes; omit when "mixed". */
+function toIncludedPrimaryTypes(types) {
+  if (!types?.length) return null;
+  // Legacy "geocode" isn't a new primary type; omit filter so addresses + venues can both appear.
+  if (types.includes('geocode')) return null;
+  const mapped = types.filter((t) => t && t !== 'geocode').slice(0, 5);
+  return mapped.length ? mapped : null;
+}
+
+function coordsFromLocation(loc) {
+  if (!loc) return null;
+  if (typeof loc.lat === 'function' && typeof loc.lng === 'function') {
+    return { lat: loc.lat(), lng: loc.lng() };
+  }
+  const lat = loc.lat;
+  const lng = loc.lng;
+  if (typeof lat === 'number' && typeof lng === 'number') {
+    return { lat, lng };
+  }
+  return null;
+}
+
+/** Resolve Place from gmp-select (new) or gmp-placeselect (legacy). */
+function placeFromSelectEvent(event) {
+  if (event?.placePrediction && typeof event.placePrediction.toPlace === 'function') {
+    return event.placePrediction.toPlace();
+  }
+  if (event?.detail?.place) return event.detail.place;
+  if (event?.place) return event.place;
+  return null;
+}
+
 const updateAutocompleteValue = (value) => {
-  if (autocompleteRef.value) {
-    const inputElement = autocompleteRef.value.querySelector('input');
+  const host = resolveAutocompleteEl();
+  if (host) {
+    const inputElement = findInnerInput(host);
     if (inputElement) {
       inputElement.value = value || '';
     }
@@ -100,49 +173,50 @@ const validateInput = (value) => {
   return true;
 };
 
+let teardownAutocomplete = null;
+
 const initAutocomplete = async () => {
   if (!window.google || !window.google.maps || !window.google.maps.places) {
     console.error('Google Maps JavaScript API not loaded');
     return;
   }
 
-  const element = autocompleteRef.value;
+  await nextTick();
+  const element = resolveAutocompleteEl();
   if (!element) {
     console.error('Could not find autocomplete element');
     return;
   }
 
-  // Set the types for autocomplete
-  if (props.types && props.types.length > 0) {
-    element.setAttribute('types', props.types.join(','));
+  // New Place Autocomplete (web component): use includedPrimaryTypes, NOT legacy `types` attribute.
+  const primaryTypes = toIncludedPrimaryTypes(props.types);
+  if (primaryTypes?.length) {
+    try {
+      element.includedPrimaryTypes = primaryTypes;
+    } catch (e) {
+      console.warn('📍 [GooglePlacesAutocomplete] Could not set includedPrimaryTypes:', e);
+    }
   }
 
-  // Get the actual input element (might be in shadow DOM)
-  let inputElement = element.querySelector('input');
-  
-  // If not found, try to access shadow root
-  if (!inputElement && element.shadowRoot) {
-    inputElement = element.shadowRoot.querySelector('input');
-  }
-  
+  const inputElement = (await waitForInnerInput(element)) || findInnerInput(element);
   console.log('📍 [GooglePlacesAutocomplete] Input element found:', !!inputElement);
 
-  // Listen for place selection using the new web component
-  element.addEventListener('gmp-placeselect', async (event) => {
-    const place = event.detail.place;
+  let selectCooldownUntil = 0;
+  const onSelect = async (event) => {
+    if (Date.now() < selectCooldownUntil) return;
+
+    const place = placeFromSelectEvent(event);
 
     if (!place) {
-      console.warn('No place details available');
+      console.warn('📍 [GooglePlacesAutocomplete] No place on select event');
       return;
     }
 
     try {
-      // Fetch place details
       await place.fetchFields({
         fields: ['displayName', 'formattedAddress', 'addressComponents', 'location', 'id'],
       });
 
-      // Extract address components
       const addressComponents = {};
       if (place.addressComponents) {
         place.addressComponents.forEach((component) => {
@@ -170,113 +244,109 @@ const initAutocomplete = async () => {
         });
       }
 
-      // Build formatted address string
       const formattedAddress = place.formattedAddress || place.displayName;
-      
+
       console.log('📍 [GooglePlacesAutocomplete] Place selected:', formattedAddress);
-      
-      // Update internal value first
+
       inputValue.value = formattedAddress || '';
-      
-      // nextTick so parent v-model on nested refs (e.g. newEvent.location) reliably updates
+
       await nextTick();
       emit('update:modelValue', formattedAddress || '');
       await nextTick();
       emit('update:modelValue', formattedAddress || '');
-      
-      console.log('📍 [GooglePlacesAutocomplete] Emitted update:modelValue with:', formattedAddress);
-      
-      // Update the input element value to ensure it's displayed
-      if (inputElement) {
-        inputElement.value = formattedAddress;
+
+      const inner = findInnerInput(element) || inputElement;
+      if (inner) {
+        inner.value = formattedAddress || '';
       }
-      
-      // Validate
+
       validateInput(formattedAddress);
 
-      // Wait another tick
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      console.log('📍 [GooglePlacesAutocomplete] Emitting place-selected event');
-      // Emit detailed place information
+      const coordinates = coordsFromLocation(place.location);
+      selectCooldownUntil = Date.now() + 500;
       emit('place-selected', {
         formattedAddress,
         addressComponents,
-        coordinates: place.location ? {
-          lat: place.location.lat(),
-          lng: place.location.lng(),
-        } : null,
+        coordinates,
         placeId: place.id,
         name: place.displayName,
       });
 
       hideHint.value = true;
-      
-      console.log('📍 [GooglePlacesAutocomplete] All emissions complete');
-      console.log('📍 [GooglePlacesAutocomplete] Final inputValue.value:', inputValue.value);
-    } catch (error) {
-      console.error('Error fetching place details:', error);
-    }
-  });
 
-  // Also listen to input changes for manual typing
+      console.log('📍 [GooglePlacesAutocomplete] place-selected emitted, coords:', coordinates);
+    } catch (error) {
+      console.error('📍 [GooglePlacesAutocomplete] Error fetching place details:', error);
+    }
+  };
+
+  element.addEventListener('gmp-select', onSelect);
+  element.addEventListener('gmp-placeselect', onSelect);
+
+  let aggressivePoller = null;
   if (inputElement) {
-    inputElement.addEventListener('input', (event) => {
+    const onInput = (event) => {
       const value = event.target.value;
       inputValue.value = value;
       emit('update:modelValue', value);
       validateInput(value);
-      console.log('📍 [GooglePlacesAutocomplete] Input changed:', value);
-    });
+    };
 
-    inputElement.addEventListener('blur', (event) => {
+    const onBlur = (event) => {
       const value = event.target.value;
       validateInput(value);
-      // Ensure the value is emitted on blur as well
       if (value && value !== props.modelValue) {
-        console.log('📍 [GooglePlacesAutocomplete] Blur event - emitting value:', value);
         inputValue.value = value;
         emit('update:modelValue', value);
       }
-    });
-    
-    // Also add a change event listener as a fallback
-    inputElement.addEventListener('change', (event) => {
+    };
+
+    const onChange = (event) => {
       const value = event.target.value;
       if (value) {
-        console.log('📍 [GooglePlacesAutocomplete] Change event - emitting value:', value);
         inputValue.value = value;
         emit('update:modelValue', value);
         validateInput(value);
       }
-    });
-  }
+    };
 
-  // Set initial value if provided
-  if (props.modelValue) {
-    updateAutocompleteValue(props.modelValue);
-  }
-  
-  // NUCLEAR OPTION: Watch the input element for ANY value changes using MutationObserver
-  if (inputElement) {
-    console.log('📍 [GooglePlacesAutocomplete] Setting up MutationObserver on input');
-    
-    // Also use a more aggressive polling approach
+    inputElement.addEventListener('input', onInput);
+    inputElement.addEventListener('blur', onBlur);
+    inputElement.addEventListener('change', onChange);
+
     let lastKnownValue = inputElement.value;
-    const aggressivePoller = setInterval(() => {
-      const currentValue = inputElement.value;
+    aggressivePoller = setInterval(() => {
+      const inner = findInnerInput(element);
+      if (!inner) return;
+      const currentValue = inner.value;
       if (currentValue && currentValue !== lastKnownValue) {
-        console.log('📍 [GooglePlacesAutocomplete] AGGRESSIVE POLL detected value change:', currentValue);
         lastKnownValue = currentValue;
         inputValue.value = currentValue;
         emit('update:modelValue', currentValue);
       }
-    }, 100); // Check every 100ms
-    
-    // Clean up on unmount
-    onUnmounted(() => {
-      clearInterval(aggressivePoller);
-    });
+    }, 100);
+
+    teardownAutocomplete = () => {
+      element.removeEventListener('gmp-select', onSelect);
+      element.removeEventListener('gmp-placeselect', onSelect);
+      inputElement.removeEventListener('input', onInput);
+      inputElement.removeEventListener('blur', onBlur);
+      inputElement.removeEventListener('change', onChange);
+      if (aggressivePoller) clearInterval(aggressivePoller);
+      teardownAutocomplete = null;
+    };
+  } else {
+    teardownAutocomplete = () => {
+      element.removeEventListener('gmp-select', onSelect);
+      element.removeEventListener('gmp-placeselect', onSelect);
+      teardownAutocomplete = null;
+    };
+  }
+
+  if (props.modelValue) {
+    updateAutocompleteValue(props.modelValue);
   }
 };
 
@@ -362,6 +432,10 @@ const loadGoogleMapsScript = () => {
     console.log('📍 [GooglePlacesAutocomplete] Script tag added to head');
   });
 };
+
+onUnmounted(() => {
+  if (teardownAutocomplete) teardownAutocomplete();
+});
 
 onMounted(async () => {
   loading.value = true;
