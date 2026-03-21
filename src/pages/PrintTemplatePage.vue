@@ -341,7 +341,7 @@
                 <div
                   v-if="selectedBorderFrame"
                   class="border-frame-overlay"
-                  :style="{ backgroundImage: `url(\"${borderFrameAssetUrl(selectedBorderFrame)}\")` }"
+                  :style="borderFrameOverlayStyle(selectedBorderFrame)"
                 />
               </div>
             </div>
@@ -546,6 +546,13 @@ export default {
       const v = borderFrameAssetsVersion.value;
       return v ? `${base}?v=${encodeURIComponent(v)}` : base;
     };
+
+    /** Style object for overlay (keeps template free of nested quotes / template literals). */
+    const borderFrameOverlayStyle = (filename) => ({
+      backgroundImage: filename
+        ? `url("${borderFrameAssetUrl(filename)}")`
+        : 'none',
+    });
 
     const openBorderFrameDialog = async () => {
       if (borderFrameList.value.length === 0) await loadBorderFrameList();
@@ -1351,6 +1358,7 @@ export default {
       selectedBorderFrame,
       borderFrameList,
       borderFrameAssetUrl,
+      borderFrameOverlayStyle,
       showBorderFrameDialog,
       openBorderFrameDialog,
       selectBorderFrame,
