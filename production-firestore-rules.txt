@@ -132,10 +132,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
     }
 
-    // Promo codes - Public read by doc id (for checkout validation), write for admins (app check)
+    // Promo codes — checkout uses getDoc(docId); admin grid uses list/query (orderBy).
+    // Must allow get + list explicitly so collection queries are not denied in production.
     match /promo_codes/{codeId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow get, list: if true;
+      allow create, update, delete: if request.auth != null;
     }
 
     // Deny all other collections by default

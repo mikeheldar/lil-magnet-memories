@@ -22,7 +22,8 @@
     "test:setup": "npx playwright install --with-deps",
     "seed-test": "node scripts/seed-test-database.js",
     "init-test": "node scripts/init-test-database.js",
-    "seed-reviews": "node scripts/seed-reviews.js"
+    "seed-reviews": "node scripts/seed-reviews.js",
+    "deploy:firestore-rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -50,6 +51,7 @@
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^9.0.0",
     "firebase-admin": "^13.6.0",
+    "firebase-tools": "^15.10.0",
     "prettier": "^2.5.1",
     "typescript": "^4.5.4"
   },
