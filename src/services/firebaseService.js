@@ -1064,15 +1064,16 @@ class FirebaseService {
 
       // Send status update email to customer
       try {
+        const cust = orderDoc.customer || {};
         await this.sendStatusUpdateEmail({
-          firstName: orderDoc.customer.firstName,
-          lastName: orderDoc.customer.lastName,
-          email: orderDoc.customer.email,
+          firstName: cust.firstName ?? orderDoc.firstName ?? '',
+          lastName: cust.lastName ?? orderDoc.lastName ?? '',
+          email: cust.email ?? orderDoc.email ?? '',
           orderNumber: orderDoc.orderNumber,
           status: status,
-          photos: orderDoc.photos,
-          quantities: orderDoc.quantities,
-          totalMagnets: orderDoc.totalMagnets,
+          photos: orderDoc.photos || [],
+          quantities: orderDoc.quantities || [],
+          totalMagnets: orderDoc.totalMagnets ?? 0,
           shippingOption: orderDoc.shippingOption || null,
         });
         console.log('Status update email sent successfully');
@@ -1110,10 +1111,11 @@ class FirebaseService {
         try {
           // Send shipping email when status is 'shipped'
           if (shippingStatus === 'shipped') {
+            const cust = orderDoc.customer || {};
             await this.sendStatusUpdateEmail({
-              firstName: orderDoc.customer.firstName,
-              lastName: orderDoc.customer.lastName,
-              email: orderDoc.customer.email,
+              firstName: cust.firstName ?? orderDoc.firstName ?? '',
+              lastName: cust.lastName ?? orderDoc.lastName ?? '',
+              email: cust.email ?? orderDoc.email ?? '',
               orderNumber: orderDoc.orderNumber,
               status: 'shipped',
               photos: orderDoc.photos || [],
@@ -1323,7 +1325,22 @@ class FirebaseService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const text = await response.text();
+        let detail = text;
+        try {
+          const j = JSON.parse(text);
+          detail = j.details || j.error || text;
+        } catch {
+          /* keep raw text */
+        }
+        console.error(
+          'send-status-update-email failed:',
+          response.status,
+          detail
+        );
+        throw new Error(
+          `HTTP error! status: ${response.status}${detail ? ` — ${detail}` : ''}`
+        );
       }
 
       const result = await response.json();

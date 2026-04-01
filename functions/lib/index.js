@@ -10,6 +10,42 @@ const square_1 = require("square");
 const crypto_1 = require("crypto");
 // Initialize Firebase Admin
 admin.initializeApp();
+/**
+ * Nodemailer (Gmail) credentials: legacy `firebase functions:config:set email.*`
+ * or environment variables on the deployed function (GCP Console → Cloud Functions → edit → Variables).
+ */
+function getEmailConfig() {
+    const cfg = functions.config().email || {};
+    const user = String(process.env.EMAIL_USER ||
+        process.env.GMAIL_USER ||
+        cfg.user ||
+        '').trim();
+    const password = String(process.env.EMAIL_PASSWORD ||
+        process.env.GMAIL_APP_PASSWORD ||
+        cfg.password ||
+        '').trim();
+    const service = String(process.env.EMAIL_SERVICE || cfg.service || 'gmail').trim();
+    if (!user || !password) {
+        throw new Error('Email not configured: set `firebase functions:config:set email.user` and `email.password`, or set EMAIL_USER + EMAIL_PASSWORD on the api function in Google Cloud Console.');
+    }
+    return { user, password, service };
+}
+function escapeHtmlAttr(value) {
+    return String(value !== null && value !== void 0 ? value : '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+/** Avoid undefined access when Firestore has fewer quantities than photos. */
+function normalizeQuantitiesForPhotos(photos, quantities) {
+    const n = Array.isArray(photos) ? photos.length : 0;
+    const q = Array.isArray(quantities) ? quantities.slice() : [];
+    while (q.length < n) {
+        q.push(1);
+    }
+    return q.slice(0, n);
+}
 // Create Express app
 const app = express();
 app.use(cors({ origin: true }));
@@ -502,18 +538,14 @@ app.post('/payments/create', async (req, res) => {
 // Helper function to send Lil Magnet Memories order emails
 async function sendLilMagnetOrderEmail(params) {
     const { firstName, lastName, email, phone, specialInstructions, photos, quantities, orderNumber, totalMagnets, subtotal = 0, shipping = 0, tax = 0, totalAmount = 0, shippingOption = null, paymentOption = null, cartItems = [], } = params;
-    // Get email configuration from Firebase Functions config
-    const emailConfig = functions.config().email;
-    if (!(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.user) || !(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.password)) {
-        throw new Error('Email configuration not found in Firebase Functions config');
-    }
+    const emailConfig = getEmailConfig();
     console.log('📧 Using email config:', {
-        service: emailConfig.service || 'gmail',
+        service: emailConfig.service,
         user: emailConfig.user,
     });
     // Create nodemailer transporter
     const transporter = nodemailer.createTransport({
-        service: emailConfig.service || 'gmail',
+        service: emailConfig.service,
         auth: {
             user: emailConfig.user,
             pass: emailConfig.password,
@@ -735,7 +767,8 @@ This email was automatically generated from your website order form.
 }
 // Helper function to format status display
 function formatStatusDisplay(status) {
-    switch (status) {
+    const s = status == null ? '' : String(status);
+    switch (s) {
         case 'new':
             return 'NEW ORDER SUBMITTED';
         case 'in_progress':
@@ -745,32 +778,33 @@ function formatStatusDisplay(status) {
         case 'cancelled':
             return 'CANCELLED';
         default:
-            return status.toUpperCase();
+            return s ? s.toUpperCase() : 'UNKNOWN';
     }
 }
 // Helper function to send Lil Magnet Memories status update emails
 async function sendLilMagnetStatusUpdateEmail(params) {
     const { firstName, lastName, email, orderNumber, status, photos, quantities, totalMagnets, shippingOption, } = params;
-    // Get email configuration from Firebase Functions config
-    const emailConfig = functions.config().email;
-    if (!(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.user) || !(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.password)) {
-        throw new Error('Email configuration not found in Firebase Functions config');
-    }
+    const safePhotos = Array.isArray(photos) ? photos : [];
+    const qty = normalizeQuantitiesForPhotos(safePhotos, quantities);
+    const emailConfig = getEmailConfig();
     console.log('📧 Using email config:', {
-        service: emailConfig.service || 'gmail',
+        service: emailConfig.service,
         user: emailConfig.user,
     });
     // Create nodemailer transporter
     const transporter = nodemailer.createTransport({
-        service: emailConfig.service || 'gmail',
+        service: emailConfig.service,
         auth: {
             user: emailConfig.user,
             pass: emailConfig.password,
         },
     });
     // Format photo details
-    const photoDetails = photos
-        .map((photo, index) => `${photo.name} (${quantities[index]} magnet${quantities[index] > 1 ? 's' : ''})`)
+    const photoDetails = safePhotos
+        .map((photo, index) => {
+        var _a;
+        return `${(_a = photo === null || photo === void 0 ? void 0 : photo.name) !== null && _a !== void 0 ? _a : 'Photo'} (${qty[index]} magnet${qty[index] > 1 ? 's' : ''})`;
+    })
         .join('\n');
     // Status-specific messaging
     let statusMessage = '';
@@ -831,26 +865,29 @@ async function sendLilMagnetStatusUpdateEmail(params) {
         <p><strong>Customer Name:</strong> ${firstName} ${lastName}</p>
         <p><strong>Total Magnets:</strong> ${totalMagnets}</p>
         <p><strong>Current Status:</strong> <span style="color: #1976d2; font-weight: bold;">${formatStatusDisplay(status)}</span></p>
-        <p><strong>Photos Submitted:</strong> ${photos.length}</p>
+        <p><strong>Photos Submitted:</strong> ${safePhotos.length}</p>
       </div>
 
-      ${photos.length > 0
+      ${safePhotos.length > 0
         ? `
         <div style="margin-bottom: 20px;">
           <h3 style="color: #1976d2;">📸 Your Custom Magnets</h3>
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-            ${photos
-            .map((photo, index) => `
+            ${safePhotos
+            .map((photo, index) => {
+            var _a, _b;
+            return `
               <div style="background-color: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #1976d2; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
-                ${photo.url ? `
-                  <img src="${photo.url}" alt="${photo.name}" style="max-width: 100%; height: auto; border-radius: 4px; margin-bottom: 10px; max-height: 200px; object-fit: cover;" />
+                ${(photo === null || photo === void 0 ? void 0 : photo.url) ? `
+                  <img src="${escapeHtmlAttr(String(photo.url))}" alt="${escapeHtmlAttr(String((_a = photo === null || photo === void 0 ? void 0 : photo.name) !== null && _a !== void 0 ? _a : 'Photo'))}" style="max-width: 100%; height: auto; border-radius: 4px; margin-bottom: 10px; max-height: 200px; object-fit: cover;" />
                 ` : ''}
                 <div style="margin-top: 10px;">
-                  <strong style="font-size: 14px;">${photo.name}</strong><br>
-                  <span style="color: #666; font-size: 13px;">Quantity: ${quantities[index]} magnet${quantities[index] > 1 ? 's' : ''}</span>
+                  <strong style="font-size: 14px;">${escapeHtmlAttr(String((_b = photo === null || photo === void 0 ? void 0 : photo.name) !== null && _b !== void 0 ? _b : 'Photo'))}</strong><br>
+                  <span style="color: #666; font-size: 13px;">Quantity: ${qty[index]} magnet${qty[index] > 1 ? 's' : ''}</span>
                 </div>
               </div>
-            `)
+            `;
+        })
             .join('')}
           </div>
         </div>
@@ -891,9 +928,9 @@ Order Number: ${orderNumber}
 Customer Name: ${firstName} ${lastName}
 Total Magnets: ${totalMagnets}
 Current Status: ${formatStatusDisplay(status)}
-Photos Submitted: ${photos.length}
+Photos Submitted: ${safePhotos.length}
 
-${photos.length > 0 ? `Your Custom Magnets:\n${photoDetails}\n` : ''}
+${safePhotos.length > 0 ? `Your Custom Magnets:\n${photoDetails}\n` : ''}
 
 What's Next: ${status === 'new'
         ? "We're excited to start working on your custom magnets! You'll receive updates as we progress."
@@ -928,18 +965,14 @@ This email was automatically generated from your order status update.
 // Helper function to send Lil Magnet Memories contact form emails
 async function sendLilMagnetContactEmail(params) {
     const { name, email, subject, message } = params;
-    // Get email configuration from Firebase Functions config
-    const emailConfig = functions.config().email;
-    if (!(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.user) || !(emailConfig === null || emailConfig === void 0 ? void 0 : emailConfig.password)) {
-        throw new Error('Email configuration not found in Firebase Functions config');
-    }
+    const emailConfig = getEmailConfig();
     console.log('📧 Using email config:', {
-        service: emailConfig.service || 'gmail',
+        service: emailConfig.service,
         user: emailConfig.user,
     });
     // Create nodemailer transporter
     const transporter = nodemailer.createTransport({
-        service: emailConfig.service || 'gmail',
+        service: emailConfig.service,
         auth: {
             user: emailConfig.user,
             pass: emailConfig.password,
