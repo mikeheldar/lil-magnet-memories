@@ -1,0 +1,19 @@
+# Copy to wrangler.toml (do not commit secrets).
+# Usage: npm i -g wrangler && wrangler login
+#        wrangler secret put PRERENDER_TOKEN
+#        wrangler deploy
+#
+# Replace zone_name / routes with your domain.
+
+name = "lilmagnet-prerender"
+main = "prerender.worker.js"
+compatibility_date = "2024-11-01"
+
+# Uncomment after copying this file to wrangler.toml next to prerender.worker.js
+# [[routes]]
+# pattern = "lilmagnetmemories.com/*"
+# zone_name = "lilmagnetmemories.com"
+#
+# [[routes]]
+# pattern = "www.lilmagnetmemories.com/*"
+# zone_name = "lilmagnetmemories.com"

@@ -244,6 +244,15 @@ vercel --prod
 firebase deploy --only hosting
 ```
 
+#### SEO: Prerender.io + Cloudflare (Path A)
+
+The storefront is a **SPA**; for Google and social crawlers, use **Prerender.io** with **Cloudflare** in front of your custom domain (Firebase stays the origin). Worker source and a full checklist live in the repo:
+
+- **Worker:** `cloudflare/prerender.worker.js`
+- **Guide:** [`docs/PRERENDER_PATH_A.md`](docs/PRERENDER_PATH_A.md)
+
+You need a Prerender.io account/token, Cloudflare DNS (proxied) for the domain, and a Worker route matching `lilmagnetmemories.com/*` (and `www` if used).
+
 ## 📊 Key Workflows
 
 ### Customer Orders Online
@@ -310,7 +319,7 @@ VITE_GOOGLE_PLACES_API_KEY=
 
 Comprehensive documentation available in the `docs/` directory:
 
-- **Setup Guides**: Firebase, Square, Google Reviews, Email
+- **Setup Guides**: Firebase, Square, Google Reviews, Email, [Prerender + Cloudflare (SEO)](docs/PRERENDER_PATH_A.md)
 - **Architecture**: System diagrams, data flow
 - **Features**: Detailed feature documentation
 - **Troubleshooting**: Common issues and solutions
