@@ -36,12 +36,6 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
-    // Promo codes: get + list (admin query); write for authenticated (admin in app)
-    match /promo_codes/{codeId} {
-      allow get, list: if true;
-      allow create, update, delete: if request.auth != null;
-    }
-
     // Allow all other collections (for development/testing)
     match /{document=**} {
       allow read, write: if true;

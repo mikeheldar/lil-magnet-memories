@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const testBaseUrl = process.env.TEST_BASE_URL || 'http://localhost:9000';
+const skipLocalWebServer =
+  process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1' ||
+  /^https?:\/\//i.test(testBaseUrl) && !/localhost|127\.0\.0\.1/.test(testBaseUrl);
+
 /**
  * Playwright configuration for Lil Magnet Memories E2E tests
  * @see https://playwright.dev/docs/test-configuration
@@ -29,7 +34,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.TEST_BASE_URL || 'http://localhost:9000',
+    baseURL: testBaseUrl,
     
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -67,12 +72,16 @@ export default defineConfig({
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:9000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  /* Local dev server (skipped when testing a remote URL or PLAYWRIGHT_SKIP_WEBSERVER=1) */
+  ...(skipLocalWebServer
+    ? {}
+    : {
+        webServer: {
+          command: 'npm run dev',
+          url: 'http://localhost:9000',
+          reuseExistingServer: !process.env.CI,
+          timeout: 120 * 1000,
+        },
+      }),
 });
 

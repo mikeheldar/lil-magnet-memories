@@ -62,13 +62,27 @@ In the Prerender dashboard, **add** the same hostname(s) you serve publicly (pro
 ## 4. Verify
 
 - [Prerender — test your integration](https://docs.prerender.io/docs/how-to-test-your-site-after-you-have-successfully-validated-your-prerender-integration)
-- Quick check (replace URL):
+- Prerender looks for **`x-prerender-request-id`** (or similar) on bot responses. See [integration not detected](https://docs.prerender.io/docs/what-should-i-do-if-i-receive-a-prerender-integration-not-detected-error).
 
-  ```bash
-  curl -A "Googlebot" -sI "https://lilmagnetmemories.com/" | head -20
-  ```
+### Apex **and** `www`
 
-  You should see Prerender-related headers or fully rendered HTML when you `curl` without `-I`.
+Add **two** routes on the same Worker if both hostnames serve the site:
+
+- `lilmagnetmemories.com/*`
+- `www.lilmagnetmemories.com/*`
+
+Routing only the apex is a common cause of **integration failed** in Domain Manager.
+
+### Quick checks (replace host)
+
+```bash
+curl -sI -A "Googlebot" "https://lilmagnetmemories.com/" | tr -d '\r' | grep -i prerender
+curl -sI -A "Googlebot" "https://www.lilmagnetmemories.com/" | tr -d '\r' | grep -i prerender
+```
+
+### Security
+
+Use an **encrypted** Worker secret for **`PRERENDER_TOKEN`**. If the token was exposed (screenshot, chat, git), **rotate** it in Prerender and update Cloudflare.
 
 - **Google Search Console** → URL Inspection → **Test live URL** (uses Google inspection user-agent, listed in the worker as `google-inspectiontool` / `googlebot`).
 

@@ -1,10 +1,4 @@
 {
-  "firestore": {
-    "rules": "production-firestore-rules.txt"
-  },
-  "storage": {
-    "rules": "firebase-storage-rules.json"
-  },
   "functions": [
     {
       "source": "functions",

@@ -114,9 +114,8 @@ async function handleRequest(request, env) {
   const userAgent = request.headers.get('User-Agent')?.toLowerCase() || '';
   const isPrerender = request.headers.get('X-Prerender');
   const pathName = url.pathname.toLowerCase();
-  const extension = pathName
-    .substring(pathName.lastIndexOf('.') || pathName.length)
-    ?.toLowerCase();
+  const dot = pathName.lastIndexOf('.');
+  const extension = dot >= 0 ? pathName.slice(dot) : '';
 
   if (
     isPrerender ||
