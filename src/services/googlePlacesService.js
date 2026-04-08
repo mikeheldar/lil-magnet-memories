@@ -3,9 +3,11 @@
  * Fetches business reviews from Google Places API
  */
 
+import { resolveGooglePlaceIdFromEnv } from '../utils/googlePlaceId.js';
+
 // Get the appropriate API key based on environment
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY_TEST || import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-const PLACE_ID = import.meta.env.VITE_GOOGLE_PLACE_ID;
+const PLACE_ID = resolveGooglePlaceIdFromEnv();
 
 export const googlePlacesService = {
   /**
@@ -75,8 +77,8 @@ export const googlePlacesService = {
         console.warn('⚠️  [Google Reviews] No reviews found in API response');
         console.log('   This could mean:');
         console.log('   1. Your business has no reviews yet');
-        console.log('   2. Wrong Place ID');
-        console.log('   3. Reviews not public');
+        console.log('   2. Wrong Place ID (copy from Place ID Finder; I vs l look identical in many fonts)');
+        console.log('   3. Reviews not public / API billing SKU');
       }
       
       const formatted = this.formatReviews(reviews);

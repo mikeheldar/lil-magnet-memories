@@ -3,6 +3,8 @@
  * Handles Google Business review links and integration
  */
 
+import { resolveGooglePlaceIdFromEnv } from './googlePlaceId.js';
+
 /**
  * Get the Google review URL for Li'l Magnet Memories
  * @returns {string} The Google review link
@@ -15,7 +17,7 @@ export const getGoogleReviewUrl = () => {
   }
   
   // Priority 2: Construct from Place ID
-  const placeId = import.meta.env.VITE_GOOGLE_PLACE_ID;
+  const placeId = resolveGooglePlaceIdFromEnv();
   if (placeId) {
     return `https://search.google.com/local/writereview?placeid=${placeId}`;
   }
@@ -30,7 +32,7 @@ export const getGoogleReviewUrl = () => {
  * @returns {string} The Google Business profile link
  */
 export const getGoogleBusinessUrl = () => {
-  const placeId = import.meta.env.VITE_GOOGLE_PLACE_ID;
+  const placeId = resolveGooglePlaceIdFromEnv();
   
   if (!placeId) {
     return 'https://www.google.com/search?q=Li%27l+Magnet+Memories';
