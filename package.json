@@ -23,6 +23,7 @@
     "seed-test": "node scripts/seed-test-database.js",
     "init-test": "node scripts/init-test-database.js",
     "seed-reviews": "node scripts/seed-reviews.js",
+    "check:place-reviews": "node scripts/check-place-reviews.mjs",
     "deploy:firestore-rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {

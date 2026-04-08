@@ -34,6 +34,8 @@ async function legacyDetails() {
   url.searchParams.set('place_id', placeId);
   url.searchParams.set('fields', fields);
   url.searchParams.set('key', apiKey);
+  url.searchParams.set('reviews_sort', 'newest');
+  url.searchParams.set('language', 'en');
 
   const res = await fetch(url);
   const data = await res.json();
@@ -58,7 +60,7 @@ async function placesNew() {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': apiKey,
       'X-Goog-FieldMask':
-        'id,displayName,rating,userRatingCount,reviews,formattedAddress',
+        'id,displayName,rating,userRatingCount,reviews,reviewSummary,googleMapsUri,formattedAddress',
     },
   });
   const text = await res.text();
@@ -74,6 +76,7 @@ async function placesNew() {
     };
   }
   const reviews = body.reviews || [];
+  const rs = body.reviewSummary;
   return {
     api: 'Places API (New)',
     httpStatus: res.status,
@@ -81,6 +84,7 @@ async function placesNew() {
     rating: body.rating ?? null,
     userRatingCount: body.userRatingCount ?? null,
     reviewCount: reviews.length,
+    hasReviewSummary: !!(rs && (rs.text?.text || rs.text)),
     error: body.error ?? null,
   };
 }

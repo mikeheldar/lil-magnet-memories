@@ -56,7 +56,7 @@ export const googlePlacesService = {
 
       const data = await response.json();
       console.log('📦 [Google Reviews] Response data:', JSON.stringify(data, null, 2));
-      
+
       if (data.status !== 'OK') {
         console.error('❌ [Google Reviews] API Error:');
         console.error('   Status:', data.status);
@@ -65,23 +65,39 @@ export const googlePlacesService = {
         return [];
       }
 
-      const reviews = data.result?.reviews || [];
-      console.log(`✅ [Google Reviews] Successfully fetched ${reviews.length} reviews`);
-      
-      if (reviews.length > 0) {
-        console.log('📝 [Google Reviews] Sample review:');
-        console.log('   Author:', reviews[0].author_name);
-        console.log('   Rating:', reviews[0].rating);
-        console.log('   Text:', reviews[0].text?.substring(0, 100) + '...');
-      } else {
-        console.warn('⚠️  [Google Reviews] No reviews found in API response');
-        console.log('   This could mean:');
-        console.log('   1. Your business has no reviews yet');
-        console.log('   2. Wrong Place ID (copy from Place ID Finder; I vs l look identical in many fonts)');
-        console.log('   3. Reviews not public / API billing SKU');
+      const result = data.result || {};
+      let rawReviews = result.reviews || [];
+      const rating = result.rating;
+      const reviewSummary = result.reviewSummary;
+
+      if (rawReviews.length === 0 && reviewSummary?.text) {
+        console.log(
+          'ℹ️  [Google Reviews] No per-review rows; using Places reviewSummary (AI summary) if present'
+        );
+        const synthetic = this.buildReviewFromSummary(
+          reviewSummary,
+          rating,
+          result.googleMapsUri
+        );
+        if (synthetic) {
+          rawReviews = [synthetic];
+        }
       }
-      
-      const formatted = this.formatReviews(reviews);
+
+      console.log(`✅ [Google Reviews] Successfully fetched ${rawReviews.length} review row(s)`);
+
+      if (rawReviews.length > 0) {
+        console.log('📝 [Google Reviews] Sample review:');
+        console.log('   Author:', rawReviews[0].author_name);
+        console.log('   Rating:', rawReviews[0].rating);
+        console.log('   Text:', rawReviews[0].text?.substring(0, 100) + '...');
+      } else {
+        console.warn('⚠️  [Google Reviews] No reviews or summary in API response');
+        console.log('   Enable Maps billing SKUs: Place Details Enterprise + Enterprise & Atmosphere');
+        console.log('   See: https://developers.google.com/maps/documentation/places/web-service/place-details#fieldmask');
+      }
+
+      const formatted = this.formatReviews(rawReviews);
       console.log(`✅ [Google Reviews] Formatted ${formatted.length} reviews for display`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       
@@ -104,6 +120,35 @@ export const googlePlacesService = {
   },
 
   /**
+   * Build a legacy-shaped review object from Places API (New) reviewSummary
+   * when individual reviews are not returned (SKU still allows summary).
+   */
+  buildReviewFromSummary(reviewSummary, placeRating, googleMapsUri) {
+    const text = reviewSummary.text;
+    if (!text || typeof text !== 'string') {
+      return null;
+    }
+    let body = text;
+    const disc = reviewSummary.disclosureText;
+    if (disc && typeof disc === 'string') {
+      body = `${body}\n\n${disc}`;
+    }
+    const timeSec = Math.floor(Date.now() / 1000);
+    return {
+      author_name: 'Google review summary',
+      profile_photo_url: null,
+      rating: typeof placeRating === 'number' ? placeRating : 5,
+      text: body,
+      time: timeSec,
+      relative_time_description: googleMapsUri
+        ? 'Summary · See all on Google'
+        : 'Summary',
+      _isReviewSummary: true,
+      _reviewsUri: reviewSummary.reviewsUri || googleMapsUri || null,
+    };
+  },
+
+  /**
    * Format Google reviews for display
    * @param {Array} reviews - Raw reviews from Google API
    * @returns {Array} Formatted reviews
@@ -122,6 +167,8 @@ export const googlePlacesService = {
         relativeTime: review.relative_time_description || '',
         source: 'google',
         verified: true, // Google reviews are inherently verified
+        isReviewSummary: !!review._isReviewSummary,
+        reviewsUri: review._reviewsUri || null,
       };
       
       if (index === 0) {

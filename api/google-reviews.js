@@ -2,8 +2,12 @@
  * Vercel Serverless Function
  * Proxies Google Places requests to avoid CORS.
  *
- * Tries Places API (New) first (reviews often require this endpoint + billing SKU),
- * then falls back to legacy Place Details if needed.
+ * Places API (New): requests Enterprise (rating, userRatingCount) + Enterprise+Atmosphere
+ * (reviews, reviewSummary) per field mask docs.
+ * Legacy Place Details: requests Atmosphere fields (reviews, rating, user_ratings_total)
+ * with reviews_sort + language.
+ *
+ * Runs both in parallel and merges the best available data.
  */
 
 function getServerApiKey() {
@@ -40,16 +44,38 @@ function displayNameText(displayName) {
   return displayName.text;
 }
 
+/** Normalize reviewSummary for JSON (LocalizedText → plain strings where needed) */
+function normalizeReviewSummary(body) {
+  const rs = body.reviewSummary;
+  if (!rs) return null;
+  return {
+    text: rs.text?.text ?? rs.text ?? null,
+    disclosureText: rs.disclosureText?.text ?? rs.disclosureText ?? null,
+    reviewsUri: rs.reviewsUri ?? null,
+    flagContentUri: rs.flagContentUri ?? null,
+  };
+}
+
 /**
- * @returns {Promise<{ name?: string, rating?: number, user_ratings_total?: number, reviews: object[], error?: string } | null>}
+ * Places API (New) — field mask must list Enterprise + Enterprise+Atmosphere fields
+ * @see https://developers.google.com/maps/documentation/places/web-service/place-details
  */
 async function fetchPlacesApiNew(placeId, apiKey) {
   const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
+  const fieldMask = [
+    'displayName',
+    'rating',
+    'userRatingCount',
+    'reviews',
+    'reviewSummary',
+    'googleMapsUri',
+  ].join(',');
+
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': apiKey,
-      'X-Goog-FieldMask': 'displayName,rating,userRatingCount,reviews',
+      'X-Goog-FieldMask': fieldMask,
     },
   });
 
@@ -72,17 +98,27 @@ async function fetchPlacesApiNew(placeId, apiKey) {
     rating: body.rating,
     user_ratings_total: body.userRatingCount,
     reviews,
+    reviewSummary: normalizeReviewSummary(body),
+    googleMapsUri: body.googleMapsUri || null,
   };
 }
 
 /**
- * @returns {Promise<{ ok: true, result: object } | { ok: false, status: string, message?: string }>}
+ * Legacy Place Details — atmosphere: rating, user_ratings_total, reviews
+ * @see https://developers.google.com/maps/documentation/places/web-service/details
  */
 async function fetchLegacyPlaceDetails(placeId, apiKey) {
-  const fields = 'name,rating,user_ratings_total,reviews';
-  const googleUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=${fields}&key=${encodeURIComponent(apiKey)}`;
+  const fields = 'name,rating,user_ratings_total,reviews,place_id';
+  const u = new URL(
+    'https://maps.googleapis.com/maps/api/place/details/json'
+  );
+  u.searchParams.set('place_id', placeId);
+  u.searchParams.set('fields', fields);
+  u.searchParams.set('key', apiKey);
+  u.searchParams.set('reviews_sort', 'newest');
+  u.searchParams.set('language', 'en');
 
-  const response = await fetch(googleUrl);
+  const response = await fetch(u.toString());
   const data = await response.json();
 
   if (data.status !== 'OK') {
@@ -97,11 +133,27 @@ async function fetchLegacyPlaceDetails(placeId, apiKey) {
     ok: true,
     result: {
       name: data.result?.name,
+      place_id: data.result?.place_id,
       rating: data.result?.rating,
       user_ratings_total: data.result?.user_ratings_total,
       reviews: data.result?.reviews || [],
     },
   };
+}
+
+function mergeReviewLists(a, b) {
+  const out = [];
+  const seen = new Set();
+  for (const list of [a, b]) {
+    if (!list?.length) continue;
+    for (const r of list) {
+      const key = `${r.time}|${r.author_name}|${(r.text || '').slice(0, 40)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(r);
+    }
+  }
+  return out;
 }
 
 export default async function handler(req, res) {
@@ -133,46 +185,35 @@ export default async function handler(req, res) {
 
     console.log('[API] Fetching Google reviews for Place ID:', placeId);
 
-    const newData = await fetchPlacesApiNew(placeId, apiKey);
+    const [newData, legacy] = await Promise.all([
+      fetchPlacesApiNew(placeId, apiKey),
+      fetchLegacyPlaceDetails(placeId, apiKey),
+    ]);
 
     let name = newData?.name;
     let rating = newData?.rating;
     let user_ratings_total = newData?.user_ratings_total;
-    let reviews = newData?.reviews || [];
+    let reviewSummary = newData?.reviewSummary || null;
+    let googleMapsUri = newData?.googleMapsUri || null;
 
-    if (reviews.length === 0) {
-      console.log('[API] New API returned 0 reviews (or unavailable); trying legacy');
-      const legacy = await fetchLegacyPlaceDetails(placeId, apiKey);
-
-      if (!legacy.ok) {
-        if (!newData) {
-          console.error(
-            '[API] Legacy error:',
-            legacy.status,
-            legacy.message
-          );
-          return res.status(400).json({
-            error: 'Google Places API error',
-            status: legacy.status,
-            message: legacy.message || 'Unknown error',
-          });
-        }
-        console.warn('[API] Legacy failed but New returned metadata:', legacy.status);
-      } else {
-        if (name == null) name = legacy.result.name;
-        if (rating == null) rating = legacy.result.rating;
-        if (user_ratings_total == null) {
-          user_ratings_total = legacy.result.user_ratings_total;
-        }
-        if (legacy.result.reviews?.length) {
-          reviews = legacy.result.reviews;
-        }
+    const newReviews = newData?.reviews || [];
+    let legacyReviews = [];
+    if (legacy?.ok) {
+      if (name == null) name = legacy.result.name;
+      if (rating == null) rating = legacy.result.rating;
+      if (user_ratings_total == null) {
+        user_ratings_total = legacy.result.user_ratings_total;
       }
-    } else {
-      console.log(`[API] Places API (New): ${reviews.length} reviews`);
+      legacyReviews = legacy.result.reviews || [];
+    } else if (legacy && !legacy.ok) {
+      console.warn('[API] Legacy Place Details:', legacy.status, legacy.message);
     }
 
-    console.log(`[API] Returning ${reviews.length} reviews`);
+    const reviews = mergeReviewLists(newReviews, legacyReviews);
+
+    console.log(
+      `[API] Merged reviews: ${reviews.length} (new:${newReviews.length} legacy:${legacyReviews.length})`
+    );
 
     return res.status(200).json({
       status: 'OK',
@@ -181,6 +222,8 @@ export default async function handler(req, res) {
         rating,
         user_ratings_total,
         reviews,
+        reviewSummary,
+        googleMapsUri,
       },
     });
   } catch (error) {

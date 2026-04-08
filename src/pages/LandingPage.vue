@@ -272,8 +272,21 @@
                   text-color="grey-8"
                   icon="fab fa-google"
                 >
-                  From Google
+                  {{ review.isReviewSummary ? 'Google summary' : 'From Google' }}
                 </q-chip>
+                <div v-if="review.source === 'google' && review.reviewsUri" class="q-mt-xs">
+                  <q-btn
+                    flat
+                    dense
+                    size="sm"
+                    color="primary"
+                    label="See all reviews on Google"
+                    type="a"
+                    :href="review.reviewsUri"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                </div>
                 <q-chip
                   v-else-if="review.isVerified"
                   color="green"
