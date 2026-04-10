@@ -383,7 +383,7 @@
 
 <script>
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { authService } from '../services/authService';
 import { firebaseService } from '../services/firebaseService.js';
 import { googlePlacesService } from '../services/googlePlacesService.js';
@@ -433,6 +433,7 @@ export default {
     });
 
     const router = useRouter();
+    const route = useRoute();
     const $q = useQuasar();
     const quasar = $q; // Capture in local variable for safe access
     const signingIn = ref(false);
@@ -449,6 +450,75 @@ export default {
 
     const { shouldShowMarketEventPrompt, setCustomerType, isMarketCustomer } =
       useCustomerType();
+
+    /** Set when /?atMarket=1 successfully applied — skips geo-based customer mode */
+    const marketDeepLinkApplied = ref(false);
+    const marketDeepLinkNoEventNotified = ref(false);
+    let deepLinkFallbackTimer = null;
+
+    function wantsMarketDeepLink(query) {
+      const v = query?.atMarket;
+      if (v === undefined || v === null) return false;
+      const s = String(v).toLowerCase();
+      return s === '1' || s === 'true';
+    }
+
+    function clearDeepLinkFallbackTimer() {
+      if (deepLinkFallbackTimer) {
+        clearTimeout(deepLinkFallbackTimer);
+        deepLinkFallbackTimer = null;
+      }
+    }
+
+    function tryApplyMarketDeepLink() {
+      if (!wantsMarketDeepLink(route.query)) {
+        clearDeepLinkFallbackTimer();
+        return;
+      }
+      if (marketDeepLinkApplied.value) return;
+
+      const event = marketEventService.getCheckedInEvent();
+      if (event) {
+        setCustomerType('market_customer');
+        marketDeepLinkApplied.value = true;
+        clearDeepLinkFallbackTimer();
+        $q.notify({
+          type: 'positive',
+          message: 'Market event mode enabled!',
+          caption: "You're set for pickup and local options (via link)",
+          position: 'top',
+          timeout: 3000,
+        });
+        router.replace({ path: '/', query: {} });
+      }
+    }
+
+    function scheduleMarketDeepLinkFallback() {
+      clearDeepLinkFallbackTimer();
+      if (!wantsMarketDeepLink(route.query) || marketDeepLinkApplied.value) {
+        return;
+      }
+      deepLinkFallbackTimer = setTimeout(() => {
+        deepLinkFallbackTimer = null;
+        if (!wantsMarketDeepLink(route.query) || marketDeepLinkApplied.value) {
+          return;
+        }
+        if (marketEventService.getCheckedInEvent()) {
+          tryApplyMarketDeepLink();
+          return;
+        }
+        if (marketDeepLinkNoEventNotified.value) return;
+        marketDeepLinkNoEventNotified.value = true;
+        $q.notify({
+          type: 'info',
+          message: 'No live market event right now.',
+          caption: 'Ordering will use online/shipping options.',
+          position: 'top',
+          timeout: 4000,
+        });
+        router.replace({ path: '/', query: {} });
+      }, 6000);
+    }
 
     // Use global product type visibility composable
     const { productTypeVisibility, visibilityLoaded, initializeVisibility } = useProductTypeVisibility();
@@ -710,6 +780,13 @@ export default {
 
     // Calculate distance to event
     const calculateEventDistance = async () => {
+      if (marketDeepLinkApplied.value) {
+        console.log(
+          '[Distance] Skipping geo / customer mode from distance — market deep link active'
+        );
+        return;
+      }
+
       // Get the active event
       const event = marketEventService.getCheckedInEvent();
       console.log('[Distance] Checking for active event:', event);
@@ -1080,6 +1157,16 @@ export default {
       return event?.eventLink || null;
     });
 
+    watch(
+      () => route.query.atMarket,
+      () => {
+        tryApplyMarketDeepLink();
+        if (wantsMarketDeepLink(route.query) && !marketDeepLinkApplied.value) {
+          scheduleMarketDeepLinkFallback();
+        }
+      }
+    );
+
     // Show CTA button on larger screens OR when at market event
     const showCTAButton = computed(() => {
       // Check window width safely (may not be available during SSR)
@@ -1160,6 +1247,8 @@ export default {
         marketEventCheckTrigger.value++;
         console.log('🔄 Market events updated on landing page');
 
+        tryApplyMarketDeepLink();
+
         // Recalculate distance when events change
         if (hasActiveEvent.value) {
           console.log('[Distance] Event detected, calculating distance...');
@@ -1179,6 +1268,11 @@ export default {
       // But trigger an update to ensure UI reflects current state
       marketEventCheckTrigger.value++;
 
+      tryApplyMarketDeepLink();
+      if (wantsMarketDeepLink(route.query) && !marketDeepLinkApplied.value) {
+        scheduleMarketDeepLinkFallback();
+      }
+
       // Calculate distance if there's an active event
       if (hasActiveEvent.value) {
         console.log('[Distance] Initial check - active event found, calculating distance...');
@@ -1189,6 +1283,7 @@ export default {
 
       // Cleanup listeners on unmount
       onUnmounted(() => {
+        clearDeepLinkFallbackTimer();
         window.removeEventListener('resize', updateWindowWidth);
         if (marketEventUnsubscribe) {
           marketEventUnsubscribe();

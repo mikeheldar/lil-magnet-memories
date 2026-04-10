@@ -6,6 +6,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/LandingPage.vue') },
+      {
+        path: 'at-market',
+        redirect: { path: '/', query: { atMarket: '1' } },
+      },
       // Unified photo upload form - handles both market event and online orders
       { path: 'upload', redirect: '/photo-upload' },
       { path: 'market-event-upload', redirect: '/photo-upload' },
