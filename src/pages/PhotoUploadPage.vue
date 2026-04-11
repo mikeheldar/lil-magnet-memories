@@ -1065,10 +1065,20 @@ export default {
     // Track checked-in event reactively so computed property updates when events change
     const checkedInEvent = ref(marketEventService.getCheckedInEvent());
 
+    const isMarketRoute = computed(() => route.name === 'photo-upload-market');
+
+    function applyMarketRouteIntent() {
+      if (!isMarketRoute.value) return;
+      if (!marketEventService.getCheckedInEvent()) return;
+      if (isMarketCustomer.value) return;
+      setCustomerType(CUSTOMER_TYPES.MARKET);
+    }
+
     // Subscribe to market event changes to update checkedInEvent ref
     const unsubscribeMarketEvents = marketEventService.addListener(() => {
       const currentEvent = marketEventService.getCheckedInEvent();
       checkedInEvent.value = currentEvent;
+      applyMarketRouteIntent();
       console.log('🔄 Market event changed, updated checkedInEvent:', currentEvent?.name || 'none');
     });
 
@@ -2177,6 +2187,8 @@ export default {
       }
 
       try {
+        applyMarketRouteIntent();
+
         // Wait a moment for market event service to fully load events
         await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -2225,6 +2237,8 @@ export default {
           // If we're here on refresh, it means the route guard allowed it, so stay on page
           // But don't mark hadEventOnLoad as true, so dialog won't show on initial load
         }
+
+        applyMarketRouteIntent();
       } catch (error) {
         console.error('Error checking for market event:', error);
         // Don't redirect on error - let user stay on page

@@ -16,6 +16,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'online-order', redirect: '/photo-upload' },
       {
         path: 'photo-upload',
+        name: 'photo-upload',
+        component: () => import('pages/PhotoUploadPage.vue'),
+      },
+      {
+        path: 'photo-upload-market',
+        name: 'photo-upload-market',
         component: () => import('pages/PhotoUploadPage.vue'),
       },
       { path: 'cart', component: () => import('pages/CartPage.vue') },

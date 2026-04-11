@@ -68,7 +68,7 @@ export default route(function (/* { store, ssrContext } */) {
 
     // Photo upload page - always allow navigation (handles both market events and online orders)
     // The page itself adapts based on market event status, so no need to block navigation
-    if (to.path === '/photo-upload') {
+    if (to.path === '/photo-upload' || to.path === '/photo-upload-market') {
       console.log('Route guard: Allowing navigation to photo upload page');
       next();
       return;
