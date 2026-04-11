@@ -145,3 +145,52 @@ export const geocodeAddress = async (address) => {
     throw error;
   }
 };
+
+/**
+ * Reverse geocode coordinates to a human-readable address.
+ * Uses OpenStreetMap Nominatim (same service as geocodeAddress).
+ * @param {number} lat
+ * @param {number} lng
+ * @returns {Promise<string>} display_name from Nominatim
+ */
+export const reverseGeocodeCoordinates = async (lat, lng) => {
+  const latN = Number(lat);
+  const lngN = Number(lng);
+  if (
+    lat == null ||
+    lng == null ||
+    Number.isNaN(latN) ||
+    Number.isNaN(lngN) ||
+    latN < -90 ||
+    latN > 90 ||
+    lngN < -180 ||
+    lngN > 180
+  ) {
+    throw new Error('Valid coordinates are required');
+  }
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${encodeURIComponent(latN)}&lon=${encodeURIComponent(lngN)}&format=json`,
+      {
+        headers: {
+          'User-Agent': 'LilMagnetMemories/1.0',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Reverse geocoding service unavailable');
+    }
+
+    const data = await response.json();
+    const name = typeof data.display_name === 'string' ? data.display_name.trim() : '';
+    if (name) {
+      return name;
+    }
+    throw new Error('No address found for this location');
+  } catch (error) {
+    console.error('Reverse geocoding error:', error);
+    throw error;
+  }
+};

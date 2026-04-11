@@ -677,7 +677,10 @@ import { authService } from '../services/authService';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import GooglePlacesAutocomplete from '../components/GooglePlacesAutocomplete.vue';
-import { getUserLocation } from '../utils/geolocation.js';
+import {
+  getUserLocation,
+  reverseGeocodeCoordinates,
+} from '../utils/geolocation.js';
 
 export default {
   name: 'MarketEventsPage',
@@ -944,11 +947,21 @@ export default {
         createManualLng.value = '';
         createPendingCoords.value = { lat: loc.lat, lng: loc.lng };
         createCoordsSource.value = 'gps';
-        createAnchorAddress.value = '';
+
+        let address = '';
+        try {
+          address = await reverseGeocodeCoordinates(loc.lat, loc.lng);
+        } catch (geoErr) {
+          console.warn('Reverse geocode failed, using coordinates as location label:', geoErr);
+          address = `${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`;
+        }
+        newEvent.value = { ...newEvent.value, location: address };
+        createAnchorAddress.value = address;
+
         $q.notify({
           type: 'positive',
           message: 'Location captured',
-          caption: `${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`,
+          caption: address,
           position: 'top',
         });
       } catch (e) {
@@ -972,11 +985,26 @@ export default {
         editManualLng.value = '';
         editPendingCoords.value = { lat: loc.lat, lng: loc.lng };
         editCoordsSource.value = 'gps';
-        editAnchorAddress.value = '';
+
+        let address = '';
+        try {
+          address = await reverseGeocodeCoordinates(loc.lat, loc.lng);
+        } catch (geoErr) {
+          console.warn('Reverse geocode failed, using coordinates as location label:', geoErr);
+          address = `${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`;
+        }
+        if (editingEvent.value) {
+          editingEvent.value = {
+            ...editingEvent.value,
+            location: address,
+          };
+        }
+        editAnchorAddress.value = address;
+
         $q.notify({
           type: 'positive',
           message: 'Location captured',
-          caption: `${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`,
+          caption: address,
           position: 'top',
         });
       } catch (e) {
