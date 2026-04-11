@@ -67,13 +67,15 @@ const isRequired = computed(() => {
   });
 });
 
-// Watch for external changes to modelValue
-watch(() => props.modelValue, (newVal) => {
-  if (newVal !== inputValue.value) {
+// Watch for external changes to modelValue (e.g. GPS reverse-geocode filling the field)
+watch(
+  () => props.modelValue,
+  async (newVal) => {
+    if (newVal === inputValue.value) return;
     inputValue.value = newVal;
-    updateAutocompleteValue(newVal);
+    await syncModelValueToDom(newVal);
   }
-});
+);
 
 /** Resolve DOM node for gmp-place-autocomplete (Vue ref quirks). */
 function resolveAutocompleteEl() {
@@ -147,18 +149,43 @@ function placeFromSelectEvent(event) {
   return null;
 }
 
-const updateAutocompleteValue = (value) => {
+/**
+ * Push v-model into the gmp-place-autocomplete UI. The web component exposes
+ * `value` on the host; shadow inner input may not exist on first tick.
+ */
+const syncModelValueToDom = async (value) => {
+  const str = value ?? '';
+  await nextTick();
+
   const host = resolveAutocompleteEl();
-  if (host) {
-    const inputElement = findInnerInput(host);
-    if (inputElement) {
-      inputElement.value = value || '';
-    }
+  if (!host) return;
+
+  // PlaceAutocompleteElement exposes `value` on the host element.
+  try {
+    host.value = str;
+  } catch (e) {
+    console.warn('[GooglePlacesAutocomplete] Could not set host.value:', e);
   }
-  // Also emit to ensure parent gets the update
-  if (value) {
-    emit('update:modelValue', value);
+
+  let inputEl = null;
+  if (host.input && host.input instanceof HTMLInputElement) {
+    inputEl = host.input;
   }
+  if (!inputEl) {
+    inputEl = findInnerInput(host) || (await waitForInnerInput(host));
+  }
+  if (!inputEl) {
+    console.warn('[GooglePlacesAutocomplete] No inner input to sync modelValue');
+    validateInput(str);
+    return;
+  }
+
+  if (inputEl.value !== str) {
+    inputEl.value = str;
+    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  validateInput(str);
 };
 
 const validateInput = (value) => {
@@ -346,7 +373,7 @@ const initAutocomplete = async () => {
   }
 
   if (props.modelValue) {
-    updateAutocompleteValue(props.modelValue);
+    await syncModelValueToDom(props.modelValue);
   }
 };
 
