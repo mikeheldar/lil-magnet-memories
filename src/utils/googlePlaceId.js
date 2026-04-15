@@ -1,17 +1,27 @@
 /**
- * Normalize VITE_GOOGLE_PLACE_ID. Uppercase "I" and lowercase "l" are often confused when copying.
+ * Resolve VITE_GOOGLE_PLACE_ID from env.
+ *
+ * The canonical Place ID (matching the g.page review link) is:
+ *   ChIJzUlZ6tl1DAMRgESb9fQrHYw
+ *
+ * An older ID (ChIJcw6BIkQL9YgRi2XERn80DPg / ...Blk...) points to a
+ * different listing at the same address that has no reviews.
+ * Migrate to the correct ID in .env / Vercel when possible.
  */
 
-const PLACE_ID_TYPO_I_FOR_L = 'ChIJcw6BIkQL9YgRi2XERn80DPg';
-const PLACE_ID_CORRECTED = 'ChIJcw6BlkQL9YgRi2XERn80DPg';
+const STALE_IDS = [
+  'ChIJcw6BIkQL9YgRi2XERn80DPg',
+  'ChIJcw6BlkQL9YgRi2XERn80DPg',
+];
+const CANONICAL_PLACE_ID = 'ChIJzUlZ6tl1DAMRgESb9fQrHYw';
 
 export function resolveGooglePlaceIdFromEnv() {
   const raw = import.meta.env.VITE_GOOGLE_PLACE_ID;
-  if (raw === PLACE_ID_TYPO_I_FOR_L) {
+  if (STALE_IDS.includes(raw)) {
     console.warn(
-      "[Google] Place ID uses capital I where Google's finder shows lowercase L (...Blk... not ...BIk...). Using corrected ID. Update VITE_GOOGLE_PLACE_ID in .env / Vercel."
+      `[Google] Place ID ${raw} is a stale listing. Using canonical ID ${CANONICAL_PLACE_ID}. Update VITE_GOOGLE_PLACE_ID in .env / Vercel.`
     );
-    return PLACE_ID_CORRECTED;
+    return CANONICAL_PLACE_ID;
   }
   return raw;
 }
