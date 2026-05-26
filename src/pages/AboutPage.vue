@@ -235,25 +235,23 @@
 </template>
 
 <script>
-import { useMeta } from 'quasar';
+import { useRoute } from 'vue-router';
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 export default {
   name: 'AboutPage',
   setup() {
-    useMeta({
+    const route = useRoute();
+    useSiteSeo(() => ({
       title: 'About Us - Lil Magnet Memories',
-      meta: {
-        description: {
-          name: 'description',
-          content: 'Founded in 2025 by Amy Helman-Darley to sprinkle joy into the world—one magnetic memory at a time. Learn about our story and mission.'
-        },
-        keywords: {
-          name: 'keywords',
-          content: 'about lil magnet memories, Amy Helman-Darley, custom magnet company, photo magnet business'
-        }
-      }
-    });
-  }
+      description:
+        'Founded in 2025 by Amy Helman-Darley to sprinkle joy into the world—one magnetic memory at a time. Learn about our story and mission.',
+      keywords:
+        'about lil magnet memories, Amy Helman-Darley, custom magnet company, photo magnet business',
+      path: route.path,
+      image: '/assets/lil-magnet-memories-logo.png',
+    }));
+  },
 };
 </script>
 

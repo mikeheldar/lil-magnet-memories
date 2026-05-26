@@ -66,24 +66,22 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useQuasar, useMeta } from 'quasar';
+import { useRoute } from 'vue-router';
+import { useQuasar } from 'quasar';
 import { authService } from '../services/authService';
-
-useMeta({
-  title: 'Newsletter Signup - Lil Magnet Memories',
-  meta: {
-    description: {
-      name: 'description',
-      content: 'Subscribe to our newsletter for special offers, new products, and updates from Lil Magnet Memories.'
-    },
-    keywords: {
-      name: 'keywords',
-      content: 'newsletter, subscribe, email list, special offers'
-    }
-  }
-});
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 const $q = useQuasar();
+const route = useRoute();
+
+useSiteSeo(() => ({
+  title: 'Newsletter Signup - Lil Magnet Memories',
+  description:
+    'Subscribe to our newsletter for special offers, new products, and updates from Lil Magnet Memories.',
+  keywords: 'newsletter, subscribe, email list, special offers',
+  path: route.path,
+  image: '/assets/lil-magnet-memories-logo.png',
+}));
 const submitting = ref(false);
 const form = ref({
   email: '',

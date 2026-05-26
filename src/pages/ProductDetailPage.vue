@@ -113,6 +113,42 @@ import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
 import { useQuasar } from 'quasar';
 import SimpleSlideshow from '../components/SimpleSlideshow.vue';
+import {
+  buildSiteSeoPayload,
+  toAbsoluteUrl,
+  SITE_ORIGIN,
+  defaultOgImagePath,
+} from '../composables/useSiteSeo.js';
+
+function categoryListTitle(productType) {
+  if (productType === 'custom') return 'Custom Photo Magnets';
+  if (productType === 'designer') return 'Designer Magnets';
+  if (productType === 'specialty') return 'Specialty Magnets';
+  return 'Products';
+}
+
+function collectProductImageUrls(product) {
+  if (!product) return [];
+  const urls = [];
+  if (product.imageUrl) urls.push(product.imageUrl);
+  const extra =
+    product.images && product.images.length > 0
+      ? product.images
+      : product.imageUrls || [];
+  if (Array.isArray(extra)) urls.push(...extra);
+  return [...new Set(urls.filter(Boolean))].map((u) => toAbsoluteUrl(u));
+}
+
+function firstOfferFromPricing(pricing) {
+  if (!pricing || typeof pricing !== 'object') return null;
+  const keys = Object.keys(pricing);
+  if (!keys.length) return null;
+  const qtyKey = keys[0];
+  const price = pricing[qtyKey];
+  const n = Number(price);
+  if (Number.isNaN(n)) return null;
+  return { price: n, qty: Number(qtyKey) };
+}
 
 export default {
   name: 'ProductDetailPage',
@@ -120,20 +156,6 @@ export default {
     SimpleSlideshow,
   },
   setup() {
-    useMeta({
-      title: 'Product Details - Lil Magnet Memories',
-      meta: {
-        description: {
-          name: 'description',
-          content: 'View product details for custom photo magnets. See pricing, sizes, and options. Add to cart and start creating your memories.'
-        },
-        keywords: {
-          name: 'keywords',
-          content: 'product details, magnet info, pricing, add to cart'
-        }
-      }
-    });
-
     const route = useRoute();
     const router = useRouter();
     const $q = useQuasar();
@@ -150,6 +172,104 @@ export default {
         return found;
       }
       return null;
+    });
+
+    const fallbackDescription =
+      'View product details for custom photo magnets. See pricing, sizes, and options. Add to cart or start creating your memories.';
+
+    useMeta(() => {
+      const path = route.path;
+      const p = product.value;
+
+      if (!p) {
+        const desc = loading.value
+          ? fallbackDescription
+          : 'This product is not available. Browse our custom photo magnets and gifts.';
+        return buildSiteSeoPayload({
+          title: 'Product Details - Lil Magnet Memories',
+          description: desc,
+          keywords:
+            'custom photo magnets, product details, Lil Magnet Memories, personalized magnets',
+          path,
+          image: '/assets/lil-magnet-memories-logo.png',
+        });
+      }
+
+      const titleLine = `${p.description || 'Product'} | Lil Magnet Memories`;
+      const body = (p.detailedDescription || p.description || fallbackDescription).trim();
+      const desc = body.slice(0, 160);
+      const images = collectProductImageUrls(p);
+      const primaryImage = images[0] || defaultOgImagePath();
+      const offer = firstOfferFromPricing(p.pricing);
+      const productUrl = toAbsoluteUrl(path);
+
+      const productLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: p.description || 'Custom magnet product',
+        description: body.slice(0, 5000),
+        image: images.length ? images : [primaryImage],
+        sku: String(p.id),
+        brand: {
+          '@type': 'Brand',
+          name: "Li'l Magnet Memories",
+        },
+      };
+      if (offer) {
+        productLd.offers = {
+          '@type': 'Offer',
+          priceCurrency: 'USD',
+          price: String(offer.price),
+          availability: 'https://schema.org/InStock',
+          url: productUrl,
+        };
+      }
+
+      const breadcrumbLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: SITE_ORIGIN,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: categoryListTitle(productType.value),
+            item: `${SITE_ORIGIN}/products/${productType.value}`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: p.description || 'Product',
+            item: productUrl,
+          },
+        ],
+      };
+
+      return {
+        ...buildSiteSeoPayload({
+          title: titleLine,
+          description: desc,
+          keywords: `custom magnets, ${p.category || 'photo gifts'}, personalized magnets`,
+          path,
+          ogType: 'product',
+          image: primaryImage,
+        }),
+        script: {
+          productDetailLd: {
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify(productLd),
+          },
+          productBreadcrumbLd: {
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify(breadcrumbLd),
+          },
+        },
+      };
     });
 
     const loadProducts = async (retryCount = 0) => {

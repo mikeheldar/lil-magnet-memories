@@ -168,7 +168,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useMeta } from 'quasar';
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { authService } from '../services/authService';
 import { marketEventService } from '../services/marketEventService.js';
 import { 
@@ -180,22 +180,17 @@ import {
 export default {
   name: 'ThankYouPage',
   setup() {
-    useMeta({
-      title: 'Order Confirmation - Lil Magnet Memories',
-      meta: {
-        description: {
-          name: 'description',
-          content: 'Thank you for your order! Your custom photo magnets are being prepared. Check your email for order confirmation and updates.'
-        },
-        keywords: {
-          name: 'keywords',
-          content: 'order confirmation, thank you, order complete'
-        }
-      }
-    });
-
     const router = useRouter();
     const route = useRoute();
+
+    useSiteSeo(() => ({
+      title: 'Order Confirmation - Lil Magnet Memories',
+      description:
+        'Thank you for your order! Your custom photo magnets are being prepared. Check your email for order confirmation and updates.',
+      keywords: 'order confirmation, thank you, order complete',
+      path: route.path,
+      image: '/assets/lil-magnet-memories-logo.png',
+    }));
 
     // Google Reviews integration
     const googleReviewUrl = computed(() => getGoogleReviewUrl());

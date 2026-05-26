@@ -821,8 +821,9 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import { useQuasar, useMeta } from 'quasar';
+import { useQuasar } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService.js';
 import { auth } from '../firebase/config.js';
@@ -837,24 +838,20 @@ import {
 export default {
   name: 'PhotoUploadPage',
   setup() {
-    useMeta({
-      title: 'Upload Photos - Lil Magnet Memories',
-      meta: {
-        description: {
-          name: 'description',
-          content: 'Upload your photos for custom photo magnets. Easy photo upload with preview and cropping tools. Start creating your memories!'
-        },
-        keywords: {
-          name: 'keywords',
-          content: 'photo upload, upload images, custom photo magnets, image upload'
-        }
-      }
-    });
-
     const $q = useQuasar();
     const quasar = $q; // Capture in local variable for safe access
     const router = useRouter();
     const route = useRoute();
+
+    useSiteSeo(() => ({
+      title: 'Upload Photos - Lil Magnet Memories',
+      description:
+        'Upload your photos for custom photo magnets. Easy photo upload with preview and cropping tools. Start creating your memories!',
+      keywords:
+        'photo upload, upload images, custom photo magnets, image upload',
+      path: route.path,
+      image: '/assets/lil-magnet-memories-logo.png',
+    }));
     
     // Cart composable
     const { addCustomUploadToCart, removeFromCart, cartItems } = useCart();

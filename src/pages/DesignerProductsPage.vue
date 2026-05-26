@@ -143,8 +143,8 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useMeta } from 'quasar';
+import { useRouter, useRoute } from 'vue-router';
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService';
 import SimpleSlideshow from '../components/SimpleSlideshow.vue';
@@ -155,21 +155,18 @@ export default {
     SimpleSlideshow,
   },
   setup() {
-    useMeta({
-      title: 'Designer Magnets - Lil Magnet Memories',
-      meta: {
-        description: {
-          name: 'description',
-          content: 'Explore our collection of designer photo magnets featuring unique designs, artistic templates, and premium styles for your memories.'
-        },
-        keywords: {
-          name: 'keywords',
-          content: 'designer magnets, artistic magnets, premium photo magnets, designer photo gifts'
-        }
-      }
-    });
-
     const router = useRouter();
+    const route = useRoute();
+
+    useSiteSeo(() => ({
+      title: 'Designer Magnets - Lil Magnet Memories',
+      description:
+        'Explore our collection of designer photo magnets featuring unique designs, artistic templates, and premium styles for your memories.',
+      keywords:
+        'designer magnets, artistic magnets, premium photo magnets, designer photo gifts',
+      path: route.path,
+      image: '/assets/lil-magnet-memories-logo.png',
+    }));
     const products = ref([]);
     const loading = ref(true);
 

@@ -938,10 +938,11 @@
 <script>
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useMeta, useQuasar } from 'quasar';
+import { SITE_ORIGIN } from '../composables/useSiteSeo.js';
 import { authService } from '../services/authService';
 import { useCart } from '../composables/useCart.js';
 import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
-import { useQuasar } from 'quasar';
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
@@ -950,6 +951,46 @@ import { firebaseService } from '../services/firebaseService.js';
 export default {
   name: 'MainLayout',
   setup() {
+    const siteLd = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'LocalBusiness',
+          '@id': `${SITE_ORIGIN}/#localbusiness`,
+          name: "Li'l Magnet Memories",
+          url: SITE_ORIGIN,
+          image: `${SITE_ORIGIN}/assets/lil-magnet-memories-logo.png`,
+          description:
+            'Custom photo magnets and personalized magnet gifts. Order online or find us at local market events.',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: '4952 Leisure Valley',
+            addressLocality: 'Dunwoody',
+            addressRegion: 'GA',
+            postalCode: '30338',
+            addressCountry: 'US',
+          },
+          sameAs: ['https://www.instagram.com/lilmagnetmemories'],
+        },
+        {
+          '@type': 'WebSite',
+          '@id': `${SITE_ORIGIN}/#website`,
+          url: SITE_ORIGIN,
+          name: "Li'l Magnet Memories",
+          publisher: { '@id': `${SITE_ORIGIN}/#localbusiness` },
+        },
+      ],
+    };
+
+    useMeta({
+      script: {
+        siteOrganizationLd: {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify(siteLd),
+        },
+      },
+    });
+
     const route = useRoute();
     const router = useRouter();
     const $q = useQuasar();

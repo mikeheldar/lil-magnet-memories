@@ -54,24 +54,20 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useMeta } from 'quasar';
-
-useMeta({
-  title: 'FAQ - Lil Magnet Memories',
-  meta: {
-    description: {
-      name: 'description',
-      content: 'Frequently asked questions about custom photo magnets. Learn about ordering, shipping, pricing, and our products.'
-    },
-    keywords: {
-      name: 'keywords',
-      content: 'magnet FAQ, custom magnet questions, shipping info, pricing questions'
-    }
-  }
-});
+import { useRouter, useRoute } from 'vue-router';
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 const router = useRouter();
+const route = useRoute();
+
+useSiteSeo(() => ({
+  title: 'FAQ - Lil Magnet Memories',
+  description:
+    'Frequently asked questions about custom photo magnets. Learn about ordering, shipping, pricing, and our products.',
+  keywords: 'magnet FAQ, custom magnet questions, shipping info, pricing questions',
+  path: route.path,
+  image: '/assets/lil-magnet-memories-logo.png',
+}));
 
 const faqs = ref([
   {

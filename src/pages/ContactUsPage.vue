@@ -99,24 +99,22 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useQuasar, useMeta } from 'quasar';
+import { useRoute } from 'vue-router';
+import { useQuasar } from 'quasar';
 import { config } from '../config/environment.js';
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 const $q = useQuasar();
+const route = useRoute();
 
-useMeta({
+useSiteSeo(() => ({
   title: 'Contact Us - Lil Magnet Memories',
-  meta: {
-    description: {
-      name: 'description',
-      content: 'Get in touch with Lil Magnet Memories. We\'d love to hear from you! Email us at info@lilmagnetmemories.com or send us a message.'
-    },
-    keywords: {
-      name: 'keywords',
-      content: 'contact lil magnet memories, customer support, email, message'
-    }
-  }
-});
+  description:
+    "Get in touch with Lil Magnet Memories. We'd love to hear from you! Email us at info@lilmagnetmemories.com or send us a message.",
+  keywords: 'contact lil magnet memories, customer support, email, message',
+  path: route.path,
+  image: '/assets/lil-magnet-memories-logo.png',
+}));
 const submitting = ref(false);
 const success = ref(false);
 const form = ref({

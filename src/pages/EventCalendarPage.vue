@@ -219,25 +219,22 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useMeta } from 'quasar';
+import { useRouter, useRoute } from 'vue-router';
 import { marketEventService } from '../services/marketEventService.js';
-
-useMeta({
-  title: 'Event Calendar - Lil Magnet Memories',
-  meta: {
-    description: {
-      name: 'description',
-      content: 'Find Lil Magnet Memories at upcoming market events. See our event calendar, locations, and dates. Visit us in person for custom photo magnets!'
-    },
-    keywords: {
-      name: 'keywords',
-      content: 'market events, event calendar, local markets, in-person shopping, market schedule'
-    }
-  }
-});
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 const router = useRouter();
+const route = useRoute();
+
+useSiteSeo(() => ({
+  title: 'Event Calendar - Lil Magnet Memories',
+  description:
+    'Find Lil Magnet Memories at upcoming market events. See our event calendar, locations, and dates. Visit us in person for custom photo magnets!',
+  keywords:
+    'market events, event calendar, local markets, in-person shopping, market schedule',
+  path: route.path,
+  image: '/assets/lil-magnet-memories-logo.png',
+}));
 const loading = ref(true);
 const events = ref([]);
 

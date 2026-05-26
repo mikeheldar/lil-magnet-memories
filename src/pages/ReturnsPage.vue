@@ -81,22 +81,18 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
-import { useMeta } from 'quasar';
+import { useRouter, useRoute } from 'vue-router';
+import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 const router = useRouter();
+const route = useRoute();
 
-useMeta({
+useSiteSeo(() => ({
   title: 'Returns & Refunds - Lil Magnet Memories',
-  meta: {
-    description: {
-      name: 'description',
-      content: 'Our return and refund policy for custom photo magnets. Learn about our satisfaction guarantee and how to request returns or refunds.'
-    },
-    keywords: {
-      name: 'keywords',
-      content: 'returns, refunds, return policy, money back guarantee'
-    }
-  }
-});
+  description:
+    'Our return and refund policy for custom photo magnets. Learn about our satisfaction guarantee and how to request returns or refunds.',
+  keywords: 'returns, refunds, return policy, money back guarantee',
+  path: route.path,
+  image: '/assets/lil-magnet-memories-logo.png',
+}));
 </script>
