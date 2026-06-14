@@ -70,9 +70,14 @@ async function main() {
     for (const route of SEO_ROUTES) {
       const url = `${baseUrl}${route}`;
       console.log(`Prerendering ${route}`);
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 90000 });
-      await page.waitForSelector(appRootSelector, { timeout: 10000 });
-      await page.waitForTimeout(250);
+      // networkidle can hang on SPAs that keep background requests open.
+      // Prefer DOM readiness + app mount, then try a short idle wait.
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+      await page.waitForSelector(appRootSelector, { timeout: 15000 });
+      await page
+        .waitForLoadState('networkidle', { timeout: 5000 })
+        .catch(() => {});
+      await page.waitForTimeout(500);
       const html = await page.content();
       const outPath = routeToOutputPath(route);
       mkdirSync(dirname(outPath), { recursive: true });
