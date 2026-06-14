@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build:seo",
   "outputDirectory": "dist/prerender",
-  "installCommand": "npm ci && npx playwright install --with-deps chromium",
+  "installCommand": "npm ci",
   "framework": null,
   "headers": [
     {

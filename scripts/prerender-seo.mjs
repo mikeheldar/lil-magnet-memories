@@ -1,7 +1,14 @@
 #!/usr/bin/env node
 import express from 'express';
 import { chromium } from '@playwright/test';
-import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -58,35 +65,63 @@ async function main() {
 
   rmSync(outDir, { recursive: true, force: true });
   cpSync(spaDir, outDir, { recursive: true });
+  const spaIndexHtml = readFileSync(join(spaDir, 'index.html'), 'utf8');
 
   const { server, port } = await startLocalServer();
   const baseUrl = `http://127.0.0.1:${port}`;
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
-  const page = await context.newPage();
   const rendered = [];
+  const fallbackRoutes = [];
+  let browser;
+  let context;
+  let page;
+
+  const writeFallbackRoute = (route) => {
+    const outPath = routeToOutputPath(route);
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, `<!DOCTYPE html>\n${spaIndexHtml}`);
+    fallbackRoutes.push(route);
+    console.warn(`Fallback copy for ${route}`);
+  };
 
   try {
+    browser = await chromium.launch({ headless: true });
+    context = await browser.newContext();
+    page = await context.newPage();
+
     for (const route of SEO_ROUTES) {
-      const url = `${baseUrl}${route}`;
-      console.log(`Prerendering ${route}`);
-      // networkidle can hang on SPAs that keep background requests open.
-      // Prefer DOM readiness + app mount, then try a short idle wait.
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
-      await page.waitForSelector(appRootSelector, { timeout: 15000 });
-      await page
-        .waitForLoadState('networkidle', { timeout: 5000 })
-        .catch(() => {});
-      await page.waitForTimeout(500);
-      const html = await page.content();
-      const outPath = routeToOutputPath(route);
-      mkdirSync(dirname(outPath), { recursive: true });
-      writeFileSync(outPath, `<!DOCTYPE html>\n${html}`);
-      rendered.push({ route, output: outPath.replace(`${projectRoot}/`, '') });
+      try {
+        const url = `${baseUrl}${route}`;
+        console.log(`Prerendering ${route}`);
+        // networkidle can hang on SPAs that keep background requests open.
+        // Prefer DOM readiness + app mount, then try a short idle wait.
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+        await page.waitForSelector(appRootSelector, { timeout: 15000 });
+        await page
+          .waitForLoadState('networkidle', { timeout: 5000 })
+          .catch(() => {});
+        await page.waitForTimeout(500);
+        const html = await page.content();
+        const outPath = routeToOutputPath(route);
+        mkdirSync(dirname(outPath), { recursive: true });
+        writeFileSync(outPath, `<!DOCTYPE html>\n${html}`);
+        rendered.push({ route, output: outPath.replace(`${projectRoot}/`, '') });
+      } catch (routeErr) {
+        console.warn(`Failed to prerender ${route}: ${routeErr.message}`);
+        writeFallbackRoute(route);
+      }
+    }
+  } catch (browserErr) {
+    console.warn(`Browser launch failed, using fallback route copies: ${browserErr.message}`);
+    for (const route of SEO_ROUTES) {
+      writeFallbackRoute(route);
     }
   } finally {
-    await context.close();
-    await browser.close();
+    if (context) {
+      await context.close();
+    }
+    if (browser) {
+      await browser.close();
+    }
     await new Promise((resolve) => server.close(resolve));
   }
 
@@ -96,7 +131,9 @@ async function main() {
       {
         generatedAt: new Date().toISOString(),
         routeCount: rendered.length,
+        fallbackRouteCount: fallbackRoutes.length,
         routes: rendered.map((r) => r.route),
+        fallbackRoutes,
       },
       null,
       2
