@@ -110,8 +110,9 @@ const route = useRoute();
 useSiteSeo(() => ({
   title: 'Contact Us - Lil Magnet Memories',
   description:
-    "Get in touch with Lil Magnet Memories. We'd love to hear from you! Email us at info@lilmagnetmemories.com or send us a message.",
-  keywords: 'contact lil magnet memories, customer support, email, message',
+    "Contact Lil Magnet Memories for custom photo magnets, local event orders, and personalized gift ideas in Dunwoody, Sandy Springs, and nearby areas.",
+  keywords:
+    'contact lil magnet memories, custom magnets near me, Dunwoody custom gifts, Sandy Springs photo magnets, team event magnets, holiday gift support',
   path: route.path,
   image: '/assets/lil-magnet-memories-logo.png',
 }));

@@ -413,9 +413,9 @@ export default {
       title: 'Home - Lil Magnet Memories',
       socialTitle: 'Lil Magnet Memories - Custom Photo Magnets',
       description:
-        'Turn your precious memories into beautiful custom photo magnets. Perfect for gifts, events, and keepsakes. Order online or visit us at local market events.',
+        'Turn your favorite photos into custom magnets for holidays, team gifts, family keepsakes, school events, and parties in Dunwoody, Sandy Springs, and nearby Atlanta.',
       keywords:
-        'custom photo magnets, personalized magnets, photo gifts, magnet memories, custom gifts, market event magnets',
+        'custom photo magnets, personalized magnets, gift ideas for holidays, team magnets, family photo gifts, party favors, Dunwoody gifts, Sandy Springs gifts, memory keepsakes',
       path: route.path || '/',
       image: '/assets/lil-magnet-memories-logo.png',
     }));

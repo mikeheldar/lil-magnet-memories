@@ -209,9 +209,9 @@ export default {
     useSiteSeo(() => ({
       title: 'Custom Photo Magnets - Lil Magnet Memories',
       description:
-        'Create personalized magnets from your own photos. Choose from various sizes and styles. High-quality prints that capture your precious memories.',
+        'Create custom photo magnets from your own pictures for holiday gifts, sports teams, family reunions, graduations, and party events across Dunwoody and Sandy Springs.',
       keywords:
-        'custom photo magnets, personalized magnets, photo gifts, custom magnet sizes',
+        'custom photo magnets, team magnets, graduation gifts, holiday gift ideas, family reunion favors, Dunwoody custom gifts, Sandy Springs magnet shop',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
     }));

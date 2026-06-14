@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.api = void 0;
+exports.api = exports.dailyOpenOrdersReminder = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const express = require("express");
@@ -754,10 +754,12 @@ Lil Magnet Memories System
 
 This email was automatically generated from your website order form.
   `;
-    // Send the email
+    // Send directly to the admin inbox to avoid Cloudflare forwarding
+    // loop/suppression for Gmail-authenticated app mail.
     const info = await transporter.sendMail({
-        from: `"Lil Magnet Memories" <${emailConfig.user}>`,
-        to: 'info@lilmagnetmemories.com',
+        from: '"Lil Magnet Memories Orders" <orders@lilmagnetmemories.com>',
+        replyTo: 'info@lilmagnetmemories.com',
+        to: emailConfig.user,
         subject: subject,
         text: textContent,
         html: htmlContent,
@@ -1026,7 +1028,7 @@ This email was automatically generated from the contact form on your website.
     // Send the email
     const info = await transporter.sendMail({
         from: `"Lil Magnet Memories Contact Form" <${emailConfig.user}>`,
-        to: 'info@lilmagnetmemories.com',
+        to: emailConfig.user,
         replyTo: email,
         subject: emailSubject,
         text: textContent,
@@ -1035,6 +1037,138 @@ This email was automatically generated from the contact form on your website.
     console.log('✅ Lil Magnet contact email sent successfully:', info.messageId);
     return info.messageId;
 }
+function getOrderTimestampValue(order) {
+    const candidates = [
+        order === null || order === void 0 ? void 0 : order.submissionDateClient,
+        order === null || order === void 0 ? void 0 : order.submissionDate,
+        order === null || order === void 0 ? void 0 : order.createdAt,
+        order === null || order === void 0 ? void 0 : order.timestamp,
+        order === null || order === void 0 ? void 0 : order.updatedAt,
+    ];
+    for (const candidate of candidates) {
+        if (!candidate)
+            continue;
+        if (typeof (candidate === null || candidate === void 0 ? void 0 : candidate.toDate) === 'function') {
+            const asDate = candidate.toDate();
+            if (asDate instanceof Date && !Number.isNaN(asDate.getTime())) {
+                return asDate.getTime();
+            }
+        }
+        if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+            return candidate;
+        }
+        if (typeof candidate === 'string') {
+            const asDate = new Date(candidate);
+            if (!Number.isNaN(asDate.getTime())) {
+                return asDate.getTime();
+            }
+        }
+    }
+    return null;
+}
+exports.dailyOpenOrdersReminder = functions.pubsub
+    .schedule('0 9 * * *')
+    .timeZone('America/New_York')
+    .onRun(async () => {
+    try {
+        const emailConfig = getEmailConfig();
+        const db = admin.firestore();
+        const openStatuses = ['new', 'paid', 'in_progress'];
+        const snapshot = await db
+            .collection('orders')
+            .where('status', 'in', openStatuses)
+            .get();
+        if (snapshot.empty) {
+            console.log('✅ [REMINDER] No open orders at 9:00am. No email sent.');
+            return null;
+        }
+        const appBaseUrl = String(process.env.PUBLIC_APP_BASE_URL || 'https://www.lilmagnetmemories.com').replace(/\/+$/, '');
+        const projectId = process.env.GCLOUD_PROJECT || 'lil-magnet-memories';
+        const adminOrdersUrl = `${appBaseUrl}/orders`;
+        const openOrders = snapshot.docs
+            .map((doc) => (Object.assign({ id: doc.id }, (doc.data() || {}))))
+            .sort((a, b) => {
+            const aTs = getOrderTimestampValue(a) || 0;
+            const bTs = getOrderTimestampValue(b) || 0;
+            return aTs - bTs; // oldest first
+        });
+        const now = Date.now();
+        const itemsHtml = openOrders
+            .map((order) => {
+            const orderNumber = String(order.orderNumber || order.id);
+            const customerName = `${order.firstName || ''} ${order.lastName || ''}`
+                .trim()
+                || 'Customer';
+            const status = String(order.status || 'new');
+            const orderTs = getOrderTimestampValue(order);
+            const ageDays = orderTs != null
+                ? Math.max(0, Math.floor((now - orderTs) / (1000 * 60 * 60 * 24)))
+                : null;
+            const firestoreLink = `https://console.firebase.google.com/project/${projectId}/firestore/data/~2Forders~2F${encodeURIComponent(order.id)}`;
+            return `
+            <li style="margin-bottom: 14px;">
+              <strong>${orderNumber}</strong> — ${escapeHtmlAttr(customerName)}<br />
+              <span>Status: <strong>${escapeHtmlAttr(status)}</strong>${ageDays != null ? ` • Age: ${ageDays} day${ageDays === 1 ? '' : 's'}` : ''}</span><br />
+              <a href="${adminOrdersUrl}" target="_blank" rel="noopener noreferrer">Open admin orders list</a>
+              &nbsp;|&nbsp;
+              <a href="${firestoreLink}" target="_blank" rel="noopener noreferrer">Open Firestore record</a>
+            </li>
+          `;
+        })
+            .join('');
+        const subject = `URGENT: ${openOrders.length} open order${openOrders.length === 1 ? '' : 's'} pending fulfillment`;
+        const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #b91c1c; margin-top: 0;">Urgent order reminder</h2>
+          <p style="font-size: 15px;">
+            There are <strong>${openOrders.length}</strong> order${openOrders.length === 1 ? '' : 's'} still open as of ${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })}.
+          </p>
+          <p>
+            <a href="${adminOrdersUrl}" target="_blank" rel="noopener noreferrer"><strong>Go to Orders Admin</strong></a>
+          </p>
+          <ul style="padding-left: 20px;">
+            ${itemsHtml}
+          </ul>
+        </div>
+      `;
+        const textLines = openOrders.map((order) => {
+            const orderNumber = String(order.orderNumber || order.id);
+            const customerName = `${order.firstName || ''} ${order.lastName || ''}`
+                .trim()
+                || 'Customer';
+            const status = String(order.status || 'new');
+            const orderTs = getOrderTimestampValue(order);
+            const ageDays = orderTs != null
+                ? Math.max(0, Math.floor((now - orderTs) / (1000 * 60 * 60 * 24)))
+                : null;
+            const firestoreLink = `https://console.firebase.google.com/project/${projectId}/firestore/data/~2Forders~2F${encodeURIComponent(order.id)}`;
+            return `- ${orderNumber} (${customerName}) | status=${status}${ageDays != null ? ` | age=${ageDays}d` : ''}\n  Orders: ${adminOrdersUrl}\n  Firestore: ${firestoreLink}`;
+        });
+        const text = `URGENT: ${openOrders.length} open order${openOrders.length === 1 ? '' : 's'} pending fulfillment\n\nOrders admin: ${adminOrdersUrl}\n\n${textLines.join('\n\n')}`;
+        const transporter = nodemailer.createTransport({
+            service: emailConfig.service,
+            auth: {
+                user: emailConfig.user,
+                pass: emailConfig.password,
+            },
+        });
+        const info = await transporter.sendMail({
+            from: '"Lil Magnet Memories Alerts" <orders@lilmagnetmemories.com>',
+            replyTo: 'info@lilmagnetmemories.com',
+            to: 'lilmagnetmemories@gmail.com',
+            cc: ['amy.helmandarley@gmail.com', 'michael.helmandarley@gmail.com'],
+            subject,
+            text,
+            html,
+        });
+        console.log(`✅ [REMINDER] Sent open-order reminder for ${openOrders.length} orders:`, info.messageId);
+        return null;
+    }
+    catch (error) {
+        console.error('❌ [REMINDER] Failed to send daily open-order reminder:', error);
+        return null;
+    }
+});
 // Export the Express app as a Firebase Function
 exports.api = functions.https.onRequest(app);
 //# sourceMappingURL=index.js.map

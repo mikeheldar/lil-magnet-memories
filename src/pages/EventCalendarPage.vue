@@ -229,9 +229,9 @@ const route = useRoute();
 useSiteSeo(() => ({
   title: 'Event Calendar - Lil Magnet Memories',
   description:
-    'Find Lil Magnet Memories at upcoming market events. See our event calendar, locations, and dates. Visit us in person for custom photo magnets!',
+    'Find upcoming Lil Magnet Memories market events near Dunwoody and Sandy Springs. Bring your pictures and order custom magnets for teams, families, and party events.',
   keywords:
-    'market events, event calendar, local markets, in-person shopping, market schedule',
+    'Dunwoody events, Sandy Springs events, market events calendar, custom magnets near me, team event gifts, family party favors',
   path: route.path,
   image: '/assets/lil-magnet-memories-logo.png',
 }));

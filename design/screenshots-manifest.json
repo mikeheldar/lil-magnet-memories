@@ -1,0 +1,1233 @@
+{
+  "baseUrl": "https://dev.lilmagnetmemories.com",
+  "productDetailPath": "/product/custom/stj6eZibGVDdZK42lpIR",
+  "captures": [
+    {
+      "key": "landing",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/landing-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 2210
+    },
+    {
+      "key": "landing",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/landing-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 4550
+    },
+    {
+      "key": "landing",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/landing-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 6904
+    },
+    {
+      "key": "photo-upload",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/photo-upload-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "photo-upload",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/photo-upload-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "photo-upload",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/photo-upload-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "photo-upload-market",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/photo-upload-market-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 2015
+    },
+    {
+      "key": "photo-upload-market",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/photo-upload-market-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 4030
+    },
+    {
+      "key": "photo-upload-market",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/photo-upload-market-sm.png",
+      "imageWidth": 832,
+      "imageHeight": 4886
+    },
+    {
+      "key": "cart",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/cart-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1075
+    },
+    {
+      "key": "cart",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/cart-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2150
+    },
+    {
+      "key": "cart",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/cart-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2664
+    },
+    {
+      "key": "checkout",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/checkout-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "checkout",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/checkout-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "checkout",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/checkout-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2496
+    },
+    {
+      "key": "thank-you",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/thank-you-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1305
+    },
+    {
+      "key": "thank-you",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/thank-you-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "thank-you",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/thank-you-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2954
+    },
+    {
+      "key": "about",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/about-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "about",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/about-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "about",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/about-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2026
+    },
+    {
+      "key": "custom-products",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/custom-products-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "custom-products",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/custom-products-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "custom-products",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/custom-products-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2306
+    },
+    {
+      "key": "designer-products",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/designer-products-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "designer-products",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/designer-products-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "designer-products",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/designer-products-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2258
+    },
+    {
+      "key": "specialty-products",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/specialty-products-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "specialty-products",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/specialty-products-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "specialty-products",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/specialty-products-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2258
+    },
+    {
+      "key": "product-detail",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/product-detail-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "product-detail",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/product-detail-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "product-detail",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/product-detail-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2226
+    },
+    {
+      "key": "contact-us",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/contact-us-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "contact-us",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/contact-us-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "contact-us",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/contact-us-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1978
+    },
+    {
+      "key": "shipping-info",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/shipping-info-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "shipping-info",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/shipping-info-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "shipping-info",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/shipping-info-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1978
+    },
+    {
+      "key": "returns",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/returns-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "returns",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/returns-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "returns",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/returns-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1978
+    },
+    {
+      "key": "faq",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/faq-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "faq",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/faq-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "faq",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/faq-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1978
+    },
+    {
+      "key": "event-calendar",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/event-calendar-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "event-calendar",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/event-calendar-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "event-calendar",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/event-calendar-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1978
+    },
+    {
+      "key": "newsletter-signup",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/newsletter-signup-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "newsletter-signup",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/newsletter-signup-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "newsletter-signup",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/newsletter-signup-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1978
+    },
+    {
+      "key": "leave-review",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/leave-review-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "leave-review",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/leave-review-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "leave-review",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/leave-review-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1978
+    },
+    {
+      "key": "my-orders",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/my-orders-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 2227
+    },
+    {
+      "key": "my-orders",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/my-orders-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 4504
+    },
+    {
+      "key": "my-orders",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/my-orders-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 6674
+    },
+    {
+      "key": "not-found",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": false,
+      "file": "screenshots/not-found-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "not-found",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": false,
+      "file": "screenshots/not-found-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "not-found",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": false,
+      "file": "screenshots/not-found-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 2242
+    },
+    {
+      "key": "nav-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "file": "screenshots/nav-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 2215
+    },
+    {
+      "key": "nav-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "file": "screenshots/nav-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 5670
+    },
+    {
+      "key": "nav-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "file": "screenshots/nav-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 12508
+    },
+    {
+      "key": "landing-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/landing-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "landing-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/landing-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "landing-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/landing-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "photo-upload-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/photo-upload-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "photo-upload-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/photo-upload-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "photo-upload-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/photo-upload-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "photo-upload-market-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/photo-upload-market-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "photo-upload-market-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/photo-upload-market-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "photo-upload-market-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/photo-upload-market-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "cart-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/cart-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "cart-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/cart-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "cart-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/cart-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "checkout-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/checkout-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "checkout-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/checkout-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "checkout-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/checkout-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "thank-you-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/thank-you-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "thank-you-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/thank-you-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "thank-you-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/thank-you-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "about-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/about-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "about-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/about-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "about-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/about-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "custom-products-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/custom-products-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "custom-products-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/custom-products-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "custom-products-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/custom-products-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "designer-products-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/designer-products-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "designer-products-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/designer-products-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "designer-products-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/designer-products-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "specialty-products-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/specialty-products-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "specialty-products-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/specialty-products-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "specialty-products-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/specialty-products-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "product-detail-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/product-detail-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "product-detail-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/product-detail-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "product-detail-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/product-detail-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "contact-us-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/contact-us-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "contact-us-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/contact-us-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "contact-us-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/contact-us-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "shipping-info-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/shipping-info-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "shipping-info-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/shipping-info-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "shipping-info-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/shipping-info-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "returns-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/returns-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "returns-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/returns-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "returns-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/returns-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "faq-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/faq-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "faq-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/faq-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "faq-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/faq-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "event-calendar-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/event-calendar-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "event-calendar-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/event-calendar-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "event-calendar-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/event-calendar-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "newsletter-signup-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/newsletter-signup-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "newsletter-signup-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/newsletter-signup-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "newsletter-signup-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/newsletter-signup-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "leave-review-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/leave-review-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "leave-review-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/leave-review-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "leave-review-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/leave-review-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "my-orders-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/my-orders-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "my-orders-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/my-orders-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "my-orders-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/my-orders-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    },
+    {
+      "key": "not-found-drawer",
+      "suffix": "lg",
+      "label": "LG",
+      "width": 1440,
+      "drawerOpen": true,
+      "file": "screenshots/not-found-drawer-lg.png",
+      "imageWidth": 1440,
+      "imageHeight": 1024
+    },
+    {
+      "key": "not-found-drawer",
+      "suffix": "md",
+      "label": "MD",
+      "width": 768,
+      "drawerOpen": true,
+      "file": "screenshots/not-found-drawer-md.png",
+      "imageWidth": 1536,
+      "imageHeight": 2048
+    },
+    {
+      "key": "not-found-drawer",
+      "suffix": "sm",
+      "label": "SM",
+      "width": 375,
+      "drawerOpen": true,
+      "file": "screenshots/not-found-drawer-sm.png",
+      "imageWidth": 750,
+      "imageHeight": 1624
+    }
+  ]
+}

@@ -2584,6 +2584,245 @@ class FirebaseService {
     }
   }
 
+  // --- Blog content management (SEO + local discovery) ---
+  static BLOG_POSTS_COLLECTION = 'blog_posts';
+
+  slugify(text) {
+    return String(text || '')
+      .toLowerCase()
+      .trim()
+      .replace(/['"]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 120);
+  }
+
+  normalizeBlogPost(docSnap) {
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
+      ...data,
+      createdAt: data.createdAt?.toDate?.() ?? data.createdAt ?? null,
+      updatedAt: data.updatedAt?.toDate?.() ?? data.updatedAt ?? null,
+      publishedAt: data.publishedAt?.toDate?.() ?? data.publishedAt ?? null,
+      eventDate: data.eventDate?.toDate?.() ?? data.eventDate ?? null,
+    };
+  }
+
+  async getPublishedBlogPosts(limitCount = 60) {
+    try {
+      const coll = collection(db, FirebaseService.BLOG_POSTS_COLLECTION);
+      const q = query(
+        coll,
+        where('status', '==', 'published'),
+        orderBy('publishedAt', 'desc'),
+        limit(limitCount)
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => this.normalizeBlogPost(d));
+    } catch (error) {
+      console.error('Error loading published blog posts:', error);
+      throw error;
+    }
+  }
+
+  async getBlogPostBySlug(slug) {
+    try {
+      const normalizedSlug = this.slugify(slug);
+      if (!normalizedSlug) return null;
+      const coll = collection(db, FirebaseService.BLOG_POSTS_COLLECTION);
+      const q = query(coll, where('slug', '==', normalizedSlug), limit(1));
+      const snap = await getDocs(q);
+      if (snap.empty) return null;
+      const post = this.normalizeBlogPost(snap.docs[0]);
+      if (post.status !== 'published') return null;
+      return post;
+    } catch (error) {
+      console.error('Error loading blog post by slug:', error);
+      throw error;
+    }
+  }
+
+  async getBlogPostsForAdmin(limitCount = 200) {
+    try {
+      const coll = collection(db, FirebaseService.BLOG_POSTS_COLLECTION);
+      const q = query(coll, orderBy('updatedAt', 'desc'), limit(limitCount));
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => this.normalizeBlogPost(d));
+    } catch (error) {
+      console.error('Error loading blog posts for admin:', error);
+      throw error;
+    }
+  }
+
+  async createBlogPost(postData, authorEmail = null) {
+    try {
+      const title = String(postData.title || '').trim();
+      if (!title) throw new Error('Blog title is required');
+      const slug = this.slugify(postData.slug || title);
+      const status = postData.status === 'published' ? 'published' : 'draft';
+      const now = serverTimestamp();
+      const payload = {
+        title,
+        slug,
+        excerpt: String(postData.excerpt || '').trim(),
+        content: String(postData.content || '').trim(),
+        featuredImage: postData.featuredImage || null,
+        tags: Array.isArray(postData.tags) ? postData.tags.filter(Boolean) : [],
+        status,
+        sourceType: postData.sourceType || 'manual',
+        sourceUrl: postData.sourceUrl || null,
+        locationTargets: Array.isArray(postData.locationTargets) ? postData.locationTargets.filter(Boolean) : ['Dunwoody', 'Sandy Springs', 'Atlanta'],
+        seoDescription: postData.seoDescription || '',
+        seoKeywords: postData.seoKeywords || '',
+        eventDate: postData.eventDate
+          ? postData.eventDate instanceof Date
+            ? Timestamp.fromDate(postData.eventDate)
+            : postData.eventDate
+          : null,
+        instagram: {
+          publishRequested: !!postData.instagram?.publishRequested,
+          publishStatus: postData.instagram?.publishStatus || 'not_requested',
+          publishedUrl: postData.instagram?.publishedUrl || null,
+          lastRequestedAt: postData.instagram?.publishRequested ? now : null,
+          caption: postData.instagram?.caption || '',
+        },
+        createdAt: now,
+        updatedAt: now,
+        publishedAt: status === 'published' ? now : null,
+        authorEmail: authorEmail || null,
+      };
+
+      const docRef = await addDoc(collection(db, FirebaseService.BLOG_POSTS_COLLECTION), payload);
+      return docRef.id;
+    } catch (error) {
+      console.error('Error creating blog post:', error);
+      throw error;
+    }
+  }
+
+  async updateBlogPost(postId, updates) {
+    try {
+      const refDoc = doc(db, FirebaseService.BLOG_POSTS_COLLECTION, postId);
+      const patch = { updatedAt: serverTimestamp() };
+      if (updates.title !== undefined) patch.title = String(updates.title || '').trim();
+      if (updates.slug !== undefined) patch.slug = this.slugify(updates.slug || updates.title || '');
+      if (updates.excerpt !== undefined) patch.excerpt = String(updates.excerpt || '').trim();
+      if (updates.content !== undefined) patch.content = String(updates.content || '').trim();
+      if (updates.featuredImage !== undefined) patch.featuredImage = updates.featuredImage || null;
+      if (updates.tags !== undefined) patch.tags = Array.isArray(updates.tags) ? updates.tags.filter(Boolean) : [];
+      if (updates.status !== undefined) patch.status = updates.status === 'published' ? 'published' : 'draft';
+      if (updates.sourceType !== undefined) patch.sourceType = updates.sourceType || 'manual';
+      if (updates.sourceUrl !== undefined) patch.sourceUrl = updates.sourceUrl || null;
+      if (updates.locationTargets !== undefined)
+        patch.locationTargets = Array.isArray(updates.locationTargets) ? updates.locationTargets.filter(Boolean) : [];
+      if (updates.seoDescription !== undefined) patch.seoDescription = updates.seoDescription || '';
+      if (updates.seoKeywords !== undefined) patch.seoKeywords = updates.seoKeywords || '';
+      if (updates.eventDate !== undefined) {
+        patch.eventDate = updates.eventDate
+          ? updates.eventDate instanceof Date
+            ? Timestamp.fromDate(updates.eventDate)
+            : updates.eventDate
+          : null;
+      }
+      if (updates.status === 'published' && updates.publishedAt === undefined) {
+        patch.publishedAt = serverTimestamp();
+      } else if (updates.publishedAt !== undefined) {
+        patch.publishedAt = updates.publishedAt
+          ? updates.publishedAt instanceof Date
+            ? Timestamp.fromDate(updates.publishedAt)
+            : updates.publishedAt
+          : null;
+      }
+      if (updates.instagram !== undefined) {
+        patch.instagram = {
+          publishRequested: !!updates.instagram?.publishRequested,
+          publishStatus: updates.instagram?.publishStatus || 'not_requested',
+          publishedUrl: updates.instagram?.publishedUrl || null,
+          lastRequestedAt: updates.instagram?.publishRequested ? serverTimestamp() : null,
+          caption: updates.instagram?.caption || '',
+        };
+      }
+
+      await updateDoc(refDoc, patch);
+    } catch (error) {
+      console.error('Error updating blog post:', error);
+      throw error;
+    }
+  }
+
+  async requestInstagramPublishForBlogPost(postId, caption = '') {
+    try {
+      const refDoc = doc(db, FirebaseService.BLOG_POSTS_COLLECTION, postId);
+      await updateDoc(refDoc, {
+        instagram: {
+          publishRequested: true,
+          publishStatus: 'queued',
+          publishedUrl: null,
+          lastRequestedAt: serverTimestamp(),
+          caption: caption || '',
+        },
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error queueing Instagram publish request:', error);
+      throw error;
+    }
+  }
+
+  async importMarketEventsAsBlogDrafts(maxItems = 20) {
+    try {
+      const events = await this.getMarketEvents();
+      const sorted = [...events]
+        .filter((e) => !e?.isTesting)
+        .sort((a, b) => {
+          const aTime = a?.startDateTime?.toDate?.()?.getTime?.() ?? new Date(a?.startDateTime || 0).getTime();
+          const bTime = b?.startDateTime?.toDate?.()?.getTime?.() ?? new Date(b?.startDateTime || 0).getTime();
+          return bTime - aTime;
+        })
+        .slice(0, maxItems);
+
+      const created = [];
+      for (const event of sorted) {
+        const title = `${event.name} in ${event.location} - Custom Photo Magnets`;
+        const slug = this.slugify(`event-${event.name}-${event.location}`);
+        const coll = collection(db, FirebaseService.BLOG_POSTS_COLLECTION);
+        const existing = await getDocs(query(coll, where('slug', '==', slug), limit(1)));
+        if (!existing.empty) continue;
+
+        const startDate = event?.startDateTime?.toDate?.() ?? new Date(event?.startDateTime || Date.now());
+        const postData = {
+          title,
+          slug,
+          excerpt: `Join Li'l Magnet Memories at ${event.location}. We create custom magnets for families, teams, school events, and party gifts.`,
+          content:
+            `We are excited to attend ${event.name} in ${event.location}. ` +
+            `Bring your favorite photos and we can help turn memories into magnets for team events, graduations, birthdays, holidays, and family keepsakes.\n\n` +
+            `Looking for custom photo magnets near Dunwoody or Sandy Springs? We serve local events and can help with party favors, team spirit magnets, and personalized gift ideas.`,
+          tags: ['market events', 'custom magnets', 'Dunwoody', 'Sandy Springs', 'gift ideas'],
+          sourceType: 'event',
+          sourceUrl: event.eventLink || '',
+          seoDescription: `Custom photo magnets at ${event.name} in ${event.location}. Great for holidays, families, teams, and events around Dunwoody and Sandy Springs.`,
+          seoKeywords:
+            'custom magnets near me, gift ideas, holiday gifts, photo magnets, Dunwoody events, Sandy Springs events, team magnets',
+          eventDate: startDate,
+          status: 'draft',
+          instagram: {
+            publishRequested: false,
+            publishStatus: 'not_requested',
+            caption: `Find us at ${event.name} in ${event.location}! #lilmagnetmemories #custommagnets`,
+          },
+        };
+        const id = await this.createBlogPost(postData);
+        created.push(id);
+      }
+      return created;
+    } catch (error) {
+      console.error('Error importing market events to blog drafts:', error);
+      throw error;
+    }
+  }
+
   // --- Promo codes (admin CRUD + checkout validation) ---
   static PROMO_CODES_COLLECTION = 'promo_codes';
 

@@ -1,0 +1,220 @@
+{
+  "project": {
+    "name": "Lil Magnet Memories",
+    "description": "E2E tests for Lil Magnet Memories – custom photo magnets, market events, and online orders.",
+    "baseUrl": "https://test.lilmagnetmemories.com",
+    "testRepoUrl": "https://github.com/your-org/lil-magnet-memories"
+  },
+  "testPlans": [
+    {
+      "name": "Site presence – test.lilmagnetmemories.com",
+      "description": "Live site smoke: landing sections, photo upload shell, About/Contact/FAQ, custom products, header and drawer. Suite: site-components.",
+      "testCases": [
+        {
+          "id": "TC-S.1",
+          "name": "Landing page shows main sections and branding",
+          "description": "Title, hero, How It Works, Shop Our Products, logo, reviews heading; optional market-event CTA.",
+          "suite": "site-components",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-S.2",
+          "name": "Photo upload page shows form shell",
+          "description": "Photo Upload Form, delivery line, Your Information, First Name field.",
+          "suite": "site-components",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-S.3",
+          "name": "About, Contact, and FAQ pages load",
+          "description": "/about, /contact-us, /faq main headings and copy.",
+          "suite": "site-components",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-S.4",
+          "name": "Custom products catalog page loads",
+          "description": "/products/custom title and subtitle.",
+          "suite": "site-components",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-S.5",
+          "name": "Header brand and navigation entry",
+          "description": "Li'l Magnet Memories in header; drawer Navigation + Home.",
+          "suite": "site-components",
+          "category": "smoke"
+        }
+      ]
+    },
+    {
+      "name": "Smoke – Critical paths",
+      "description": "Core flows: landing, photo upload entry, and key navigation.",
+      "testCases": [
+        {
+          "id": "TC-1.1",
+          "name": "Online Order - 1 Photo - Credit Card - Shipping",
+          "description": "Full flow: landing → photo upload → checkout with shipping and credit card → thank you; verify order in admin list.",
+          "suite": "market-event-not-live",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-1.2",
+          "name": "Online Order - 1 Photo - Apple Pay - Shipping",
+          "description": "Online order with Apple Pay and standard shipping.",
+          "suite": "market-event-not-live",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-6.3",
+          "name": "Button Functionality - Thank You Page",
+          "description": "Thank you page buttons (Submit Another Order, Back to Home) and navigation.",
+          "suite": "data-integrity",
+          "category": "smoke"
+        }
+      ]
+    },
+    {
+      "name": "Market Event NOT Live – Online Orders",
+      "description": "When no market event is active: online orders with shipping and payment.",
+      "testCases": [
+        {
+          "id": "TC-1.1",
+          "name": "Online Order - 1 Photo - Credit Card - Shipping",
+          "description": "Landing → photo upload → checkout (shipping + CC) → thank you; verify order in Order List.",
+          "suite": "market-event-not-live",
+          "category": "checkout"
+        },
+        {
+          "id": "TC-1.2",
+          "name": "Online Order - 1 Photo - Apple Pay - Shipping",
+          "description": "Same flow with Apple Pay.",
+          "suite": "market-event-not-live",
+          "category": "checkout"
+        },
+        {
+          "id": "TC-1.3",
+          "name": "Online Order - 15 Photos - Credit Card - Shipping",
+          "description": "Bulk upload (15 photos), quantities, checkout; verify total magnets on thank you.",
+          "suite": "market-event-not-live",
+          "category": "checkout"
+        }
+      ]
+    },
+    {
+      "name": "Market Event LIVE",
+      "description": "When a market event is active: at-event toggle, pay at tent, pay online, and popup flow.",
+      "testCases": [
+        {
+          "id": "TC-3.1",
+          "name": "Market Event Live - Toggle ON - 1 Photo - Pay at Tent",
+          "description": "At-event mode on; submit photos; pay at tent; thank you shows Pay at Tent and Pickup at Market Event.",
+          "suite": "market-event-live",
+          "category": "market-event"
+        },
+        {
+          "id": "TC-3.2",
+          "name": "Market Event Live - Toggle ON - 1 Photo - Pay Online",
+          "description": "At-event mode on, pay online; checkout then thank you with pickup at event.",
+          "suite": "market-event-live",
+          "category": "market-event"
+        },
+        {
+          "id": "TC-4.1",
+          "name": "Market Event Live - No Toggle - Answer YES to Popup",
+          "description": "Popup 'Market Event Active' → Yes, I'm at the event → photo upload in at-event mode.",
+          "suite": "market-event-live",
+          "category": "market-event"
+        },
+        {
+          "id": "TC-4.2",
+          "name": "Market Event Live - No Toggle - Answer NO to Popup",
+          "description": "Popup → No, Order Online → photo upload in online mode.",
+          "suite": "market-event-live",
+          "category": "market-event"
+        },
+        {
+          "id": "TC-4.3",
+          "name": "Market Event Live - Toggle OFF Explicitly - No Popup",
+          "description": "Toggle off before Start Creating; no popup; photo upload in online mode.",
+          "suite": "market-event-live",
+          "category": "market-event"
+        }
+      ]
+    },
+    {
+      "name": "Authenticated Users",
+      "description": "Logged-in user: online order and View My Orders.",
+      "testCases": [
+        {
+          "id": "TC-5.1",
+          "name": "Authenticated User - Online Order - View My Orders",
+          "description": "Complete online order as authenticated user; verify View My Orders visibility and my-orders page.",
+          "suite": "authenticated-users",
+          "category": "auth"
+        }
+      ]
+    },
+    {
+      "name": "Data Integrity & Buttons",
+      "description": "Order list sorting/search, thank you page buttons, order total validation.",
+      "testCases": [
+        {
+          "id": "TC-6.1",
+          "name": "Order List - Sorting and Search",
+          "description": "Orders sorted by date; search by name/email; hide completed; filter by order type.",
+          "suite": "data-integrity",
+          "category": "admin"
+        },
+        {
+          "id": "TC-6.2",
+          "name": "Order Receipt Data Validation",
+          "description": "Placeholder for order receipt data validation.",
+          "suite": "data-integrity",
+          "category": "admin"
+        },
+        {
+          "id": "TC-6.3",
+          "name": "Button Functionality - Thank You Page",
+          "description": "Thank you page: Submit Another Order and Back to Home buttons and navigation.",
+          "suite": "data-integrity",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-6.6",
+          "name": "Order Total Calculation - $0.00 Prevention",
+          "description": "Order list: verify order totals are valid (no invalid $0.00).",
+          "suite": "data-integrity",
+          "category": "admin"
+        }
+      ]
+    },
+    {
+      "name": "Edge Cases & Validation",
+      "description": "Form validation, required fields, and error handling.",
+      "testCases": [
+        {
+          "id": "TC-7.1",
+          "name": "Form Validation - Required Fields",
+          "description": "Photo upload form: required first name, last name, valid email; submit only after valid data and photo.",
+          "suite": "edge-cases",
+          "category": "validation"
+        },
+        {
+          "id": "TC-7.2",
+          "name": "Market Event Toggle Persistence",
+          "description": "Placeholder for market event toggle state across navigation.",
+          "suite": "edge-cases",
+          "category": "validation"
+        },
+        {
+          "id": "TC-7.3",
+          "name": "Multiple Orders - Order Number Uniqueness",
+          "description": "Placeholder for multiple orders and unique order numbers.",
+          "suite": "edge-cases",
+          "category": "validation"
+        }
+      ]
+    }
+  ]
+}

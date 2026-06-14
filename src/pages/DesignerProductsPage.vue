@@ -161,9 +161,9 @@ export default {
     useSiteSeo(() => ({
       title: 'Designer Magnets - Lil Magnet Memories',
       description:
-        'Explore our collection of designer photo magnets featuring unique designs, artistic templates, and premium styles for your memories.',
+        'Shop designer magnet styles and ready-made layouts for birthdays, holidays, teacher gifts, and event keepsakes in Dunwoody, Sandy Springs, and metro Atlanta.',
       keywords:
-        'designer magnets, artistic magnets, premium photo magnets, designer photo gifts',
+        'designer magnets, gift ideas, holiday magnets, teacher gifts, event keepsakes, Dunwoody gift shop, Sandy Springs personalized gifts',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
     }));

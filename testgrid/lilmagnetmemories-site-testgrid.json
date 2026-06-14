@@ -1,0 +1,51 @@
+{
+  "project": {
+    "name": "Lil Magnet Memories (test site)",
+    "description": "Import for https://test.lilmagnetmemories.com — verifies main UI (landing, upload, static pages, catalog, nav). Run Playwright with TEST_BASE_URL=https://test.lilmagnetmemories.com. Suite: tests/e2e/scenarios/site-components.spec.ts",
+    "baseUrl": "https://test.lilmagnetmemories.com",
+    "testRepoUrl": "https://github.com/your-org/lil-magnet-memories"
+  },
+  "testPlans": [
+    {
+      "name": "Site presence – test.lilmagnetmemories.com",
+      "description": "Loads the live test site and asserts hero, How It Works, Shop Our Products, reviews, photo upload form, About/Contact/FAQ, custom products page, and navigation. Playwright: site-components.spec.ts (suite id: site-components).",
+      "testCases": [
+        {
+          "id": "TC-S.1",
+          "name": "Landing page shows main sections and branding",
+          "description": "Title contains Lil Magnet Memories; hero heading; How It Works (4 steps); Shop Our Products; logo alt; What Our Customers Say; optional Start/Create Magnets CTA if market event UI is shown.",
+          "suite": "site-components",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-S.2",
+          "name": "Photo upload page shows form shell",
+          "description": "Photo Upload Form heading; delivery/pickup subtitle; Your Information; First Name field visible.",
+          "suite": "site-components",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-S.3",
+          "name": "About, Contact, and FAQ pages load",
+          "description": "/about — About Li'l Magnet Memories; /contact-us — Contact Us; /faq — Frequently Asked Questions and intro copy.",
+          "suite": "site-components",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-S.4",
+          "name": "Custom products catalog page loads",
+          "description": "/products/custom shows Custom Photo Magnets title and subtitle.",
+          "suite": "site-components",
+          "category": "smoke"
+        },
+        {
+          "id": "TC-S.5",
+          "name": "Header brand and navigation entry",
+          "description": "Toolbar shows Li'l Magnet Memories (header-title-clickable); drawer menu shows Navigation and Home (visible on wide screens or after opening Menu on small).",
+          "suite": "site-components",
+          "category": "smoke"
+        }
+      ]
+    }
+  ]
+}

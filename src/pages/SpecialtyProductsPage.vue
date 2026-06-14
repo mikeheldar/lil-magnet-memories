@@ -161,8 +161,9 @@ export default {
     useSiteSeo(() => ({
       title: 'Specialty Products - Lil Magnet Memories',
       description:
-        'Discover specialty photo magnets with unique shapes, sizes, and finishes. Perfect for special occasions and memorable gifts.',
-      keywords: 'specialty magnets, unique magnets, special shapes, custom sizes',
+        'Discover specialty magnet products with unique shapes and finishes, perfect for team events, family milestones, holiday gifting, and local celebrations.',
+      keywords:
+        'specialty magnets, unique custom magnets, team event gifts, family milestone gifts, holiday photo gifts, Dunwoody events, Sandy Springs events',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
     }));

@@ -65,6 +65,14 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/EventCalendarPage.vue'),
       },
       {
+        path: 'blog',
+        component: () => import('pages/BlogPage.vue'),
+      },
+      {
+        path: 'blog/:slug',
+        component: () => import('pages/BlogPostPage.vue'),
+      },
+      {
         path: 'newsletter-signup',
         component: () => import('pages/NewsletterSignupPage.vue'),
       },
@@ -119,6 +127,11 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'admin',
         component: () => import('pages/AdminPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
+        path: 'admin/blog',
+        component: () => import('pages/AdminBlogPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {

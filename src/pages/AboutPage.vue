@@ -33,6 +33,12 @@
             <q-icon name="open_in_new" size="16px" class="q-ml-xs" />
           </a>
         </div>
+        <div class="q-mt-sm">
+          <router-link to="/blog" class="instagram-link">
+            <q-icon name="article" size="24px" class="q-mr-sm" />
+            <span class="text-body1 text-primary">Read our Blog</span>
+          </router-link>
+        </div>
       </section>
 
       <section class="story-section q-pa-lg bg-white shadow-2 rounded-borders">
@@ -245,9 +251,9 @@ export default {
     useSiteSeo(() => ({
       title: 'About Us - Lil Magnet Memories',
       description:
-        'Founded in 2025 by Amy Helman-Darley to sprinkle joy into the world—one magnetic memory at a time. Learn about our story and mission.',
+        'Learn about Lil Magnet Memories, a Dunwoody-area custom magnet studio helping families, teams, and event planners preserve memories with personalized photo magnets.',
       keywords:
-        'about lil magnet memories, Amy Helman-Darley, custom magnet company, photo magnet business',
+        'about lil magnet memories, Dunwoody small business, Sandy Springs gift ideas, custom magnet company, personalized photo magnets',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
     }));

@@ -616,7 +616,7 @@
         <!-- Content for authenticated users -->
         <template v-else>
           <!-- Operator section (collapsible, default collapsed) -->
-          <template v-if="isAdmin">
+          <template v-if="isAdmin || isOperator">
             <q-separator class="q-my-md" />
             <q-expansion-item
               icon="work"
@@ -701,8 +701,20 @@
                   >
                 </q-item-section>
               </q-item>
-            </q-expansion-item>
 
+              <q-item clickable v-ripple @click="navigateTo('/admin/blog')">
+                <q-item-section avatar>
+                  <q-icon name="article" color="deep-purple" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Blog Manager</q-item-label>
+                  <q-item-label caption>Create and update blog entries</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
+
+          <template v-if="isAdmin">
             <!-- Admin section (collapsible, default collapsed) -->
             <q-separator class="q-my-md" />
             <q-expansion-item
@@ -900,6 +912,9 @@
               <div>
                 <router-link to="/faq" class="footer-link">FAQ</router-link>
               </div>
+              <div>
+                <router-link to="/blog" class="footer-link">Blog</router-link>
+              </div>
             </div>
           </div>
 
@@ -919,6 +934,10 @@
               <router-link to="/newsletter-signup" class="footer-social-link">
                 <q-icon name="email" size="24px" />
                 <span class="q-ml-sm">Email Newsletter</span>
+              </router-link>
+              <router-link to="/blog" class="footer-social-link">
+                <q-icon name="article" size="24px" />
+                <span class="q-ml-sm">Blog</span>
               </router-link>
             </div>
           </div>

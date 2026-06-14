@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/spa",
+  "buildCommand": "npm run build:seo",
+  "outputDirectory": "dist/prerender",
   "installCommand": "npm ci",
   "framework": null,
   "headers": [
@@ -63,10 +63,15 @@
     {
       "source": "/sitemap.xml",
       "destination": "/sitemap.xml"
+    }
+  ],
+  "routes": [
+    {
+      "handle": "filesystem"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
