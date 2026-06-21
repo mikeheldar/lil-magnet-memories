@@ -22,7 +22,7 @@ const SEO_ROUTES = [
   '/',
   '/about',
   '/products/custom',
-  '/products/designer',
+  '/products/novelty',
   '/products/specialty',
   '/event-calendar',
   '/photo-upload',

@@ -51,6 +51,23 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/products/designer",
+      "destination": "/products/novelty",
+      "permanent": true
+    },
+    {
+      "source": "/products/designer/",
+      "destination": "/products/novelty",
+      "permanent": true
+    },
+    {
+      "source": "/product/designer/:productId",
+      "destination": "/product/novelty/:productId",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/.well-known/apple-developer-merchantid-domain-association",

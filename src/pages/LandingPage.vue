@@ -187,10 +187,10 @@
             </q-card>
           </div>
           <div v-if="visibilityLoaded && productTypeVisibility.designer" class="col-12 col-md-4">
-            <q-card class="product-link-card" @click="$router.push('/products/designer')">
+            <q-card class="product-link-card" @click="$router.push('/products/novelty')">
               <q-card-section class="text-center">
                 <q-icon name="brush" size="64px" color="primary" class="q-mb-md" />
-                <div class="text-h6 q-mb-sm">Designer Magnets</div>
+                <div class="text-h6 q-mb-sm">Novelty Magnets</div>
                 <div class="text-body2 text-grey-7 q-mb-md">
                   Shop our collection of beautifully designed ready-made magnets
                 </div>

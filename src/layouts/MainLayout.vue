@@ -176,13 +176,13 @@
           </q-list>
         </q-btn-dropdown>
 
-        <!-- Designer Magnets Dropdown -->
+        <!-- Novelty Magnets Dropdown -->
         <q-btn-dropdown
           v-if="layoutReady && visibilityLoaded && productsLoaded && productTypeVisibility.designer"
           flat
           dense
           no-caps
-          label="Designer Magnets"
+          label="Novelty Magnets"
           class="sub-nav-btn sub-nav-btn-designer"
         >
           <q-list v-if="designerProductsList.length > 0">
@@ -191,24 +191,24 @@
               :key="product.id"
               clickable
               v-close-popup
-              @click="$router.push(`/product/designer/${product.id}`)"
+              @click="$router.push(`/product/novelty/${product.id}`)"
             >
               <q-item-section>
                 <q-item-label>{{ product.description }}</q-item-label>
               </q-item-section>
             </q-item>
             <q-separator />
-            <q-item clickable v-close-popup @click="$router.push('/products/designer')">
+            <q-item clickable v-close-popup @click="$router.push('/products/novelty')">
               <q-item-section avatar>
                 <q-icon name="shopping_bag" color="secondary" />
               </q-item-section>
               <q-item-section>
-                <q-item-label class="text-weight-medium">Shop All Designer Magnets</q-item-label>
+                <q-item-label class="text-weight-medium">Shop All Novelty Magnets</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
           <q-list v-else>
-            <q-item clickable v-close-popup @click="$router.push('/products/designer')">
+            <q-item clickable v-close-popup @click="$router.push('/products/novelty')">
               <q-item-section>
                 <q-item-label>View All Products</q-item-label>
               </q-item-section>
@@ -485,19 +485,19 @@
             </div>
           </div>
 
-          <!-- Designer Magnets -->
+          <!-- Novelty Magnets -->
           <div v-if="layoutReady && visibilityLoaded && productsLoaded && productTypeVisibility.designer" class="shop-category-wrapper">
             <q-item
               clickable
               v-ripple
-              @click="navigateWithDrawerClose('/products/designer')"
+              @click="navigateWithDrawerClose('/products/novelty')"
               class="shop-category-item"
             >
               <q-item-section avatar>
                 <q-icon name="palette" color="secondary" />
               </q-item-section>
               <q-item-section>
-                <q-item-label>Designer Magnets</q-item-label>
+                <q-item-label>Novelty Magnets</q-item-label>
                 <q-item-label caption>Ready-made designs</q-item-label>
               </q-item-section>
               <q-item-section side="right" v-if="productsLoaded && designerProductsList.length > 0" class="category-expand-section">
@@ -521,7 +521,7 @@
               clickable
               v-ripple
               dense
-              @click.stop="navigateWithDrawerClose(`/product/designer/${product.id}`)"
+              @click.stop="navigateWithDrawerClose(`/product/novelty/${product.id}`)"
               class="product-item"
             >
               <q-item-section>
@@ -533,14 +533,14 @@
               clickable
               v-ripple
               dense
-              @click.stop="navigateWithDrawerClose('/products/designer')"
+              @click.stop="navigateWithDrawerClose('/products/novelty')"
               class="product-item shop-all-item"
             >
               <q-item-section avatar>
                 <q-icon name="shopping_bag" color="secondary" size="sm" />
               </q-item-section>
               <q-item-section>
-                <q-item-label class="text-caption text-weight-medium">Shop All Designer Magnets</q-item-label>
+                <q-item-label class="text-caption text-weight-medium">Shop All Novelty Magnets</q-item-label>
               </q-item-section>
             </q-item>
             </div>
@@ -880,8 +880,8 @@
                 >
               </div>
               <div v-if="visibilityLoaded && productTypeVisibility.designer">
-                <router-link to="/products/designer" class="footer-link"
-                  >Designer Magnets</router-link
+                <router-link to="/products/novelty" class="footer-link"
+                  >Novelty Magnets</router-link
                 >
               </div>
               <div v-if="visibilityLoaded && productTypeVisibility.specialty">

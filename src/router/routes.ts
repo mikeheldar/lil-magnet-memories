@@ -33,8 +33,17 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/CustomProductsPage.vue'),
       },
       {
-        path: 'products/designer',
+        path: 'products/novelty',
+        name: 'products-novelty',
         component: () => import('pages/DesignerProductsPage.vue'),
+      },
+      {
+        path: 'products/designer',
+        redirect: '/products/novelty',
+      },
+      {
+        path: 'product/designer/:productId',
+        redirect: (to) => `/product/novelty/${to.params.productId}`,
       },
       {
         path: 'products/specialty',

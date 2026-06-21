@@ -2,7 +2,7 @@
   <q-page class="designer-products-page">
     <div class="page-container q-pa-lg">
       <div class="text-h4 text-center q-mb-lg text-primary">
-        Designer Magnets
+        Novelty Magnets
       </div>
       <div class="text-body1 text-center text-grey-7 q-mb-xl">
         Shop our collection of beautifully designed ready-made magnets
@@ -135,7 +135,7 @@
         </div>
       </div>
       <div v-else class="text-center text-grey-6 q-pa-xl">
-        No designer products available at this time.
+        No novelty products available at this time.
       </div>
     </div>
   </q-page>
@@ -148,6 +148,7 @@ import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { firebaseService } from '../services/firebaseService.js';
 import { authService } from '../services/authService';
 import SimpleSlideshow from '../components/SimpleSlideshow.vue';
+import { productDetailPath } from '../utils/productTypeRoutes.js';
 
 export default {
   name: 'DesignerProductsPage',
@@ -159,11 +160,11 @@ export default {
     const route = useRoute();
 
     useSiteSeo(() => ({
-      title: 'Designer Magnets - Lil Magnet Memories',
+      title: 'Novelty Magnets - Lil Magnet Memories',
       description:
-        'Shop designer magnet styles and ready-made layouts for birthdays, holidays, teacher gifts, and event keepsakes in Dunwoody, Sandy Springs, and metro Atlanta.',
+        'Shop novelty magnet styles and ready-made layouts for birthdays, holidays, teacher gifts, and event keepsakes in Dunwoody, Sandy Springs, and metro Atlanta.',
       keywords:
-        'designer magnets, gift ideas, holiday magnets, teacher gifts, event keepsakes, Dunwoody gift shop, Sandy Springs personalized gifts',
+        'novelty magnets, gift ideas, holiday magnets, teacher gifts, event keepsakes, Dunwoody gift shop, Sandy Springs personalized gifts',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
     }));
@@ -228,7 +229,7 @@ export default {
     });
 
     const goToProductDetail = (product) => {
-      router.push(`/product/designer/${product.id}`);
+      router.push(productDetailPath(product.category, product.id));
     };
 
     onMounted(() => {

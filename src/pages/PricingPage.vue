@@ -19,7 +19,7 @@
             />
             <q-toggle
               v-model="designerVisible"
-              label="Designer"
+              label="Novelty"
               color="secondary"
               size="sm"
               @update:model-value="updateVisibility('designer', $event)"
@@ -35,7 +35,7 @@
               
               <q-tabs v-model="activeCategory" class="text-primary q-mb-md">
                 <q-tab name="custom" label="Custom Photo Products" />
-                <q-tab name="designer" label="Designer Magnets" />
+                <q-tab name="designer" label="Novelty Magnets" />
                 <q-tab name="specialty" label="Specialty Products" />
               </q-tabs>
             <div class="q-gutter-sm q-mb-md">
@@ -382,7 +382,7 @@
               v-model="editingProduct.category"
               :options="[
                 { label: 'Custom Photo Products', value: 'custom' },
-                { label: 'Designer Magnets', value: 'designer' },
+                { label: 'Novelty Magnets', value: 'designer' },
                 { label: 'Specialty Products', value: 'specialty' }
               ]"
               label="Category *"
@@ -556,7 +556,7 @@
               v-model="bulkEditingProduct.category"
               :options="[
                 { label: 'Custom Photo Products', value: 'custom' },
-                { label: 'Designer Magnets', value: 'designer' },
+                { label: 'Novelty Magnets', value: 'designer' },
                 { label: 'Specialty Products', value: 'specialty' }
               ]"
               label="Category *"
@@ -1058,7 +1058,7 @@ export default {
         case 'custom':
           return 'Custom Photo Products';
         case 'designer':
-          return 'Designer Magnets';
+          return 'Novelty Magnets';
         case 'specialty':
           return 'Specialty Products';
         default:

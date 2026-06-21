@@ -119,13 +119,10 @@ import {
   SITE_ORIGIN,
   defaultOgImagePath,
 } from '../composables/useSiteSeo.js';
-
-function categoryListTitle(productType) {
-  if (productType === 'custom') return 'Custom Photo Magnets';
-  if (productType === 'designer') return 'Designer Magnets';
-  if (productType === 'specialty') return 'Specialty Magnets';
-  return 'Products';
-}
+import {
+  categoryListTitle,
+  routeTypeToCategory,
+} from '../utils/productTypeRoutes.js';
 
 function collectProductImageUrls(product) {
   if (!product) return [];
@@ -164,11 +161,12 @@ export default {
     const { addToCart: addToCartComposable } = useCart();
 
     const productType = computed(() => route.params.productType);
+    const productCategory = computed(() => routeTypeToCategory(productType.value));
     const productId = computed(() => route.params.productId);
 
     const product = computed(() => {
       const found = products.value.find((p) => p.id === productId.value);
-      if (found && found.category === productType.value) {
+      if (found && found.category === productCategory.value) {
         return found;
       }
       return null;
