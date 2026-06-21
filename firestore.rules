@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userEmail() {
+      return request.auth.token.email;
+    }
+
+    function isAdminOrOperator() {
+      return isSignedIn()
+        && userEmail() != null
+        && (
+          get(/databases/$(database)/documents/user_roles/roles_config).data[userEmail()] == 'admin'
+          || get(/databases/$(database)/documents/user_roles/roles_config).data[userEmail()] == 'operator'
+          || userEmail() in [
+            'michael.helmandarley@gmail.com',
+            'amy.helmandarley@gmail.com',
+            'info@lilmagnetmemories.com'
+          ]
+        );
+    }
+
+    // User roles config
+    match /user_roles/{document} {
+      allow read: if isSignedIn();
+      allow write: if isAdminOrOperator();
+    }
+
+    // Admin config/settings
+    match /admin_config/{document} {
+      allow read: if isSignedIn();
+      allow write: if isAdminOrOperator();
+    }
+
+    match /admin_settings/{document} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
+    // Blog posts
+    match /blog_posts/{postId} {
+      // Public can only read published posts.
+      allow get, list: if resource.data.status == 'published' || isAdminOrOperator();
+      allow create, update, delete: if isAdminOrOperator();
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.userId == null
+      );
+      allow read, update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (request.auth.token.email != null &&
+          resource.data.get('customer', {}).get('email', null) == request.auth.token.email) ||
+        isAdminOrOperator()
+      );
+      allow list: if isSignedIn();
+      allow delete: if isAdminOrOperator();
+    }
+
+    // Public catalog collections
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
+    match /settings/{document} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
+    match /marketEvents/{eventId} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
+    match /themes/{themeId} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isAdminOrOperator();
+    }
+
+    match /user_carts/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /user_preferences/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /errored_transactions/{transactionId} {
+      allow create: if isSignedIn();
+      allow read: if isAdminOrOperator();
+    }
+
+    match /promo_codes/{codeId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdminOrOperator();
+    }
+
+    match /test/{document} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

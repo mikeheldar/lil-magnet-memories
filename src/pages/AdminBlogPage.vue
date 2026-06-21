@@ -1,76 +1,201 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-md admin-blog-page">
     <div class="page-container">
-      <div class="row items-center justify-between q-mb-md">
-        <div>
+      <div class="row items-start justify-between q-mb-md q-col-gutter-md">
+        <div class="col-12 col-md">
           <div class="text-h4 text-primary text-weight-bold">Blog Manager</div>
           <div class="text-body2 text-grey-7">
             Create SEO content and queue Instagram publishing requests.
           </div>
         </div>
-        <div class="row q-gutter-sm">
-          <q-btn color="secondary" icon="event" label="Import Event Drafts" @click="importEventDrafts" :loading="importingEvents" />
-          <q-btn color="primary" icon="add" label="New Post" @click="startNewPost" />
+        <div class="col-12 col-md-auto row q-gutter-sm">
+          <q-btn
+            color="indigo"
+            icon="sync"
+            label="Sync Instagram Posts"
+            no-caps
+            @click="syncInstagramDrafts"
+            :loading="syncingInstagram"
+          />
+          <q-btn
+            color="secondary"
+            icon="event"
+            label="Import Event Drafts"
+            no-caps
+            @click="importEventDrafts"
+            :loading="importingEvents"
+          />
+          <q-btn color="primary" icon="add" label="New Post" no-caps @click="startNewPost" />
         </div>
       </div>
 
       <q-card class="q-mb-md">
         <q-card-section>
-          <q-form @submit.prevent="savePost" class="q-gutter-md">
-            <q-input v-model="form.title" label="Title *" filled />
-            <q-input v-model="form.slug" label="Slug (optional)" filled hint="Auto-generated if blank" />
-            <q-input v-model="form.excerpt" type="textarea" label="Excerpt" filled autogrow />
-            <q-input v-model="form.content" type="textarea" label="Content *" filled autogrow />
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-6">
-                <q-input v-model="form.tagsText" label="Tags (comma separated)" filled />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input v-model="form.locationTargetsText" label="Location targets (comma separated)" filled />
-              </div>
-            </div>
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-6">
-                <q-input v-model="form.seoDescription" type="textarea" label="SEO Description" filled autogrow />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input v-model="form.seoKeywords" type="textarea" label="SEO Keywords" filled autogrow />
-              </div>
-            </div>
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-4">
-                <q-select
-                  v-model="form.status"
-                  :options="['draft', 'published']"
-                  label="Status"
+          <q-form @submit.prevent="savePost" class="blog-form">
+            <div class="form-section">
+              <div class="form-section__title">Post details</div>
+              <div class="form-section__fields">
+                <q-input v-model="form.title" label="Title *" filled stack-label />
+                <q-input
+                  v-model="form.slug"
+                  label="Slug (optional)"
                   filled
+                  stack-label
+                  hint="Auto-generated if blank"
+                />
+                <q-input
+                  v-model="form.excerpt"
+                  type="textarea"
+                  label="Excerpt"
+                  filled
+                  stack-label
+                  :rows="3"
+                />
+                <q-input
+                  v-model="form.content"
+                  type="textarea"
+                  label="Content *"
+                  filled
+                  stack-label
+                  :rows="8"
                 />
               </div>
-              <div class="col-12 col-md-4">
-                <q-input v-model="form.sourceType" label="Source Type" filled />
+            </div>
+
+            <div class="form-section">
+              <div class="form-section__title">Photos</div>
+              <div class="text-caption text-grey-7 q-mb-sm">
+                Sync Instagram posts to import photos, or paste a featured image URL below.
               </div>
-              <div class="col-12 col-md-4">
-                <q-input v-model="form.sourceUrl" label="Source URL" filled />
+              <div v-if="form.mediaUrls.length" class="row q-col-gutter-sm q-mb-md">
+                <div
+                  v-for="(url, index) in form.mediaUrls"
+                  :key="`${url}-${index}`"
+                  class="col-6 col-sm-4 col-md-3"
+                >
+                  <q-card
+                    flat
+                    bordered
+                    class="photo-pick-card cursor-pointer"
+                    :class="{ 'photo-pick-card--selected': form.featuredImage === url }"
+                    @click="selectFeaturedImage(url)"
+                  >
+                    <q-img :src="url" ratio="1" spinner-color="primary">
+                      <div class="absolute-top-right q-pa-xs">
+                        <q-icon
+                          v-if="form.featuredImage === url"
+                          name="star"
+                          color="amber"
+                          size="20px"
+                        />
+                      </div>
+                    </q-img>
+                    <q-card-section class="q-pa-xs text-center">
+                      <div class="text-caption">
+                        {{ form.featuredImage === url ? 'Featured' : 'Set featured' }}
+                      </div>
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </div>
+              <q-input
+                v-model="form.featuredImage"
+                label="Featured image URL"
+                filled
+                stack-label
+                hint="Used on the blog list and at the top of the post"
+              />
+            </div>
+
+            <div class="form-section">
+              <div class="form-section__title">Tags & SEO</div>
+              <div class="form-section__fields">
+                <div class="row q-col-gutter-md">
+                  <div class="col-12 col-md-6">
+                    <q-input
+                      v-model="form.tagsText"
+                      label="Tags (comma separated)"
+                      filled
+                      stack-label
+                    />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <q-input
+                      v-model="form.locationTargetsText"
+                      label="Location targets (comma separated)"
+                      filled
+                      stack-label
+                    />
+                  </div>
+                </div>
+                <q-input
+                  v-model="form.seoDescription"
+                  type="textarea"
+                  label="SEO Description"
+                  filled
+                  stack-label
+                  :rows="3"
+                />
+                <q-input
+                  v-model="form.seoKeywords"
+                  type="textarea"
+                  label="SEO Keywords"
+                  filled
+                  stack-label
+                  :rows="3"
+                />
               </div>
             </div>
-            <q-input
-              v-model="form.instagramCaption"
-              type="textarea"
-              label="Instagram Caption"
-              filled
-              autogrow
-            />
-            <div class="row q-gutter-sm">
-              <q-btn color="primary" type="submit" :loading="saving" :label="editingPostId ? 'Update Post' : 'Create Post'" />
+
+            <div class="form-section">
+              <div class="form-section__title">Publishing</div>
+              <div class="form-section__fields">
+                <div class="row q-col-gutter-md">
+                  <div class="col-12 col-md-4">
+                    <q-select
+                      v-model="form.status"
+                      :options="['draft', 'published']"
+                      label="Status"
+                      filled
+                      stack-label
+                    />
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <q-input v-model="form.sourceType" label="Source Type" filled stack-label />
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <q-input v-model="form.sourceUrl" label="Source URL" filled stack-label />
+                  </div>
+                </div>
+                <q-input
+                  v-model="form.instagramCaption"
+                  type="textarea"
+                  label="Instagram Caption"
+                  filled
+                  stack-label
+                  :rows="4"
+                />
+              </div>
+            </div>
+
+            <div class="row q-gutter-sm q-mt-md">
+              <q-btn
+                color="primary"
+                type="submit"
+                no-caps
+                :loading="saving"
+                :label="editingPostId ? 'Update Post' : 'Create Post'"
+              />
               <q-btn
                 v-if="editingPostId"
                 color="orange"
                 icon="send"
                 label="Queue Instagram Publish"
+                no-caps
                 :loading="queueingInstagram"
                 @click="queueInstagramPublish"
               />
-              <q-btn flat color="grey-7" label="Reset Form" @click="resetForm" />
+              <q-btn flat color="grey-7" label="Reset Form" no-caps @click="resetForm" />
             </div>
           </q-form>
         </q-card-section>
@@ -134,6 +259,7 @@ const loading = ref(true);
 const saving = ref(false);
 const importingEvents = ref(false);
 const queueingInstagram = ref(false);
+const syncingInstagram = ref(false);
 const posts = ref([]);
 const editingPostId = ref(null);
 
@@ -160,8 +286,26 @@ const baseForm = () => ({
   sourceType: 'manual',
   sourceUrl: '',
   instagramCaption: '',
+  featuredImage: '',
+  mediaUrls: [],
+  instagramSync: null,
 });
 const form = ref(baseForm());
+
+const collectPostMediaUrls = (row) => {
+  const urls = [];
+  const add = (url) => {
+    const next = String(url || '').trim();
+    if (next && !urls.includes(next)) {
+      urls.push(next);
+    }
+  };
+  add(row?.featuredImage);
+  (row?.mediaUrls || []).forEach(add);
+  add(row?.instagramSync?.mediaUrl);
+  (row?.instagramSync?.mediaUrls || []).forEach(add);
+  return urls;
+};
 
 const formatDate = (value) => {
   const d = value instanceof Date ? value : new Date(value || Date.now());
@@ -171,6 +315,14 @@ const formatDate = (value) => {
 const resetForm = () => {
   form.value = baseForm();
   editingPostId.value = null;
+};
+
+const startNewPost = () => {
+  resetForm();
+};
+
+const selectFeaturedImage = (url) => {
+  form.value.featuredImage = url;
 };
 
 const loadPosts = async () => {
@@ -199,11 +351,19 @@ const savePost = async () => {
   }
   saving.value = true;
   try {
+    const existing = editingPostId.value
+      ? posts.value.find((p) => p.id === editingPostId.value)
+      : null;
+    const mediaUrls = form.value.mediaUrls.filter(Boolean);
+    const featuredImage = form.value.featuredImage || mediaUrls[0] || null;
+
     const payload = {
       title: form.value.title,
       slug: form.value.slug,
       excerpt: form.value.excerpt,
       content: form.value.content,
+      featuredImage,
+      mediaUrls,
       tags: parseCommaList(form.value.tagsText),
       locationTargets: parseCommaList(form.value.locationTargetsText),
       seoDescription: form.value.seoDescription,
@@ -212,10 +372,12 @@ const savePost = async () => {
       sourceType: form.value.sourceType,
       sourceUrl: form.value.sourceUrl,
       instagram: {
-        publishRequested: false,
-        publishStatus: 'not_requested',
+        publishRequested: existing?.instagram?.publishRequested || false,
+        publishStatus: existing?.instagram?.publishStatus || 'not_requested',
+        publishedUrl: existing?.instagram?.publishedUrl || null,
         caption: form.value.instagramCaption || '',
       },
+      instagramSync: form.value.instagramSync || existing?.instagramSync || null,
     };
 
     if (editingPostId.value) {
@@ -239,6 +401,7 @@ const savePost = async () => {
 
 const editPost = (row) => {
   editingPostId.value = row.id;
+  const mediaUrls = collectPostMediaUrls(row);
   form.value = {
     title: row.title || '',
     slug: row.slug || '',
@@ -251,7 +414,10 @@ const editPost = (row) => {
     status: row.status || 'draft',
     sourceType: row.sourceType || 'manual',
     sourceUrl: row.sourceUrl || '',
-    instagramCaption: row.instagram?.caption || '',
+    instagramCaption: row.instagram?.caption || row.instagramSync?.lastCaption || '',
+    featuredImage: row.featuredImage || mediaUrls[0] || '',
+    mediaUrls,
+    instagramSync: row.instagramSync || null,
   };
 };
 
@@ -298,6 +464,27 @@ const importEventDrafts = async () => {
   }
 };
 
+const syncInstagramDrafts = async () => {
+  syncingInstagram.value = true;
+  try {
+    const result = await firebaseService.syncInstagramPostsAsBlogDrafts(25);
+    const created = Number(result?.createdCount || 0);
+    const updated = Number(result?.updatedCount || 0);
+    const skipped = Number(result?.skippedCount || 0);
+    $q.notify({
+      type: 'positive',
+      message: `Instagram sync complete: ${created} created, ${updated} updated, ${skipped} skipped.`,
+      timeout: 5000,
+    });
+    await loadPosts();
+  } catch (error) {
+    console.error('Failed syncing Instagram drafts:', error);
+    $q.notify({ type: 'negative', message: error?.message || 'Could not sync Instagram posts.' });
+  } finally {
+    syncingInstagram.value = false;
+  }
+};
+
 onMounted(async () => {
   await loadPosts();
 });
@@ -308,5 +495,36 @@ onMounted(async () => {
   max-width: 1280px;
   margin: 0 auto;
 }
-</style>
 
+.blog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a4673;
+  margin-bottom: 12px;
+}
+
+.form-section__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section__fields :deep(.q-field) {
+  width: 100%;
+}
+
+.photo-pick-card {
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.photo-pick-card--selected {
+  border-color: #1a4673 !important;
+  box-shadow: 0 0 0 2px rgba(26, 70, 115, 0.2);
+}
+</style>

@@ -23,12 +23,24 @@
           {{ formatDate(post.publishedAt || post.createdAt) }}
         </div>
         <h1 class="text-h4 text-primary q-mb-md">{{ post.title }}</h1>
-        <q-img
-          v-if="post.featuredImage"
-          :src="post.featuredImage"
-          :ratio="16 / 9"
-          class="rounded-borders q-mb-md"
-        />
+        <div v-if="displayImages.length" class="q-mb-md">
+          <q-img
+            v-if="displayImages.length === 1"
+            :src="displayImages[0]"
+            :ratio="16 / 9"
+            class="rounded-borders"
+          />
+          <div v-else class="row q-col-gutter-sm">
+            <div
+              v-for="(imageUrl, index) in displayImages"
+              :key="`${imageUrl}-${index}`"
+              class="col-12"
+              :class="index === 0 ? 'col-md-12' : 'col-md-6'"
+            >
+              <q-img :src="imageUrl" :ratio="index === 0 ? 16 / 9 : 1" class="rounded-borders" />
+            </div>
+          </div>
+        </div>
         <div class="text-body1 content-block" v-html="contentHtml"></div>
         <div v-if="post.tags?.length" class="q-mt-lg">
           <q-chip
@@ -66,6 +78,23 @@ const contentHtml = computed(() =>
     .join('')
 );
 
+const displayImages = computed(() => {
+  const current = post.value;
+  if (!current) return [];
+  const urls = [];
+  const add = (url) => {
+    const next = String(url || '').trim();
+    if (next && !urls.includes(next)) {
+      urls.push(next);
+    }
+  };
+  add(current.featuredImage);
+  (current.mediaUrls || []).forEach(add);
+  add(current.instagramSync?.mediaUrl);
+  (current.instagramSync?.mediaUrls || []).forEach(add);
+  return urls;
+});
+
 const formatDate = (dateValue) => {
   const d = dateValue instanceof Date ? dateValue : new Date(dateValue || Date.now());
   return d.toLocaleDateString();
@@ -83,7 +112,7 @@ const applyMeta = () => {
     current?.seoKeywords ||
     'custom magnets, photo gifts, holiday gift ideas, Dunwoody, Sandy Springs, team magnets';
   const canonical = toAbsoluteUrl(route.path);
-  const image = toAbsoluteUrl(current?.featuredImage || '/assets/lil-magnet-memories-logo.png');
+  const image = toAbsoluteUrl(displayImages.value[0] || '/assets/lil-magnet-memories-logo.png');
 
   useMeta({
     title,

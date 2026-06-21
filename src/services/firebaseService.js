@@ -1148,6 +1148,21 @@ class FirebaseService {
     }
   }
 
+  // Archive/unarchive order (soft hide from default admin list)
+  async setOrderArchived(orderId, archived) {
+    try {
+      const orderRef = doc(db, 'orders', orderId);
+      await updateDoc(orderRef, {
+        archived: !!archived,
+        archivedAt: archived ? serverTimestamp() : null,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error updating archived state for order:', error);
+      throw error;
+    }
+  }
+
   // Delete photo from Firebase Storage
   async deletePhotoFromStorage(photoUrl) {
     try {
@@ -2668,6 +2683,7 @@ class FirebaseService {
         excerpt: String(postData.excerpt || '').trim(),
         content: String(postData.content || '').trim(),
         featuredImage: postData.featuredImage || null,
+        mediaUrls: Array.isArray(postData.mediaUrls) ? postData.mediaUrls.filter(Boolean) : [],
         tags: Array.isArray(postData.tags) ? postData.tags.filter(Boolean) : [],
         status,
         sourceType: postData.sourceType || 'manual',
@@ -2692,6 +2708,9 @@ class FirebaseService {
         publishedAt: status === 'published' ? now : null,
         authorEmail: authorEmail || null,
       };
+      if (postData.instagramSync) {
+        payload.instagramSync = postData.instagramSync;
+      }
 
       const docRef = await addDoc(collection(db, FirebaseService.BLOG_POSTS_COLLECTION), payload);
       return docRef.id;
@@ -2710,6 +2729,9 @@ class FirebaseService {
       if (updates.excerpt !== undefined) patch.excerpt = String(updates.excerpt || '').trim();
       if (updates.content !== undefined) patch.content = String(updates.content || '').trim();
       if (updates.featuredImage !== undefined) patch.featuredImage = updates.featuredImage || null;
+      if (updates.mediaUrls !== undefined) {
+        patch.mediaUrls = Array.isArray(updates.mediaUrls) ? updates.mediaUrls.filter(Boolean) : [];
+      }
       if (updates.tags !== undefined) patch.tags = Array.isArray(updates.tags) ? updates.tags.filter(Boolean) : [];
       if (updates.status !== undefined) patch.status = updates.status === 'published' ? 'published' : 'draft';
       if (updates.sourceType !== undefined) patch.sourceType = updates.sourceType || 'manual';
@@ -2742,6 +2764,9 @@ class FirebaseService {
           lastRequestedAt: updates.instagram?.publishRequested ? serverTimestamp() : null,
           caption: updates.instagram?.caption || '',
         };
+      }
+      if (updates.instagramSync !== undefined) {
+        patch.instagramSync = updates.instagramSync || null;
       }
 
       await updateDoc(refDoc, patch);
@@ -2819,6 +2844,45 @@ class FirebaseService {
       return created;
     } catch (error) {
       console.error('Error importing market events to blog drafts:', error);
+      throw error;
+    }
+  }
+
+  async syncInstagramPostsAsBlogDrafts(limitCount = 20) {
+    try {
+      const currentUser = auth?.currentUser;
+      if (!currentUser || currentUser.isAnonymous) {
+        throw new Error('You must be signed in as an operator or admin to sync Instagram posts.');
+      }
+
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch(`${config.apiBaseUrl}/blog/sync-instagram`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          limit: Math.max(1, Math.min(50, Number(limitCount) || 20)),
+        }),
+      });
+
+      if (!response.ok) {
+        let detail = '';
+        try {
+          const errorPayload = await response.json();
+          detail = errorPayload?.details || errorPayload?.error || '';
+        } catch {
+          detail = await response.text();
+        }
+        throw new Error(
+          `Instagram sync failed (${response.status})${detail ? `: ${detail}` : ''}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error syncing Instagram posts to blog drafts:', error);
       throw error;
     }
   }

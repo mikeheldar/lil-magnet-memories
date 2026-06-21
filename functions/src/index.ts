@@ -4,7 +4,7 @@ import * as express from 'express';
 import * as cors from 'cors';
 import * as nodemailer from 'nodemailer';
 import { SquareClient, SquareEnvironment } from 'square';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -58,6 +58,223 @@ function normalizeQuantitiesForPhotos(
     q.push(1);
   }
   return q.slice(0, n);
+}
+
+const BLOG_POSTS_COLLECTION = 'blog_posts';
+const USER_ROLES_COLLECTION = 'user_roles';
+const USER_ROLES_CONFIG_DOC = 'roles_config';
+const META_GRAPH_API_VERSION = 'v20.0';
+const INITIAL_ADMIN_EMAILS = [
+  'michael.helmandarley@gmail.com',
+  'amy.helmandarley@gmail.com',
+  'info@lilmagnetmemories.com',
+];
+
+type InstagramMediaItem = {
+  id: string;
+  caption?: string;
+  media_type?: string;
+  media_url?: string;
+  permalink?: string;
+  timestamp?: string;
+  thumbnail_url?: string;
+  children?: {
+    data?: Array<{
+      media_type?: string;
+      media_url?: string;
+      thumbnail_url?: string;
+    }>;
+  };
+};
+
+function slugifyBlogText(text: string): string {
+  return String(text || '')
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 120);
+}
+
+function hashString(value: string): string {
+  return createHash('sha256').update(value || '').digest('hex');
+}
+
+function getMetaInstagramConfig(): { instagramUserId: string; pageAccessToken: string } {
+  const metaCfg = functions.config().meta || {};
+  const instagramCfg = functions.config().instagram || {};
+
+  const instagramUserId = String(
+    process.env.INSTAGRAM_USER_ID ||
+      process.env.META_INSTAGRAM_USER_ID ||
+      instagramCfg.user_id ||
+      metaCfg.instagram_user_id ||
+      ''
+  ).trim();
+  const pageAccessToken = String(
+    process.env.META_PAGE_ACCESS_TOKEN ||
+      process.env.INSTAGRAM_ACCESS_TOKEN ||
+      metaCfg.page_access_token ||
+      instagramCfg.access_token ||
+      ''
+  ).trim();
+
+  if (!instagramUserId || !pageAccessToken) {
+    throw new Error(
+      'Instagram sync is not configured. Set INSTAGRAM_USER_ID and META_PAGE_ACCESS_TOKEN in function environment variables.'
+    );
+  }
+
+  return { instagramUserId, pageAccessToken };
+}
+
+async function getAuthorizedRoleEmail(req: express.Request): Promise<string | null> {
+  const authHeader = String(req.headers.authorization || '');
+  if (!authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const idToken = authHeader.slice('Bearer '.length).trim();
+  if (!idToken) {
+    return null;
+  }
+
+  try {
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    const email = String(decoded.email || '').toLowerCase().trim();
+    return email || null;
+  } catch (error) {
+    console.warn('[BLOG/INSTAGRAM-SYNC] Invalid auth token:', error);
+    return null;
+  }
+}
+
+async function isOperatorOrAdmin(email: string): Promise<boolean> {
+  const normalizedEmail = String(email || '').toLowerCase().trim();
+  if (!normalizedEmail) return false;
+
+  if (INITIAL_ADMIN_EMAILS.includes(normalizedEmail)) {
+    return true;
+  }
+
+  const rolesDoc = await admin
+    .firestore()
+    .collection(USER_ROLES_COLLECTION)
+    .doc(USER_ROLES_CONFIG_DOC)
+    .get();
+
+  if (!rolesDoc.exists) {
+    return false;
+  }
+
+  const role = String(rolesDoc.data()?.[normalizedEmail] || '').toLowerCase().trim();
+  return role === 'admin' || role === 'operator';
+}
+
+function collectInstagramMediaUrls(media: InstagramMediaItem): string[] {
+  const urls: string[] = [];
+  const add = (url?: string | null) => {
+    const next = String(url || '').trim();
+    if (next && !urls.includes(next)) {
+      urls.push(next);
+    }
+  };
+
+  if (media.media_type === 'VIDEO') {
+    add(media.thumbnail_url);
+  }
+  add(media.media_url);
+  add(media.thumbnail_url);
+
+  const children = Array.isArray(media.children?.data) ? media.children.data : [];
+  for (const child of children) {
+    if (child.media_type === 'VIDEO') {
+      add(child.thumbnail_url);
+    }
+    add(child.media_url);
+    add(child.thumbnail_url);
+  }
+
+  return urls;
+}
+
+function buildInstagramDraft(media: InstagramMediaItem): {
+  slugBase: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  tags: string[];
+  featuredImage: string | null;
+  mediaUrls: string[];
+  instagramSync: Record<string, any>;
+  sourceUrl: string | null;
+  eventDate: Date | null;
+} {
+  const caption = String(media.caption || '').trim();
+  const firstLine = caption.split('\n').map((line) => line.trim()).find(Boolean) || '';
+  const timestampDate = media.timestamp ? new Date(media.timestamp) : null;
+  const isTimestampValid = !!timestampDate && !Number.isNaN(timestampDate.getTime());
+  const dateLabel = isTimestampValid
+    ? timestampDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+    : 'Instagram Update';
+
+  const title = firstLine
+    ? firstLine.slice(0, 120)
+    : `Instagram Update - ${dateLabel}`;
+
+  const excerpt = (caption || title).slice(0, 220);
+
+  const contentParts = [caption || title];
+  if (media.permalink) {
+    contentParts.push(`Original Instagram post: ${media.permalink}`);
+  }
+  const content = contentParts.filter(Boolean).join('\n\n');
+
+  const hashtagMatches = Array.from(caption.matchAll(/#([a-z0-9_]+)/gi)).map(
+    (m) => m[1].toLowerCase()
+  );
+  const tags = Array.from(
+    new Set(['instagram', 'custom magnets', ...hashtagMatches])
+  ).slice(0, 20);
+
+  const mediaUrls = collectInstagramMediaUrls(media);
+  const featuredImage = mediaUrls[0] || null;
+
+  const hashInput = JSON.stringify({
+    caption,
+    media_type: media.media_type || '',
+    media_urls: mediaUrls,
+    permalink: media.permalink || '',
+    timestamp: media.timestamp || '',
+  });
+
+  return {
+    slugBase: slugifyBlogText(`${title}-${media.id}`),
+    title,
+    excerpt,
+    content,
+    tags,
+    featuredImage,
+    mediaUrls,
+    sourceUrl: media.permalink || null,
+    eventDate: isTimestampValid ? timestampDate : null,
+    instagramSync: {
+      instagramPostId: media.id,
+      mediaType: media.media_type || '',
+      mediaUrl: mediaUrls[0] || media.media_url || null,
+      mediaUrls,
+      permalink: media.permalink || null,
+      syncedAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastSyncHash: hashString(hashInput),
+      lastCaption: caption,
+      timestamp: media.timestamp || null,
+    },
+  };
 }
 
 // Create Express app
@@ -420,6 +637,163 @@ app.post('/send-contact-email', async (req, res) => {
     return res.status(500).json({
       error: 'Failed to send contact email',
       details: error.message || 'Unknown error occurred',
+    });
+  }
+});
+
+app.post('/blog/sync-instagram', async (req, res) => {
+  try {
+    const callerEmail = await getAuthorizedRoleEmail(req);
+    if (!callerEmail) {
+      return res.status(401).json({ error: 'Unauthorized. Missing or invalid auth token.' });
+    }
+
+    const allowed = await isOperatorOrAdmin(callerEmail);
+    if (!allowed) {
+      return res.status(403).json({ error: 'Forbidden. Operator or admin access required.' });
+    }
+
+    const { instagramUserId, pageAccessToken } = getMetaInstagramConfig();
+    const requestedLimit = Number(req.body?.limit || 20);
+    const limit = Math.max(1, Math.min(50, Number.isFinite(requestedLimit) ? requestedLimit : 20));
+
+    const graphUrl =
+      `https://graph.facebook.com/${META_GRAPH_API_VERSION}/${encodeURIComponent(instagramUserId)}/media` +
+      `?fields=id,caption,media_type,media_url,permalink,timestamp,thumbnail_url,children{media_type,media_url,thumbnail_url}` +
+      `&limit=${limit}&access_token=${encodeURIComponent(pageAccessToken)}`;
+
+    const fetchFn = (globalThis as any).fetch;
+    if (typeof fetchFn !== 'function') {
+      return res.status(500).json({
+        error: 'Global fetch is unavailable in this runtime. Please upgrade the Cloud Functions runtime.',
+      });
+    }
+
+    const graphResponse = await fetchFn(graphUrl);
+    const graphPayload = await graphResponse.json();
+
+    if (!graphResponse.ok) {
+      console.error('[BLOG/INSTAGRAM-SYNC] Meta API error:', graphPayload);
+      return res.status(502).json({
+        error: 'Failed to fetch Instagram posts from Meta Graph API.',
+        details: graphPayload?.error?.message || graphPayload,
+      });
+    }
+
+    const mediaItems = Array.isArray(graphPayload?.data)
+      ? (graphPayload.data as InstagramMediaItem[])
+      : [];
+
+    const db = admin.firestore();
+    const blogColl = db.collection(BLOG_POSTS_COLLECTION);
+
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+    const processed: Array<{ postId: string; action: string; instagramPostId: string }> = [];
+
+    for (const media of mediaItems) {
+      if (!media?.id) {
+        skipped += 1;
+        continue;
+      }
+
+      const draft = buildInstagramDraft(media);
+      const existingSnap = await blogColl
+        .where('instagramSync.instagramPostId', '==', media.id)
+        .limit(1)
+        .get();
+
+      if (existingSnap.empty) {
+        const now = admin.firestore.FieldValue.serverTimestamp();
+        const docRef = await blogColl.add({
+          title: draft.title,
+          slug: draft.slugBase || `instagram-${media.id}`,
+          excerpt: draft.excerpt,
+          content: draft.content,
+          featuredImage: draft.featuredImage,
+          mediaUrls: draft.mediaUrls,
+          tags: draft.tags,
+          status: 'draft',
+          sourceType: 'instagram',
+          sourceUrl: draft.sourceUrl,
+          locationTargets: ['Dunwoody', 'Sandy Springs', 'Atlanta'],
+          seoDescription: draft.excerpt,
+          seoKeywords: 'instagram, custom magnets, gift ideas, photo magnets',
+          eventDate: draft.eventDate ? admin.firestore.Timestamp.fromDate(draft.eventDate) : null,
+          instagram: {
+            publishRequested: false,
+            publishStatus: 'not_requested',
+            publishedUrl: null,
+            lastRequestedAt: null,
+            caption: String(media.caption || '').trim(),
+          },
+          instagramSync: draft.instagramSync,
+          createdAt: now,
+          updatedAt: now,
+          publishedAt: null,
+          authorEmail: callerEmail,
+        });
+        created += 1;
+        processed.push({
+          postId: docRef.id,
+          action: 'created',
+          instagramPostId: media.id,
+        });
+        continue;
+      }
+
+      const existingDoc = existingSnap.docs[0];
+      const existingData = existingDoc.data() || {};
+      if (String(existingData.status || '').toLowerCase() === 'published') {
+        skipped += 1;
+        continue;
+      }
+
+      const existingHash = String(existingData?.instagramSync?.lastSyncHash || '');
+      const nextHash = String(draft.instagramSync.lastSyncHash || '');
+      if (existingHash && nextHash && existingHash === nextHash) {
+        skipped += 1;
+        continue;
+      }
+
+      await existingDoc.ref.update({
+        title: draft.title,
+        excerpt: draft.excerpt,
+        content: draft.content,
+        featuredImage: draft.featuredImage,
+        mediaUrls: draft.mediaUrls,
+        tags: draft.tags,
+        sourceType: 'instagram',
+        sourceUrl: draft.sourceUrl,
+        seoDescription: draft.excerpt,
+        eventDate: draft.eventDate ? admin.firestore.Timestamp.fromDate(draft.eventDate) : null,
+        instagramSync: draft.instagramSync,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      updated += 1;
+      processed.push({
+        postId: existingDoc.id,
+        action: 'updated',
+        instagramPostId: media.id,
+      });
+    }
+
+    return res.json({
+      success: true,
+      importedCount: created + updated,
+      createdCount: created,
+      updatedCount: updated,
+      skippedCount: skipped,
+      fetchedCount: mediaItems.length,
+      processed,
+    });
+  } catch (error: any) {
+    console.error('[BLOG/INSTAGRAM-SYNC] Error:', error);
+    return res.status(500).json({
+      error: 'Failed to sync Instagram posts to blog drafts.',
+      details: error?.message || 'Unknown error',
     });
   }
 });

@@ -2,7 +2,6 @@
 import { firebaseService } from './firebaseService.js';
 import { authService } from './authService.js';
 import { auth } from '../firebase/config.js';
-import { signInAnonymously } from 'firebase/auth';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import { safeLocalStorage } from '../utils/ssrSafeStorage.js';
@@ -143,9 +142,9 @@ class MarketEventService {
     this.listeners.clear();
   }
 
-  // Ensure we have an auth context (anonymous if needed) for Firestore reads
-  // Only sign in anonymously if there's no user OR the current user is anonymous
-  // Never replace an authenticated user with anonymous
+  // Give Firebase Auth a moment to restore a persisted session before first query.
+  // We intentionally do not auto-sign-in anonymously here to avoid replacing
+  // an authenticated operator/admin session during app startup.
   async ensureAuth() {
     try {
       // Wait once per page load to allow Firebase to restore authenticated sessions
@@ -153,15 +152,8 @@ class MarketEventService {
         await new Promise((resolve) => setTimeout(resolve, AUTH_STATE_WAIT_TIME));
         authStateWaitCompleted = true;
       }
-      const currentUser = auth.currentUser;
-      if (!currentUser || currentUser.isAnonymous) {
-        // Sign in anonymously to ensure we can read market events
-        // This is silent - users won't see any indication
-        await signInAnonymously(auth);
-      }
     } catch (error) {
-      // Non-blocking - if anonymous sign-in fails, we'll try to read anyway
-      // Firestore rules might allow unauthenticated reads
+      // Non-blocking: market events can still load if rules allow public reads.
       console.error('Error ensuring auth (non-blocking):', error);
     }
   }

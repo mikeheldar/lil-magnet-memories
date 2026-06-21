@@ -33,6 +33,12 @@
             color="primary"
           />
           <q-separator vertical />
+          <q-toggle
+            v-model="showArchived"
+            label="Show archived orders"
+            color="deep-purple"
+          />
+          <q-separator vertical />
           <q-btn-toggle
             v-model="orderTypeFilter"
             toggle-color="primary"
@@ -126,13 +132,13 @@
               </div>
             </div>
             <div class="col-auto">
-              <q-btn-group>
+              <div class="action-buttons">
                 <q-btn
                   v-if="order.status === 'new' || order.status === 'paid'"
                   icon="play_arrow"
                   color="blue"
                   size="sm"
-                  @click="updateOrderStatus(order.id, 'in_progress')"
+                  @click.stop.prevent="updateOrderStatus(order.id, 'in_progress')"
                 >
                   <q-tooltip>Start Processing</q-tooltip>
                 </q-btn>
@@ -141,7 +147,7 @@
                   icon="check"
                   color="green"
                   size="sm"
-                  @click="updateOrderStatus(order.id, 'completed')"
+                  @click.stop.prevent="updateOrderStatus(order.id, 'completed')"
                 >
                   <q-tooltip>Mark Complete</q-tooltip>
                 </q-btn>
@@ -153,15 +159,33 @@
                   icon="undo"
                   color="orange"
                   size="sm"
-                  @click="resetOrderStatus(order.id)"
+                  @click.stop.prevent="resetOrderStatus(order.id)"
                 >
                   <q-tooltip>Reset to New</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="!order.archived"
+                  icon="archive"
+                  color="deep-purple"
+                  size="sm"
+                  @click.stop.prevent="setOrderArchived(order.id, true)"
+                >
+                  <q-tooltip>Archive Order</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-else
+                  icon="unarchive"
+                  color="teal"
+                  size="sm"
+                  @click.stop.prevent="setOrderArchived(order.id, false)"
+                >
+                  <q-tooltip>Unarchive Order</q-tooltip>
                 </q-btn>
                 <q-btn
                   icon="delete"
                   color="red"
                   size="sm"
-                  @click="confirmDeleteOrder(order)"
+                  @click.stop.prevent="confirmDeleteOrder(order)"
                 >
                   <q-tooltip>Delete Order</q-tooltip>
                 </q-btn>
@@ -169,11 +193,11 @@
                   icon="print"
                   color="primary"
                   size="sm"
-                  @click="openPrintTemplate(order)"
+                  @click.stop.prevent="openPrintTemplate(order)"
                 >
                   <q-tooltip>Print Template</q-tooltip>
                 </q-btn>
-              </q-btn-group>
+              </div>
             </div>
           </div>
 
@@ -296,7 +320,7 @@
             </div>
             <!-- Shipping Status Controls (Admin Only) -->
             <div class="q-mt-md">
-              <q-btn-group>
+              <div class="action-buttons">
                 <q-btn
                   v-if="
                     !order.shippingStatus || order.shippingStatus === 'pending'
@@ -331,7 +355,7 @@
                 >
                   <q-tooltip>Reset to Pending</q-tooltip>
                 </q-btn>
-              </q-btn-group>
+              </div>
             </div>
           </div>
 
@@ -592,6 +616,7 @@ export default {
     const loading = ref(true);
     const error = ref(null);
     const hideCompleted = ref(false);
+    const showArchived = ref(false);
     const showCompletedDialog = ref(false);
     const orderTypeFilter = ref('all'); // 'all', 'shipping', 'pickup'
     const searchQuery = ref('');
@@ -719,6 +744,11 @@ export default {
       // Filter by completion status
       if (hideCompleted.value) {
         filtered = filtered.filter((order) => order.status !== 'completed');
+      }
+
+      // Archive visibility (default hide archived)
+      if (!showArchived.value) {
+        filtered = filtered.filter((order) => !order.archived);
       }
 
       // Filter by order type (shipping vs pickup)
@@ -1151,9 +1181,8 @@ export default {
       }).onOk(async () => {
         try {
           await firebaseService.deleteOrder(order.id);
-          await loadOrders(); // Reload orders
           $q.notify({
-            type: 'negative',
+            type: 'positive',
             message: 'Order deleted successfully',
           });
         } catch (err) {
@@ -1163,6 +1192,25 @@ export default {
           });
         }
       });
+    };
+
+    const setOrderArchived = async (orderId, archived) => {
+      try {
+        await firebaseService.setOrderArchived(orderId, archived);
+        $q.notify({
+          type: 'positive',
+          message: archived ? 'Order archived' : 'Order unarchived',
+          icon: archived ? 'archive' : 'unarchive',
+          position: 'top',
+        });
+      } catch (err) {
+        $q.notify({
+          type: 'negative',
+          message: archived ? 'Failed to archive order' : 'Failed to unarchive order',
+          icon: 'error',
+          position: 'top',
+        });
+      }
     };
 
     const openPrintTemplate = (order) => {
@@ -1432,6 +1480,7 @@ export default {
       loading,
       error,
       hideCompleted,
+      showArchived,
       showCompletedDialog,
       orderTypeFilter,
       searchQuery,
@@ -1444,6 +1493,7 @@ export default {
       updateOrderStatus,
       resetOrderStatus,
       confirmDeleteOrder,
+      setOrderArchived,
       openPrintTemplate,
       getTotalMagnetsFromCart,
       formatAddress,
@@ -1474,5 +1524,12 @@ export default {
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 </style>
