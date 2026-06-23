@@ -2934,6 +2934,17 @@ class FirebaseService {
     return '';
   }
 
+  async readFetchErrorDetail(response) {
+    const text = await response.text();
+    if (!text) return '';
+    try {
+      const errorPayload = JSON.parse(text);
+      return errorPayload?.details || errorPayload?.error || text;
+    } catch {
+      return text;
+    }
+  }
+
   async fetchInstagramScrapedProfile(limitCount = 20) {
     const response = await fetch(`${this.getInstagramScrapeApiBaseUrl()}/api/instagram-scrape-profile`, {
       method: 'POST',
@@ -2944,13 +2955,7 @@ class FirebaseService {
     });
 
     if (!response.ok) {
-      let detail = '';
-      try {
-        const errorPayload = await response.json();
-        detail = errorPayload?.details || errorPayload?.error || '';
-      } catch {
-        detail = await response.text();
-      }
+      const detail = await this.readFetchErrorDetail(response);
       throw new Error(
         `Instagram profile scrape failed (${response.status})${detail ? `: ${detail}` : ''}`
       );
@@ -2968,13 +2973,7 @@ class FirebaseService {
     });
 
     if (!response.ok) {
-      let detail = '';
-      try {
-        const errorPayload = await response.json();
-        detail = errorPayload?.details || errorPayload?.error || '';
-      } catch {
-        detail = await response.text();
-      }
+      const detail = await this.readFetchErrorDetail(response);
       throw new Error(
         `Instagram post scrape failed (${response.status})${detail ? `: ${detail}` : ''}`
       );

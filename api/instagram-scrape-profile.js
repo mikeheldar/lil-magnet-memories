@@ -1,15 +1,29 @@
-import {
+const {
   DEFAULT_INSTAGRAM_PROFILE_URL,
   scrapeInstagramProfilePosts,
-} from './lib/instagramScrape.mjs';
+} = require('./lib/instagramScrape.js');
 
-export default async function handler(req, res) {
+function getJsonBody(req) {
+  if (req.body && typeof req.body === 'object') {
+    return req.body;
+  }
+  if (typeof req.body === 'string' && req.body.trim()) {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const body = req.method === 'POST' ? req.body || {} : req.query || {};
+    const body = req.method === 'POST' ? getJsonBody(req) : req.query || {};
     const requestedLimit = Number(body.limit || 20);
     const limit = Math.max(1, Math.min(50, Number.isFinite(requestedLimit) ? requestedLimit : 20));
     const profileUrl = String(body.profileUrl || DEFAULT_INSTAGRAM_PROFILE_URL).trim();
@@ -29,4 +43,4 @@ export default async function handler(req, res) {
       details: error?.message || 'Unknown error',
     });
   }
-}
+};

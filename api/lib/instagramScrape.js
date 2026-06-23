@@ -1,4 +1,4 @@
-export const DEFAULT_INSTAGRAM_PROFILE_URL =
+const DEFAULT_INSTAGRAM_PROFILE_URL =
   process.env.INSTAGRAM_PROFILE_URL || 'https://www.instagram.com/lilmagnetmemories/';
 
 const INSTAGRAM_WEB_APP_ID = '936619743392459';
@@ -67,7 +67,7 @@ async function fetchWithRetry(url, options = {}, attempts = 3) {
   throw lastError || new Error(`Instagram request failed for ${url}`);
 }
 
-export function extractInstagramShortCode(raw) {
+function extractInstagramShortCode(raw) {
   const value = String(raw || '').trim();
   if (!value) return null;
   const patterns = [
@@ -82,7 +82,7 @@ export function extractInstagramShortCode(raw) {
   return null;
 }
 
-export function extractInstagramUsername(raw) {
+function extractInstagramUsername(raw) {
   const value = String(raw || '').trim();
   const match = value.match(/instagram\.com\/([A-Za-z0-9._]+)\/?(?:$|\?|#)/i);
   if (!match?.[1]) return null;
@@ -93,11 +93,11 @@ export function extractInstagramUsername(raw) {
   return match[1];
 }
 
-export function extractInstagramProfileUsername(profileUrl = DEFAULT_INSTAGRAM_PROFILE_URL) {
+function extractInstagramProfileUsername(profileUrl = DEFAULT_INSTAGRAM_PROFILE_URL) {
   return extractInstagramUsername(profileUrl) || 'lilmagnetmemories';
 }
 
-export function normalizeInstagramPostUrl(raw) {
+function normalizeInstagramPostUrl(raw) {
   const shortCode = extractInstagramShortCode(raw);
   if (!shortCode) return null;
   return `https://www.instagram.com/p/${shortCode}/`;
@@ -245,7 +245,7 @@ async function lookupCaptionFromWebProfile(shortCode, username) {
   return { caption: '', mediaUrls: [] };
 }
 
-export async function scrapeInstagramPostPage(rawUrl) {
+async function scrapeInstagramPostPage(rawUrl) {
   const url = normalizeInstagramPostUrl(rawUrl);
   if (!url) {
     throw new Error('Invalid Instagram post URL. Use a link like https://www.instagram.com/p/ABC123/');
@@ -302,7 +302,7 @@ export async function scrapeInstagramPostPage(rawUrl) {
   };
 }
 
-export async function scrapeInstagramProfilePosts(
+async function scrapeInstagramProfilePosts(
   profileUrl = DEFAULT_INSTAGRAM_PROFILE_URL,
   limit = 20
 ) {
@@ -316,3 +316,13 @@ export async function scrapeInstagramProfilePosts(
     'Could not load Instagram profile posts. Try importing individual post URLs instead.'
   );
 }
+
+module.exports = {
+  DEFAULT_INSTAGRAM_PROFILE_URL,
+  extractInstagramShortCode,
+  extractInstagramUsername,
+  extractInstagramProfileUsername,
+  normalizeInstagramPostUrl,
+  scrapeInstagramPostPage,
+  scrapeInstagramProfilePosts,
+};
