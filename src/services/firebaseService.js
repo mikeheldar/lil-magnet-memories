@@ -2776,6 +2776,46 @@ class FirebaseService {
     }
   }
 
+  async deleteBlogPost(postId) {
+    try {
+      if (!postId) throw new Error('Blog post id is required');
+      await deleteDoc(doc(db, FirebaseService.BLOG_POSTS_COLLECTION, postId));
+    } catch (error) {
+      console.error('Error deleting blog post:', error);
+      throw error;
+    }
+  }
+
+  isInstagramSyncedBlogPost(post) {
+    if (!post) return false;
+    if (String(post.sourceType || '').toLowerCase() === 'instagram') return true;
+    return !!String(post.instagramSync?.instagramPostId || '').trim();
+  }
+
+  async clearInstagramSyncedBlogDrafts() {
+    try {
+      const posts = await this.getBlogPostsForAdmin(400);
+      const toDelete = posts.filter(
+        (post) => post.status !== 'published' && this.isInstagramSyncedBlogPost(post)
+      );
+      const skippedPublished = posts.filter(
+        (post) => post.status === 'published' && this.isInstagramSyncedBlogPost(post)
+      ).length;
+
+      for (const post of toDelete) {
+        await deleteDoc(doc(db, FirebaseService.BLOG_POSTS_COLLECTION, post.id));
+      }
+
+      return {
+        deletedCount: toDelete.length,
+        skippedPublishedCount: skippedPublished,
+      };
+    } catch (error) {
+      console.error('Error clearing Instagram synced blog drafts:', error);
+      throw error;
+    }
+  }
+
   async requestInstagramPublishForBlogPost(postId, caption = '') {
     try {
       const refDoc = doc(db, FirebaseService.BLOG_POSTS_COLLECTION, postId);
@@ -2856,7 +2896,7 @@ class FirebaseService {
       }
 
       const idToken = await currentUser.getIdToken();
-      const response = await fetch(`${config.apiBaseUrl}/blog/sync-instagram`, {
+      const response = await fetch(`${config.apiBaseUrl}/blog/sync-instagram-scrape`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2883,6 +2923,46 @@ class FirebaseService {
       return await response.json();
     } catch (error) {
       console.error('Error syncing Instagram posts to blog drafts:', error);
+      throw error;
+    }
+  }
+
+  async importInstagramPostFromUrl(url, { saveDraft = true } = {}) {
+    try {
+      const currentUser = auth?.currentUser;
+      if (!currentUser || currentUser.isAnonymous) {
+        throw new Error('You must be signed in as an operator or admin to import Instagram posts.');
+      }
+
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch(`${config.apiBaseUrl}/blog/import-instagram-url`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          url,
+          saveDraft,
+        }),
+      });
+
+      if (!response.ok) {
+        let detail = '';
+        try {
+          const errorPayload = await response.json();
+          detail = errorPayload?.details || errorPayload?.error || '';
+        } catch {
+          detail = await response.text();
+        }
+        throw new Error(
+          `Instagram import failed (${response.status})${detail ? `: ${detail}` : ''}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error importing Instagram post from URL:', error);
       throw error;
     }
   }

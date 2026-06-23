@@ -5,7 +5,7 @@
         <div class="col-12 col-md">
           <div class="text-h4 text-primary text-weight-bold">Blog Manager</div>
           <div class="text-body2 text-grey-7">
-            Create SEO content and queue Instagram publishing requests.
+            Create SEO content from Instagram posts (no Business account required).
           </div>
         </div>
         <div class="col-12 col-md-auto row q-gutter-sm">
@@ -16,6 +16,15 @@
             no-caps
             @click="syncInstagramDrafts"
             :loading="syncingInstagram"
+          />
+          <q-btn
+            color="negative"
+            outline
+            icon="delete_sweep"
+            label="Clear Instagram Drafts"
+            no-caps
+            @click="confirmClearInstagramDrafts"
+            :loading="clearingInstagram"
           />
           <q-btn
             color="secondary"
@@ -65,7 +74,38 @@
             <div class="form-section">
               <div class="form-section__title">Photos</div>
               <div class="text-caption text-grey-7 q-mb-sm">
-                Sync Instagram posts to import photos, or paste a featured image URL below.
+                Paste an Instagram post URL to import photos and caption, or sync recent posts from your profile.
+              </div>
+              <div class="row q-col-gutter-sm q-mb-md items-end">
+                <div class="col-12 col-md">
+                  <q-input
+                    v-model="instagramImportUrl"
+                    label="Instagram post URL"
+                    filled
+                    stack-label
+                    hint="Example: https://www.instagram.com/p/ABC123/"
+                    clearable
+                  />
+                </div>
+                <div class="col-12 col-md-auto row q-gutter-sm">
+                  <q-btn
+                    color="indigo-7"
+                    icon="download"
+                    label="Import into form"
+                    no-caps
+                    :loading="importingInstagramUrl"
+                    @click="importInstagramUrlIntoForm"
+                  />
+                  <q-btn
+                    color="indigo"
+                    outline
+                    icon="save"
+                    label="Save as draft"
+                    no-caps
+                    :loading="importingInstagramUrl"
+                    @click="importInstagramUrlAsDraft"
+                  />
+                </div>
               </div>
               <div v-if="form.mediaUrls.length" class="row q-col-gutter-sm q-mb-md">
                 <div
@@ -260,6 +300,9 @@ const saving = ref(false);
 const importingEvents = ref(false);
 const queueingInstagram = ref(false);
 const syncingInstagram = ref(false);
+const clearingInstagram = ref(false);
+const importingInstagramUrl = ref(false);
+const instagramImportUrl = ref('');
 const posts = ref([]);
 const editingPostId = ref(null);
 
@@ -464,6 +507,95 @@ const importEventDrafts = async () => {
   }
 };
 
+const applyInstagramPreview = (preview) => {
+  if (!preview) return;
+  form.value = {
+    ...form.value,
+    title: preview.title || form.value.title,
+    slug: preview.slug || form.value.slug,
+    excerpt: preview.excerpt || form.value.excerpt,
+    content: preview.content || form.value.content,
+    featuredImage: preview.featuredImage || form.value.featuredImage,
+    mediaUrls: Array.isArray(preview.mediaUrls) ? preview.mediaUrls.filter(Boolean) : [],
+    tagsText: (preview.tags || []).join(', '),
+    seoDescription: preview.seoDescription || form.value.seoDescription,
+    seoKeywords: preview.seoKeywords || form.value.seoKeywords,
+    sourceType: preview.sourceType || 'instagram',
+    sourceUrl: preview.sourceUrl || form.value.sourceUrl,
+    instagramCaption: preview.instagramCaption || form.value.instagramCaption,
+    instagramSync: preview.instagramSync || form.value.instagramSync,
+    status: 'draft',
+  };
+  editingPostId.value = null;
+};
+
+const importInstagramUrlIntoForm = async () => {
+  const url = String(instagramImportUrl.value || '').trim();
+  if (!url) {
+    $q.notify({ type: 'warning', message: 'Paste an Instagram post URL first.' });
+    return;
+  }
+
+  importingInstagramUrl.value = true;
+  try {
+    const result = await firebaseService.importInstagramPostFromUrl(url, { saveDraft: false });
+    applyInstagramPreview(result?.preview);
+    $q.notify({
+      type: 'positive',
+      message: 'Instagram post loaded into the form. Review and click Create Post.',
+      timeout: 5000,
+    });
+  } catch (error) {
+    console.error('Failed importing Instagram URL into form:', error);
+    $q.notify({
+      type: 'negative',
+      message: error?.message || 'Could not import Instagram post.',
+      timeout: 8000,
+      multiLine: true,
+    });
+  } finally {
+    importingInstagramUrl.value = false;
+  }
+};
+
+const importInstagramUrlAsDraft = async () => {
+  const url = String(instagramImportUrl.value || '').trim();
+  if (!url) {
+    $q.notify({ type: 'warning', message: 'Paste an Instagram post URL first.' });
+    return;
+  }
+
+  importingInstagramUrl.value = true;
+  try {
+    const result = await firebaseService.importInstagramPostFromUrl(url, { saveDraft: true });
+    if (result?.action === 'skipped') {
+      $q.notify({ type: 'info', message: 'That Instagram post is already saved as a draft.' });
+    } else {
+      $q.notify({
+        type: 'positive',
+        message: result?.action === 'updated' ? 'Instagram draft updated.' : 'Instagram draft created.',
+      });
+    }
+    await loadPosts();
+    if (result?.preview) {
+      applyInstagramPreview(result.preview);
+      if (result?.postId) {
+        editingPostId.value = result.postId;
+      }
+    }
+  } catch (error) {
+    console.error('Failed saving Instagram URL as draft:', error);
+    $q.notify({
+      type: 'negative',
+      message: error?.message || 'Could not save Instagram draft.',
+      timeout: 8000,
+      multiLine: true,
+    });
+  } finally {
+    importingInstagramUrl.value = false;
+  }
+};
+
 const syncInstagramDrafts = async () => {
   syncingInstagram.value = true;
   try {
@@ -479,9 +611,73 @@ const syncInstagramDrafts = async () => {
     await loadPosts();
   } catch (error) {
     console.error('Failed syncing Instagram drafts:', error);
-    $q.notify({ type: 'negative', message: error?.message || 'Could not sync Instagram posts.' });
+    $q.notify({
+      type: 'negative',
+      message: error?.message || 'Could not sync Instagram posts.',
+      timeout: 8000,
+      multiLine: true,
+    });
   } finally {
     syncingInstagram.value = false;
+  }
+};
+
+const confirmClearInstagramDrafts = () => {
+  const draftCount = posts.value.filter(
+    (post) =>
+      post.status !== 'published' &&
+      (post.sourceType === 'instagram' || post.instagramSync?.instagramPostId)
+  ).length;
+
+  $q.dialog({
+    title: 'Clear Instagram drafts?',
+    message:
+      draftCount > 0
+        ? `Delete ${draftCount} Instagram-synced draft${draftCount === 1 ? '' : 's'} so you can test a fresh sync. Published Instagram posts are kept.`
+        : 'No Instagram-synced drafts to delete. Published posts are never removed.',
+    cancel: true,
+    persistent: true,
+    ok: {
+      label: draftCount > 0 ? 'Delete drafts' : 'OK',
+      color: 'negative',
+      flat: draftCount === 0,
+    },
+  }).onOk(async () => {
+    if (draftCount === 0) return;
+    await clearInstagramDrafts();
+  });
+};
+
+const clearInstagramDrafts = async () => {
+  clearingInstagram.value = true;
+  try {
+    const result = await firebaseService.clearInstagramSyncedBlogDrafts();
+    const deleted = Number(result?.deletedCount || 0);
+    const skippedPublished = Number(result?.skippedPublishedCount || 0);
+
+    const editingId = editingPostId.value;
+    await loadPosts();
+
+    if (editingId && !posts.value.some((post) => post.id === editingId)) {
+      resetForm();
+    }
+
+    $q.notify({
+      type: 'positive',
+      message:
+        deleted > 0
+          ? `Removed ${deleted} Instagram draft${deleted === 1 ? '' : 's'}.${skippedPublished ? ` ${skippedPublished} published post${skippedPublished === 1 ? ' was' : 's were'} kept.` : ''}`
+          : 'No Instagram drafts to remove.',
+      timeout: 5000,
+    });
+  } catch (error) {
+    console.error('Failed clearing Instagram drafts:', error);
+    $q.notify({
+      type: 'negative',
+      message: error?.message || 'Could not clear Instagram drafts.',
+    });
+  } finally {
+    clearingInstagram.value = false;
   }
 };
 
