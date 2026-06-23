@@ -2816,6 +2816,260 @@ class FirebaseService {
     }
   }
 
+  async clearInstagramSyncedBlogDrafts() {
+    try {
+      const posts = await this.getBlogPostsForAdmin(400);
+      const toDelete = posts.filter(
+        (post) => post.status !== 'published' && this.isInstagramSyncedBlogPost(post)
+      );
+      const skippedPublished = posts.filter(
+        (post) => post.status === 'published' && this.isInstagramSyncedBlogPost(post)
+      ).length;
+
+      for (const post of toDelete) {
+        await deleteDoc(doc(db, FirebaseService.BLOG_POSTS_COLLECTION, post.id));
+      }
+
+      return {
+        deletedCount: toDelete.length,
+        skippedPublishedCount: skippedPublished,
+      };
+    } catch (error) {
+      console.error('Error clearing Instagram synced blog drafts:', error);
+      throw error;
+    }
+  }
+
+  hashInstagramSyncValue(value) {
+    const input = String(value || '');
+    let hash = 0;
+    for (let i = 0; i < input.length; i += 1) {
+      hash = (hash << 5) - hash + input.charCodeAt(i);
+      hash |= 0;
+    }
+    return `ig-${Math.abs(hash)}`;
+  }
+
+  buildInstagramDraftFromScrape(scrapedPost) {
+    const caption = String(scrapedPost?.caption || scrapedPost?.altText || '').trim();
+    const firstLine = caption.split('\n').map((line) => line.trim()).find(Boolean) || '';
+    const shortCode = String(scrapedPost?.shortCode || '').trim();
+    const title = firstLine
+      ? firstLine.slice(0, 120)
+      : `Instagram Update - ${shortCode || 'post'}`;
+    const excerpt = (caption || title).slice(0, 220);
+    const sourceUrl = scrapedPost?.url || (shortCode ? `https://www.instagram.com/p/${shortCode}/` : '');
+    const contentParts = [caption || title, sourceUrl ? `View this post on Instagram: ${sourceUrl}` : ''];
+    const content = contentParts.filter(Boolean).join('\n\n');
+    const hashtagMatches = Array.from(caption.matchAll(/#([a-z0-9_]+)/gi)).map((m) => m[1].toLowerCase());
+    const tags = Array.from(new Set(['instagram', 'custom magnets', ...hashtagMatches])).slice(0, 20);
+    const mediaUrls = Array.isArray(scrapedPost?.mediaUrls)
+      ? scrapedPost.mediaUrls.filter(Boolean)
+      : [];
+    const hashInput = JSON.stringify({
+      caption,
+      media_urls: mediaUrls,
+      permalink: sourceUrl,
+      shortCode,
+    });
+
+    return {
+      title,
+      slug: this.slugify(`instagram-${shortCode}`),
+      excerpt,
+      content,
+      tags,
+      featuredImage: scrapedPost?.featuredImage || mediaUrls[0] || null,
+      mediaUrls,
+      sourceType: 'instagram',
+      sourceUrl,
+      seoDescription: excerpt,
+      seoKeywords: 'instagram, custom magnets, gift ideas, photo magnets',
+      instagramCaption: caption,
+      instagramSync: {
+        instagramPostId: shortCode,
+        syncMethod: 'scrape',
+        mediaUrl: mediaUrls[0] || null,
+        mediaUrls,
+        permalink: sourceUrl,
+        lastSyncHash: this.hashInstagramSyncValue(hashInput),
+        lastCaption: caption,
+        timestamp: null,
+      },
+    };
+  }
+
+  scrapedDraftToPreview(draft) {
+    return {
+      title: draft.title,
+      slug: draft.slug,
+      excerpt: draft.excerpt,
+      content: draft.content,
+      featuredImage: draft.featuredImage,
+      mediaUrls: draft.mediaUrls,
+      tags: draft.tags,
+      sourceType: draft.sourceType,
+      sourceUrl: draft.sourceUrl,
+      seoDescription: draft.seoDescription,
+      seoKeywords: draft.seoKeywords,
+      instagramCaption: draft.instagramCaption || draft.instagramSync?.lastCaption || '',
+      instagramSync: draft.instagramSync,
+    };
+  }
+
+  async findBlogPostByInstagramId(instagramPostId) {
+    const shortCode = String(instagramPostId || '').trim();
+    if (!shortCode) return null;
+    const coll = collection(db, FirebaseService.BLOG_POSTS_COLLECTION);
+    const q = query(coll, where('instagramSync.instagramPostId', '==', shortCode), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    return this.normalizeBlogPost(snap.docs[0]);
+  }
+
+  getInstagramScrapeApiBaseUrl() {
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return window.location.origin;
+    }
+    return '';
+  }
+
+  async fetchInstagramScrapedProfile(limitCount = 20) {
+    const response = await fetch(`${this.getInstagramScrapeApiBaseUrl()}/api/instagram-scrape-profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        limit: Math.max(1, Math.min(50, Number(limitCount) || 20)),
+      }),
+    });
+
+    if (!response.ok) {
+      let detail = '';
+      try {
+        const errorPayload = await response.json();
+        detail = errorPayload?.details || errorPayload?.error || '';
+      } catch {
+        detail = await response.text();
+      }
+      throw new Error(
+        `Instagram profile scrape failed (${response.status})${detail ? `: ${detail}` : ''}`
+      );
+    }
+
+    const payload = await response.json();
+    return Array.isArray(payload?.posts) ? payload.posts : [];
+  }
+
+  async fetchInstagramScrapedPost(url) {
+    const response = await fetch(`${this.getInstagramScrapeApiBaseUrl()}/api/instagram-scrape-post`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) {
+      let detail = '';
+      try {
+        const errorPayload = await response.json();
+        detail = errorPayload?.details || errorPayload?.error || '';
+      } catch {
+        detail = await response.text();
+      }
+      throw new Error(
+        `Instagram post scrape failed (${response.status})${detail ? `: ${detail}` : ''}`
+      );
+    }
+
+    const payload = await response.json();
+    if (!payload?.post) {
+      throw new Error('Instagram post scrape returned no data.');
+    }
+    return payload.post;
+  }
+
+  async upsertInstagramScrapedDrafts(scrapedPosts, authorEmail = null) {
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+    const processed = [];
+
+    for (const scrapedPost of scrapedPosts || []) {
+      const shortCode = String(scrapedPost?.shortCode || '').trim();
+      if (!shortCode) {
+        skipped += 1;
+        continue;
+      }
+
+      const draft = this.buildInstagramDraftFromScrape(scrapedPost);
+      const existing = await this.findBlogPostByInstagramId(shortCode);
+
+      if (!existing) {
+        const postId = await this.createBlogPost(
+          {
+            ...draft,
+            status: 'draft',
+            instagram: {
+              publishRequested: false,
+              publishStatus: 'already_on_instagram',
+              publishedUrl: draft.sourceUrl,
+              caption: draft.instagramCaption || '',
+            },
+          },
+          authorEmail
+        );
+        created += 1;
+        processed.push({ postId, action: 'created', instagramPostId: shortCode });
+        continue;
+      }
+
+      if (String(existing.status || '').toLowerCase() === 'published') {
+        skipped += 1;
+        continue;
+      }
+
+      const existingHash = String(existing?.instagramSync?.lastSyncHash || '');
+      const nextHash = String(draft.instagramSync?.lastSyncHash || '');
+      if (existingHash && nextHash && existingHash === nextHash) {
+        skipped += 1;
+        continue;
+      }
+
+      await this.updateBlogPost(existing.id, {
+        title: draft.title,
+        excerpt: draft.excerpt,
+        content: draft.content,
+        featuredImage: draft.featuredImage,
+        mediaUrls: draft.mediaUrls,
+        tags: draft.tags,
+        sourceType: draft.sourceType,
+        sourceUrl: draft.sourceUrl,
+        seoDescription: draft.seoDescription,
+        seoKeywords: draft.seoKeywords,
+        instagramSync: draft.instagramSync,
+        instagram: {
+          publishRequested: existing?.instagram?.publishRequested || false,
+          publishStatus: existing?.instagram?.publishStatus || 'already_on_instagram',
+          publishedUrl: draft.sourceUrl,
+          caption: draft.instagramCaption || '',
+        },
+      });
+
+      updated += 1;
+      processed.push({ postId: existing.id, action: 'updated', instagramPostId: shortCode });
+    }
+
+    return {
+      success: true,
+      method: 'scrape',
+      importedCount: created + updated,
+      createdCount: created,
+      updatedCount: updated,
+      skippedCount: skipped,
+      fetchedCount: Array.isArray(scrapedPosts) ? scrapedPosts.length : 0,
+      processed,
+    };
+  }
+
   async requestInstagramPublishForBlogPost(postId, caption = '') {
     try {
       const refDoc = doc(db, FirebaseService.BLOG_POSTS_COLLECTION, postId);
@@ -2895,32 +3149,8 @@ class FirebaseService {
         throw new Error('You must be signed in as an operator or admin to sync Instagram posts.');
       }
 
-      const idToken = await currentUser.getIdToken();
-      const response = await fetch(`${config.apiBaseUrl}/blog/sync-instagram-scrape`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          limit: Math.max(1, Math.min(50, Number(limitCount) || 20)),
-        }),
-      });
-
-      if (!response.ok) {
-        let detail = '';
-        try {
-          const errorPayload = await response.json();
-          detail = errorPayload?.details || errorPayload?.error || '';
-        } catch {
-          detail = await response.text();
-        }
-        throw new Error(
-          `Instagram sync failed (${response.status})${detail ? `: ${detail}` : ''}`
-        );
-      }
-
-      return await response.json();
+      const scrapedPosts = await this.fetchInstagramScrapedProfile(limitCount);
+      return await this.upsertInstagramScrapedDrafts(scrapedPosts, currentUser.email || null);
     } catch (error) {
       console.error('Error syncing Instagram posts to blog drafts:', error);
       throw error;
@@ -2934,33 +3164,29 @@ class FirebaseService {
         throw new Error('You must be signed in as an operator or admin to import Instagram posts.');
       }
 
-      const idToken = await currentUser.getIdToken();
-      const response = await fetch(`${config.apiBaseUrl}/blog/import-instagram-url`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          url,
-          saveDraft,
-        }),
-      });
+      const scrapedPost = await this.fetchInstagramScrapedPost(url);
+      const draft = this.buildInstagramDraftFromScrape(scrapedPost);
+      const preview = this.scrapedDraftToPreview(draft);
 
-      if (!response.ok) {
-        let detail = '';
-        try {
-          const errorPayload = await response.json();
-          detail = errorPayload?.details || errorPayload?.error || '';
-        } catch {
-          detail = await response.text();
-        }
-        throw new Error(
-          `Instagram import failed (${response.status})${detail ? `: ${detail}` : ''}`
-        );
+      if (!saveDraft) {
+        return {
+          success: true,
+          method: 'scrape',
+          preview,
+        };
       }
 
-      return await response.json();
+      const result = await this.upsertInstagramScrapedDrafts([scrapedPost], currentUser.email || null);
+      return {
+        success: true,
+        method: 'scrape',
+        preview,
+        createdCount: result.createdCount,
+        updatedCount: result.updatedCount,
+        skippedCount: result.skippedCount,
+        postId: result.processed?.[0]?.postId || null,
+        action: result.processed?.[0]?.action || (result.skippedCount ? 'skipped' : null),
+      };
     } catch (error) {
       console.error('Error importing Instagram post from URL:', error);
       throw error;
