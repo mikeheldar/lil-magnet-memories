@@ -17,7 +17,7 @@ function getJsonBody(req) {
   return {};
 }
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -27,8 +27,9 @@ module.exports = async function handler(req, res) {
     const requestedLimit = Number(body.limit || 20);
     const limit = Math.max(1, Math.min(50, Number.isFinite(requestedLimit) ? requestedLimit : 20));
     const profileUrl = String(body.profileUrl || DEFAULT_INSTAGRAM_PROFILE_URL).trim();
+    const postUrls = Array.isArray(body.postUrls) ? body.postUrls : [];
 
-    const posts = await scrapeInstagramProfilePosts(profileUrl, limit);
+    const posts = await scrapeInstagramProfilePosts(profileUrl, limit, { postUrls });
 
     return res.status(200).json({
       success: true,
@@ -38,9 +39,13 @@ module.exports = async function handler(req, res) {
     });
   } catch (error) {
     console.error('[API] instagram-scrape-profile error:', error);
-    return res.status(500).json({
-      error: 'Failed to scrape Instagram profile posts.',
+    const statusCode = error?.statusCode === 429 ? 429 : 500;
+    return res.status(statusCode).json({
+      error: statusCode === 429 ? 'Instagram rate limited bulk profile sync.' : 'Failed to scrape Instagram profile posts.',
       details: error?.message || 'Unknown error',
     });
   }
-};
+}
+
+handler.config = { maxDuration: 30 };
+module.exports = handler;

@@ -611,10 +611,14 @@ const syncInstagramDrafts = async () => {
     await loadPosts();
   } catch (error) {
     console.error('Failed syncing Instagram drafts:', error);
+    const message = String(error?.message || 'Could not sync Instagram posts.');
+    const isRateLimited = message.includes('429') || message.toLowerCase().includes('rate limit');
     $q.notify({
       type: 'negative',
-      message: error?.message || 'Could not sync Instagram posts.',
-      timeout: 8000,
+      message: isRateLimited
+        ? 'Instagram is rate-limiting bulk sync right now. Paste individual post URLs to import them, wait a few minutes and retry, or add INSTAGRAM_SYNC_SEED_URLS in Vercel with recent post links.'
+        : message,
+      timeout: 10000,
       multiLine: true,
     });
   } finally {

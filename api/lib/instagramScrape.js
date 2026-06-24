@@ -48,12 +48,97 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function collectSetCookieHeaders(response) {
+  if (typeof response.headers.getSetCookie === 'function') {
+    return response.headers.getSetCookie().map((cookie) => cookie.split(';')[0]).join('; ');
+  }
+  const raw = response.headers.get('set-cookie');
+  if (!raw) return '';
+  return raw
+    .split(/,(?=[^;]+=[^;]+)/)
+    .map((cookie) => cookie.split(';')[0].trim())
+    .filter(Boolean)
+    .join('; ');
+}
+
+function parseSeedPostUrls(rawValue) {
+  if (!rawValue) return [];
+  const urls = [];
+  for (const part of String(rawValue).split(/[\n,]+/)) {
+    const normalized = normalizeInstagramPostUrl(part.trim());
+    if (normalized && !urls.includes(normalized)) {
+      urls.push(normalized);
+    }
+  }
+  return urls;
+}
+
+function getConfiguredSeedPostUrls(extraUrls = []) {
+  const envSeeds = parseSeedPostUrls(process.env.INSTAGRAM_SYNC_SEED_URLS || '');
+  const merged = [...envSeeds];
+  for (const raw of extraUrls) {
+    const normalized = normalizeInstagramPostUrl(String(raw || '').trim());
+    if (normalized && !merged.includes(normalized)) {
+      merged.push(normalized);
+    }
+  }
+  return merged;
+}
+
+async function bootstrapInstagramSession(username) {
+  const profileRes = await fetch(`https://www.instagram.com/${encodeURIComponent(username)}/`, {
+    headers: {
+      ...FETCH_HEADERS,
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+      'Upgrade-Insecure-Requests': '1',
+    },
+    redirect: 'follow',
+  });
+
+  const html = await profileRes.text();
+  const lsd = html.match(/"LSD",\[\],\{"token":"([^"]+)"/)?.[1] || '';
+  const cookies = collectSetCookieHeaders(profileRes);
+
+  if (!profileRes.ok) {
+    throw new Error(`Instagram profile page failed (${profileRes.status}).`);
+  }
+
+  return { lsd, cookies, html };
+}
+
+function buildInstagramWebApiHeaders(username, session) {
+  return {
+    ...INSTAGRAM_WEB_API_HEADERS,
+    Referer: `https://www.instagram.com/${username}/`,
+    ...(session?.lsd ? { 'X-FB-LSD': session.lsd } : {}),
+    ...(session?.cookies ? { Cookie: session.cookies } : {}),
+  };
+}
+
 async function fetchWithRetry(url, options = {}, attempts = 3) {
   let lastError = null;
+  let lastResponse = null;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       const response = await fetch(url, options);
-      if (response.ok || response.status < 500) {
+      lastResponse = response;
+      if (response.ok) {
+        return response;
+      }
+      if (response.status === 429) {
+        lastError = new Error(`Instagram request rate limited (429) for ${url}`);
+        const retryAfter = Number(response.headers.get('retry-after') || 0);
+        const waitMs = retryAfter > 0 ? retryAfter * 1000 : 1500 * attempt;
+        if (attempt < attempts) {
+          await sleep(waitMs);
+          continue;
+        }
+        return response;
+      }
+      if (response.status < 500) {
         return response;
       }
       lastError = new Error(`Instagram request failed (${response.status}) for ${url}`);
@@ -63,6 +148,9 @@ async function fetchWithRetry(url, options = {}, attempts = 3) {
     if (attempt < attempts) {
       await sleep(400 * attempt);
     }
+  }
+  if (lastResponse) {
+    return lastResponse;
   }
   throw lastError || new Error(`Instagram request failed for ${url}`);
 }
@@ -115,27 +203,7 @@ async function resolveInstagramMediaRedirect(shortCode) {
   return null;
 }
 
-async function fetchInstagramWebProfilePosts(username, limit) {
-  const response = await fetchWithRetry(
-    `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`,
-    {
-      headers: {
-        ...INSTAGRAM_WEB_API_HEADERS,
-        Referer: `https://www.instagram.com/${username}/`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Instagram profile API failed (${response.status}).`);
-  }
-
-  const payload = await response.json();
-  const edges = payload?.data?.user?.edge_owner_to_timeline_media?.edges;
-  if (!Array.isArray(edges) || !edges.length) {
-    throw new Error('Instagram profile returned no posts.');
-  }
-
+function mapInstagramProfileEdges(edges, limit) {
   const posts = [];
   for (const edge of edges.slice(0, limit)) {
     const node = edge?.node;
@@ -155,20 +223,91 @@ async function fetchInstagramWebProfilePosts(username, limit) {
         : []),
     ]);
 
-    let resolvedMediaUrls = mediaUrls;
-    if (!resolvedMediaUrls.length) {
-      const redirectUrl = await resolveInstagramMediaRedirect(shortCode);
-      if (redirectUrl) resolvedMediaUrls = [redirectUrl];
-    }
-
     posts.push({
       shortCode,
       url: `https://www.instagram.com/p/${shortCode}/`,
       caption,
       altText: caption,
-      mediaUrls: resolvedMediaUrls,
-      featuredImage: resolvedMediaUrls[0] || null,
+      mediaUrls,
+      featuredImage: mediaUrls[0] || null,
     });
+  }
+  return posts;
+}
+
+async function enrichPostsWithMedia(posts) {
+  const enriched = [];
+  for (const post of posts) {
+    let mediaUrls = uniqueUrls(post.mediaUrls || []);
+    if (!mediaUrls.length && post.shortCode) {
+      const redirectUrl = await resolveInstagramMediaRedirect(post.shortCode);
+      if (redirectUrl) mediaUrls = [redirectUrl];
+    }
+    enriched.push({
+      ...post,
+      mediaUrls,
+      featuredImage: mediaUrls[0] || post.featuredImage || null,
+    });
+  }
+  return enriched;
+}
+
+async function fetchInstagramWebProfilePosts(username, limit, session = null) {
+  const activeSession = session || (await bootstrapInstagramSession(username));
+  const apiPath = `/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`;
+  const hosts = ['www.instagram.com', 'i.instagram.com'];
+  let lastStatus = 0;
+
+  for (const host of hosts) {
+    const response = await fetchWithRetry(
+      `https://${host}${apiPath}`,
+      {
+        headers: buildInstagramWebApiHeaders(username, activeSession),
+      },
+      4
+    );
+
+    lastStatus = response.status;
+    if (response.status === 429) {
+      continue;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Instagram profile API failed (${response.status}).`);
+    }
+
+    const payload = await response.json();
+    const edges = payload?.data?.user?.edge_owner_to_timeline_media?.edges;
+    if (!Array.isArray(edges) || !edges.length) {
+      throw new Error('Instagram profile returned no posts.');
+    }
+
+    return enrichPostsWithMedia(mapInstagramProfileEdges(edges, limit));
+  }
+
+  const rateLimitError = new Error(`Instagram profile API failed (${lastStatus || 429}).`);
+  rateLimitError.statusCode = lastStatus || 429;
+  throw rateLimitError;
+}
+
+async function scrapeInstagramProfilePostsFromUrls(postUrls, limit) {
+  const safeLimit = Math.max(1, Math.min(50, Number.isFinite(limit) ? limit : 20));
+  const urls = parseSeedPostUrls(postUrls.join('\n')).slice(0, safeLimit);
+  if (!urls.length) {
+    return [];
+  }
+
+  const posts = [];
+  for (const url of urls) {
+    try {
+      const post = await scrapeInstagramPostPage(url);
+      if (post?.shortCode) {
+        posts.push(post);
+      }
+    } catch (error) {
+      console.warn('[instagram-scrape] Seed post scrape failed:', url, error?.message);
+    }
+    await sleep(350);
   }
 
   return posts;
@@ -304,13 +443,40 @@ async function scrapeInstagramPostPage(rawUrl) {
 
 async function scrapeInstagramProfilePosts(
   profileUrl = DEFAULT_INSTAGRAM_PROFILE_URL,
-  limit = 20
+  limit = 20,
+  options = {}
 ) {
   const safeLimit = Math.max(1, Math.min(50, Number.isFinite(limit) ? limit : 20));
   const username = extractInstagramProfileUsername(profileUrl);
+  const seedUrls = getConfiguredSeedPostUrls(options.postUrls || []);
 
-  const webPosts = await fetchInstagramWebProfilePosts(username, safeLimit);
-  if (webPosts.length) return webPosts;
+  try {
+    const webPosts = await fetchInstagramWebProfilePosts(username, safeLimit);
+    if (webPosts.length) {
+      return webPosts;
+    }
+  } catch (error) {
+    if (error?.statusCode !== 429 && !String(error?.message || '').includes('429')) {
+      throw error;
+    }
+    console.warn('[instagram-scrape] Profile API rate limited, trying seed URLs fallback.');
+    const fallbackPosts = await scrapeInstagramProfilePostsFromUrls(seedUrls, safeLimit);
+    if (fallbackPosts.length) {
+      return fallbackPosts;
+    }
+    const rateLimitError = new Error(
+      'Instagram is rate-limiting bulk profile sync from the server. Wait a few minutes and try again, paste individual post URLs, or set INSTAGRAM_SYNC_SEED_URLS on Vercel with recent post links as a fallback.'
+    );
+    rateLimitError.statusCode = 429;
+    throw rateLimitError;
+  }
+
+  if (seedUrls.length) {
+    const fallbackPosts = await scrapeInstagramProfilePostsFromUrls(seedUrls, safeLimit);
+    if (fallbackPosts.length) {
+      return fallbackPosts;
+    }
+  }
 
   throw new Error(
     'Could not load Instagram profile posts. Try importing individual post URLs instead.'
@@ -325,4 +491,6 @@ module.exports = {
   normalizeInstagramPostUrl,
   scrapeInstagramPostPage,
   scrapeInstagramProfilePosts,
+  scrapeInstagramProfilePostsFromUrls,
+  getConfiguredSeedPostUrls,
 };

@@ -2945,12 +2945,13 @@ class FirebaseService {
     }
   }
 
-  async fetchInstagramScrapedProfile(limitCount = 20) {
+  async fetchInstagramScrapedProfile(limitCount = 20, postUrls = []) {
     const response = await fetch(`${this.getInstagramScrapeApiBaseUrl()}/api/instagram-scrape-profile`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         limit: Math.max(1, Math.min(50, Number(limitCount) || 20)),
+        postUrls: Array.isArray(postUrls) ? postUrls.filter(Boolean) : [],
       }),
     });
 
@@ -2963,6 +2964,38 @@ class FirebaseService {
 
     const payload = await response.json();
     return Array.isArray(payload?.posts) ? payload.posts : [];
+  }
+
+  collectInstagramSeedUrlsFromBlogPosts(posts = []) {
+    const urls = [];
+    for (const post of posts) {
+      const shortCode = String(post?.instagramSync?.instagramPostId || '').trim();
+      const sourceUrl = String(post?.sourceUrl || '').trim();
+      const candidates = [
+        sourceUrl,
+        shortCode ? `https://www.instagram.com/p/${shortCode}/` : '',
+      ];
+      for (const candidate of candidates) {
+        if (!candidate.includes('instagram.com')) continue;
+        if (!urls.includes(candidate)) {
+          urls.push(candidate);
+        }
+      }
+    }
+    return urls;
+  }
+
+  async scrapeInstagramPostsIndividually(postUrls, limitCount = 20) {
+    const safeLimit = Math.max(1, Math.min(50, Number(limitCount) || 20));
+    const scrapedPosts = [];
+    for (const url of postUrls.slice(0, safeLimit)) {
+      try {
+        scrapedPosts.push(await this.fetchInstagramScrapedPost(url));
+      } catch (error) {
+        console.warn('Individual Instagram post scrape failed:', url, error?.message);
+      }
+    }
+    return scrapedPosts;
   }
 
   async fetchInstagramScrapedPost(url) {
@@ -3148,7 +3181,22 @@ class FirebaseService {
         throw new Error('You must be signed in as an operator or admin to sync Instagram posts.');
       }
 
-      const scrapedPosts = await this.fetchInstagramScrapedProfile(limitCount);
+      const existingPosts = await this.getBlogPostsForAdmin(400);
+      const seedUrls = this.collectInstagramSeedUrlsFromBlogPosts(existingPosts);
+
+      let scrapedPosts = [];
+      try {
+        scrapedPosts = await this.fetchInstagramScrapedProfile(limitCount, seedUrls);
+      } catch (error) {
+        const message = String(error?.message || '');
+        if (seedUrls.length && (message.includes('429') || message.toLowerCase().includes('rate limit'))) {
+          scrapedPosts = await this.scrapeInstagramPostsIndividually(seedUrls, limitCount);
+        }
+        if (!scrapedPosts.length) {
+          throw error;
+        }
+      }
+
       return await this.upsertInstagramScrapedDrafts(scrapedPosts, currentUser.email || null);
     } catch (error) {
       console.error('Error syncing Instagram posts to blog drafts:', error);
