@@ -129,3 +129,94 @@ export async function fileToDataUrl(file) {
     reader.readAsDataURL(file);
   });
 }
+
+export const DEFAULT_FRAME_CUTOUT = {
+  x: 0.15,
+  y: 0.15,
+  width: 0.7,
+  height: 0.7,
+};
+
+/**
+ * Bake a square frame overlay PNG with transparent center cutout and optional text.
+ */
+export async function bakeFrameOverlay({
+  source,
+  stencil = { scale: 1, x: 0, y: 0 },
+  cutout = DEFAULT_FRAME_CUTOUT,
+  textLayers = [],
+  viewportSize = 320,
+  outputSize = OUTPUT_SIZE,
+}) {
+  const img = await loadImage(source);
+  const canvas = document.createElement('canvas');
+  canvas.width = outputSize;
+  canvas.height = outputSize;
+  const ctx = canvas.getContext('2d');
+
+  const containerSize = viewportSize;
+  const { width: displayedWidth, height: displayedHeight } = getContainedDisplaySize(
+    img.naturalWidth,
+    img.naturalHeight,
+    containerSize
+  );
+
+  const scaleFactor = outputSize / containerSize;
+  const userScale = stencil?.scale ?? 1;
+  const drawX = (stencil?.x ?? 0) * scaleFactor;
+  const drawY = (stencil?.y ?? 0) * scaleFactor;
+  const drawW = displayedWidth * userScale * scaleFactor;
+  const drawH = displayedHeight * userScale * scaleFactor;
+
+  ctx.save();
+  ctx.translate(outputSize / 2 + drawX, outputSize / 2 + drawY);
+  ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = '#000';
+  ctx.fillRect(
+    (cutout?.x ?? 0) * outputSize,
+    (cutout?.y ?? 0) * outputSize,
+    (cutout?.width ?? 0.7) * outputSize,
+    (cutout?.height ?? 0.7) * outputSize
+  );
+  ctx.restore();
+
+  for (const layer of textLayers) {
+    if (!layer?.text) continue;
+    const fontSize = Math.max(12, (layer.scale ?? 1) * outputSize * 0.06);
+    ctx.save();
+    ctx.fillStyle = layer.color || '#ffffff';
+    ctx.font = `bold ${fontSize}px ${layer.font || 'sans-serif'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const textX = (layer.x ?? 0.5) * outputSize;
+    const textY = (layer.y ?? 0.5) * outputSize;
+    if (layer.rotation) {
+      ctx.translate(textX, textY);
+      ctx.rotate((layer.rotation * Math.PI) / 180);
+      ctx.fillText(layer.text, 0, 0);
+    } else {
+      ctx.fillText(layer.text, textX, textY);
+    }
+    ctx.restore();
+  }
+
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (result) => (result ? resolve(result) : reject(new Error('Frame export failed'))),
+      'image/png'
+    );
+  });
+
+  return blob;
+}
+
+export async function bakeFrameOverlayFile(options) {
+  const blob = await bakeFrameOverlay(options);
+  const baseName = options.fileName || 'frame.png';
+  const safeName = baseName.replace(/\.[^.]+$/, '') + '.png';
+  return new File([blob], safeName, { type: 'image/png' });
+}

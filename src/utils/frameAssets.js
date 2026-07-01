@@ -52,16 +52,19 @@ export function mapEventFrames(eventFrames = []) {
   }));
 }
 
-export async function resolveUploadFrameOptions(eventFrames = []) {
-  const globals = await loadAlwaysAvailableFrames();
-  const eventMapped = mapEventFrames(eventFrames);
-  const seen = new Set();
-  const merged = [];
-  for (const frame of [...globals, ...eventMapped]) {
-    const key = `${frame.source}:${frame.id}`;
-    if (!frame.url || seen.has(key)) continue;
-    seen.add(key);
-    merged.push(frame);
+/** Legacy resolver — delegates to frame catalog when available. */
+export async function resolveUploadFrameOptions(checkedInEvent = null) {
+  const {
+    resolveCustomerFrameOptions,
+    getEventFramesFromLibrary,
+    getPublicFramesForDate,
+  } = await import('../services/frameCatalogService.js');
+
+  if (checkedInEvent && typeof checkedInEvent === 'object' && !Array.isArray(checkedInEvent)) {
+    return resolveCustomerFrameOptions({ checkedInEvent });
   }
-  return merged;
+  if (Array.isArray(checkedInEvent) && checkedInEvent.length > 0) {
+    return getEventFramesFromLibrary({ frames: checkedInEvent });
+  }
+  return getPublicFramesForDate(new Date());
 }

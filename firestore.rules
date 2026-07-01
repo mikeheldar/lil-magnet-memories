@@ -79,6 +79,16 @@ service cloud.firestore {
       allow write: if isAdminOrOperator();
     }
 
+    match /frames/{frameId} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
+    match /frameCatalog/{document} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
     match /themes/{themeId} {
       allow read: if true;
       allow write: if isAdminOrOperator();

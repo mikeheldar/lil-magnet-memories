@@ -360,22 +360,22 @@
         </q-card-section>
         <q-card-section class="q-pt-none">
           <div v-if="borderFrameList.length === 0" class="text-body2 text-grey-7">
-            No border frames available. Add PNGs to public/custom-border-frames and list.json.
+            No border frames available. Add frames in the Frame Library.
           </div>
           <div v-else class="border-frame-list">
             <div
-              v-for="filename in borderFrameList"
-              :key="filename"
+              v-for="frame in borderFrameList"
+              :key="frame.id"
               class="border-frame-option row items-center q-pa-sm q-mb-sm"
-              :class="{ 'border-frame-option-selected': selectedBorderFrame === filename }"
-              @click="selectBorderFrame(filename)"
+              :class="{ 'border-frame-option-selected': selectedBorderFrame === frame.url }"
+              @click="selectBorderFrame(frame)"
             >
               <img
-                :src="borderFrameAssetUrl(filename)"
-                :alt="filename"
+                :src="frame.url"
+                :alt="frame.name"
                 class="border-frame-thumb"
               />
-              <span class="q-ml-sm text-body2">{{ borderFrameDisplayName(filename) }}</span>
+              <span class="q-ml-sm text-body2">{{ frame.name }}</span>
             </div>
             <q-btn
               flat
@@ -398,6 +398,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMeta } from 'quasar';
 import { config } from '../config/environment.js';
+import { getPrintTemplateFrames } from '../services/frameCatalogService.js';
 
 export default {
   name: 'PrintTemplatePage',
@@ -441,11 +442,9 @@ export default {
     // Color settings for photos
     const photoColorSettings = ref({}); // key -> { brightness, contrast, saturation }
 
-    // Custom border frame: selected filename (null = no frame)
+    // Custom border frame: selected overlay URL (null = no frame)
     const selectedBorderFrame = ref(null);
     const borderFrameList = ref([]);
-    /** Bumped in list.json when replacing PNGs under the same filename (cache bust). */
-    const borderFrameAssetsVersion = ref('');
     const showBorderFrameDialog = ref(false);
 
     // Collapsible toolbar sections (Color default collapsed)
@@ -505,53 +504,17 @@ export default {
     // Image dimensions storage: key -> { width, height }
     const photoDimensions = ref({});
 
-    // Load list of border frame filenames from manifest
     const loadBorderFrameList = async () => {
       try {
-        const res = await fetch('/custom-border-frames/list.json', {
-          cache: 'no-store',
-        });
-        if (!res.ok) {
-          borderFrameList.value = [];
-          borderFrameAssetsVersion.value = '';
-          return;
-        }
-        const list = await res.json();
-        let frames = [];
-        let version = '';
-        if (Array.isArray(list)) {
-          frames = list;
-        } else if (list && typeof list === 'object') {
-          frames = Array.isArray(list.frames)
-            ? list.frames
-            : Array.isArray(list.files)
-              ? list.files
-              : [];
-          const raw =
-            list.v ?? list.version ?? list.cacheBust ?? list.cacheVersion;
-          version = raw != null && raw !== '' ? String(raw) : '';
-        }
-        borderFrameList.value = frames;
-        borderFrameAssetsVersion.value = version;
+        borderFrameList.value = await getPrintTemplateFrames();
       } catch (e) {
         borderFrameList.value = [];
-        borderFrameAssetsVersion.value = '';
       }
     };
 
-    /** Public URL for a frame PNG; query v busts CDN/browser cache when file path unchanged. */
-    const borderFrameAssetUrl = (filename) => {
-      if (!filename) return '';
-      const base = `/custom-border-frames/${encodeURIComponent(filename)}`;
-      const v = borderFrameAssetsVersion.value;
-      return v ? `${base}?v=${encodeURIComponent(v)}` : base;
-    };
-
     /** Style object for overlay (keeps template free of nested quotes / template literals). */
-    const borderFrameOverlayStyle = (filename) => ({
-      backgroundImage: filename
-        ? `url("${borderFrameAssetUrl(filename)}")`
-        : 'none',
+    const borderFrameOverlayStyle = (frameUrl) => ({
+      backgroundImage: frameUrl ? `url("${frameUrl}")` : 'none',
     });
 
     const openBorderFrameDialog = async () => {
@@ -559,14 +522,17 @@ export default {
       showBorderFrameDialog.value = true;
     };
 
-    const selectBorderFrame = (filename) => {
-      selectedBorderFrame.value = filename;
+    const selectBorderFrame = (frame) => {
+      selectedBorderFrame.value = frame?.url || null;
       showBorderFrameDialog.value = false;
     };
 
-    // Display name for border frame (strip file extension)
-    const borderFrameDisplayName = (filename) =>
-      filename ? filename.replace(/\.[^.]+$/, '') : '';
+    const borderFrameDisplayName = (frameUrl) => {
+      if (!frameUrl) return '';
+      const match = borderFrameList.value.find((frame) => frame.url === frameUrl);
+      if (match?.name) return match.name;
+      return frameUrl.split('/').pop()?.replace(/\.[^.]+$/, '') || 'Frame';
+    };
 
     // Get unique photo identifier
     const getPhotoKey = (photo) => {
@@ -1357,7 +1323,6 @@ export default {
       // Custom border frame
       selectedBorderFrame,
       borderFrameList,
-      borderFrameAssetUrl,
       borderFrameOverlayStyle,
       showBorderFrameDialog,
       openBorderFrameDialog,

@@ -147,7 +147,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useQuasar } from 'quasar';
 import { useSquarePhotoEditor } from '../composables/useSquarePhotoEditor.js';
 import { bakeSquarePhotoFile } from '../utils/squarePhotoCanvas.js';
-import { resolveUploadFrameOptions } from '../utils/frameAssets.js';
+import { resolveCustomerFrameOptions } from '../services/frameCatalogService.js';
 import { marketEventService } from '../services/marketEventService.js';
 
 export default {
@@ -155,6 +155,7 @@ export default {
   props: {
     modelValue: { type: Boolean, default: false },
     photoItem: { type: Object, default: null },
+    checkedInEvent: { type: Object, default: null },
     eventFrames: { type: Array, default: () => [] },
   },
   emits: ['update:modelValue', 'saved', 'cancel'],
@@ -185,11 +186,12 @@ export default {
     };
 
     const loadFrames = async () => {
-      const event = marketEventService.getCheckedInEvent();
-      const eventFrameList = props.eventFrames?.length
-        ? props.eventFrames
-        : event?.frames || [];
-      frameOptions.value = await resolveUploadFrameOptions(eventFrameList);
+      const event =
+        props.checkedInEvent ||
+        (props.eventFrames?.length
+          ? { frames: props.eventFrames }
+          : marketEventService.getCheckedInEvent());
+      frameOptions.value = await resolveCustomerFrameOptions({ checkedInEvent: event });
     };
 
     const syncFrameFromEdit = (edit) => {
@@ -199,8 +201,12 @@ export default {
       }
       selectedFrame.value =
         frameOptions.value.find(
-          (f) => f.id === edit.frameId && f.source === (edit.frameSource || 'global')
-        ) || null;
+          (f) =>
+            f.id === edit.frameId &&
+            (!edit.frameSource || f.source === edit.frameSource)
+        ) ||
+        frameOptions.value.find((f) => f.id === edit.frameId) ||
+        null;
     };
 
     const prepareEditor = async () => {

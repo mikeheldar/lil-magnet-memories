@@ -680,6 +680,16 @@
                 </q-item-section>
               </q-item>
 
+              <q-item clickable v-ripple @click="navigateTo('/frame-library')">
+                <q-item-section avatar>
+                  <q-icon name="photo_frame" color="orange" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Frame Library</q-item-label>
+                  <q-item-label caption>Upload and manage magnet frames</q-item-label>
+                </q-item-section>
+              </q-item>
+
               <q-item clickable v-ripple @click="navigateTo('/market-events')">
                 <q-item-section avatar>
                   <q-icon name="event" color="green" />

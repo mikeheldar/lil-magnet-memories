@@ -253,7 +253,7 @@
               <PhotoMagnetEditor
                 v-model="showPhotoEditor"
                 :photo-item="editingPhotoItem"
-                :event-frames="activeEventFrames"
+                :checked-in-event="checkedInEvent"
                 @saved="onPhotoEditorSaved"
               />
             </div>
@@ -1142,8 +1142,6 @@ export default {
       // Only treat as market event if there's an active event AND user is a market customer
       return hasActiveEvent && isMarketCustomer.value;
     });
-
-    const activeEventFrames = computed(() => checkedInEvent.value?.frames || []);
 
     // Function to check if event has ended and show dialog
     const checkEventStatus = () => {
@@ -2558,7 +2556,6 @@ export default {
       fileInputRef,
       showPhotoEditor,
       editingPhotoItem,
-      activeEventFrames,
       productOptions,
       selectedProductId,
       selectedProduct,
