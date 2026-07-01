@@ -622,6 +622,45 @@
               label="Testing Only (visible to admins only)"
               color="orange"
             />
+
+            <q-separator class="q-my-md" />
+
+            <div class="text-subtitle2 text-weight-medium q-mb-sm">
+              Upload Frames
+            </div>
+            <div class="text-caption text-grey-7 q-mb-sm">
+              Square PNG frames with transparent centers. Customers can pick these during photo upload at this event.
+            </div>
+            <div v-if="editingEvent.frames?.length" class="q-mb-sm">
+              <div
+                v-for="frame in editingEvent.frames"
+                :key="frame.id"
+                class="row items-center q-gutter-sm q-mb-xs"
+              >
+                <img :src="frame.url" :alt="frame.name" class="event-frame-thumb" />
+                <div class="col text-body2">{{ frame.name }}</div>
+                <q-btn
+                  flat
+                  dense
+                  color="negative"
+                  icon="delete"
+                  :loading="deletingFrameId === frame.id"
+                  @click="deleteEventFrame(frame)"
+                />
+              </div>
+            </div>
+            <q-file
+              v-model="frameUploadFile"
+              label="Upload frame PNG"
+              accept="image/png,image/webp"
+              filled
+              dense
+              @update:model-value="onFrameFileSelected"
+            >
+              <template v-slot:prepend>
+                <q-icon name="photo_frame" />
+              </template>
+            </q-file>
           </q-form>
         </q-card-section>
 
@@ -730,6 +769,9 @@ export default {
     const showDeleteDialog = ref(false);
     const eventToDelete = ref(null);
     const editingEvent = ref(null);
+    const frameUploadFile = ref(null);
+    const uploadingFrame = ref(false);
+    const deletingFrameId = ref(null);
 
     // Helper function to get 15 min increment before current time
     const getPrevious15MinIncrement = () => {
@@ -1545,6 +1587,7 @@ export default {
         endDateTime: formatDateTimeLocal(new Date(event.endDateTime)),
         eventLink: event.eventLink || '',
         isTesting: event.isTesting || false,
+        frames: Array.isArray(event.frames) ? [...event.frames] : [],
       };
       editOriginalLocation.value = event.location || '';
       showEditEventDialog.value = true;
@@ -1554,7 +1597,68 @@ export default {
     const cancelEditEvent = () => {
       showEditEventDialog.value = false;
       editingEvent.value = null;
+      frameUploadFile.value = null;
       resetEditCoordinateState();
+    };
+
+    const onFrameFileSelected = async (file) => {
+      const upload = Array.isArray(file) ? file[0] : file;
+      if (!upload || !editingEvent.value?.id) return;
+      uploadingFrame.value = true;
+      try {
+        const frameRecord = await firebaseService.uploadMarketEventFrame(
+          editingEvent.value.id,
+          upload,
+          upload.name?.replace(/\.[^.]+$/, '')
+        );
+        editingEvent.value = {
+          ...editingEvent.value,
+          frames: [...(editingEvent.value.frames || []), frameRecord],
+        };
+        $q.notify({
+          type: 'positive',
+          message: 'Frame uploaded',
+          position: 'top',
+        });
+      } catch (error) {
+        console.error('Failed to upload event frame:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to upload frame',
+          caption: error?.message || 'Please try again',
+          position: 'top',
+        });
+      } finally {
+        frameUploadFile.value = null;
+        uploadingFrame.value = false;
+      }
+    };
+
+    const deleteEventFrame = async (frame) => {
+      if (!editingEvent.value?.id || !frame?.id) return;
+      deletingFrameId.value = frame.id;
+      try {
+        await firebaseService.deleteMarketEventFrame(editingEvent.value.id, frame.id);
+        editingEvent.value = {
+          ...editingEvent.value,
+          frames: (editingEvent.value.frames || []).filter((f) => f.id !== frame.id),
+        };
+        $q.notify({
+          type: 'positive',
+          message: 'Frame removed',
+          position: 'top',
+        });
+      } catch (error) {
+        console.error('Failed to delete event frame:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Failed to remove frame',
+          caption: error?.message || 'Please try again',
+          position: 'top',
+        });
+      } finally {
+        deletingFrameId.value = null;
+      }
     };
 
     // Update event
@@ -1885,6 +1989,9 @@ export default {
       showDeleteDialog,
       eventToDelete,
       editingEvent,
+      frameUploadFile,
+      uploadingFrame,
+      deletingFrameId,
       newEvent,
 
       // Methods
@@ -1901,6 +2008,8 @@ export default {
       openEditEventDialog,
       updateEvent,
       cancelEditEvent,
+      onFrameFileSelected,
+      deleteEventFrame,
       checkInToEvent,
       checkOutOfEvent,
       undoCheckOut,
@@ -1998,6 +2107,15 @@ export default {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.event-frame-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: #fafafa;
 }
 
 // Status chips - keep pill shape and add margin to separate from buttons

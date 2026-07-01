@@ -2403,6 +2403,66 @@ class FirebaseService {
     }
   }
 
+  async uploadMarketEventFrame(eventId, file, displayName = '') {
+    if (!eventId) throw new Error('Event ID is required');
+    if (!file) throw new Error('Frame file is required');
+
+    const safeName = String(file.name || 'frame.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `market-event-frames/${eventId}/${Date.now()}_${safeName}`;
+    const storageRef = ref(storage, storagePath);
+
+    await uploadBytes(storageRef, file, {
+      contentType: file.type || 'image/png',
+    });
+    const url = await getDownloadURL(storageRef);
+
+    const frameRecord = {
+      id: `${Date.now()}_${safeName}`,
+      name: String(displayName || safeName.replace(/\.[^.]+$/, '')).trim(),
+      fileName: safeName,
+      storagePath,
+      url,
+      createdAt: new Date().toISOString(),
+    };
+
+    const eventRef = doc(db, 'marketEvents', eventId);
+    const eventSnap = await getDoc(eventRef);
+    const existingFrames = Array.isArray(eventSnap.data()?.frames) ? eventSnap.data().frames : [];
+    await updateDoc(eventRef, {
+      frames: [...existingFrames, frameRecord],
+      updatedAt: serverTimestamp(),
+    });
+
+    return frameRecord;
+  }
+
+  async deleteMarketEventFrame(eventId, frameId) {
+    if (!eventId || !frameId) throw new Error('Event ID and frame ID are required');
+
+    const eventRef = doc(db, 'marketEvents', eventId);
+    const eventSnap = await getDoc(eventRef);
+    if (!eventSnap.exists()) throw new Error('Market event not found');
+
+    const existingFrames = Array.isArray(eventSnap.data()?.frames) ? eventSnap.data().frames : [];
+    const target = existingFrames.find((f) => f.id === frameId);
+    const nextFrames = existingFrames.filter((f) => f.id !== frameId);
+
+    if (target?.storagePath) {
+      try {
+        await deleteObject(ref(storage, target.storagePath));
+      } catch (error) {
+        console.warn('Failed to delete frame from storage:', error);
+      }
+    }
+
+    await updateDoc(eventRef, {
+      frames: nextFrames,
+      updatedAt: serverTimestamp(),
+    });
+
+    return { deletedCount: existingFrames.length - nextFrames.length };
+  }
+
   // Delete a market event
   async deleteMarketEvent(eventId) {
     try {
