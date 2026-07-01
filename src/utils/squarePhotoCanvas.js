@@ -10,32 +10,48 @@ function loadImage(src) {
   });
 }
 
-function calculateNormalScale(imgWidth, imgHeight, containerSize) {
-  const scaleX = containerSize / imgWidth;
-  const scaleY = containerSize / imgHeight;
-  return Math.min(scaleX, scaleY);
-}
-
-function calculateCoverScale(imgWidth, imgHeight, containerSize) {
-  const scaleX = containerSize / imgWidth;
-  const scaleY = containerSize / imgHeight;
-  return Math.max(scaleX, scaleY);
-}
-
-export function getInitialTransformForImage(naturalWidth, naturalHeight, viewportSize) {
+function getContainedDisplaySize(imgWidth, imgHeight, containerSize) {
+  const aspectRatio = imgWidth / imgHeight;
+  if (aspectRatio > 1) {
+    return {
+      width: containerSize,
+      height: containerSize / aspectRatio,
+    };
+  }
   return {
-    scale: calculateNormalScale(naturalWidth, naturalHeight, viewportSize),
+    width: containerSize * aspectRatio,
+    height: containerSize,
+  };
+}
+
+export function getInitialTransformForImage() {
+  return {
+    scale: 1,
+    x: 0,
+    y: 0,
+  };
+}
+
+/** Match Print Template autoZoom: scale until image touches all four inner edges. */
+export function getFillSquareTransform(naturalWidth, naturalHeight, viewportSize) {
+  const containerSize = viewportSize;
+  const { width: displayedWidth, height: displayedHeight } = getContainedDisplaySize(
+    naturalWidth,
+    naturalHeight,
+    containerSize
+  );
+  const scaleX = containerSize / displayedWidth;
+  const scaleY = containerSize / displayedHeight;
+
+  return {
+    scale: Math.max(scaleX, scaleY),
     x: 0,
     y: 0,
   };
 }
 
 export function getCoverTransformForImage(naturalWidth, naturalHeight, viewportSize) {
-  return {
-    scale: calculateCoverScale(naturalWidth, naturalHeight, viewportSize),
-    x: 0,
-    y: 0,
-  };
+  return getFillSquareTransform(naturalWidth, naturalHeight, viewportSize);
 }
 
 /**
@@ -59,21 +75,23 @@ export async function bakeSquarePhoto({
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, outputSize, outputSize);
 
-  const scaleFactor = outputSize / viewportSize;
-  const drawScale = (transform?.scale ?? 1) * scaleFactor;
+  const containerSize = viewportSize;
+  const { width: displayedWidth, height: displayedHeight } = getContainedDisplaySize(
+    img.naturalWidth,
+    img.naturalHeight,
+    containerSize
+  );
+
+  const scaleFactor = outputSize / containerSize;
+  const userScale = transform?.scale ?? 1;
   const drawX = (transform?.x ?? 0) * scaleFactor;
   const drawY = (transform?.y ?? 0) * scaleFactor;
+  const drawW = displayedWidth * userScale * scaleFactor;
+  const drawH = displayedHeight * userScale * scaleFactor;
 
   ctx.save();
   ctx.translate(outputSize / 2 + drawX, outputSize / 2 + drawY);
-  ctx.scale(drawScale, drawScale);
-  ctx.drawImage(
-    img,
-    -img.naturalWidth / 2,
-    -img.naturalHeight / 2,
-    img.naturalWidth,
-    img.naturalHeight
-  );
+  ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
   ctx.restore();
 
   if (frameUrl) {

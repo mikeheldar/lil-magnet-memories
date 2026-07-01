@@ -1,19 +1,19 @@
 <template>
-  <!-- Mobile: full-screen dialog -->
+  <!-- Mobile: wide dialog (most of screen width) -->
   <q-dialog
     v-if="isMobile"
     :model-value="modelValue"
-    full-screen
     persistent
+    class="photo-editor-dialog"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <q-card class="column photo-magnet-editor-card">
+    <q-card class="photo-magnet-editor-card photo-magnet-editor-card--mobile">
       <q-card-section class="row items-center q-pb-sm">
         <div class="text-h6 col">Edit Photo</div>
         <q-btn flat round dense icon="close" @click="cancel" />
       </q-card-section>
-      <q-card-section class="col scroll editor-body">
-        <div ref="viewportRef" class="editor-viewport q-mx-auto">
+      <q-card-section class="editor-body">
+        <div ref="viewportRef" class="editor-viewport editor-viewport--mobile q-mx-auto">
           <div
             class="editor-interaction-layer"
             @mousedown="editor.startDrag"
@@ -42,26 +42,29 @@
         </div>
         <div v-if="frameOptions.length" class="q-mt-md">
           <div class="text-subtitle2 q-mb-sm">Frames</div>
-          <div class="row q-col-gutter-sm">
-            <div class="col-auto">
-              <q-btn
-                dense
-                :outline="!!selectedFrame"
-                :color="!selectedFrame ? 'primary' : 'grey'"
-                label="None"
-                @click="clearFrame"
-              />
-            </div>
-            <div v-for="frame in frameOptions" :key="`${frame.source}-${frame.id}`" class="col-auto">
-              <q-btn
-                dense
-                :outline="selectedFrame?.id !== frame.id"
-                :color="selectedFrame?.id === frame.id ? 'primary' : 'grey'"
-                @click="selectFrame(frame)"
-              >
-                <img :src="frame.url" :alt="frame.name" class="frame-thumb" />
-              </q-btn>
-            </div>
+          <div class="frame-options-row">
+            <button
+              type="button"
+              class="frame-option-btn"
+              :class="{ 'frame-option-btn--selected': !selectedFrame }"
+              @click="clearFrame"
+            >
+              <span class="frame-option-label">None</span>
+            </button>
+            <button
+              v-for="frame in frameOptions"
+              :key="`${frame.source}-${frame.id}`"
+              type="button"
+              class="frame-option-btn"
+              :class="{
+                'frame-option-btn--selected':
+                  selectedFrame?.id === frame.id && selectedFrame?.source === frame.source,
+              }"
+              :title="frame.name"
+              @click="selectFrame(frame)"
+            >
+              <img :src="frame.url" :alt="frame.name" class="frame-option-image" />
+            </button>
           </div>
         </div>
       </q-card-section>
@@ -107,24 +110,29 @@
     </div>
     <div v-if="frameOptions.length" class="q-mt-md">
       <div class="text-subtitle2 q-mb-sm">Frames</div>
-      <div class="row q-col-gutter-sm items-center">
-        <q-btn
-          dense
-          :outline="!!selectedFrame"
-          :color="!selectedFrame ? 'primary' : 'grey'"
-          label="None"
+      <div class="frame-options-row">
+        <button
+          type="button"
+          class="frame-option-btn"
+          :class="{ 'frame-option-btn--selected': !selectedFrame }"
           @click="clearFrame"
-        />
-        <q-btn
+        >
+          <span class="frame-option-label">None</span>
+        </button>
+        <button
           v-for="frame in frameOptions"
           :key="`${frame.source}-${frame.id}`"
-          dense
-          :outline="selectedFrame?.id !== frame.id"
-          :color="selectedFrame?.id === frame.id ? 'primary' : 'grey'"
+          type="button"
+          class="frame-option-btn"
+          :class="{
+            'frame-option-btn--selected':
+              selectedFrame?.id === frame.id && selectedFrame?.source === frame.source,
+          }"
+          :title="frame.name"
           @click="selectFrame(frame)"
         >
-          <img :src="frame.url" :alt="frame.name" class="frame-thumb" />
-        </q-btn>
+          <img :src="frame.url" :alt="frame.name" class="frame-option-image" />
+        </button>
       </div>
     </div>
     <div class="row justify-end q-gutter-sm q-mt-md">
@@ -211,6 +219,12 @@ export default {
         if (open) prepareEditor();
       }
     );
+
+    watch(isMobile, () => {
+      if (props.modelValue) {
+        setTimeout(updateViewportSize, 50);
+      }
+    });
 
     const onEditorImageLoad = (event) => {
       editor.onImageLoad(event);
@@ -314,8 +328,20 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.photo-magnet-editor-card {
-  min-height: 100%;
+.photo-editor-dialog :deep(.q-dialog__inner) {
+  padding: 12px;
+}
+
+.photo-magnet-editor-card--mobile {
+  width: min(96vw, 560px);
+  max-width: 96vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-magnet-editor-card--mobile .editor-body {
+  overflow-y: auto;
 }
 
 .photo-magnet-editor-inline {
@@ -327,12 +353,15 @@ export default {
 .editor-viewport {
   position: relative;
   width: 100%;
-  max-width: 420px;
   aspect-ratio: 1;
   overflow: hidden;
   background: #f5f5f5;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
+}
+
+.editor-viewport--mobile {
+  max-width: none;
 }
 
 .editor-viewport--desktop {
@@ -378,9 +407,47 @@ export default {
   pointer-events: none;
 }
 
-.frame-thumb {
-  width: 40px;
-  height: 40px;
+.frame-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.frame-option-btn {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 2px solid #bdbdbd;
+  border-radius: 0;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: #667eea;
+  }
+
+  &--selected {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.35);
+  }
+}
+
+.frame-option-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.frame-option-image {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
 }

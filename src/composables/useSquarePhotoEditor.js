@@ -1,7 +1,7 @@
 import { ref, computed, onBeforeUnmount } from 'vue';
 import {
   getInitialTransformForImage,
-  getCoverTransformForImage,
+  getFillSquareTransform,
 } from '../utils/squarePhotoCanvas.js';
 
 export function useSquarePhotoEditor(viewportSizeRef) {
@@ -38,18 +38,13 @@ export function useSquarePhotoEditor(viewportSizeRef) {
   };
 
   const resetTransform = () => {
-    const { width, height } = naturalSize.value;
-    if (width > 0 && height > 0) {
-      setTransform(getInitialTransformForImage(width, height, getViewportSize()));
-    } else {
-      setTransform({ scale: 1, x: 0, y: 0 });
-    }
+    setTransform(getInitialTransformForImage());
   };
 
   const fillSquare = () => {
     const { width, height } = naturalSize.value;
     if (width > 0 && height > 0) {
-      setTransform(getCoverTransformForImage(width, height, getViewportSize()));
+      setTransform(getFillSquareTransform(width, height, getViewportSize()));
     }
   };
 
@@ -60,13 +55,7 @@ export function useSquarePhotoEditor(viewportSizeRef) {
       height: img.naturalHeight || 0,
     };
     if (naturalSize.value.width > 0 && naturalSize.value.height > 0) {
-      setTransform(
-        getInitialTransformForImage(
-          naturalSize.value.width,
-          naturalSize.value.height,
-          getViewportSize()
-        )
-      );
+      setTransform(getInitialTransformForImage());
     }
   };
 
