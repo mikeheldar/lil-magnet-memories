@@ -77,7 +77,7 @@
                       draggable="false"
                       class="frame-overlay-image"
                     />
-                    <span v-else>{{ layer.text }}</span>
+                    <span v-else class="frame-text-layer-label">{{ layer.text }}</span>
                   </div>
                   <div class="frame-cutout-chrome" :style="cutoutStyle">
                     <div
@@ -214,25 +214,33 @@
                   @update:model-value="(val) => updateLayerProp('text', val)"
                 />
                 <q-select
-                  :model-value="selectedLayer.font"
+                  v-model="selectedTextFont"
                   :options="fontOptions"
                   label="Font"
                   filled
                   dense
                   emit-value
                   map-options
-                  class="q-mb-sm"
-                  @update:model-value="(val) => updateLayerPropWithHistory('font', val)"
+                  popup-content-class="frame-font-select-popup"
+                  class="q-mb-sm frame-font-select"
                 >
                   <template #option="scope">
                     <q-item v-bind="scope.itemProps">
-                      <q-item-section :style="{ fontFamily: scope.opt.value }">
+                      <q-item-section
+                        class="frame-font-option"
+                        :style="{ '--frame-font-option': scope.opt.value }"
+                      >
                         {{ scope.opt.label }}
                       </q-item-section>
                     </q-item>
                   </template>
                   <template #selected-item="scope">
-                    <span :style="{ fontFamily: scope.opt.value }">{{ scope.opt.label }}</span>
+                    <span
+                      class="frame-font-option"
+                      :style="{ '--frame-font-option': scope.opt.value }"
+                    >
+                      {{ scope.opt.label }}
+                    </span>
                   </template>
                 </q-select>
                 <div class="row q-gutter-sm q-mb-sm items-center">
@@ -355,9 +363,25 @@ export default {
     const editor = useSquarePhotoEditor(viewportSize);
     const imageStyle = editor.imageStyle;
 
-    const selectedLayer = computed(() =>
-      layers.value.find((layer) => layer.id === selectedLayerId.value) || null
+    const selectedLayerIndex = computed(() =>
+      layers.value.findIndex((layer) => layer.id === selectedLayerId.value)
     );
+
+    const selectedLayer = computed(() => {
+      const idx = selectedLayerIndex.value;
+      return idx >= 0 ? layers.value[idx] : null;
+    });
+
+    const selectedTextFont = computed({
+      get() {
+        const layer = selectedLayer.value;
+        return layer?.type === 'text' ? layer.font || 'sans-serif' : null;
+      },
+      set(font) {
+        if (!font) return;
+        updateLayerPropWithHistory('font', font);
+      },
+    });
 
     const cutoutStyle = computed(() => ({
       left: `${cutout.value.x * 100}%`,
@@ -408,7 +432,7 @@ export default {
       return {
         ...base,
         color: layer.color || '#ffffff',
-        fontFamily: layer.font || 'sans-serif',
+        '--frame-layer-font': layer.font || 'sans-serif',
         fontSize: `${Math.max(10, (layer.scale ?? 1) * 18)}px`,
       };
     };
@@ -624,7 +648,9 @@ export default {
     const updateLayerProp = (prop, value) => {
       const idx = layers.value.findIndex((layer) => layer.id === selectedLayerId.value);
       if (idx < 0) return;
-      layers.value[idx] = { ...layers.value[idx], [prop]: value };
+      const next = [...layers.value];
+      next[idx] = { ...next[idx], [prop]: value };
+      layers.value = next;
     };
 
     const updateLayerPropWithHistory = (prop, value) => {
@@ -988,6 +1014,7 @@ export default {
       layers,
       selectedLayerId,
       selectedLayer,
+      selectedTextFont,
       overlayFileInput,
       dragOverViewport,
       fontOptions,
@@ -1098,6 +1125,10 @@ export default {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
     white-space: nowrap;
   }
+}
+
+.frame-text-layer-label {
+  font-family: var(--frame-layer-font, sans-serif) !important;
 }
 
 .frame-overlay-image {
@@ -1213,5 +1244,13 @@ export default {
   padding: 0;
   background: none;
   cursor: pointer;
+}
+</style>
+
+<style lang="scss">
+/* Teleported q-select menu + global Lato !important overrides */
+.frame-font-select-popup .frame-font-option,
+.frame-font-select .frame-font-option {
+  font-family: var(--frame-font-option, sans-serif) !important;
 }
 </style>
