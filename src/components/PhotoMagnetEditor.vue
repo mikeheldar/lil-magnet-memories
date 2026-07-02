@@ -7,68 +7,72 @@
     class="photo-editor-dialog"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <q-card class="photo-magnet-editor-card photo-magnet-editor-card--mobile">
-      <q-card-section class="row items-center q-pb-sm">
+    <q-card class="photo-magnet-editor-card photo-magnet-editor-card--mobile column">
+      <q-card-section class="row items-center q-pb-sm editor-header">
         <div class="text-h6 col">Edit Photo</div>
         <q-btn flat round dense icon="close" @click="cancel" />
       </q-card-section>
-      <q-card-section class="editor-body">
-        <div ref="viewportRef" class="editor-viewport editor-viewport--mobile q-mx-auto">
-          <div
-            class="editor-interaction-layer"
-            @mousedown="editor.startDrag"
-            @touchstart="onTouchStart"
-            @wheel.prevent="editor.handleWheel"
-          >
-            <div class="editor-image-wrapper" :style="imageStyle">
-              <img
-                :src="previewSrc"
-                alt="Photo preview"
-                class="editor-image"
-                draggable="false"
-                @load="onEditorImageLoad"
+      <q-card-section class="editor-body col">
+        <div class="editor-preview-block">
+          <div ref="viewportRef" class="editor-viewport editor-viewport--mobile q-mx-auto">
+            <div
+              class="editor-interaction-layer"
+              @mousedown="editor.startDrag"
+              @touchstart="onTouchStart"
+              @wheel.prevent="editor.handleWheel"
+            >
+              <div class="editor-image-wrapper" :style="imageStyle">
+                <img
+                  :src="previewSrc"
+                  alt="Photo preview"
+                  class="editor-image"
+                  draggable="false"
+                  @load="onEditorImageLoad"
+                />
+              </div>
+              <div
+                v-if="selectedFrame?.url"
+                class="editor-frame-overlay"
+                :style="{ backgroundImage: `url('${selectedFrame.url}')` }"
               />
             </div>
-            <div
-              v-if="selectedFrame?.url"
-              class="editor-frame-overlay"
-              :style="{ backgroundImage: `url('${selectedFrame.url}')` }"
-            />
+          </div>
+          <div class="row q-gutter-sm q-mt-md justify-center">
+            <q-btn dense outline icon="restart_alt" label="Reset" @click="editor.resetTransform()" />
+            <q-btn dense outline icon="crop_square" label="Fill square" @click="editor.fillSquare()" />
           </div>
         </div>
-        <div class="row q-gutter-sm q-mt-md justify-center">
-          <q-btn dense outline icon="restart_alt" label="Reset" @click="editor.resetTransform()" />
-          <q-btn dense outline icon="crop_square" label="Fill square" @click="editor.fillSquare()" />
-        </div>
-        <div v-if="frameOptions.length" class="q-mt-md">
+        <div v-if="frameOptions.length" class="frame-picker-section q-mt-md">
           <div class="text-subtitle2 q-mb-sm">Frames</div>
-          <div class="frame-options-row">
-            <button
-              type="button"
-              class="frame-option-btn"
-              :class="{ 'frame-option-btn--selected': !selectedFrame }"
-              @click="clearFrame"
-            >
-              <span class="frame-option-label">None</span>
-            </button>
-            <button
-              v-for="frame in frameOptions"
-              :key="`${frame.source}-${frame.id}`"
-              type="button"
-              class="frame-option-btn"
-              :class="{
-                'frame-option-btn--selected':
-                  selectedFrame?.id === frame.id && selectedFrame?.source === frame.source,
-              }"
-              :title="frame.name"
-              @click="selectFrame(frame)"
-            >
-              <img :src="frame.url" :alt="frame.name" class="frame-option-image" />
-            </button>
+          <div class="frame-options-scroll">
+            <div class="frame-options-row">
+              <button
+                type="button"
+                class="frame-option-btn"
+                :class="{ 'frame-option-btn--selected': !selectedFrame }"
+                @click="clearFrame"
+              >
+                <span class="frame-option-label">None</span>
+              </button>
+              <button
+                v-for="frame in frameOptions"
+                :key="`${frame.source}-${frame.id}`"
+                type="button"
+                class="frame-option-btn"
+                :class="{
+                  'frame-option-btn--selected':
+                    selectedFrame?.id === frame.id && selectedFrame?.source === frame.source,
+                }"
+                :title="frame.name"
+                @click="selectFrame(frame)"
+              >
+                <img :src="frame.url" :alt="frame.name" class="frame-option-image" />
+              </button>
+            </div>
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right" class="q-pa-md">
+      <q-card-actions align="right" class="editor-footer q-pa-md">
         <q-btn flat label="Cancel" @click="cancel" />
         <q-btn color="primary" label="Save" :loading="saving" @click="save" />
       </q-card-actions>
@@ -336,18 +340,56 @@ export default {
 <style scoped lang="scss">
 .photo-editor-dialog :deep(.q-dialog__inner) {
   padding: 12px;
+  align-items: flex-end;
+
+  @media (min-width: 600px) {
+    align-items: center;
+  }
 }
 
 .photo-magnet-editor-card--mobile {
   width: min(96vw, 560px);
   max-width: 96vw;
-  max-height: 92vh;
+  max-height: min(92vh, 92dvh);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.photo-magnet-editor-card--mobile .editor-header {
+  flex-shrink: 0;
 }
 
 .photo-magnet-editor-card--mobile .editor-body {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.photo-magnet-editor-card--mobile .editor-footer {
+  flex-shrink: 0;
+  border-top: 1px solid #e8e8e8;
+  background: #fff;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+}
+
+.editor-preview-block {
+  flex-shrink: 0;
+}
+
+.frame-picker-section {
+  flex-shrink: 0;
+}
+
+.photo-magnet-editor-card--mobile .frame-options-scroll {
+  max-height: calc(52px * 2 + 8px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-right: 2px;
 }
 
 .photo-magnet-editor-inline {
@@ -367,7 +409,9 @@ export default {
 }
 
 .editor-viewport--mobile {
-  max-width: none;
+  width: min(100%, min(36dvh, 280px));
+  max-width: 100%;
+  aspect-ratio: 1;
 }
 
 .editor-viewport--desktop {
