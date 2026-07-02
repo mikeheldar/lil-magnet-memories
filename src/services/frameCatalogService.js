@@ -220,31 +220,58 @@ export async function migrateLegacyEventFrames() {
   return migratedCount;
 }
 
-export async function seedStaticManifestFrames() {
-  const existing = await getLibraryFrames(true);
-  if (existing.length > 0) return 0;
-
+export async function ensureStaticManifestFrames() {
   const manifest = await loadFrameManifest();
   const filenames = new Set([
     ...(manifest.alwaysAvailable || []),
     ...(manifest.frames || []),
   ]);
 
+  const existing = await getLibraryFrames(true);
+  const existingIds = new Set(existing.map((frame) => frame.id));
+  let sortOrder =
+    existing.reduce((max, frame) => Math.max(max, Number(frame.sortOrder) || 0), -1) + 1;
+
   let seeded = 0;
-  let sortOrder = 0;
   for (const filename of filenames) {
     const frameId = `static_${filename.replace(/\.[^.]+$/, '')}`;
-    const imageUrl = globalFrameAssetUrl(filename, manifest.version);
+    if (existingIds.has(frameId)) continue;
+
+    const name = filename.replace(/\.[^.]+$/, '');
+    const staticUrl = globalFrameAssetUrl(filename, manifest.version);
+    const isPublic = (manifest.alwaysAvailable || []).includes(filename);
+
+    let imageUrl = staticUrl;
+    let storagePath = '';
+    let thumbnailUrl = staticUrl;
+
+    try {
+      const response = await fetch(staticUrl);
+      if (response.ok) {
+        const blob = await response.blob();
+        const file = new File([blob], filename, { type: blob.type || 'image/png' });
+        const uploaded = await firebaseService.uploadFrameFileAtPath(
+          `frames/${frameId}/frame.png`,
+          file
+        );
+        imageUrl = uploaded.url;
+        storagePath = uploaded.storagePath;
+        thumbnailUrl = uploaded.url;
+      }
+    } catch (error) {
+      console.warn('Using static URL for frame (storage upload skipped):', filename, error);
+    }
+
     try {
       await firebaseService.createFrameRecord({
         id: frameId,
-        name: filename.replace(/\.[^.]+$/, ''),
+        name,
         imageUrl,
-        storagePath: '',
-        thumbnailUrl: imageUrl,
-        isPublic: (manifest.alwaysAvailable || []).includes(filename),
+        storagePath,
+        thumbnailUrl,
+        isPublic,
         sortOrder: sortOrder++,
-        tags: [],
+        tags: ['static'],
         sourceType: 'upload',
         builderRecipe: null,
         createdBy: null,
@@ -257,4 +284,9 @@ export async function seedStaticManifestFrames() {
 
   invalidateFrameCache();
   return seeded;
+}
+
+/** @deprecated Use ensureStaticManifestFrames */
+export async function seedStaticManifestFrames() {
+  return ensureStaticManifestFrames();
 }

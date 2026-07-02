@@ -47,6 +47,7 @@
                     @mousedown.stop="startCutoutDrag"
                     @touchstart.stop="startCutoutDragTouch"
                   >
+                    <div class="frame-cutout-inner-tint" />
                     <div
                       v-for="handle in cutoutHandles"
                       :key="handle"
@@ -62,8 +63,8 @@
                     class="frame-text-layer"
                     :class="{ 'frame-text-layer--selected': selectedTextIndex === index }"
                     :style="textLayerStyle(layer)"
-                    @mousedown.stop="selectTextLayer(index)"
-                    @touchstart.stop="selectTextLayer(index)"
+                    @mousedown.stop="(e) => startTextDrag(e, index)"
+                    @touchstart.stop="(e) => startTextDragTouch(e, index)"
                   >
                     {{ layer.text }}
                   </div>
@@ -103,8 +104,18 @@
             <div class="row q-gutter-sm q-mb-sm items-center">
               <q-input v-model="newTextColor" label="Color" filled dense style="max-width: 120px" />
               <input v-model="newTextColor" type="color" class="frame-color-input" />
-              <q-btn dense outline label="Add text" @click="addTextLayer" />
             </div>
+            <q-select
+              v-model="newTextFont"
+              :options="fontOptions"
+              label="Font"
+              filled
+              dense
+              emit-value
+              map-options
+              class="q-mb-sm"
+            />
+            <q-btn dense outline label="Add text" class="q-mb-md" @click="addTextLayer" />
             <div v-if="selectedTextLayer" class="q-mb-md">
               <q-input
                 v-model="selectedTextLayer.text"
@@ -113,6 +124,27 @@
                 dense
                 class="q-mb-sm"
               />
+              <q-select
+                v-model="selectedTextLayer.font"
+                :options="fontOptions"
+                label="Font"
+                filled
+                dense
+                emit-value
+                map-options
+                class="q-mb-sm"
+              />
+              <div class="q-mb-sm">
+                <q-slider
+                  v-model="selectedTextLayer.scale"
+                  :min="0.5"
+                  :max="3"
+                  :step="0.1"
+                  label
+                  label-always
+                />
+                <div class="text-caption">Text size — drag text on preview to reposition</div>
+              </div>
               <div class="row q-gutter-sm items-center">
                 <q-input v-model="selectedTextLayer.color" label="Color" filled dense style="max-width: 120px" />
                 <input v-model="selectedTextLayer.color" type="color" class="frame-color-input" />
@@ -148,6 +180,16 @@ import {
 import { firebaseService } from '../services/firebaseService.js';
 import { invalidateFrameCache } from '../services/frameCatalogService.js';
 
+const FONT_OPTIONS = [
+  { label: 'Sans Serif', value: 'sans-serif' },
+  { label: 'Serif', value: 'Georgia, serif' },
+  { label: 'Script', value: '"Brush Script MT", cursive' },
+  { label: 'Bold Display', value: 'Impact, sans-serif' },
+  { label: 'Monospace', value: 'monospace' },
+  { label: 'Comic', value: '"Comic Sans MS", cursive' },
+  { label: 'Elegant', value: '"Palatino Linotype", Palatino, serif' },
+];
+
 export default {
   name: 'FrameBuilder',
   props: {
@@ -169,7 +211,9 @@ export default {
     const selectedTextIndex = ref(-1);
     const newText = ref('');
     const newTextColor = ref('#ffffff');
+    const newTextFont = ref('sans-serif');
     const cutoutHandles = ['nw', 'ne', 'sw', 'se'];
+    const fontOptions = FONT_OPTIONS;
 
     const editor = useSquarePhotoEditor(viewportSize);
     const imageStyle = editor.imageStyle;
@@ -189,7 +233,8 @@ export default {
       left: `${(layer.x ?? 0.5) * 100}%`,
       top: `${(layer.y ?? 0.5) * 100}%`,
       color: layer.color || '#ffffff',
-      fontSize: `${Math.max(12, (layer.scale ?? 1) * 16)}px`,
+      fontFamily: layer.font || 'sans-serif',
+      fontSize: `${Math.max(10, (layer.scale ?? 1) * 18)}px`,
       transform: 'translate(-50%, -50%)',
     });
 
@@ -226,9 +271,9 @@ export default {
         const sourcePath = frame.builderRecipe.sourceImagePath;
         if (sourcePath) {
           try {
-            const { getDownloadURL, ref: storageRef } = await import('firebase/storage');
-            const { storage } = await import('../firebase/config.js');
-            sourcePreviewUrl.value = await getDownloadURL(storageRef(storage, sourcePath));
+            const { getDownloadURL, ref: storageRefFn } = await import('firebase/storage');
+            const storageInstance = firebaseService.getFrameStorage();
+            sourcePreviewUrl.value = await getDownloadURL(storageRefFn(storageInstance, sourcePath));
           } catch {
             sourcePreviewUrl.value = frame.imageUrl || '';
           }
@@ -281,6 +326,7 @@ export default {
     };
 
     let cutoutDragState = null;
+    let textDragState = null;
 
     const startCutoutDrag = (event) => {
       cutoutDragState = {
@@ -377,15 +423,73 @@ export default {
       document.removeEventListener('touchend', endCutoutDrag);
     };
 
+    const startTextDrag = (event, index) => {
+      selectedTextIndex.value = index;
+      const layer = textLayers.value[index];
+      if (!layer) return;
+      textDragState = {
+        index,
+        startX: event.clientX,
+        startY: event.clientY,
+        startXNorm: layer.x ?? 0.5,
+        startYNorm: layer.y ?? 0.5,
+      };
+      document.addEventListener('mousemove', onTextMouseMove);
+      document.addEventListener('mouseup', endTextDrag);
+    };
+
+    const startTextDragTouch = (event, index) => {
+      selectedTextIndex.value = index;
+      const touch = event.touches[0];
+      const layer = textLayers.value[index];
+      if (!layer || !touch) return;
+      textDragState = {
+        index,
+        startX: touch.clientX,
+        startY: touch.clientY,
+        startXNorm: layer.x ?? 0.5,
+        startYNorm: layer.y ?? 0.5,
+      };
+      document.addEventListener('touchmove', onTextTouchMove, { passive: false });
+      document.addEventListener('touchend', endTextDrag);
+    };
+
+    const applyTextDrag = (clientX, clientY) => {
+      if (!textDragState || !viewportRef.value) return;
+      const rect = viewportRef.value.getBoundingClientRect();
+      const dx = (clientX - textDragState.startX) / rect.width;
+      const dy = (clientY - textDragState.startY) / rect.height;
+      const layer = textLayers.value[textDragState.index];
+      if (!layer) return;
+      layer.x = Math.max(0.05, Math.min(0.95, textDragState.startXNorm + dx));
+      layer.y = Math.max(0.05, Math.min(0.95, textDragState.startYNorm + dy));
+    };
+
+    const onTextMouseMove = (event) => applyTextDrag(event.clientX, event.clientY);
+    const onTextTouchMove = (event) => {
+      if (event.touches.length === 1) {
+        applyTextDrag(event.touches[0].clientX, event.touches[0].clientY);
+        event.preventDefault();
+      }
+    };
+
+    const endTextDrag = () => {
+      textDragState = null;
+      document.removeEventListener('mousemove', onTextMouseMove);
+      document.removeEventListener('mouseup', endTextDrag);
+      document.removeEventListener('touchmove', onTextTouchMove);
+      document.removeEventListener('touchend', endTextDrag);
+    };
+
     const addTextLayer = () => {
       if (!newText.value.trim()) return;
       textLayers.value.push({
         text: newText.value.trim(),
         color: newTextColor.value,
+        font: newTextFont.value,
         x: 0.5,
         y: 0.12,
         scale: 1,
-        font: 'sans-serif',
         rotation: 0,
       });
       selectedTextIndex.value = textLayers.value.length - 1;
@@ -484,6 +588,7 @@ export default {
     onBeforeUnmount(() => {
       window.removeEventListener('resize', updateViewportSize);
       endCutoutDrag();
+      endTextDrag();
       if (sourcePreviewUrl.value?.startsWith('blob:')) {
         URL.revokeObjectURL(sourcePreviewUrl.value);
       }
@@ -502,6 +607,8 @@ export default {
       selectedTextLayer,
       newText,
       newTextColor,
+      newTextFont,
+      fontOptions,
       cutoutHandles,
       editor,
       imageStyle,
@@ -514,6 +621,8 @@ export default {
       startCutoutDragTouch,
       startCutoutResize,
       startCutoutResizeTouch,
+      startTextDrag,
+      startTextDragTouch,
       addTextLayer,
       selectTextLayer,
       removeSelectedText,
@@ -535,7 +644,7 @@ export default {
   max-width: 420px;
   aspect-ratio: 1;
   overflow: hidden;
-  background: #333;
+  background: #fff;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
 }
@@ -565,10 +674,18 @@ export default {
 
 .frame-cutout {
   position: absolute;
-  border: 2px dashed rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  border: 2px dashed rgba(102, 126, 234, 0.95);
   cursor: move;
   z-index: 2;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+.frame-cutout-inner-tint {
+  position: absolute;
+  inset: 0;
+  background: rgba(180, 180, 180, 0.72);
+  pointer-events: none;
 }
 
 .frame-cutout-handle {
@@ -587,12 +704,17 @@ export default {
 
 .frame-text-layer {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   font-weight: bold;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  cursor: pointer;
+  cursor: grab;
   user-select: none;
   white-space: nowrap;
+  touch-action: none;
+
+  &:active {
+    cursor: grabbing;
+  }
 
   &--selected {
     outline: 2px dashed #667eea;

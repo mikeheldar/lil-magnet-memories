@@ -10,6 +10,7 @@
             </div>
           </div>
           <div class="col-auto row q-gutter-sm">
+            <q-btn outline icon="library_add" label="Import defaults" @click="importDefaultFrames" />
             <q-btn outline icon="upload" label="Upload PNG" @click="triggerUpload" />
             <q-btn color="primary" icon="add_photo_alternate" label="Create from photo" @click="openBuilder()" />
           </div>
@@ -133,7 +134,7 @@ import {
   getLibraryFrames,
   invalidateFrameCache,
   getFrameCatalogConfig,
-  seedStaticManifestFrames,
+  ensureStaticManifestFrames,
   migrateLegacyEventFrames,
 } from '../services/frameCatalogService.js';
 import { authService } from '../services/authService.js';
@@ -177,11 +178,33 @@ export default {
 
     onMounted(async () => {
       isAdmin.value = await authService.isAdminAsync();
-      await seedStaticManifestFrames();
+      await ensureStaticManifestFrames();
       await migrateLegacyEventFrames();
       await loadFrames();
       await loadSchedules();
     });
+
+    const importDefaultFrames = async () => {
+      loading.value = true;
+      try {
+        const count = await ensureStaticManifestFrames();
+        await loadFrames();
+        $q.notify({
+          type: 'positive',
+          message: count > 0 ? `Imported ${count} default frame(s)` : 'Default frames are already in the library',
+          position: 'top',
+        });
+      } catch (error) {
+        $q.notify({
+          type: 'negative',
+          message: 'Could not import default frames',
+          caption: error?.message,
+          position: 'top',
+        });
+      } finally {
+        loading.value = false;
+      }
+    };
 
     const triggerUpload = () => fileInputRef.value?.click();
 
@@ -300,6 +323,7 @@ export default {
       fileInputRef,
       isAdmin,
       frameSelectOptions,
+      importDefaultFrames,
       triggerUpload,
       onFileInputChange,
       onDragEnd,

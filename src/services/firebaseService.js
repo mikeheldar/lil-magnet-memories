@@ -3380,6 +3380,10 @@ class FirebaseService {
   static FRAMES_COLLECTION = 'frames';
   static FRAME_CATALOG_DOC = 'frameCatalog/config';
 
+  getFrameStorage() {
+    return getStorage(getApp());
+  }
+
   async getFrames() {
     try {
       const framesRef = collection(db, FirebaseService.FRAMES_COLLECTION);
@@ -3408,7 +3412,8 @@ class FirebaseService {
     const safeName = String(file.name || 'frame.png').replace(/[^a-zA-Z0-9._-]/g, '_');
     const frameId = `${Date.now()}_${safeName.replace(/\.[^.]+$/, '')}`;
     const storagePath = `frames/${frameId}/frame.png`;
-    const storageRef = ref(storage, storagePath);
+    const storageInstance = this.getFrameStorage();
+    const storageRef = ref(storageInstance, storagePath);
 
     await uploadBytes(storageRef, file, {
       contentType: file.type || 'image/png',
@@ -3455,14 +3460,14 @@ class FirebaseService {
     const frame = await this.getFrame(frameId);
     if (frame?.storagePath) {
       try {
-        await deleteObject(ref(storage, frame.storagePath));
+        await deleteObject(ref(this.getFrameStorage(), frame.storagePath));
       } catch (error) {
         console.warn('Failed to delete frame from storage:', error);
       }
     }
     if (frame?.builderRecipe?.sourceImagePath) {
       try {
-        await deleteObject(ref(storage, frame.builderRecipe.sourceImagePath));
+        await deleteObject(ref(this.getFrameStorage(), frame.builderRecipe.sourceImagePath));
       } catch (error) {
         console.warn('Failed to delete frame source image:', error);
       }
@@ -3487,7 +3492,7 @@ class FirebaseService {
     if (!frameId || !file) throw new Error('Frame ID and file are required');
     const safeName = String(file.name || 'source.jpg').replace(/[^a-zA-Z0-9._-]/g, '_');
     const storagePath = `frames/${frameId}/source.jpg`;
-    const storageRef = ref(storage, storagePath);
+    const storageRef = ref(this.getFrameStorage(), storagePath);
     await uploadBytes(storageRef, file, {
       contentType: file.type || 'image/jpeg',
     });
@@ -3498,7 +3503,7 @@ class FirebaseService {
     if (!frameId || !file) throw new Error('Frame ID and file are required');
     const frame = await this.getFrame(frameId);
     const storagePath = frame?.storagePath || `frames/${frameId}/frame.png`;
-    const storageRef = ref(storage, storagePath);
+    const storageRef = ref(this.getFrameStorage(), storagePath);
     await uploadBytes(storageRef, file, {
       contentType: file.type || 'image/png',
     });
@@ -3533,6 +3538,15 @@ class FirebaseService {
       },
       { merge: true }
     );
+  }
+
+  async uploadFrameFileAtPath(storagePath, file) {
+    const storageRef = ref(this.getFrameStorage(), storagePath);
+    await uploadBytes(storageRef, file, {
+      contentType: file.type || 'image/png',
+    });
+    const url = await getDownloadURL(storageRef);
+    return { storagePath, url };
   }
 
   async createFrameRecord(frameRecord) {
