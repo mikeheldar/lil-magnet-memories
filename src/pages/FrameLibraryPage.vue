@@ -2,19 +2,41 @@
   <q-page padding class="frame-library-page">
     <q-card>
       <q-card-section>
-        <div class="row items-center q-mb-md">
-          <div class="col">
+        <div class="frame-library-header q-mb-md">
+          <div class="frame-library-header-text">
             <div class="text-h5">Frame Library</div>
             <div class="text-caption text-grey-7">
               Upload or create frames, set public availability, and schedule featured frames.
             </div>
           </div>
-          <div class="col-auto row q-gutter-sm">
-            <q-btn outline icon="library_add" label="Import defaults" @click="importDefaultFrames" />
-            <q-btn outline icon="upload" label="Upload PNG" @click="triggerUpload" />
-            <q-btn color="primary" icon="add_photo_alternate" label="Create from photo" @click="openBuilder()" />
+          <div class="frame-library-actions">
+            <q-btn
+              outline
+              icon="library_add"
+              label="Import defaults"
+              class="frame-library-action-btn"
+              @click="importDefaultFrames"
+            />
+            <q-btn
+              outline
+              icon="upload"
+              label="Upload PNG"
+              class="frame-library-action-btn"
+              @click="triggerUpload"
+            />
+            <q-btn
+              color="primary"
+              icon="add_photo_alternate"
+              label="Create from photo"
+              class="frame-library-action-btn"
+              @click="openBuilder()"
+            />
           </div>
         </div>
+
+        <q-banner v-if="usingStaticFallback" class="bg-orange-1 text-orange-10 q-mb-md" rounded dense>
+          Showing built-in default frames. Firestore frame library will sync once rules are deployed.
+        </q-banner>
 
         <input
           ref="fileInputRef"
@@ -136,6 +158,7 @@ import {
   getFrameCatalogConfig,
   ensureStaticManifestFrames,
   migrateLegacyEventFrames,
+  libraryLoadUsedStaticFallback,
 } from '../services/frameCatalogService.js';
 import { authService } from '../services/authService.js';
 
@@ -152,6 +175,7 @@ export default {
     const builderEditFrame = ref(null);
     const fileInputRef = ref(null);
     const isAdmin = ref(false);
+    const usingStaticFallback = ref(false);
 
     const frameSelectOptions = computed(() =>
       frames.value.map((frame) => ({ label: frame.name, value: frame.id }))
@@ -161,6 +185,7 @@ export default {
       loading.value = true;
       try {
         frames.value = await getLibraryFrames(true);
+        usingStaticFallback.value = libraryLoadUsedStaticFallback();
       } finally {
         loading.value = false;
       }
@@ -322,6 +347,7 @@ export default {
       builderEditFrame,
       fileInputRef,
       isAdmin,
+      usingStaticFallback,
       frameSelectOptions,
       importDefaultFrames,
       triggerUpload,
@@ -340,6 +366,44 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.frame-library-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.frame-library-header-text {
+  min-width: 0;
+}
+
+.frame-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    width: auto;
+    max-width: 420px;
+    justify-content: flex-end;
+  }
+}
+
+.frame-library-action-btn {
+  flex: 1 1 calc(50% - 4px);
+  min-width: 0;
+
+  @media (min-width: 768px) {
+    flex: 0 1 auto;
+  }
+}
+
 .hidden {
   display: none;
 }

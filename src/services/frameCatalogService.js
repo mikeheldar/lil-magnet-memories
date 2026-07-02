@@ -8,7 +8,12 @@ import {
 
 let cachedFrames = null;
 let cacheTimestamp = 0;
+let lastLoadUsedStaticFallback = false;
 const CACHE_TTL_MS = 60_000;
+
+export function libraryLoadUsedStaticFallback() {
+  return lastLoadUsedStaticFallback;
+}
 
 export function mapFrameDocToOption(frame) {
   if (!frame?.id || !frame?.imageUrl) return null;
@@ -27,6 +32,40 @@ export function mapFrameDocToOption(frame) {
 export function invalidateFrameCache() {
   cachedFrames = null;
   cacheTimestamp = 0;
+  lastLoadUsedStaticFallback = false;
+}
+
+function isPermissionError(error) {
+  const code = error?.code || '';
+  const message = String(error?.message || '');
+  return (
+    code === 'permission-denied' ||
+    message.includes('Missing or insufficient permissions')
+  );
+}
+
+export async function getStaticFallbackFrameDocs() {
+  const manifest = await loadFrameManifest();
+  const filenames = new Set([
+    ...(manifest.alwaysAvailable || []),
+    ...(manifest.frames || []),
+  ]);
+  let sortOrder = 0;
+  return [...filenames].map((filename) => {
+    const id = `static_${filename.replace(/\.[^.]+$/, '')}`;
+    const imageUrl = globalFrameAssetUrl(filename, manifest.version);
+    return {
+      id,
+      name: filename.replace(/\.[^.]+$/, ''),
+      imageUrl,
+      thumbnailUrl: imageUrl,
+      storagePath: '',
+      isPublic: (manifest.alwaysAvailable || []).includes(filename),
+      sortOrder: sortOrder++,
+      tags: ['static'],
+      sourceType: 'upload',
+    };
+  });
 }
 
 export async function getLibraryFrames(forceRefresh = false) {
@@ -35,10 +74,16 @@ export async function getLibraryFrames(forceRefresh = false) {
     return cachedFrames;
   }
   try {
+    lastLoadUsedStaticFallback = false;
     cachedFrames = await firebaseService.getFrames();
   } catch (error) {
     console.warn('Failed to load library frames:', error);
-    cachedFrames = [];
+    if (isPermissionError(error)) {
+      cachedFrames = await getStaticFallbackFrameDocs();
+      lastLoadUsedStaticFallback = true;
+    } else {
+      cachedFrames = [];
+    }
   }
   cacheTimestamp = now;
   return cachedFrames;
