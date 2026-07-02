@@ -140,24 +140,64 @@ export const DEFAULT_FRAME_CUTOUT = {
 /**
  * Bake a square frame overlay PNG with transparent center cutout and optional text.
  */
+async function drawImageLayer(ctx, layer, outputSize) {
+  const src = layer?.url || layer?.previewUrl;
+  if (!src) return;
+  const overlayImg = await loadImage(src);
+  const drawW = (layer.scale ?? 0.25) * outputSize;
+  const aspect = overlayImg.naturalHeight / overlayImg.naturalWidth;
+  const drawH = drawW * aspect;
+  const centerX = (layer.x ?? 0.5) * outputSize;
+  const centerY = (layer.y ?? 0.5) * outputSize;
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  if (layer.rotation) {
+    ctx.rotate((layer.rotation * Math.PI) / 180);
+  }
+  ctx.drawImage(overlayImg, -drawW / 2, -drawH / 2, drawW, drawH);
+  ctx.restore();
+}
+
+function drawTextLayer(ctx, layer, outputSize) {
+  if (!layer?.text) return;
+  const fontSize = Math.max(12, (layer.scale ?? 1) * outputSize * 0.06);
+  ctx.save();
+  ctx.fillStyle = layer.color || '#ffffff';
+  ctx.font = `bold ${fontSize}px ${layer.font || 'sans-serif'}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const textX = (layer.x ?? 0.5) * outputSize;
+  const textY = (layer.y ?? 0.5) * outputSize;
+  if (layer.rotation) {
+    ctx.translate(textX, textY);
+    ctx.rotate((layer.rotation * Math.PI) / 180);
+    ctx.fillText(layer.text, 0, 0);
+  } else {
+    ctx.fillText(layer.text, textX, textY);
+  }
+  ctx.restore();
+}
+
+async function drawUnifiedLayers(ctx, layers, outputSize) {
+  const paintOrder = [...(layers || [])].reverse();
+  for (const layer of paintOrder) {
+    try {
+      if (layer.type === 'image') {
+        await drawImageLayer(ctx, layer, outputSize);
+      } else if (layer.type === 'text') {
+        drawTextLayer(ctx, layer, outputSize);
+      }
+    } catch (error) {
+      console.warn('Failed to draw frame layer:', error);
+    }
+  }
+}
+
+/** @deprecated Use drawUnifiedLayers */
 async function drawOverlayLayers(ctx, overlayLayers, outputSize) {
   for (const layer of overlayLayers || []) {
-    const src = layer?.url || layer?.previewUrl;
-    if (!src) continue;
     try {
-      const overlayImg = await loadImage(src);
-      const drawW = (layer.scale ?? 0.25) * outputSize;
-      const aspect = overlayImg.naturalHeight / overlayImg.naturalWidth;
-      const drawH = drawW * aspect;
-      const centerX = (layer.x ?? 0.5) * outputSize;
-      const centerY = (layer.y ?? 0.5) * outputSize;
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      if (layer.rotation) {
-        ctx.rotate((layer.rotation * Math.PI) / 180);
-      }
-      ctx.drawImage(overlayImg, -drawW / 2, -drawH / 2, drawW, drawH);
-      ctx.restore();
+      await drawImageLayer(ctx, layer, outputSize);
     } catch (error) {
       console.warn('Failed to draw overlay layer:', error);
     }
@@ -168,6 +208,7 @@ export async function bakeFrameOverlay({
   source,
   stencil = { scale: 1, x: 0, y: 0 },
   cutout = DEFAULT_FRAME_CUTOUT,
+  layers = null,
   overlayLayers = [],
   textLayers = [],
   viewportSize = 320,
@@ -198,7 +239,14 @@ export async function bakeFrameOverlay({
   ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
   ctx.restore();
 
-  await drawOverlayLayers(ctx, overlayLayers, outputSize);
+  if (Array.isArray(layers) && layers.length > 0) {
+    await drawUnifiedLayers(ctx, layers, outputSize);
+  } else {
+    await drawOverlayLayers(ctx, overlayLayers, outputSize);
+    for (const layer of textLayers) {
+      drawTextLayer(ctx, layer, outputSize);
+    }
+  }
 
   ctx.save();
   ctx.globalCompositeOperation = 'destination-out';
@@ -211,34 +259,16 @@ export async function bakeFrameOverlay({
   );
   ctx.restore();
 
-  for (const layer of textLayers) {
-    if (!layer?.text) continue;
-    const fontSize = Math.max(12, (layer.scale ?? 1) * outputSize * 0.06);
-    ctx.save();
-    ctx.fillStyle = layer.color || '#ffffff';
-    ctx.font = `bold ${fontSize}px ${layer.font || 'sans-serif'}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const textX = (layer.x ?? 0.5) * outputSize;
-    const textY = (layer.y ?? 0.5) * outputSize;
-    if (layer.rotation) {
-      ctx.translate(textX, textY);
-      ctx.rotate((layer.rotation * Math.PI) / 180);
-      ctx.fillText(layer.text, 0, 0);
-    } else {
-      ctx.fillText(layer.text, textX, textY);
-    }
-    ctx.restore();
-  }
+  return finishFrameCanvas(canvas);
+}
 
-  const blob = await new Promise((resolve, reject) => {
+function finishFrameCanvas(canvas) {
+  return new Promise((resolve, reject) => {
     canvas.toBlob(
       (result) => (result ? resolve(result) : reject(new Error('Frame export failed'))),
       'image/png'
     );
   });
-
-  return blob;
 }
 
 export async function bakeFrameOverlayFile(options) {
