@@ -389,6 +389,11 @@ export default {
   flex: 1 1 calc(50% - 4px);
   min-width: 0;
 
+  :deep(.q-btn__content) {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
   @media (min-width: 768px) {
     flex: 1 1 0;
     min-width: 180px;
