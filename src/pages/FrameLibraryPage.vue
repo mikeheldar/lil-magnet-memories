@@ -13,7 +13,7 @@
             <q-btn
               outline
               icon="upload"
-              label="Upload PNG"
+              label="Upload Frame PNG"
               class="frame-library-action-btn"
               @click="triggerUpload"
             />
@@ -390,7 +390,8 @@ export default {
   min-width: 0;
 
   @media (min-width: 768px) {
-    flex: 0 1 auto;
+    flex: 1 1 0;
+    min-width: 180px;
   }
 }
 
