@@ -54,7 +54,7 @@ export function layerLabel(layer) {
 }
 
 export function layerZIndex(index, total) {
-  return 10 + (total - index);
+  return 40 + (total - index);
 }
 
 /** Index 0 = top/front. Returns layers from back to front for painting. */

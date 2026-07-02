@@ -56,6 +56,7 @@
                       @load="onSourceImageLoad"
                     />
                   </div>
+                  <div class="frame-cutout-tint" :style="cutoutStyle" />
                   <div
                     v-for="(layer, index) in layers"
                     :key="`${layer.id}-${layer.type === 'text' ? layer.font : ''}`"
@@ -78,13 +79,15 @@
                     />
                     <span v-else>{{ layer.text }}</span>
                   </div>
-                  <div
-                    class="frame-cutout"
-                    :style="cutoutStyle"
-                    @mousedown.stop="startCutoutDrag"
-                    @touchstart.stop="startCutoutDragTouch"
-                  >
-                    <div class="frame-cutout-inner-tint" />
+                  <div class="frame-cutout-chrome" :style="cutoutStyle">
+                    <div
+                      v-for="edge in cutoutEdges"
+                      :key="edge"
+                      class="frame-cutout-edge"
+                      :class="`frame-cutout-edge--${edge}`"
+                      @mousedown.stop="startCutoutDrag"
+                      @touchstart.stop="startCutoutDragTouch"
+                    />
                     <div
                       v-for="handle in cutoutHandles"
                       :key="handle"
@@ -97,7 +100,7 @@
                 </div>
               </div>
               <div class="text-caption text-grey-7 text-center q-mt-xs">
-                Drag images onto the preview to add layers. Top of the layer list = front.
+                Dropped images start on the top layer — drag them anywhere. The cutout area is cleared when saved.
               </div>
               <div class="row q-gutter-sm q-mt-sm justify-center">
                 <q-btn dense outline icon="restart_alt" label="Reset zoom" @click="resetZoom" />
@@ -342,6 +345,7 @@ export default {
     const overlayFileInput = ref(null);
     const dragOverViewport = ref(false);
     const cutoutHandles = ['nw', 'ne', 'sw', 'se'];
+    const cutoutEdges = ['n', 's', 'e', 'w'];
     const fontOptions = FONT_OPTIONS;
     const pendingEditRecipe = ref(null);
     const history = useFrameBuilderHistory();
@@ -602,13 +606,17 @@ export default {
     };
 
     const onBackgroundMouseDown = (event) => {
-      if (event.target.closest('.frame-content-layer, .frame-cutout')) return;
+      if (event.target.closest('.frame-content-layer, .frame-cutout-chrome, .frame-cutout-edge, .frame-cutout-handle')) {
+        return;
+      }
       selectedLayerId.value = null;
       editor.startDrag(event);
     };
 
     const onTouchStart = (event) => {
-      if (event.target.closest('.frame-content-layer, .frame-cutout')) return;
+      if (event.target.closest('.frame-content-layer, .frame-cutout-chrome, .frame-cutout-edge, .frame-cutout-handle')) {
+        return;
+      }
       if (event.touches.length === 2) editor.startPinch(event);
       else editor.startDrag(event);
     };
@@ -984,6 +992,7 @@ export default {
       dragOverViewport,
       fontOptions,
       cutoutHandles,
+      cutoutEdges,
       canUndo,
       canRedo,
       editor,
@@ -1099,20 +1108,58 @@ export default {
   user-select: none;
 }
 
-.frame-cutout {
+.frame-cutout-tint {
   position: absolute;
-  border: 2px dashed rgba(102, 126, 234, 0.95);
-  cursor: move;
-  z-index: 100;
   box-sizing: border-box;
-  pointer-events: auto;
-}
-
-.frame-cutout-inner-tint {
-  position: absolute;
-  inset: 0;
+  z-index: 20;
   background: rgba(180, 180, 180, 0.72);
   pointer-events: none;
+}
+
+.frame-cutout-chrome {
+  position: absolute;
+  border: 2px dashed rgba(102, 126, 234, 0.95);
+  box-sizing: border-box;
+  z-index: 100;
+  pointer-events: none;
+  background: transparent;
+}
+
+.frame-cutout-edge {
+  position: absolute;
+  pointer-events: auto;
+
+  &--n {
+    top: -5px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    cursor: move;
+  }
+
+  &--s {
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    cursor: move;
+  }
+
+  &--e {
+    top: 0;
+    right: -5px;
+    bottom: 0;
+    width: 10px;
+    cursor: move;
+  }
+
+  &--w {
+    top: 0;
+    left: -5px;
+    bottom: 0;
+    width: 10px;
+    cursor: move;
+  }
 }
 
 .frame-cutout-handle {
@@ -1122,6 +1169,7 @@ export default {
   background: #fff;
   border: 1px solid #667eea;
   border-radius: 2px;
+  pointer-events: auto;
 
   &--nw { top: -6px; left: -6px; cursor: nwse-resize; }
   &--ne { top: -6px; right: -6px; cursor: nesw-resize; }
