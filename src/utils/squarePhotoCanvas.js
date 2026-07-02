@@ -140,10 +140,35 @@ export const DEFAULT_FRAME_CUTOUT = {
 /**
  * Bake a square frame overlay PNG with transparent center cutout and optional text.
  */
+async function drawOverlayLayers(ctx, overlayLayers, outputSize) {
+  for (const layer of overlayLayers || []) {
+    const src = layer?.url || layer?.previewUrl;
+    if (!src) continue;
+    try {
+      const overlayImg = await loadImage(src);
+      const drawW = (layer.scale ?? 0.25) * outputSize;
+      const aspect = overlayImg.naturalHeight / overlayImg.naturalWidth;
+      const drawH = drawW * aspect;
+      const centerX = (layer.x ?? 0.5) * outputSize;
+      const centerY = (layer.y ?? 0.5) * outputSize;
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      if (layer.rotation) {
+        ctx.rotate((layer.rotation * Math.PI) / 180);
+      }
+      ctx.drawImage(overlayImg, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
+    } catch (error) {
+      console.warn('Failed to draw overlay layer:', error);
+    }
+  }
+}
+
 export async function bakeFrameOverlay({
   source,
   stencil = { scale: 1, x: 0, y: 0 },
   cutout = DEFAULT_FRAME_CUTOUT,
+  overlayLayers = [],
   textLayers = [],
   viewportSize = 320,
   outputSize = OUTPUT_SIZE,
@@ -172,6 +197,8 @@ export async function bakeFrameOverlay({
   ctx.translate(outputSize / 2 + drawX, outputSize / 2 + drawY);
   ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
   ctx.restore();
+
+  await drawOverlayLayers(ctx, overlayLayers, outputSize);
 
   ctx.save();
   ctx.globalCompositeOperation = 'destination-out';

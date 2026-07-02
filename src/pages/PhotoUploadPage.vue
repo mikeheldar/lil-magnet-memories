@@ -206,23 +206,20 @@
                         >
                           Edited
                         </div>
+                        <button
+                          type="button"
+                          class="photo-edit-pill"
+                          @click="openPhotoEditor(index)"
+                        >
+                          <q-icon name="edit" size="14px" />
+                          <span>Edit</span>
+                        </button>
                       </div>
                       <div class="text-caption text-center q-mb-xs">
                         {{ item.file?.name || item.originalFile?.name }}
                       </div>
                       <div class="text-center">
-                        <div class="row items-center justify-center q-gutter-xs q-mb-xs">
-                          <span class="text-caption">Quantity:</span>
-                          <q-btn
-                            dense
-                            flat
-                            size="sm"
-                            icon="edit"
-                            color="primary"
-                            label="Edit"
-                            @click="openPhotoEditor(index)"
-                          />
-                        </div>
+                        <div class="text-caption q-mb-xs">Quantity:</div>
                         <q-btn-group>
                           <q-btn
                             dense
@@ -2709,6 +2706,38 @@ export default {
   color: white;
   padding: 2px 6px;
   border-radius: 4px;
+  z-index: 2;
+}
+
+.photo-edit-pill {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateX(-50%) translateY(-1px);
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.55);
+  }
+
+  &:active {
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .compact-sign-in {

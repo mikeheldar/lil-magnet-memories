@@ -25,7 +25,14 @@
               />
             </div>
             <template v-else>
-              <div ref="viewportRef" class="frame-builder-viewport q-mx-auto">
+              <div
+                ref="viewportRef"
+                class="frame-builder-viewport q-mx-auto"
+                :class="{ 'frame-builder-viewport--drag-over': dragOverViewport }"
+                @dragover.prevent="onViewportDragOver"
+                @dragleave="onViewportDragLeave"
+                @drop.prevent="onViewportDrop"
+              >
                 <div
                   class="frame-builder-interaction"
                   @mousedown="editor.startDrag"
@@ -40,6 +47,17 @@
                       draggable="false"
                       @load="onSourceImageLoad"
                     />
+                  </div>
+                  <div
+                    v-for="(layer, index) in overlayLayers"
+                    :key="layer.id"
+                    class="frame-overlay-layer"
+                    :class="{ 'frame-overlay-layer--selected': selectedOverlayIndex === index }"
+                    :style="overlayLayerStyle(layer)"
+                    @mousedown.stop="(e) => startOverlayDrag(e, index)"
+                    @touchstart.stop="(e) => startOverlayDragTouch(e, index)"
+                  >
+                    <img :src="layer.url" alt="" draggable="false" class="frame-overlay-image" />
                   </div>
                   <div
                     class="frame-cutout"
@@ -59,7 +77,7 @@
                   </div>
                   <div
                     v-for="(layer, index) in textLayers"
-                    :key="index"
+                    :key="`text-${index}-${layer.font}`"
                     class="frame-text-layer"
                     :class="{ 'frame-text-layer--selected': selectedTextIndex === index }"
                     :style="textLayerStyle(layer)"
@@ -69,6 +87,9 @@
                     {{ layer.text }}
                   </div>
                 </div>
+              </div>
+              <div class="text-caption text-grey-7 text-center q-mt-xs">
+                Drag images onto the preview to add stickers under the cutout
               </div>
               <div class="row q-gutter-sm q-mt-sm justify-center">
                 <q-btn dense outline icon="restart_alt" label="Reset zoom" @click="editor.resetTransform()" />
@@ -99,6 +120,45 @@
               </div>
             </div>
 
+            <div class="text-subtitle2 q-mb-sm">Overlay images</div>
+            <div class="row q-gutter-sm q-mb-sm items-center">
+              <q-file
+                v-model="overlayFileInput"
+                label="Add image"
+                accept="image/*"
+                filled
+                dense
+                class="col"
+                @update:model-value="onOverlayFileSelected"
+              />
+            </div>
+            <div v-if="selectedOverlayLayer" class="q-mb-md">
+              <div class="text-caption q-mb-sm">Selected overlay — drag on preview to reposition</div>
+              <q-slider
+                :model-value="selectedOverlayLayer.scale"
+                :min="0.05"
+                :max="0.85"
+                :step="0.01"
+                label
+                label-always
+                class="q-mb-sm"
+                @update:model-value="(val) => updateOverlayProp('scale', val)"
+              />
+              <div class="text-caption q-mb-sm">Size</div>
+              <q-slider
+                :model-value="selectedOverlayLayer.rotation"
+                :min="0"
+                :max="360"
+                :step="1"
+                label
+                label-always
+                class="q-mb-sm"
+                @update:model-value="(val) => updateOverlayProp('rotation', val)"
+              />
+              <div class="text-caption q-mb-sm">Rotation</div>
+              <q-btn flat dense color="negative" icon="delete" label="Remove overlay" @click="removeSelectedOverlay" />
+            </div>
+
             <div class="text-subtitle2 q-mb-sm">Text</div>
             <q-input v-model="newText" label="Text to add" filled dense class="q-mb-sm" />
             <div class="row q-gutter-sm q-mb-sm items-center">
@@ -114,18 +174,30 @@
               emit-value
               map-options
               class="q-mb-sm"
-            />
+            >
+              <template #option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section :style="{ fontFamily: scope.opt.value }">
+                    {{ scope.opt.label }}
+                  </q-item-section>
+                </q-item>
+              </template>
+              <template #selected-item="scope">
+                <span :style="{ fontFamily: scope.opt.value }">{{ scope.opt.label }}</span>
+              </template>
+            </q-select>
             <q-btn dense outline label="Add text" class="q-mb-md" @click="addTextLayer" />
-            <div v-if="selectedTextLayer" class="q-mb-md">
+            <div v-if="selectedTextIndex >= 0 && textLayers[selectedTextIndex]" class="q-mb-md">
               <q-input
-                v-model="selectedTextLayer.text"
+                :model-value="textLayers[selectedTextIndex].text"
                 label="Selected text"
                 filled
                 dense
                 class="q-mb-sm"
+                @update:model-value="(val) => updateTextProp('text', val)"
               />
               <q-select
-                v-model="selectedTextLayer.font"
+                :model-value="textLayers[selectedTextIndex].font"
                 :options="fontOptions"
                 label="Font"
                 filled
@@ -133,21 +205,46 @@
                 emit-value
                 map-options
                 class="q-mb-sm"
-              />
+                @update:model-value="(val) => updateTextProp('font', val)"
+              >
+                <template #option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section :style="{ fontFamily: scope.opt.value }">
+                      {{ scope.opt.label }}
+                    </q-item-section>
+                  </q-item>
+                </template>
+                <template #selected-item="scope">
+                  <span :style="{ fontFamily: scope.opt.value }">{{ scope.opt.label }}</span>
+                </template>
+              </q-select>
               <div class="q-mb-sm">
                 <q-slider
-                  v-model="selectedTextLayer.scale"
+                  :model-value="textLayers[selectedTextIndex].scale"
                   :min="0.5"
                   :max="3"
                   :step="0.1"
                   label
                   label-always
+                  @update:model-value="(val) => updateTextProp('scale', val)"
                 />
                 <div class="text-caption">Text size — drag text on preview to reposition</div>
               </div>
               <div class="row q-gutter-sm items-center">
-                <q-input v-model="selectedTextLayer.color" label="Color" filled dense style="max-width: 120px" />
-                <input v-model="selectedTextLayer.color" type="color" class="frame-color-input" />
+                <q-input
+                  :model-value="textLayers[selectedTextIndex].color"
+                  label="Color"
+                  filled
+                  dense
+                  style="max-width: 120px"
+                  @update:model-value="(val) => updateTextProp('color', val)"
+                />
+                <input
+                  :value="textLayers[selectedTextIndex].color"
+                  type="color"
+                  class="frame-color-input"
+                  @input="(e) => updateTextProp('color', e.target.value)"
+                />
                 <q-btn flat dense color="negative" icon="delete" @click="removeSelectedText" />
               </div>
             </div>
@@ -190,6 +287,10 @@ const FONT_OPTIONS = [
   { label: 'Elegant', value: '"Palatino Linotype", Palatino, serif' },
 ];
 
+function createOverlayId() {
+  return `overlay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export default {
   name: 'FrameBuilder',
   props: {
@@ -208,10 +309,14 @@ export default {
     const isPublic = ref(false);
     const cutout = ref({ ...DEFAULT_FRAME_CUTOUT });
     const textLayers = ref([]);
+    const overlayLayers = ref([]);
     const selectedTextIndex = ref(-1);
+    const selectedOverlayIndex = ref(-1);
     const newText = ref('');
     const newTextColor = ref('#ffffff');
     const newTextFont = ref('sans-serif');
+    const overlayFileInput = ref(null);
+    const dragOverViewport = ref(false);
     const cutoutHandles = ['nw', 'ne', 'sw', 'se'];
     const fontOptions = FONT_OPTIONS;
     const pendingEditRecipe = ref(null);
@@ -219,8 +324,8 @@ export default {
     const editor = useSquarePhotoEditor(viewportSize);
     const imageStyle = editor.imageStyle;
 
-    const selectedTextLayer = computed(() =>
-      selectedTextIndex.value >= 0 ? textLayers.value[selectedTextIndex.value] : null
+    const selectedOverlayLayer = computed(() =>
+      selectedOverlayIndex.value >= 0 ? overlayLayers.value[selectedOverlayIndex.value] : null
     );
 
     const cutoutStyle = computed(() => ({
@@ -239,9 +344,24 @@ export default {
       transform: 'translate(-50%, -50%)',
     });
 
+    const overlayLayerStyle = (layer) => ({
+      left: `${(layer.x ?? 0.5) * 100}%`,
+      top: `${(layer.y ?? 0.5) * 100}%`,
+      width: `${(layer.scale ?? 0.25) * 100}%`,
+      transform: `translate(-50%, -50%) rotate(${layer.rotation ?? 0}deg)`,
+    });
+
     const updateViewportSize = () => {
       const el = viewportRef.value;
       if (el) viewportSize.value = el.clientWidth || 320;
+    };
+
+    const revokeOverlayUrls = () => {
+      for (const layer of overlayLayers.value) {
+        if (layer.url?.startsWith('blob:')) {
+          URL.revokeObjectURL(layer.url);
+        }
+      }
     };
 
     const resetBuilder = () => {
@@ -254,7 +374,10 @@ export default {
       isPublic.value = false;
       cutout.value = { ...DEFAULT_FRAME_CUTOUT };
       textLayers.value = [];
+      revokeOverlayUrls();
+      overlayLayers.value = [];
       selectedTextIndex.value = -1;
+      selectedOverlayIndex.value = -1;
       pendingEditRecipe.value = null;
       editor.resetTransform();
     };
@@ -275,6 +398,38 @@ export default {
       });
     };
 
+    const loadOverlayLayersFromRecipe = async (layers = []) => {
+      revokeOverlayUrls();
+      if (!layers.length) {
+        overlayLayers.value = [];
+        return;
+      }
+      const { getDownloadURL, ref: storageRefFn } = await import('firebase/storage');
+      const storageInstance = firebaseService.getFrameStorage();
+      overlayLayers.value = await Promise.all(
+        layers.map(async (layer) => {
+          let url = layer.url || '';
+          if (layer.storagePath) {
+            try {
+              url = await getDownloadURL(storageRefFn(storageInstance, layer.storagePath));
+            } catch {
+              url = '';
+            }
+          }
+          return {
+            id: layer.id || createOverlayId(),
+            url,
+            storagePath: layer.storagePath || null,
+            file: null,
+            x: layer.x ?? 0.5,
+            y: layer.y ?? 0.5,
+            scale: layer.scale ?? 0.25,
+            rotation: layer.rotation ?? 0,
+          };
+        })
+      );
+    };
+
     const loadEditFrame = async () => {
       const frame = props.editFrame;
       if (!frame) return;
@@ -286,6 +441,7 @@ export default {
         textLayers.value = Array.isArray(frame.builderRecipe.textLayers)
           ? frame.builderRecipe.textLayers.map((layer) => ({ ...layer }))
           : [];
+        await loadOverlayLayersFromRecipe(frame.builderRecipe.overlayLayers || []);
         const sourcePath = frame.builderRecipe.sourceImagePath;
         if (sourcePath) {
           try {
@@ -340,6 +496,45 @@ export default {
       setTimeout(updateViewportSize, 50);
     };
 
+    const addOverlayFromFile = (file) => {
+      if (!file || !file.type?.startsWith('image/')) return;
+      const url = URL.createObjectURL(file);
+      overlayLayers.value.push({
+        id: createOverlayId(),
+        url,
+        file,
+        storagePath: null,
+        x: 0.5,
+        y: 0.5,
+        scale: 0.25,
+        rotation: 0,
+      });
+      selectedOverlayIndex.value = overlayLayers.value.length - 1;
+      selectedTextIndex.value = -1;
+    };
+
+    const onOverlayFileSelected = (file) => {
+      const upload = Array.isArray(file) ? file[0] : file;
+      overlayFileInput.value = null;
+      if (upload) addOverlayFromFile(upload);
+    };
+
+    const onViewportDragOver = () => {
+      dragOverViewport.value = true;
+    };
+
+    const onViewportDragLeave = (event) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) {
+        dragOverViewport.value = false;
+      }
+    };
+
+    const onViewportDrop = (event) => {
+      dragOverViewport.value = false;
+      const file = event.dataTransfer?.files?.[0];
+      if (file) addOverlayFromFile(file);
+    };
+
     const onSourceImageLoad = (event) => {
       if (pendingEditRecipe.value) {
         editor.onImageLoad(event, { preserveTransform: true });
@@ -355,6 +550,18 @@ export default {
       else editor.startDrag(event);
     };
 
+    const updateTextProp = (prop, value) => {
+      const idx = selectedTextIndex.value;
+      if (idx < 0 || !textLayers.value[idx]) return;
+      textLayers.value[idx] = { ...textLayers.value[idx], [prop]: value };
+    };
+
+    const updateOverlayProp = (prop, value) => {
+      const idx = selectedOverlayIndex.value;
+      if (idx < 0 || !overlayLayers.value[idx]) return;
+      overlayLayers.value[idx] = { ...overlayLayers.value[idx], [prop]: value };
+    };
+
     const clampCutout = (next) => {
       const width = Math.max(0.1, Math.min(0.95, next.width));
       const height = Math.max(0.1, Math.min(0.95, next.height));
@@ -365,6 +572,7 @@ export default {
 
     let cutoutDragState = null;
     let textDragState = null;
+    let overlayDragState = null;
 
     const startCutoutDrag = (event) => {
       cutoutDragState = {
@@ -463,6 +671,7 @@ export default {
 
     const startTextDrag = (event, index) => {
       selectedTextIndex.value = index;
+      selectedOverlayIndex.value = -1;
       const layer = textLayers.value[index];
       if (!layer) return;
       textDragState = {
@@ -478,6 +687,7 @@ export default {
 
     const startTextDragTouch = (event, index) => {
       selectedTextIndex.value = index;
+      selectedOverlayIndex.value = -1;
       const touch = event.touches[0];
       const layer = textLayers.value[index];
       if (!layer || !touch) return;
@@ -492,6 +702,39 @@ export default {
       document.addEventListener('touchend', endTextDrag);
     };
 
+    const startOverlayDrag = (event, index) => {
+      selectedOverlayIndex.value = index;
+      selectedTextIndex.value = -1;
+      const layer = overlayLayers.value[index];
+      if (!layer) return;
+      overlayDragState = {
+        index,
+        startX: event.clientX,
+        startY: event.clientY,
+        startXNorm: layer.x ?? 0.5,
+        startYNorm: layer.y ?? 0.5,
+      };
+      document.addEventListener('mousemove', onOverlayMouseMove);
+      document.addEventListener('mouseup', endOverlayDrag);
+    };
+
+    const startOverlayDragTouch = (event, index) => {
+      selectedOverlayIndex.value = index;
+      selectedTextIndex.value = -1;
+      const touch = event.touches[0];
+      const layer = overlayLayers.value[index];
+      if (!layer || !touch) return;
+      overlayDragState = {
+        index,
+        startX: touch.clientX,
+        startY: touch.clientY,
+        startXNorm: layer.x ?? 0.5,
+        startYNorm: layer.y ?? 0.5,
+      };
+      document.addEventListener('touchmove', onOverlayTouchMove, { passive: false });
+      document.addEventListener('touchend', endOverlayDrag);
+    };
+
     const applyTextDrag = (clientX, clientY) => {
       if (!textDragState || !viewportRef.value) return;
       const rect = viewportRef.value.getBoundingClientRect();
@@ -503,10 +746,29 @@ export default {
       layer.y = Math.max(0.05, Math.min(0.95, textDragState.startYNorm + dy));
     };
 
+    const applyOverlayDrag = (clientX, clientY) => {
+      if (!overlayDragState || !viewportRef.value) return;
+      const rect = viewportRef.value.getBoundingClientRect();
+      const dx = (clientX - overlayDragState.startX) / rect.width;
+      const dy = (clientY - overlayDragState.startY) / rect.height;
+      const layer = overlayLayers.value[overlayDragState.index];
+      if (!layer) return;
+      layer.x = Math.max(0.02, Math.min(0.98, overlayDragState.startXNorm + dx));
+      layer.y = Math.max(0.02, Math.min(0.98, overlayDragState.startYNorm + dy));
+    };
+
     const onTextMouseMove = (event) => applyTextDrag(event.clientX, event.clientY);
     const onTextTouchMove = (event) => {
       if (event.touches.length === 1) {
         applyTextDrag(event.touches[0].clientX, event.touches[0].clientY);
+        event.preventDefault();
+      }
+    };
+
+    const onOverlayMouseMove = (event) => applyOverlayDrag(event.clientX, event.clientY);
+    const onOverlayTouchMove = (event) => {
+      if (event.touches.length === 1) {
+        applyOverlayDrag(event.touches[0].clientX, event.touches[0].clientY);
         event.preventDefault();
       }
     };
@@ -517,6 +779,14 @@ export default {
       document.removeEventListener('mouseup', endTextDrag);
       document.removeEventListener('touchmove', onTextTouchMove);
       document.removeEventListener('touchend', endTextDrag);
+    };
+
+    const endOverlayDrag = () => {
+      overlayDragState = null;
+      document.removeEventListener('mousemove', onOverlayMouseMove);
+      document.removeEventListener('mouseup', endOverlayDrag);
+      document.removeEventListener('touchmove', onOverlayTouchMove);
+      document.removeEventListener('touchend', endOverlayDrag);
     };
 
     const addTextLayer = () => {
@@ -531,17 +801,47 @@ export default {
         rotation: 0,
       });
       selectedTextIndex.value = textLayers.value.length - 1;
+      selectedOverlayIndex.value = -1;
       newText.value = '';
-    };
-
-    const selectTextLayer = (index) => {
-      selectedTextIndex.value = index;
     };
 
     const removeSelectedText = () => {
       if (selectedTextIndex.value < 0) return;
       textLayers.value.splice(selectedTextIndex.value, 1);
       selectedTextIndex.value = -1;
+    };
+
+    const removeSelectedOverlay = () => {
+      if (selectedOverlayIndex.value < 0) return;
+      const layer = overlayLayers.value[selectedOverlayIndex.value];
+      if (layer?.url?.startsWith('blob:')) {
+        URL.revokeObjectURL(layer.url);
+      }
+      overlayLayers.value.splice(selectedOverlayIndex.value, 1);
+      selectedOverlayIndex.value = -1;
+    };
+
+    const resolveOverlayLayersForSave = async (frameId) => {
+      const resolved = [];
+      for (const layer of overlayLayers.value) {
+        let storagePath = layer.storagePath;
+        let url = layer.url;
+        if (layer.file) {
+          storagePath = `frames/${frameId}/overlays/${layer.id}.png`;
+          const upload = await firebaseService.uploadFrameFileAtPath(storagePath, layer.file);
+          url = upload.url;
+        }
+        resolved.push({
+          id: layer.id,
+          storagePath,
+          url,
+          x: layer.x ?? 0.5,
+          y: layer.y ?? 0.5,
+          scale: layer.scale ?? 0.25,
+          rotation: layer.rotation ?? 0,
+        });
+      }
+      return resolved;
     };
 
     const close = () => {
@@ -553,10 +853,16 @@ export default {
       saving.value = true;
       try {
         updateViewportSize();
+        const frameId = props.editFrame?.id || null;
+        const resolvedOverlays = frameId
+          ? await resolveOverlayLayersForSave(frameId)
+          : overlayLayers.value.map((layer) => ({ ...layer }));
+
         const bakedFile = await bakeFrameOverlayFile({
           source: sourcePreviewUrl.value,
           stencil: { ...editor.transform.value },
           cutout: { ...cutout.value },
+          overlayLayers: resolvedOverlays,
           textLayers: textLayers.value,
           viewportSize: viewportSize.value,
           fileName: `${frameName.value.trim()}.png`,
@@ -566,12 +872,23 @@ export default {
           stencil: { ...editor.transform.value },
           cutout: { ...cutout.value },
           textLayers: textLayers.value.map((layer) => ({ ...layer })),
+          overlayLayers: [],
           viewportSize: viewportSize.value,
           sourceImagePath: null,
         };
 
         let savedFrame;
         if (props.editFrame?.id) {
+          builderRecipe.overlayLayers = resolvedOverlays.map(
+            ({ id, storagePath, x, y, scale, rotation }) => ({
+              id,
+              storagePath,
+              x,
+              y,
+              scale,
+              rotation,
+            })
+          );
           await firebaseService.replaceFrameImage(props.editFrame.id, bakedFile);
           if (sourceFile.value) {
             const sourceUpload = await firebaseService.uploadFrameSourceImage(
@@ -595,15 +912,26 @@ export default {
             sourceType: 'built',
             builderRecipe,
           });
+          const uploadedOverlays = await resolveOverlayLayersForSave(savedFrame.id);
+          builderRecipe.overlayLayers = uploadedOverlays.map(
+            ({ id, storagePath, x, y, scale, rotation }) => ({
+              id,
+              storagePath,
+              x,
+              y,
+              scale,
+              rotation,
+            })
+          );
           if (sourceFile.value) {
             const sourceUpload = await firebaseService.uploadFrameSourceImage(
               savedFrame.id,
               sourceFile.value
             );
             builderRecipe.sourceImagePath = sourceUpload.storagePath;
-            await firebaseService.updateFrame(savedFrame.id, { builderRecipe });
-            savedFrame = await firebaseService.getFrame(savedFrame.id);
           }
+          await firebaseService.updateFrame(savedFrame.id, { builderRecipe });
+          savedFrame = await firebaseService.getFrame(savedFrame.id);
         }
 
         invalidateFrameCache();
@@ -628,9 +956,11 @@ export default {
       window.removeEventListener('resize', updateViewportSize);
       endCutoutDrag();
       endTextDrag();
+      endOverlayDrag();
       if (sourcePreviewUrl.value?.startsWith('blob:')) {
         URL.revokeObjectURL(sourcePreviewUrl.value);
       }
+      revokeOverlayUrls();
     });
 
     return {
@@ -642,18 +972,27 @@ export default {
       isPublic,
       cutout,
       textLayers,
+      overlayLayers,
       selectedTextIndex,
-      selectedTextLayer,
+      selectedOverlayIndex,
+      selectedOverlayLayer,
       newText,
       newTextColor,
       newTextFont,
+      overlayFileInput,
+      dragOverViewport,
       fontOptions,
       cutoutHandles,
       editor,
       imageStyle,
       cutoutStyle,
       textLayerStyle,
+      overlayLayerStyle,
       onSourceSelected,
+      onOverlayFileSelected,
+      onViewportDragOver,
+      onViewportDragLeave,
+      onViewportDrop,
       onSourceImageLoad,
       onTouchStart,
       startCutoutDrag,
@@ -662,9 +1001,13 @@ export default {
       startCutoutResizeTouch,
       startTextDrag,
       startTextDragTouch,
+      startOverlayDrag,
+      startOverlayDragTouch,
+      updateTextProp,
+      updateOverlayProp,
       addTextLayer,
-      selectTextLayer,
       removeSelectedText,
+      removeSelectedOverlay,
       close,
       save,
     };
@@ -686,6 +1029,12 @@ export default {
   background: #fff;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &--drag-over {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+  }
 }
 
 .frame-builder-interaction {
@@ -707,6 +1056,32 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.frame-overlay-layer {
+  position: absolute;
+  z-index: 1;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  pointer-events: auto;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &--selected {
+    outline: 2px dashed #667eea;
+    outline-offset: 2px;
+  }
+}
+
+.frame-overlay-image {
+  display: block;
+  width: 100%;
+  height: auto;
   pointer-events: none;
   user-select: none;
 }
