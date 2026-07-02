@@ -12,13 +12,6 @@
           <div class="frame-library-actions">
             <q-btn
               outline
-              icon="library_add"
-              label="Import defaults"
-              class="frame-library-action-btn"
-              @click="importDefaultFrames"
-            />
-            <q-btn
-              outline
               icon="upload"
               label="Upload PNG"
               class="frame-library-action-btn"
@@ -73,21 +66,26 @@
                   <span v-if="frame.isPublic"> · Public</span>
                 </div>
               </div>
-              <q-toggle
-                :model-value="frame.isPublic === true"
-                label="Public"
-                dense
-                :disable="!isAdmin"
-                @update:model-value="(val) => togglePublic(frame, val)"
-              />
-              <q-btn
-                v-if="frame.sourceType === 'built'"
-                flat
-                dense
-                icon="edit"
-                @click="openBuilder(frame)"
-              />
-              <q-btn flat dense color="negative" icon="delete" @click="confirmDelete(frame)" />
+              <div class="frame-list-actions">
+                <q-btn
+                  v-if="frame.sourceType === 'built'"
+                  flat
+                  dense
+                  icon="edit"
+                  class="frame-edit-btn"
+                  @click="openBuilder(frame)"
+                />
+                <span v-else class="frame-edit-spacer" aria-hidden="true" />
+                <q-toggle
+                  :model-value="frame.isPublic === true"
+                  label="Public"
+                  dense
+                  class="frame-public-toggle"
+                  :disable="!isAdmin"
+                  @update:model-value="(val) => togglePublic(frame, val)"
+                />
+                <q-btn flat dense color="negative" icon="delete" class="frame-delete-btn" @click="confirmDelete(frame)" />
+              </div>
             </div>
           </template>
         </draggable>
@@ -209,28 +207,6 @@ export default {
       await loadSchedules();
     });
 
-    const importDefaultFrames = async () => {
-      loading.value = true;
-      try {
-        const count = await ensureStaticManifestFrames();
-        await loadFrames();
-        $q.notify({
-          type: 'positive',
-          message: count > 0 ? `Imported ${count} default frame(s)` : 'Default frames are already in the library',
-          position: 'top',
-        });
-      } catch (error) {
-        $q.notify({
-          type: 'negative',
-          message: 'Could not import default frames',
-          caption: error?.message,
-          position: 'top',
-        });
-      } finally {
-        loading.value = false;
-      }
-    };
-
     const triggerUpload = () => fileInputRef.value?.click();
 
     const onFileInputChange = async (event) => {
@@ -349,7 +325,6 @@ export default {
       isAdmin,
       usingStaticFallback,
       frameSelectOptions,
-      importDefaultFrames,
       triggerUpload,
       onFileInputChange,
       onDragEnd,
@@ -421,6 +396,36 @@ export default {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background: #fafafa;
+
+  .col {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.frame-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.frame-edit-btn,
+.frame-edit-spacer {
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.frame-edit-spacer {
+  display: inline-block;
+}
+
+.frame-public-toggle {
+  flex-shrink: 0;
+}
+
+.frame-delete-btn {
+  flex-shrink: 0;
 }
 
 .frame-list-thumb {
