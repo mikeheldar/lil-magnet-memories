@@ -91,18 +91,40 @@ export async function getLibraryFrames(forceRefresh = false) {
 
 function parseScheduleDate(value) {
   if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+  const str = String(value).trim();
+  const recurring = /^\d{2}-\d{2}$/.test(str);
+  if (recurring) {
+    const [month, day] = str.split('-').map(Number);
+    return { month, day, recurring: true };
+  }
+  const date = new Date(str);
+  if (Number.isNaN(date.getTime())) return null;
+  return {
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    recurring: false,
+    year: date.getFullYear(),
+  };
+}
+
+function dayOfYear(month, day) {
+  return month * 100 + day;
 }
 
 function isDateInSchedule(date, schedule) {
   const start = parseScheduleDate(schedule.startDate);
   const end = parseScheduleDate(schedule.endDate);
   if (!start || !end) return false;
-  const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const schedStart = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  const schedEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-  return dayStart >= schedStart && dayStart <= schedEnd;
+
+  const today = dayOfYear(date.getMonth() + 1, date.getDate());
+  const startDay = dayOfYear(start.month, start.day);
+  const endDay = dayOfYear(end.month, end.day);
+
+  if (startDay <= endDay) {
+    return today >= startDay && today <= endDay;
+  }
+  // Crosses year boundary (e.g. Dec 20 – Jan 5)
+  return today >= startDay || today <= endDay;
 }
 
 export async function getFrameCatalogConfig() {

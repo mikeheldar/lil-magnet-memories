@@ -97,6 +97,7 @@
         <div class="text-h6 q-mb-md">Featured schedules</div>
         <div class="text-caption text-grey-7 q-mb-md">
           Pin frames to the top of the public catalog during date ranges (e.g. holidays).
+          Use <strong>MM-DD</strong> for recurring yearly dates (e.g. 12-01) or <strong>YYYY-MM-DD</strong> for one-time ranges.
         </div>
 
         <div
@@ -116,10 +117,24 @@
             />
           </div>
           <div class="col-6 col-md-2">
-            <q-input v-model="schedule.startDate" type="date" label="Start" filled dense />
+            <q-input
+              v-model="schedule.startDate"
+              label="Start"
+              filled
+              dense
+              placeholder="MM-DD or YYYY-MM-DD"
+              hint="Recurring: 02-01"
+            />
           </div>
           <div class="col-6 col-md-2">
-            <q-input v-model="schedule.endDate" type="date" label="End" filled dense />
+            <q-input
+              v-model="schedule.endDate"
+              label="End"
+              filled
+              dense
+              placeholder="MM-DD or YYYY-MM-DD"
+              hint="Recurring: 02-14"
+            />
           </div>
           <div class="col-6 col-md-2">
             <q-input v-model.number="schedule.priority" type="number" label="Priority" filled dense />

@@ -48,13 +48,13 @@ export function useSquarePhotoEditor(viewportSizeRef) {
     }
   };
 
-  const onImageLoad = (event) => {
+  const onImageLoad = (event, options = {}) => {
     const img = event.target;
     naturalSize.value = {
       width: img.naturalWidth || 0,
       height: img.naturalHeight || 0,
     };
-    if (naturalSize.value.width > 0 && naturalSize.value.height > 0) {
+    if (!options.preserveTransform && naturalSize.value.width > 0 && naturalSize.value.height > 0) {
       setTransform(getInitialTransformForImage());
     }
   };

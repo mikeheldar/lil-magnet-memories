@@ -214,6 +214,7 @@ export default {
     const newTextFont = ref('sans-serif');
     const cutoutHandles = ['nw', 'ne', 'sw', 'se'];
     const fontOptions = FONT_OPTIONS;
+    const pendingEditRecipe = ref(null);
 
     const editor = useSquarePhotoEditor(viewportSize);
     const imageStyle = editor.imageStyle;
@@ -254,7 +255,24 @@ export default {
       cutout.value = { ...DEFAULT_FRAME_CUTOUT };
       textLayers.value = [];
       selectedTextIndex.value = -1;
+      pendingEditRecipe.value = null;
       editor.resetTransform();
+    };
+
+    const applyRecipeTransform = (recipe) => {
+      if (!recipe?.stencil) {
+        editor.resetTransform();
+        return;
+      }
+      updateViewportSize();
+      const savedViewport = Number(recipe.viewportSize) || viewportSize.value || 320;
+      const currentViewport = viewportSize.value || savedViewport;
+      const ratio = currentViewport / savedViewport;
+      editor.loadTransform({
+        scale: recipe.stencil.scale ?? 1,
+        x: (recipe.stencil.x ?? 0) * ratio,
+        y: (recipe.stencil.y ?? 0) * ratio,
+      });
     };
 
     const loadEditFrame = async () => {
@@ -263,11 +281,11 @@ export default {
       frameName.value = frame.name || '';
       isPublic.value = frame.isPublic === true;
       if (frame.builderRecipe) {
+        pendingEditRecipe.value = frame.builderRecipe;
         cutout.value = { ...DEFAULT_FRAME_CUTOUT, ...frame.builderRecipe.cutout };
         textLayers.value = Array.isArray(frame.builderRecipe.textLayers)
-          ? [...frame.builderRecipe.textLayers]
+          ? frame.builderRecipe.textLayers.map((layer) => ({ ...layer }))
           : [];
-        editor.loadTransform(frame.builderRecipe.stencil || { scale: 1, x: 0, y: 0 });
         const sourcePath = frame.builderRecipe.sourceImagePath;
         if (sourcePath) {
           try {
@@ -275,12 +293,27 @@ export default {
             const storageInstance = firebaseService.getFrameStorage();
             sourcePreviewUrl.value = await getDownloadURL(storageRefFn(storageInstance, sourcePath));
           } catch {
+            pendingEditRecipe.value = null;
             sourcePreviewUrl.value = frame.imageUrl || '';
+            $q.notify({
+              type: 'warning',
+              message: 'Original source photo unavailable',
+              caption: 'Showing saved frame preview only; zoom may not match.',
+              position: 'top',
+            });
           }
         } else {
+          pendingEditRecipe.value = null;
           sourcePreviewUrl.value = frame.imageUrl || '';
+          $q.notify({
+            type: 'warning',
+            message: 'Original source photo was not saved with this frame',
+            caption: 'Re-upload the source photo to adjust the border.',
+            position: 'top',
+          });
         }
       } else {
+        pendingEditRecipe.value = null;
         sourcePreviewUrl.value = frame.imageUrl || '';
       }
       setTimeout(updateViewportSize, 50);
@@ -308,8 +341,13 @@ export default {
     };
 
     const onSourceImageLoad = (event) => {
+      if (pendingEditRecipe.value) {
+        editor.onImageLoad(event, { preserveTransform: true });
+        applyRecipeTransform(pendingEditRecipe.value);
+        pendingEditRecipe.value = null;
+        return;
+      }
       editor.onImageLoad(event);
-      editor.resetTransform();
     };
 
     const onTouchStart = (event) => {
@@ -528,6 +566,7 @@ export default {
           stencil: { ...editor.transform.value },
           cutout: { ...cutout.value },
           textLayers: textLayers.value.map((layer) => ({ ...layer })),
+          viewportSize: viewportSize.value,
           sourceImagePath: null,
         };
 
