@@ -89,3 +89,10 @@ service-account*.json
 prod-service-account.json
 test-service-account.json
 firestore-admin-service-account.json
+
+# Local conversation export state (not committed)
+scripts/.conversation-export-state.json
+scripts/logs/
+
+# Dated conversation exports live on branch `conversation-logs` only
+docs/conversation-logs/*/
