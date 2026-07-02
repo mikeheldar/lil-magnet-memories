@@ -58,7 +58,7 @@
                   </div>
                   <div
                     v-for="(layer, index) in layers"
-                    :key="layer.id"
+                    :key="`${layer.id}-${layer.type === 'text' ? layer.font : ''}`"
                     class="frame-content-layer"
                     :class="{
                       'frame-content-layer--selected': selectedLayerId === layer.id,
@@ -1007,6 +1007,7 @@ export default {
       startLayerDragTouch,
       selectLayer,
       updateLayerProp,
+      updateLayerPropWithHistory,
       addTextLayer,
       removeLayer,
       onLayerReorderStart,
