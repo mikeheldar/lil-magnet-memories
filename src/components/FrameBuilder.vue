@@ -97,6 +97,10 @@
                       @touchstart.stop="(e) => startCutoutResizeTouch(e, handle)"
                     />
                   </div>
+                  <template v-if="cutoutCentered">
+                    <div class="frame-center-guide" :style="centerGuideLeftStyle" />
+                    <div class="frame-center-guide" :style="centerGuideRightStyle" />
+                  </template>
                 </div>
               </div>
               <div class="text-caption text-grey-7 text-center q-mt-xs">
@@ -105,6 +109,7 @@
               <div class="row q-gutter-sm q-mt-sm justify-center">
                 <q-btn dense outline icon="restart_alt" label="Reset zoom" @click="resetZoom" />
                 <q-btn dense outline icon="crop_square" label="Fill square" @click="fillSquare" />
+                <q-btn dense outline icon="align_horizontal_center" label="Center" @click="centerCutout" />
               </div>
             </template>
           </div>
@@ -389,6 +394,21 @@ export default {
       top: `${cutout.value.y * 100}%`,
       width: `${cutout.value.width * 100}%`,
       height: `${cutout.value.height * 100}%`,
+    }));
+
+    const CUTOUT_CENTER_EPSILON = 0.005;
+    const cutoutCentered = computed(
+      () => Math.abs(cutout.value.x + cutout.value.width / 2 - 0.5) < CUTOUT_CENTER_EPSILON,
+    );
+    const centerGuideLeftStyle = computed(() => ({
+      top: `${(cutout.value.y + cutout.value.height / 2) * 100}%`,
+      left: '0',
+      width: `${cutout.value.x * 100}%`,
+    }));
+    const centerGuideRightStyle = computed(() => ({
+      top: `${(cutout.value.y + cutout.value.height / 2) * 100}%`,
+      left: `${(cutout.value.x + cutout.value.width) * 100}%`,
+      width: `${(1 - cutout.value.x - cutout.value.width) * 100}%`,
     }));
 
     const getSnapshot = () => ({
@@ -687,6 +707,11 @@ export default {
       editor.fillSquare();
     };
 
+    const centerCutout = () => {
+      commitHistory();
+      cutout.value = clampCutout({ ...cutout.value, x: (1 - cutout.value.width) / 2 });
+    };
+
     const clampCutout = (next) => {
       const width = Math.max(0.1, Math.min(0.95, next.width));
       const height = Math.max(0.1, Math.min(0.95, next.height));
@@ -758,11 +783,15 @@ export default {
       const start = cutoutDragState.startCutout;
 
       if (cutoutDragState.mode === 'move') {
-        cutout.value = clampCutout({
+        const next = clampCutout({
           ...start,
           x: start.x + dx,
           y: start.y + dy,
         });
+        if (Math.abs(next.x + next.width / 2 - 0.5) < 0.015) {
+          next.x = (1 - next.width) / 2;
+        }
+        cutout.value = next;
         return;
       }
 
@@ -1051,6 +1080,10 @@ export default {
       onLayerReorderStart,
       resetZoom,
       fillSquare,
+      centerCutout,
+      cutoutCentered,
+      centerGuideLeftStyle,
+      centerGuideRightStyle,
       commitHistory,
       undo,
       redo,
@@ -1139,6 +1172,14 @@ export default {
   height: auto;
   pointer-events: none;
   user-select: none;
+}
+
+.frame-center-guide {
+  position: absolute;
+  height: 0;
+  border-top: 2px dashed #21ba45;
+  pointer-events: none;
+  z-index: 90;
 }
 
 .frame-cutout-tint {
