@@ -325,6 +325,7 @@ import {
   layerZIndex,
   layersFromLegacyRecipe,
   layersToLegacyRecipe,
+  preloadFontOptions,
   serializeLayersForRecipe,
 } from '../utils/frameBuilderLayers.js';
 import { firebaseService } from '../services/firebaseService.js';
@@ -991,6 +992,7 @@ export default {
     onMounted(() => {
       window.addEventListener('resize', updateViewportSize);
       window.addEventListener('keydown', onKeyDown);
+      preloadFontOptions();
     });
     onBeforeUnmount(() => {
       window.removeEventListener('resize', updateViewportSize);

@@ -1,12 +1,28 @@
 export const FONT_OPTIONS = [
-  { label: 'Sans Serif', value: 'sans-serif' },
-  { label: 'Serif', value: 'Georgia, serif' },
-  { label: 'Script', value: '"Brush Script MT", cursive' },
-  { label: 'Bold Display', value: 'Impact, sans-serif' },
-  { label: 'Monospace', value: 'monospace' },
-  { label: 'Comic', value: '"Comic Sans MS", cursive' },
-  { label: 'Elegant', value: '"Palatino Linotype", Palatino, serif' },
+  { label: 'Poppins', value: "'Poppins', sans-serif" },
+  { label: 'Montserrat', value: "'Montserrat', sans-serif" },
+  { label: 'Bebas Neue', value: "'Bebas Neue', sans-serif" },
+  { label: 'Anton', value: "'Anton', sans-serif" },
+  { label: 'Playfair Display', value: "'Playfair Display', serif" },
+  { label: 'Cormorant', value: "'Cormorant Garamond', serif" },
+  { label: 'Fredoka', value: "'Fredoka', sans-serif" },
+  { label: 'Baloo', value: "'Baloo 2', cursive" },
+  { label: 'Caveat', value: "'Caveat', cursive" },
+  { label: 'Dancing Script', value: "'Dancing Script', cursive" },
+  { label: 'Pacifico', value: "'Pacifico', cursive" },
+  { label: 'Permanent Marker', value: "'Permanent Marker', cursive" },
+  { label: 'Satisfy', value: "'Satisfy', cursive" },
+  { label: 'Typewriter', value: "'Special Elite', monospace" },
 ];
+
+// Google Fonts load lazily (display=swap): a family only downloads once text uses
+// it, so the font dropdown would show fallback faces on first open. Preload them.
+export function preloadFontOptions() {
+  if (typeof document === 'undefined' || !document.fonts || !document.fonts.load) return;
+  for (const opt of FONT_OPTIONS) {
+    document.fonts.load(`16px ${opt.value}`).catch(() => null);
+  }
+}
 
 export function createLayerId(prefix = 'layer') {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -18,7 +34,7 @@ export function createTextLayer(partial = {}) {
     type: 'text',
     text: partial.text || 'Text',
     color: partial.color || '#ffffff',
-    font: partial.font || 'sans-serif',
+    font: partial.font || "'Poppins', sans-serif",
     x: partial.x ?? 0.5,
     y: partial.y ?? 0.12,
     scale: partial.scale ?? 1,

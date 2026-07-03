@@ -178,7 +178,29 @@ function drawTextLayer(ctx, layer, outputSize) {
   ctx.restore();
 }
 
+/**
+ * Ensure any web fonts used by text layers are loaded before drawing to canvas.
+ * Canvas silently falls back to a default font if the requested font isn't ready,
+ * which would make baked magnets ignore the chosen font. Best-effort + guarded.
+ */
+async function ensureTextFontsLoaded(layers, outputSize) {
+  if (typeof document === 'undefined' || !document.fonts || !document.fonts.load) return;
+  const fonts = new Set();
+  for (const layer of layers || []) {
+    if (layer?.type === 'text' && layer.font) {
+      const fontSize = Math.max(12, (layer.scale ?? 1) * outputSize * 0.06);
+      fonts.add(`bold ${Math.round(fontSize)}px ${layer.font}`);
+    }
+  }
+  try {
+    await Promise.all([...fonts].map((f) => document.fonts.load(f)));
+  } catch (error) {
+    console.warn('Failed to preload frame fonts:', error);
+  }
+}
+
 async function drawUnifiedLayers(ctx, layers, outputSize) {
+  await ensureTextFontsLoaded(layers, outputSize);
   const paintOrder = [...(layers || [])].reverse();
   for (const layer of paintOrder) {
     try {
