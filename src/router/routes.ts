@@ -149,9 +149,14 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
+        path: 'frame-library',
+        component: () => import('pages/FrameLibraryPage.vue'),
+        meta: { requiresAuth: true, requiresOperator: true },
+      },
+      {
         path: 'market-events',
         component: () => import('pages/MarketEventsPage.vue'),
-        meta: { requiresAuth: true, requiresAdmin: true },
+        meta: { requiresAuth: true, requiresOperator: true },
       },
       {
         path: 'magnet-studio-select',

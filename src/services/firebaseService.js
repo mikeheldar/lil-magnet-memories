@@ -2409,6 +2409,66 @@ class FirebaseService {
     }
   }
 
+  async uploadMarketEventFrame(eventId, file, displayName = '') {
+    if (!eventId) throw new Error('Event ID is required');
+    if (!file) throw new Error('Frame file is required');
+
+    const safeName = String(file.name || 'frame.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `market-event-frames/${eventId}/${Date.now()}_${safeName}`;
+    const storageRef = ref(storage, storagePath);
+
+    await uploadBytes(storageRef, file, {
+      contentType: file.type || 'image/png',
+    });
+    const url = await getDownloadURL(storageRef);
+
+    const frameRecord = {
+      id: `${Date.now()}_${safeName}`,
+      name: String(displayName || safeName.replace(/\.[^.]+$/, '')).trim(),
+      fileName: safeName,
+      storagePath,
+      url,
+      createdAt: new Date().toISOString(),
+    };
+
+    const eventRef = doc(db, 'marketEvents', eventId);
+    const eventSnap = await getDoc(eventRef);
+    const existingFrames = Array.isArray(eventSnap.data()?.frames) ? eventSnap.data().frames : [];
+    await updateDoc(eventRef, {
+      frames: [...existingFrames, frameRecord],
+      updatedAt: serverTimestamp(),
+    });
+
+    return frameRecord;
+  }
+
+  async deleteMarketEventFrame(eventId, frameId) {
+    if (!eventId || !frameId) throw new Error('Event ID and frame ID are required');
+
+    const eventRef = doc(db, 'marketEvents', eventId);
+    const eventSnap = await getDoc(eventRef);
+    if (!eventSnap.exists()) throw new Error('Market event not found');
+
+    const existingFrames = Array.isArray(eventSnap.data()?.frames) ? eventSnap.data().frames : [];
+    const target = existingFrames.find((f) => f.id === frameId);
+    const nextFrames = existingFrames.filter((f) => f.id !== frameId);
+
+    if (target?.storagePath) {
+      try {
+        await deleteObject(ref(storage, target.storagePath));
+      } catch (error) {
+        console.warn('Failed to delete frame from storage:', error);
+      }
+    }
+
+    await updateDoc(eventRef, {
+      frames: nextFrames,
+      updatedAt: serverTimestamp(),
+    });
+
+    return { deletedCount: existingFrames.length - nextFrames.length };
+  }
+
   // Delete a market event
   async deleteMarketEvent(eventId) {
     try {
@@ -2782,6 +2842,332 @@ class FirebaseService {
     }
   }
 
+  async deleteBlogPost(postId) {
+    try {
+      if (!postId) throw new Error('Blog post id is required');
+      await deleteDoc(doc(db, FirebaseService.BLOG_POSTS_COLLECTION, postId));
+    } catch (error) {
+      console.error('Error deleting blog post:', error);
+      throw error;
+    }
+  }
+
+  isInstagramSyncedBlogPost(post) {
+    if (!post) return false;
+    if (String(post.sourceType || '').toLowerCase() === 'instagram') return true;
+    return !!String(post.instagramSync?.instagramPostId || '').trim();
+  }
+
+  async clearInstagramSyncedBlogDrafts() {
+    try {
+      const posts = await this.getBlogPostsForAdmin(400);
+      const toDelete = posts.filter(
+        (post) => post.status !== 'published' && this.isInstagramSyncedBlogPost(post)
+      );
+      const skippedPublished = posts.filter(
+        (post) => post.status === 'published' && this.isInstagramSyncedBlogPost(post)
+      ).length;
+
+      for (const post of toDelete) {
+        await deleteDoc(doc(db, FirebaseService.BLOG_POSTS_COLLECTION, post.id));
+      }
+
+      return {
+        deletedCount: toDelete.length,
+        skippedPublishedCount: skippedPublished,
+      };
+    } catch (error) {
+      console.error('Error clearing Instagram synced blog drafts:', error);
+      throw error;
+    }
+  }
+
+  async clearInstagramSyncedBlogDrafts() {
+    try {
+      const posts = await this.getBlogPostsForAdmin(400);
+      const toDelete = posts.filter(
+        (post) => post.status !== 'published' && this.isInstagramSyncedBlogPost(post)
+      );
+      const skippedPublished = posts.filter(
+        (post) => post.status === 'published' && this.isInstagramSyncedBlogPost(post)
+      ).length;
+
+      for (const post of toDelete) {
+        await deleteDoc(doc(db, FirebaseService.BLOG_POSTS_COLLECTION, post.id));
+      }
+
+      return {
+        deletedCount: toDelete.length,
+        skippedPublishedCount: skippedPublished,
+      };
+    } catch (error) {
+      console.error('Error clearing Instagram synced blog drafts:', error);
+      throw error;
+    }
+  }
+
+  hashInstagramSyncValue(value) {
+    const input = String(value || '');
+    let hash = 0;
+    for (let i = 0; i < input.length; i += 1) {
+      hash = (hash << 5) - hash + input.charCodeAt(i);
+      hash |= 0;
+    }
+    return `ig-${Math.abs(hash)}`;
+  }
+
+  buildInstagramDraftFromScrape(scrapedPost) {
+    const caption = String(scrapedPost?.caption || scrapedPost?.altText || '').trim();
+    const firstLine = caption.split('\n').map((line) => line.trim()).find(Boolean) || '';
+    const shortCode = String(scrapedPost?.shortCode || '').trim();
+    const title = firstLine
+      ? firstLine.slice(0, 120)
+      : `Instagram Update - ${shortCode || 'post'}`;
+    const excerpt = (caption || title).slice(0, 220);
+    const sourceUrl = scrapedPost?.url || (shortCode ? `https://www.instagram.com/p/${shortCode}/` : '');
+    const contentParts = [caption || title, sourceUrl ? `View this post on Instagram: ${sourceUrl}` : ''];
+    const content = contentParts.filter(Boolean).join('\n\n');
+    const hashtagMatches = Array.from(caption.matchAll(/#([a-z0-9_]+)/gi)).map((m) => m[1].toLowerCase());
+    const tags = Array.from(new Set(['instagram', 'custom magnets', ...hashtagMatches])).slice(0, 20);
+    const mediaUrls = Array.isArray(scrapedPost?.mediaUrls)
+      ? scrapedPost.mediaUrls.filter(Boolean)
+      : [];
+    const hashInput = JSON.stringify({
+      caption,
+      media_urls: mediaUrls,
+      permalink: sourceUrl,
+      shortCode,
+    });
+
+    return {
+      title,
+      slug: this.slugify(`instagram-${shortCode}`),
+      excerpt,
+      content,
+      tags,
+      featuredImage: scrapedPost?.featuredImage || mediaUrls[0] || null,
+      mediaUrls,
+      sourceType: 'instagram',
+      sourceUrl,
+      seoDescription: excerpt,
+      seoKeywords: 'instagram, custom magnets, gift ideas, photo magnets',
+      instagramCaption: caption,
+      instagramSync: {
+        instagramPostId: shortCode,
+        syncMethod: 'scrape',
+        mediaUrl: mediaUrls[0] || null,
+        mediaUrls,
+        permalink: sourceUrl,
+        lastSyncHash: this.hashInstagramSyncValue(hashInput),
+        lastCaption: caption,
+        timestamp: null,
+      },
+    };
+  }
+
+  scrapedDraftToPreview(draft) {
+    return {
+      title: draft.title,
+      slug: draft.slug,
+      excerpt: draft.excerpt,
+      content: draft.content,
+      featuredImage: draft.featuredImage,
+      mediaUrls: draft.mediaUrls,
+      tags: draft.tags,
+      sourceType: draft.sourceType,
+      sourceUrl: draft.sourceUrl,
+      seoDescription: draft.seoDescription,
+      seoKeywords: draft.seoKeywords,
+      instagramCaption: draft.instagramCaption || draft.instagramSync?.lastCaption || '',
+      instagramSync: draft.instagramSync,
+    };
+  }
+
+  async findBlogPostByInstagramId(instagramPostId) {
+    const shortCode = String(instagramPostId || '').trim();
+    if (!shortCode) return null;
+    const coll = collection(db, FirebaseService.BLOG_POSTS_COLLECTION);
+    const q = query(coll, where('instagramSync.instagramPostId', '==', shortCode), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    return this.normalizeBlogPost(snap.docs[0]);
+  }
+
+  getInstagramScrapeApiBaseUrl() {
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return window.location.origin;
+    }
+    return '';
+  }
+
+  async readFetchErrorDetail(response) {
+    const text = await response.text();
+    if (!text) return '';
+    try {
+      const errorPayload = JSON.parse(text);
+      return errorPayload?.details || errorPayload?.error || text;
+    } catch {
+      return text;
+    }
+  }
+
+  async fetchInstagramScrapedProfile(limitCount = 20, postUrls = []) {
+    const response = await fetch(`${this.getInstagramScrapeApiBaseUrl()}/api/instagram-scrape-profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        limit: Math.max(1, Math.min(50, Number(limitCount) || 20)),
+        postUrls: Array.isArray(postUrls) ? postUrls.filter(Boolean) : [],
+      }),
+    });
+
+    if (!response.ok) {
+      const detail = await this.readFetchErrorDetail(response);
+      throw new Error(
+        `Instagram profile scrape failed (${response.status})${detail ? `: ${detail}` : ''}`
+      );
+    }
+
+    const payload = await response.json();
+    return Array.isArray(payload?.posts) ? payload.posts : [];
+  }
+
+  collectInstagramSeedUrlsFromBlogPosts(posts = []) {
+    const urls = [];
+    for (const post of posts) {
+      const shortCode = String(post?.instagramSync?.instagramPostId || '').trim();
+      const sourceUrl = String(post?.sourceUrl || '').trim();
+      const candidates = [
+        sourceUrl,
+        shortCode ? `https://www.instagram.com/p/${shortCode}/` : '',
+      ];
+      for (const candidate of candidates) {
+        if (!candidate.includes('instagram.com')) continue;
+        if (!urls.includes(candidate)) {
+          urls.push(candidate);
+        }
+      }
+    }
+    return urls;
+  }
+
+  async scrapeInstagramPostsIndividually(postUrls, limitCount = 20) {
+    const safeLimit = Math.max(1, Math.min(50, Number(limitCount) || 20));
+    const scrapedPosts = [];
+    for (const url of postUrls.slice(0, safeLimit)) {
+      try {
+        scrapedPosts.push(await this.fetchInstagramScrapedPost(url));
+      } catch (error) {
+        console.warn('Individual Instagram post scrape failed:', url, error?.message);
+      }
+    }
+    return scrapedPosts;
+  }
+
+  async fetchInstagramScrapedPost(url) {
+    const response = await fetch(`${this.getInstagramScrapeApiBaseUrl()}/api/instagram-scrape-post`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) {
+      const detail = await this.readFetchErrorDetail(response);
+      throw new Error(
+        `Instagram post scrape failed (${response.status})${detail ? `: ${detail}` : ''}`
+      );
+    }
+
+    const payload = await response.json();
+    if (!payload?.post) {
+      throw new Error('Instagram post scrape returned no data.');
+    }
+    return payload.post;
+  }
+
+  async upsertInstagramScrapedDrafts(scrapedPosts, authorEmail = null) {
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+    const processed = [];
+
+    for (const scrapedPost of scrapedPosts || []) {
+      const shortCode = String(scrapedPost?.shortCode || '').trim();
+      if (!shortCode) {
+        skipped += 1;
+        continue;
+      }
+
+      const draft = this.buildInstagramDraftFromScrape(scrapedPost);
+      const existing = await this.findBlogPostByInstagramId(shortCode);
+
+      if (!existing) {
+        const postId = await this.createBlogPost(
+          {
+            ...draft,
+            status: 'draft',
+            instagram: {
+              publishRequested: false,
+              publishStatus: 'already_on_instagram',
+              publishedUrl: draft.sourceUrl,
+              caption: draft.instagramCaption || '',
+            },
+          },
+          authorEmail
+        );
+        created += 1;
+        processed.push({ postId, action: 'created', instagramPostId: shortCode });
+        continue;
+      }
+
+      if (String(existing.status || '').toLowerCase() === 'published') {
+        skipped += 1;
+        continue;
+      }
+
+      const existingHash = String(existing?.instagramSync?.lastSyncHash || '');
+      const nextHash = String(draft.instagramSync?.lastSyncHash || '');
+      if (existingHash && nextHash && existingHash === nextHash) {
+        skipped += 1;
+        continue;
+      }
+
+      await this.updateBlogPost(existing.id, {
+        title: draft.title,
+        excerpt: draft.excerpt,
+        content: draft.content,
+        featuredImage: draft.featuredImage,
+        mediaUrls: draft.mediaUrls,
+        tags: draft.tags,
+        sourceType: draft.sourceType,
+        sourceUrl: draft.sourceUrl,
+        seoDescription: draft.seoDescription,
+        seoKeywords: draft.seoKeywords,
+        instagramSync: draft.instagramSync,
+        instagram: {
+          publishRequested: existing?.instagram?.publishRequested || false,
+          publishStatus: existing?.instagram?.publishStatus || 'already_on_instagram',
+          publishedUrl: draft.sourceUrl,
+          caption: draft.instagramCaption || '',
+        },
+      });
+
+      updated += 1;
+      processed.push({ postId: existing.id, action: 'updated', instagramPostId: shortCode });
+    }
+
+    return {
+      success: true,
+      method: 'scrape',
+      importedCount: created + updated,
+      createdCount: created,
+      updatedCount: updated,
+      skippedCount: skipped,
+      fetchedCount: Array.isArray(scrapedPosts) ? scrapedPosts.length : 0,
+      processed,
+    };
+  }
+
   async requestInstagramPublishForBlogPost(postId, caption = '') {
     try {
       const refDoc = doc(db, FirebaseService.BLOG_POSTS_COLLECTION, postId);
@@ -2861,34 +3247,61 @@ class FirebaseService {
         throw new Error('You must be signed in as an operator or admin to sync Instagram posts.');
       }
 
-      const idToken = await currentUser.getIdToken();
-      const response = await fetch(`${config.apiBaseUrl}/blog/sync-instagram`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          limit: Math.max(1, Math.min(50, Number(limitCount) || 20)),
-        }),
-      });
+      const existingPosts = await this.getBlogPostsForAdmin(400);
+      const seedUrls = this.collectInstagramSeedUrlsFromBlogPosts(existingPosts);
 
-      if (!response.ok) {
-        let detail = '';
-        try {
-          const errorPayload = await response.json();
-          detail = errorPayload?.details || errorPayload?.error || '';
-        } catch {
-          detail = await response.text();
+      let scrapedPosts = [];
+      try {
+        scrapedPosts = await this.fetchInstagramScrapedProfile(limitCount, seedUrls);
+      } catch (error) {
+        const message = String(error?.message || '');
+        if (seedUrls.length && (message.includes('429') || message.toLowerCase().includes('rate limit'))) {
+          scrapedPosts = await this.scrapeInstagramPostsIndividually(seedUrls, limitCount);
         }
-        throw new Error(
-          `Instagram sync failed (${response.status})${detail ? `: ${detail}` : ''}`
-        );
+        if (!scrapedPosts.length) {
+          throw error;
+        }
       }
 
-      return await response.json();
+      return await this.upsertInstagramScrapedDrafts(scrapedPosts, currentUser.email || null);
     } catch (error) {
       console.error('Error syncing Instagram posts to blog drafts:', error);
+      throw error;
+    }
+  }
+
+  async importInstagramPostFromUrl(url, { saveDraft = true } = {}) {
+    try {
+      const currentUser = auth?.currentUser;
+      if (!currentUser || currentUser.isAnonymous) {
+        throw new Error('You must be signed in as an operator or admin to import Instagram posts.');
+      }
+
+      const scrapedPost = await this.fetchInstagramScrapedPost(url);
+      const draft = this.buildInstagramDraftFromScrape(scrapedPost);
+      const preview = this.scrapedDraftToPreview(draft);
+
+      if (!saveDraft) {
+        return {
+          success: true,
+          method: 'scrape',
+          preview,
+        };
+      }
+
+      const result = await this.upsertInstagramScrapedDrafts([scrapedPost], currentUser.email || null);
+      return {
+        success: true,
+        method: 'scrape',
+        preview,
+        createdCount: result.createdCount,
+        updatedCount: result.updatedCount,
+        skippedCount: result.skippedCount,
+        postId: result.processed?.[0]?.postId || null,
+        action: result.processed?.[0]?.action || (result.skippedCount ? 'skipped' : null),
+      };
+    } catch (error) {
+      console.error('Error importing Instagram post from URL:', error);
       throw error;
     }
   }
@@ -2968,6 +3381,188 @@ class FirebaseService {
       console.error('Error deleting (deactivating) promo code:', error);
       throw error;
     }
+  }
+
+  static FRAMES_COLLECTION = 'frames';
+  static FRAME_CATALOG_DOC = 'frameCatalog/config';
+
+  getFrameStorage() {
+    return getStorage(getApp());
+  }
+
+  async getFrames() {
+    try {
+      const framesRef = collection(db, FirebaseService.FRAMES_COLLECTION);
+      const q = query(framesRef, orderBy('sortOrder', 'asc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((frameDoc) => ({
+        id: frameDoc.id,
+        ...frameDoc.data(),
+      }));
+    } catch (error) {
+      console.error('Error fetching frames:', error);
+      throw error;
+    }
+  }
+
+  async getFrame(frameId) {
+    if (!frameId) return null;
+    const frameDoc = await getDoc(doc(db, FirebaseService.FRAMES_COLLECTION, frameId));
+    if (!frameDoc.exists()) return null;
+    return { id: frameDoc.id, ...frameDoc.data() };
+  }
+
+  async uploadFrame(file, displayName = '', options = {}) {
+    if (!file) throw new Error('Frame file is required');
+
+    const safeName = String(file.name || 'frame.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const frameId = `${Date.now()}_${safeName.replace(/\.[^.]+$/, '')}`;
+    const storagePath = `frames/${frameId}/frame.png`;
+    const storageInstance = this.getFrameStorage();
+    const storageRef = ref(storageInstance, storagePath);
+
+    await uploadBytes(storageRef, file, {
+      contentType: file.type || 'image/png',
+    });
+    const imageUrl = await getDownloadURL(storageRef);
+
+    const existingFrames = await this.getFrames();
+    const maxSort = existingFrames.reduce(
+      (max, frame) => Math.max(max, Number(frame.sortOrder) || 0),
+      -1
+    );
+
+    const frameRecord = {
+      id: frameId,
+      name: String(displayName || safeName.replace(/\.[^.]+$/, '')).trim(),
+      imageUrl,
+      storagePath,
+      thumbnailUrl: options.thumbnailUrl || imageUrl,
+      isPublic: options.isPublic === true,
+      sortOrder: options.sortOrder ?? maxSort + 1,
+      tags: Array.isArray(options.tags) ? options.tags : [],
+      sourceType: options.sourceType || 'upload',
+      builderRecipe: options.builderRecipe || null,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      createdBy: auth.currentUser?.email || null,
+    };
+
+    await setDoc(doc(db, FirebaseService.FRAMES_COLLECTION, frameId), frameRecord);
+    return { ...frameRecord, createdAt: new Date().toISOString() };
+  }
+
+  async updateFrame(frameId, updates) {
+    if (!frameId) throw new Error('Frame ID is required');
+    const frameRef = doc(db, FirebaseService.FRAMES_COLLECTION, frameId);
+    await updateDoc(frameRef, {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async deleteFrame(frameId) {
+    if (!frameId) throw new Error('Frame ID is required');
+    const frame = await this.getFrame(frameId);
+    if (frame?.storagePath) {
+      try {
+        await deleteObject(ref(this.getFrameStorage(), frame.storagePath));
+      } catch (error) {
+        console.warn('Failed to delete frame from storage:', error);
+      }
+    }
+    if (frame?.builderRecipe?.sourceImagePath) {
+      try {
+        await deleteObject(ref(this.getFrameStorage(), frame.builderRecipe.sourceImagePath));
+      } catch (error) {
+        console.warn('Failed to delete frame source image:', error);
+      }
+    }
+    await deleteDoc(doc(db, FirebaseService.FRAMES_COLLECTION, frameId));
+  }
+
+  async updateFrameSortOrders(frameUpdates) {
+    const batch = [];
+    for (const update of frameUpdates) {
+      batch.push(
+        updateDoc(doc(db, FirebaseService.FRAMES_COLLECTION, update.id), {
+          sortOrder: update.sortOrder,
+          updatedAt: serverTimestamp(),
+        })
+      );
+    }
+    await Promise.all(batch);
+  }
+
+  async uploadFrameSourceImage(frameId, file) {
+    if (!frameId || !file) throw new Error('Frame ID and file are required');
+    const safeName = String(file.name || 'source.jpg').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `frames/${frameId}/source.jpg`;
+    const storageRef = ref(this.getFrameStorage(), storagePath);
+    await uploadBytes(storageRef, file, {
+      contentType: file.type || 'image/jpeg',
+    });
+    return { storagePath, url: await getDownloadURL(storageRef) };
+  }
+
+  async replaceFrameImage(frameId, file) {
+    if (!frameId || !file) throw new Error('Frame ID and file are required');
+    const frame = await this.getFrame(frameId);
+    const storagePath = frame?.storagePath || `frames/${frameId}/frame.png`;
+    const storageRef = ref(this.getFrameStorage(), storagePath);
+    await uploadBytes(storageRef, file, {
+      contentType: file.type || 'image/png',
+    });
+    const imageUrl = await getDownloadURL(storageRef);
+    await this.updateFrame(frameId, { imageUrl, storagePath, thumbnailUrl: imageUrl });
+    return imageUrl;
+  }
+
+  async getFrameCatalogConfig() {
+    const configRef = doc(db, ...FirebaseService.FRAME_CATALOG_DOC.split('/'));
+    const snap = await getDoc(configRef);
+    if (!snap.exists()) {
+      return { featuredSchedules: [], defaultPublicFrameIds: [] };
+    }
+    const data = snap.data();
+    return {
+      featuredSchedules: Array.isArray(data.featuredSchedules) ? data.featuredSchedules : [],
+      defaultPublicFrameIds: Array.isArray(data.defaultPublicFrameIds)
+        ? data.defaultPublicFrameIds
+        : [],
+      updatedAt: data.updatedAt || null,
+    };
+  }
+
+  async updateFrameCatalogConfig(updates) {
+    const configRef = doc(db, ...FirebaseService.FRAME_CATALOG_DOC.split('/'));
+    await setDoc(
+      configRef,
+      {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  }
+
+  async uploadFrameFileAtPath(storagePath, file) {
+    const storageRef = ref(this.getFrameStorage(), storagePath);
+    await uploadBytes(storageRef, file, {
+      contentType: file.type || 'image/png',
+    });
+    const url = await getDownloadURL(storageRef);
+    return { storagePath, url };
+  }
+
+  async createFrameRecord(frameRecord) {
+    if (!frameRecord?.id) throw new Error('Frame record requires an id');
+    await setDoc(doc(db, FirebaseService.FRAMES_COLLECTION, frameRecord.id), {
+      ...frameRecord,
+      createdAt: frameRecord.createdAt || serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return frameRecord;
   }
 
   async validatePromoCode(code) {

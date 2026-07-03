@@ -622,6 +622,45 @@
               label="Testing Only (visible to admins only)"
               color="orange"
             />
+
+            <q-separator class="q-my-md" />
+
+            <div class="text-subtitle2 text-weight-medium q-mb-sm">
+              Frames for this event
+            </div>
+            <div class="text-caption text-grey-7 q-mb-sm">
+              Select which frames customers can use during photo upload at this event.
+              <router-link to="/frame-library" class="text-primary">Manage frames in Frame Library</router-link>
+            </div>
+            <div v-if="libraryFramesLoading" class="q-py-md text-center">
+              <q-spinner color="primary" size="24px" />
+            </div>
+            <div v-else-if="!libraryFrames.length" class="text-body2 text-grey-7 q-mb-sm">
+              No frames in the library yet. Add frames in the Frame Library first.
+            </div>
+            <div v-else class="event-frame-picker q-mb-sm">
+              <button
+                v-for="frame in libraryFrames"
+                :key="frame.id"
+                type="button"
+                class="event-frame-option"
+                :class="{ 'event-frame-option--selected': isFrameSelected(frame.id) }"
+                @click="toggleFrameSelection(frame.id)"
+              >
+                <img :src="frame.imageUrl" :alt="frame.name" class="event-frame-option-image" />
+                <span class="event-frame-option-label">{{ frame.name }}</span>
+                <q-icon
+                  v-if="isFrameSelected(frame.id)"
+                  name="check_circle"
+                  color="primary"
+                  size="16px"
+                  class="event-frame-option-check"
+                />
+              </button>
+            </div>
+            <div v-if="editingEvent.selectedFrameIds?.length" class="text-caption text-grey-7">
+              {{ editingEvent.selectedFrameIds.length }} frame(s) selected
+            </div>
           </q-form>
         </q-card-section>
 
@@ -673,6 +712,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useQuasar, useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService';
 import { marketEventService } from '../services/marketEventService.js';
+import { getLibraryFrames } from '../services/frameCatalogService.js';
 import { authService } from '../services/authService';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
@@ -730,6 +770,8 @@ export default {
     const showDeleteDialog = ref(false);
     const eventToDelete = ref(null);
     const editingEvent = ref(null);
+    const libraryFrames = ref([]);
+    const libraryFramesLoading = ref(false);
 
     // Helper function to get 15 min increment before current time
     const getPrevious15MinIncrement = () => {
@@ -1535,7 +1577,7 @@ export default {
     };
 
     // Open edit event dialog
-    const openEditEventDialog = (event) => {
+    const openEditEventDialog = async (event) => {
       resetEditCoordinateState();
       editingEvent.value = {
         id: event.id,
@@ -1545,8 +1587,22 @@ export default {
         endDateTime: formatDateTimeLocal(new Date(event.endDateTime)),
         eventLink: event.eventLink || '',
         isTesting: event.isTesting || false,
+        selectedFrameIds: Array.isArray(event.selectedFrameIds)
+          ? [...event.selectedFrameIds]
+          : Array.isArray(event.frames)
+            ? event.frames.map((frame) => frame.id).filter(Boolean)
+            : [],
+        frameSortOrder: Array.isArray(event.frameSortOrder)
+          ? [...event.frameSortOrder]
+          : [],
       };
       editOriginalLocation.value = event.location || '';
+      libraryFramesLoading.value = true;
+      try {
+        libraryFrames.value = await getLibraryFrames();
+      } finally {
+        libraryFramesLoading.value = false;
+      }
       showEditEventDialog.value = true;
     };
 
@@ -1555,6 +1611,25 @@ export default {
       showEditEventDialog.value = false;
       editingEvent.value = null;
       resetEditCoordinateState();
+    };
+
+    const isFrameSelected = (frameId) =>
+      editingEvent.value?.selectedFrameIds?.includes(frameId) ?? false;
+
+    const toggleFrameSelection = (frameId) => {
+      if (!editingEvent.value) return;
+      const current = [...(editingEvent.value.selectedFrameIds || [])];
+      const index = current.indexOf(frameId);
+      if (index >= 0) {
+        current.splice(index, 1);
+      } else {
+        current.push(frameId);
+      }
+      editingEvent.value = {
+        ...editingEvent.value,
+        selectedFrameIds: current,
+        frameSortOrder: current,
+      };
     };
 
     // Update event
@@ -1656,6 +1731,8 @@ export default {
           endDateTime: editingEvent.value.endDateTime,
           eventLink: editingEvent.value.eventLink || null,
           isTesting: editingEvent.value.isTesting || false,
+          selectedFrameIds: editingEvent.value.selectedFrameIds || [],
+          frameSortOrder: editingEvent.value.frameSortOrder || editingEvent.value.selectedFrameIds || [],
         };
         if (coordinatesPayload !== undefined) {
           eventData.coordinates = coordinatesPayload;
@@ -1885,6 +1962,8 @@ export default {
       showDeleteDialog,
       eventToDelete,
       editingEvent,
+      libraryFrames,
+      libraryFramesLoading,
       newEvent,
 
       // Methods
@@ -1901,6 +1980,8 @@ export default {
       openEditEventDialog,
       updateEvent,
       cancelEditEvent,
+      isFrameSelected,
+      toggleFrameSelection,
       checkInToEvent,
       checkOutOfEvent,
       undoCheckOut,
@@ -1998,6 +2079,59 @@ export default {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.event-frame-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.event-frame-option {
+  width: 88px;
+  padding: 6px;
+  border: 2px solid #bdbdbd;
+  border-radius: 0;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+
+  &--selected {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.35);
+  }
+}
+
+.event-frame-option-image {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.event-frame-option-label {
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: center;
+  color: #555;
+}
+
+.event-frame-option-check {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
+.event-frame-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: #fafafa;
 }
 
 // Status chips - keep pill shape and add margin to separate from buttons

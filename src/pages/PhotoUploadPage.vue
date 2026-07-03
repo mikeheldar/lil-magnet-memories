@@ -116,13 +116,15 @@
 
               <!-- File Upload -->
               <q-file
-                v-model="selectedFiles"
+                v-if="photoItems.length === 0"
+                ref="fileInputRef"
+                v-model="filePickerModel"
                 label="Choose Photos"
                 filled
                 multiple
                 accept="image/*"
                 @rejected="onRejected"
-                @update:model-value="onFileSelected"
+                @update:model-value="onInitialFileSelected"
                 class="q-mb-md"
               >
                 <template v-slot:prepend>
@@ -130,18 +132,41 @@
                 </template>
               </q-file>
 
-              <!-- Selected Files Preview -->
               <div
-                v-if="selectedFiles && selectedFiles.length > 0"
-                class="q-mb-md"
+                v-else
+                class="upload-add-more-box q-pa-md q-mb-md text-center"
               >
+                <div class="text-body2 text-grey-8 q-mb-sm">
+                  {{ photoItems.length }} photo{{ photoItems.length === 1 ? '' : 's' }} selected
+                </div>
+                <q-btn
+                  color="primary"
+                  outline
+                  icon="add_photo_alternate"
+                  label="Add More Photos"
+                  @click="triggerAddMorePhotos"
+                />
+                <q-file
+                  ref="fileInputRef"
+                  v-model="filePickerModel"
+                  filled
+                  multiple
+                  accept="image/*"
+                  class="hidden-file-input"
+                  @rejected="onRejected"
+                  @update:model-value="onAddMoreFilesSelected"
+                />
+              </div>
+
+              <!-- Selected Files Preview -->
+              <div v-if="photoItems.length > 0" class="q-mb-md">
                 <div class="text-subtitle2 q-mb-sm">
-                  Selected Photos ({{ selectedFiles.length }}):
+                  Selected Photos ({{ photoItems.length }}):
                 </div>
                 <div class="row q-col-gutter-sm">
                   <div
-                    v-for="(file, index) in selectedFiles"
-                    :key="index"
+                    v-for="(item, index) in photoItems"
+                    :key="item.id"
                     class="col-6 col-md-4 col-lg-3"
                   >
                     <q-card class="q-pa-sm photo-preview-card" style="position: relative;">
@@ -154,7 +179,7 @@
                         color="white"
                         size="sm"
                         class="photo-remove-btn"
-                        @click="removeFile(index)"
+                        @click="removePhotoItem(index)"
                         style="
                           position: absolute;
                           top: 4px;
@@ -169,34 +194,29 @@
                         <q-tooltip>Remove photo</q-tooltip>
                       </q-btn>
                       <!-- Square frame with centered photo -->
-                      <div
-                        class="square-photo-frame q-mb-sm"
-                        style="
-                          width: 100%;
-                          aspect-ratio: 1;
-                          position: relative;
-                          overflow: hidden;
-                          border: 2px solid #e0e0e0;
-                          border-radius: 4px;
-                          background: #f5f5f5;
-                        "
-                      >
+                      <div class="square-photo-frame q-mb-sm">
                         <img
-                          :src="getFilePreview(file)"
-                          style="
-                            position: absolute;
-                            top: 50%;
-                            left: 50%;
-                            transform: translate(-50%, -50%);
-                            width: 100%;
-                            height: 100%;
-                            object-fit: contain;
-                          "
-                          class="rounded-borders"
+                          :src="item.previewUrl"
+                          class="square-photo-preview rounded-borders"
+                          alt="Selected photo preview"
                         />
+                        <div
+                          v-if="item.edit?.isEdited"
+                          class="edited-badge text-caption"
+                        >
+                          Edited
+                        </div>
+                        <button
+                          type="button"
+                          class="photo-edit-pill"
+                          @click="openPhotoEditor(index)"
+                        >
+                          <q-icon name="edit" size="14px" />
+                          <span>Edit</span>
+                        </button>
                       </div>
                       <div class="text-caption text-center q-mb-xs">
-                        {{ file.name }}
+                        {{ item.file?.name || item.originalFile?.name }}
                       </div>
                       <div class="text-center">
                         <div class="text-caption q-mb-xs">Quantity:</div>
@@ -206,12 +226,12 @@
                             size="sm"
                             icon="remove"
                             @click="decreaseQuantity(index)"
-                            :disable="fileQuantities[index] <= 1"
+                            :disable="item.quantity <= 1"
                           />
                           <q-btn
                             dense
                             size="sm"
-                            :label="fileQuantities[index]"
+                            :label="item.quantity"
                             class="q-px-md"
                           />
                           <q-btn
@@ -226,6 +246,13 @@
                   </div>
                 </div>
               </div>
+
+              <PhotoMagnetEditor
+                v-model="showPhotoEditor"
+                :photo-item="editingPhotoItem"
+                :checked-in-event="checkedInEvent"
+                @saved="onPhotoEditorSaved"
+              />
             </div>
 
             <!-- Order Summary -->
@@ -834,9 +861,19 @@ import {
   useCustomerType,
   CUSTOMER_TYPES,
 } from '../composables/useCustomerType.js';
+import PhotoMagnetEditor from '../components/PhotoMagnetEditor.vue';
+import {
+  createPhotoItem,
+  getPhotoFileKey,
+  revokePhotoItemUrls,
+} from '../utils/photoItems.js';
+import { fileToDataUrl } from '../utils/squarePhotoCanvas.js';
 
 export default {
   name: 'PhotoUploadPage',
+  components: {
+    PhotoMagnetEditor,
+  },
   setup() {
     const $q = useQuasar();
     const quasar = $q; // Capture in local variable for safe access
@@ -883,8 +920,11 @@ export default {
       specialInstructions: '',
     });
 
-    const selectedFiles = ref([]);
-    const fileQuantities = ref([]);
+    const photoItems = ref([]);
+    const filePickerModel = ref(null);
+    const fileInputRef = ref(null);
+    const showPhotoEditor = ref(false);
+    const editingPhotoIndex = ref(null);
     const submitting = ref(false);
     const showOrderSummary = ref(false);
     const showEventEndedDialog = ref(false);
@@ -1046,7 +1086,18 @@ export default {
     };
 
     const totalMagnets = computed(() => {
-      return fileQuantities.value.reduce((sum, qty) => sum + qty, 0);
+      return photoItems.value.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    });
+
+    const photoQuantities = computed(() =>
+      photoItems.value.map((item) => item.quantity || 1)
+    );
+
+    const uploadFiles = computed(() => photoItems.value.map((item) => item.file));
+
+    const editingPhotoItem = computed(() => {
+      if (editingPhotoIndex.value === null) return null;
+      return photoItems.value[editingPhotoIndex.value] || null;
     });
     
     // Calculate total magnets across all cart items for order summary
@@ -1159,8 +1210,7 @@ export default {
         formData.value.lastName &&
         formData.value.email &&
         isValidEmail(formData.value.email) &&
-        selectedFiles.value &&
-        selectedFiles.value.length > 0 &&
+        photoItems.value.length > 0 &&
         totalMagnets.value > 0
       );
     });
@@ -1178,7 +1228,7 @@ export default {
         event.stopPropagation();
 
       // Check for photos first
-      const hasPhotos = selectedFiles.value && selectedFiles.value.length > 0;
+      const hasPhotos = photoItems.value.length > 0;
 
       // Check for personal information
       const hasPersonalInfo =
@@ -1262,8 +1312,112 @@ export default {
       }
     };
 
-    const getFilePreview = (file) => {
-      return URL.createObjectURL(file);
+    const appendPhotoFiles = (files) => {
+      const incoming = Array.isArray(files) ? files : files ? [files] : [];
+      if (!incoming.length) return;
+
+      const existingKeys = new Set(
+        photoItems.value.map((item) => getPhotoFileKey(item.originalFile || item.file))
+      );
+      let added = 0;
+      for (const file of incoming) {
+        const key = getPhotoFileKey(file);
+        if (existingKeys.has(key)) continue;
+        existingKeys.add(key);
+        photoItems.value.push(createPhotoItem(file));
+        added += 1;
+      }
+      filePickerModel.value = null;
+      if (added === 0 && incoming.length > 0) {
+        safeNotify({
+          type: 'info',
+          message: 'Those photos are already selected',
+        });
+      }
+    };
+
+    const onInitialFileSelected = (files) => {
+      appendPhotoFiles(files);
+    };
+
+    const onAddMoreFilesSelected = (files) => {
+      appendPhotoFiles(files);
+    };
+
+    const triggerAddMorePhotos = () => {
+      fileInputRef.value?.pickFiles();
+    };
+
+    const increaseQuantity = (index) => {
+      if (photoItems.value[index]) {
+        photoItems.value[index].quantity += 1;
+      }
+    };
+
+    const decreaseQuantity = (index) => {
+      if (photoItems.value[index] && photoItems.value[index].quantity > 1) {
+        photoItems.value[index].quantity -= 1;
+      }
+    };
+
+    const removePhotoItem = (index) => {
+      const removed = photoItems.value.splice(index, 1)[0];
+      revokePhotoItemUrls(removed);
+      if (editingPhotoIndex.value === index) {
+        showPhotoEditor.value = false;
+        editingPhotoIndex.value = null;
+      }
+    };
+
+    const openPhotoEditor = (index) => {
+      editingPhotoIndex.value = index;
+      showPhotoEditor.value = true;
+    };
+
+    const onPhotoEditorSaved = ({ file, previewUrl, edit }) => {
+      const index = editingPhotoIndex.value;
+      if (index === null || !photoItems.value[index]) return;
+      const item = photoItems.value[index];
+      if (item.previewUrl?.startsWith('blob:') && item.previewUrl !== previewUrl) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
+      item.file = file;
+      item.previewUrl = previewUrl;
+      item.edit = { ...item.edit, ...edit };
+      editingPhotoIndex.value = null;
+    };
+
+    const buildPhotosForCart = async (uploadedPhotos) => {
+      return Promise.all(
+        uploadedPhotos.map(async (uploadedPhoto, index) => {
+          const item = photoItems.value[index];
+          const file = item?.file;
+          let base64Preview = null;
+          if (file) {
+            try {
+              base64Preview = await fileToDataUrl(file);
+            } catch (error) {
+              console.warn('Failed to convert file to base64:', error);
+            }
+          }
+          return {
+            name: uploadedPhoto.name,
+            url: uploadedPhoto.url,
+            preview: base64Preview || uploadedPhoto.url,
+            fileName: uploadedPhoto.fileName,
+            size: uploadedPhoto.size,
+            type: uploadedPhoto.type,
+            quantity: item?.quantity || 1,
+            editMeta: item?.edit
+              ? {
+                  frameId: item.edit.frameId,
+                  frameSource: item.edit.frameSource,
+                  isEdited: item.edit.isEdited,
+                }
+              : null,
+          };
+        })
+      );
     };
 
     const onRejected = () => {
@@ -1275,26 +1429,18 @@ export default {
       });
     };
 
-    const onFileSelected = (files) => {
-      selectedFiles.value = files;
-      // Initialize quantities to 1 for each file
-      fileQuantities.value = files.map(() => 1);
+    const clearPhotoItems = () => {
+      photoItems.value.forEach(revokePhotoItemUrls);
+      photoItems.value = [];
     };
 
-    const increaseQuantity = (index) => {
-      fileQuantities.value[index]++;
-    };
-
-    const decreaseQuantity = (index) => {
-      if (fileQuantities.value[index] > 1) {
-        fileQuantities.value[index]--;
-      }
-    };
-
-    const removeFile = (index) => {
-      selectedFiles.value.splice(index, 1);
-      fileQuantities.value.splice(index, 1);
-    };
+    const getUploadProgressSeed = () => ({
+      overall: 0,
+      completed: 0,
+      total: uploadFiles.value.length,
+      uploaded: 0,
+      totalSize: uploadFiles.value.reduce((sum, file) => sum + (file?.size || 0), 0),
+    });
 
     const generateOrderNumber = () => {
       const now = new Date();
@@ -1445,8 +1591,7 @@ export default {
           phone: '',
           specialInstructions: '',
         };
-        selectedFiles.value = [];
-        fileQuantities.value = [];
+        clearPhotoItems();
         
         // Clear ALL cart items after successful order
         const { clearCart } = useCart();
@@ -1508,20 +1653,11 @@ export default {
         // Upload photos to Firebase Storage first to get persistent URLs
         submitting.value = true;
         showUploadProgress.value = true;
-        uploadProgress.value = {
-          overall: 0,
-          completed: 0,
-          total: selectedFiles.value.length,
-          uploaded: 0,
-          totalSize: selectedFiles.value.reduce(
-            (sum, file) => sum + (file.size || 0),
-            0
-          ),
-        };
+        uploadProgress.value = getUploadProgressSeed();
         try {
           console.log('📤 Uploading photos to Firebase Storage for cart...');
           const uploadedPhotos = await firebaseService.uploadPhotos(
-            selectedFiles.value,
+            uploadFiles.value,
             (progress) => {
               uploadProgress.value = progress;
             }
@@ -1531,42 +1667,14 @@ export default {
             uploadedPhotos.length
           );
 
-          // Prepare photos with download URLs and quantities for cart
-          // Convert files to base64 for persistence across devices
-          const photosForCart = await Promise.all(
-            uploadedPhotos.map(async (uploadedPhoto, index) => {
-              const file = selectedFiles.value[index];
-              let base64Preview = null;
-              if (file) {
-                try {
-                  base64Preview = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                  });
-                } catch (error) {
-                  console.warn('Failed to convert file to base64:', error);
-                }
-              }
-              return {
-                name: uploadedPhoto.name,
-                url: uploadedPhoto.url, // Persistent Firebase Storage URL
-                preview: base64Preview || uploadedPhoto.url, // Use base64 for cross-device compatibility
-                fileName: uploadedPhoto.fileName,
-                size: uploadedPhoto.size,
-                type: uploadedPhoto.type,
-                quantity: fileQuantities.value[index] || 1,
-              };
-            })
-          );
+          const photosForCart = await buildPhotosForCart(uploadedPhotos);
 
           // Add order to cart with persistent photo URLs and market event context
           addCustomUploadToCart({
             productName:
               selectedProduct.value?.description || 'Custom Photo Magnets',
             photos: photosForCart,
-            quantities: fileQuantities.value,
+            quantities: photoQuantities.value,
             specialInstructions: formData.value.specialInstructions,
             totalMagnets: totalMagnets.value,
             totalCost: totalCost.value,
@@ -1625,20 +1733,11 @@ export default {
         // Upload photos to Firebase Storage first to get persistent URLs
         submitting.value = true;
         showUploadProgress.value = true;
-        uploadProgress.value = {
-          overall: 0,
-          completed: 0,
-          total: selectedFiles.value.length,
-          uploaded: 0,
-          totalSize: selectedFiles.value.reduce(
-            (sum, file) => sum + (file.size || 0),
-            0
-          ),
-        };
+        uploadProgress.value = getUploadProgressSeed();
         try {
           console.log('📤 Uploading photos to Firebase Storage for cart...');
           const uploadedPhotos = await firebaseService.uploadPhotos(
-            selectedFiles.value,
+            uploadFiles.value,
             (progress) => {
               uploadProgress.value = progress;
             }
@@ -1648,41 +1747,14 @@ export default {
             uploadedPhotos.length
           );
 
-          // Prepare photos with download URLs and quantities for cart
-          const photosForCart = await Promise.all(
-            uploadedPhotos.map(async (uploadedPhoto, index) => {
-              const file = selectedFiles.value[index];
-              let base64Preview = null;
-              if (file) {
-                try {
-                  base64Preview = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                  });
-                } catch (error) {
-                  console.warn('Failed to convert file to base64:', error);
-                }
-              }
-              return {
-                name: uploadedPhoto.name,
-                url: uploadedPhoto.url, // Persistent Firebase Storage URL
-                preview: base64Preview || uploadedPhoto.url,
-                fileName: uploadedPhoto.fileName,
-                size: uploadedPhoto.size,
-                type: uploadedPhoto.type,
-                quantity: fileQuantities.value[index] || 1,
-              };
-            })
-          );
+          const photosForCart = await buildPhotosForCart(uploadedPhotos);
 
           // Add order to cart (no market event context for online orders)
           addCustomUploadToCart({
             productName:
               selectedProduct.value?.description || 'Custom Photo Magnets',
             photos: photosForCart,
-            quantities: fileQuantities.value,
+            quantities: photoQuantities.value,
             specialInstructions: formData.value.specialInstructions,
             totalMagnets: totalMagnets.value,
             totalCost: totalCost.value,
@@ -1742,40 +1814,25 @@ export default {
       if (isAtMarketEvent.value) {
         submitting.value = true;
         showUploadProgress.value = true;
-        uploadProgress.value = {
-          overall: 0,
-          completed: 0,
-          total: selectedFiles.value.length,
-          uploaded: 0,
-          totalSize: selectedFiles.value.reduce(
-            (sum, file) => sum + (file.size || 0),
-            0
-          ),
-        };
+        uploadProgress.value = getUploadProgressSeed();
         
         try {
           console.log('📤 Uploading photos to Firebase Storage before showing order summary...');
           const uploadedPhotos = await firebaseService.uploadPhotos(
-            selectedFiles.value,
+            uploadFiles.value,
             (progress) => {
               uploadProgress.value = progress;
             }
           );
           console.log('✅ Photos uploaded successfully:', uploadedPhotos.length);
           
-          // Prepare photos data with URLs and quantities (ensure no undefined values)
-          const photosForCart = uploadedPhotos.map((uploadedPhoto, index) => ({
-            name: uploadedPhoto.name || '',
-            url: uploadedPhoto.url || '',
-            path: uploadedPhoto.path || '',
-            quantity: fileQuantities.value[index] || 1
-          }));
+          const photosForCart = await buildPhotosForCart(uploadedPhotos);
           
           // Add to cart using the cart composable
           const uploadData = {
             productName: selectedProduct.value?.description || 'Magnet',
             photos: photosForCart,
-            quantities: fileQuantities.value || [],
+            quantities: photoQuantities.value || [],
             specialInstructions: formData.value.specialInstructions || '',
             totalMagnets: totalMagnets.value,
             totalCost: totalCost.value,
@@ -2473,6 +2530,7 @@ export default {
     });
 
     onUnmounted(() => {
+      clearPhotoItems();
       // Clean up listener and interval
       if (marketEventUnsubscribe) {
         marketEventUnsubscribe();
@@ -2490,8 +2548,11 @@ export default {
 
     return {
       formData,
-      selectedFiles,
-      fileQuantities,
+      photoItems,
+      filePickerModel,
+      fileInputRef,
+      showPhotoEditor,
+      editingPhotoItem,
       productOptions,
       selectedProductId,
       selectedProduct,
@@ -2510,12 +2571,15 @@ export default {
       currentUser,
       signingIn,
       isValidEmail,
-      getFilePreview,
       onRejected,
-      onFileSelected,
+      onInitialFileSelected,
+      onAddMoreFilesSelected,
+      triggerAddMorePhotos,
       increaseQuantity,
       decreaseQuantity,
-      removeFile,
+      removePhotoItem,
+      openPhotoEditor,
+      onPhotoEditorSaved,
       generateOrderNumber,
       formatDate,
       confirmOrder,
@@ -2597,6 +2661,83 @@ export default {
 .photo-upload-section:hover {
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25);
   border-color: #764ba2;
+}
+
+.upload-add-more-box {
+  border-radius: 4px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+}
+
+.hidden-file-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.square-photo-frame {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  background: #f5f5f5;
+}
+
+.square-photo-preview {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.edited-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  background: rgba(102, 126, 234, 0.9);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.photo-edit-pill {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateX(-50%) translateY(-1px);
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.55);
+  }
+
+  &:active {
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .compact-sign-in {

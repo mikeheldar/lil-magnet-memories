@@ -18,7 +18,8 @@ service cloud.firestore {
           || userEmail() in [
             'michael.helmandarley@gmail.com',
             'amy.helmandarley@gmail.com',
-            'info@lilmagnetmemories.com'
+            'info@lilmagnetmemories.com',
+            'lilmagnetmemories@gmail.com'
           ]
         );
     }
@@ -75,6 +76,16 @@ service cloud.firestore {
     }
 
     match /marketEvents/{eventId} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
+    match /frames/{frameId} {
+      allow read: if true;
+      allow write: if isAdminOrOperator();
+    }
+
+    match /frameCatalog/{document} {
       allow read: if true;
       allow write: if isAdminOrOperator();
     }

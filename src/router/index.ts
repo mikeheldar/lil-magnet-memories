@@ -53,16 +53,28 @@ export default route(function (/* { store, ssrContext } */) {
     const requiresAdmin = to.matched.some(
       (record) => record.meta.requiresAdmin
     );
+    const requiresOperator = to.matched.some(
+      (record) => record.meta.requiresOperator
+    );
     const isAuthenticated = authService.isAuthenticated();
 
     // Use async admin check for better accuracy, but fallback to sync if needed
     let isAdmin = authService.isAdmin(); // Quick sync check first
-    if (requiresAdmin && !isAdmin) {
+    if ((requiresAdmin || requiresOperator) && !isAdmin) {
       // If sync check says not admin but route requires admin, do async check
       try {
         isAdmin = await authService.isAdminAsync();
       } catch (error) {
         console.error('Error in async admin check, using sync result:', error);
+      }
+    }
+
+    let isOperator = isAdmin;
+    if (requiresOperator && !isOperator) {
+      try {
+        isOperator = await authService.isOperator();
+      } catch (error) {
+        console.error('Error in operator check:', error);
       }
     }
 
@@ -79,8 +91,10 @@ export default route(function (/* { store, ssrContext } */) {
       from: from.path,
       requiresAuth,
       requiresAdmin,
+      requiresOperator,
       isAuthenticated,
       isAdmin,
+      isOperator,
     });
 
     if (requiresAuth && !isAuthenticated) {
@@ -90,6 +104,9 @@ export default route(function (/* { store, ssrContext } */) {
     } else if (requiresAdmin && !isAdmin) {
       // Redirect to orders page if trying to access admin route without admin privileges
       console.log('Redirecting to orders page - not admin');
+      next('/orders');
+    } else if (requiresOperator && !isOperator) {
+      console.log('Redirecting to orders page - not operator');
       next('/orders');
     } else {
       console.log('Route guard: allowing navigation');
