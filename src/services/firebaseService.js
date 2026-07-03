@@ -1149,14 +1149,20 @@ class FirebaseService {
   }
 
   // Archive/unarchive order (soft hide from default admin list)
+  // Archiving also marks the order completed via a direct Firestore write,
+  // bypassing updateOrderStatus so no status-update email is sent.
   async setOrderArchived(orderId, archived) {
     try {
       const orderRef = doc(db, 'orders', orderId);
-      await updateDoc(orderRef, {
+      const updates = {
         archived: !!archived,
         archivedAt: archived ? serverTimestamp() : null,
         updatedAt: serverTimestamp(),
-      });
+      };
+      if (archived) {
+        updates.status = 'completed';
+      }
+      await updateDoc(orderRef, updates);
     } catch (error) {
       console.error('Error updating archived state for order:', error);
       throw error;

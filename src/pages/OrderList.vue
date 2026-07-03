@@ -111,6 +111,48 @@
 
     <!-- Orders List -->
     <div v-else class="q-gutter-md">
+      <!-- Bulk selection toolbar -->
+      <div class="row items-center q-gutter-sm bulk-toolbar">
+        <q-btn
+          flat
+          dense
+          icon="done_all"
+          label="Select All"
+          color="primary"
+          @click="selectAllDisplayed"
+        />
+        <q-btn
+          v-if="selectedOrderIds.length > 0"
+          flat
+          dense
+          icon="remove_done"
+          label="Clear All"
+          color="grey-8"
+          @click="clearSelection"
+        />
+        <template v-if="selectedOrderIds.length > 0">
+          <div class="text-body2 text-weight-medium text-grey-8 q-ml-sm">
+            {{ selectedOrderIds.length }} selected
+          </div>
+          <q-btn
+            icon="archive"
+            color="deep-purple"
+            size="sm"
+            @click="bulkArchiveSelected"
+          >
+            <q-tooltip>Archive Selected (marks completed, no emails)</q-tooltip>
+          </q-btn>
+          <q-btn
+            icon="delete"
+            color="red"
+            size="sm"
+            @click="confirmBulkDelete"
+          >
+            <q-tooltip>Delete Selected</q-tooltip>
+          </q-btn>
+        </template>
+      </div>
+
       <q-card
         v-for="order in filteredOrders"
         :key="order.id"
@@ -118,6 +160,13 @@
       >
         <q-card-section>
           <div class="row items-center q-mb-md">
+            <div class="col-auto q-mr-sm">
+              <q-checkbox
+                :model-value="isSelected(order.id)"
+                @update:model-value="(val) => setSelected(order.id, val)"
+                color="primary"
+              />
+            </div>
             <div class="col">
               <div class="text-h6 text-weight-bold">
                 Order #{{ order.orderNumber }}
@@ -1199,7 +1248,9 @@ export default {
         await firebaseService.setOrderArchived(orderId, archived);
         $q.notify({
           type: 'positive',
-          message: archived ? 'Order archived' : 'Order unarchived',
+          message: archived
+            ? 'Order archived & marked completed (no email sent)'
+            : 'Order unarchived',
           icon: archived ? 'archive' : 'unarchive',
           position: 'top',
         });
@@ -1211,6 +1262,88 @@ export default {
           position: 'top',
         });
       }
+    };
+
+    // --- Multi-select / bulk actions ---
+    const selectedOrderIds = ref([]);
+
+    const isSelected = (orderId) => selectedOrderIds.value.includes(orderId);
+
+    const setSelected = (orderId, val) => {
+      if (val) {
+        if (!selectedOrderIds.value.includes(orderId)) {
+          selectedOrderIds.value.push(orderId);
+        }
+      } else {
+        selectedOrderIds.value = selectedOrderIds.value.filter(
+          (id) => id !== orderId
+        );
+      }
+    };
+
+    // Selects exactly what's displayed, so an active search/filter scopes it
+    const selectAllDisplayed = () => {
+      selectedOrderIds.value = filteredOrders.value.map((o) => o.id);
+    };
+
+    const clearSelection = () => {
+      selectedOrderIds.value = [];
+    };
+
+    const bulkArchiveSelected = async () => {
+      const ids = [...selectedOrderIds.value];
+      let ok = 0;
+      let failed = 0;
+      for (const id of ids) {
+        try {
+          await firebaseService.setOrderArchived(id, true);
+          ok++;
+          setSelected(id, false);
+        } catch (err) {
+          failed++;
+          console.error('Bulk archive failed for order', id, err);
+        }
+      }
+      $q.notify({
+        type: failed ? 'warning' : 'positive',
+        message: failed
+          ? `Archived ${ok} order(s), ${failed} failed`
+          : `Archived ${ok} order(s) — marked completed, no emails sent`,
+        icon: 'archive',
+        position: 'top',
+      });
+    };
+
+    const confirmBulkDelete = () => {
+      const count = selectedOrderIds.value.length;
+      $q.dialog({
+        title: 'Confirm Deletion',
+        message: `Are you sure you want to delete ${count} selected order(s)? This action cannot be undone.`,
+        cancel: true,
+        persistent: true,
+      }).onOk(async () => {
+        const ids = [...selectedOrderIds.value];
+        let ok = 0;
+        let failed = 0;
+        for (const id of ids) {
+          try {
+            await firebaseService.deleteOrder(id);
+            ok++;
+            setSelected(id, false);
+          } catch (err) {
+            failed++;
+            console.error('Bulk delete failed for order', id, err);
+          }
+        }
+        $q.notify({
+          type: failed ? 'warning' : 'positive',
+          message: failed
+            ? `Deleted ${ok} order(s), ${failed} failed`
+            : `Deleted ${ok} order(s)`,
+          icon: 'delete',
+          position: 'top',
+        });
+      });
     };
 
     const openPrintTemplate = (order) => {
@@ -1494,6 +1627,13 @@ export default {
       resetOrderStatus,
       confirmDeleteOrder,
       setOrderArchived,
+      selectedOrderIds,
+      isSelected,
+      setSelected,
+      selectAllDisplayed,
+      clearSelection,
+      bulkArchiveSelected,
+      confirmBulkDelete,
       openPrintTemplate,
       getTotalMagnetsFromCart,
       formatAddress,
