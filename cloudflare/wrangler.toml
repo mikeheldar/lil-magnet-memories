@@ -1,0 +1,16 @@
+# Prerender worker deploy config — no secrets in this file.
+# Deploy: export CLOUDFLARE_API_TOKEN=<token: Workers Scripts:Edit + Workers Routes:Edit>
+#         ./deploy.sh          (or: npx wrangler@latest deploy)
+# Secret: echo "$PRERENDER_TOKEN" | npx wrangler secret put PRERENDER_TOKEN
+
+name = "lilmagnet-prerender"
+main = "prerender.worker.js"
+compatibility_date = "2024-11-01"
+
+[[routes]]
+pattern = "lilmagnetmemories.com/*"
+zone_name = "lilmagnetmemories.com"
+
+[[routes]]
+pattern = "www.lilmagnetmemories.com/*"
+zone_name = "lilmagnetmemories.com"
