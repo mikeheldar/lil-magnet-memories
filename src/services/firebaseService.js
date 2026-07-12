@@ -3590,6 +3590,23 @@ class FirebaseService {
       return { valid: false, message: 'Code could not be validated.' };
     }
   }
+
+  // Newsletter subscribers — doc ID is the normalized email so re-subscribing
+  // the same address updates in place instead of creating duplicates.
+  async subscribeToNewsletter(email, source = 'newsletter-signup') {
+    const normalized = (email || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+      throw new Error('Invalid email address');
+    }
+    const subscriberRef = doc(db, 'newsletter_subscribers', normalized);
+    await setDoc(subscriberRef, {
+      email: normalized,
+      subscribedAt: serverTimestamp(),
+      source,
+      status: 'subscribed',
+    });
+    return normalized;
+  }
 }
 
 export const firebaseService = new FirebaseService();
