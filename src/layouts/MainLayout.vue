@@ -763,6 +763,16 @@
                 </q-item-section>
               </q-item>
 
+              <q-item clickable v-ripple @click="navigateTo('/admin/newsletter')">
+                <q-item-section avatar>
+                  <q-icon name="mark_email_read" color="teal" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Newsletter Subscribers</q-item-label>
+                  <q-item-label caption>View and export signups</q-item-label>
+                </q-item-section>
+              </q-item>
+
               <q-item clickable v-ripple @click="navigateTo('/email-test')">
                 <q-item-section avatar>
                   <q-icon name="email" color="purple" />

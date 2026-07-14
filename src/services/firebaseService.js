@@ -3607,6 +3607,28 @@ class FirebaseService {
     });
     return normalized;
   }
+
+  // Admin/operator only (enforced by Firestore rules): newest first.
+  async getNewsletterSubscribers() {
+    const subscribersQuery = query(
+      collection(db, 'newsletter_subscribers'),
+      orderBy('subscribedAt', 'desc')
+    );
+    const snapshot = await getDocs(subscribersQuery);
+    return snapshot.docs.map((docSnap) => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        email: data.email || docSnap.id,
+        source: data.source || '',
+        status: data.status || '',
+        subscribedAt:
+          data.subscribedAt && data.subscribedAt.toDate
+            ? data.subscribedAt.toDate()
+            : null,
+      };
+    });
+  }
 }
 
 export const firebaseService = new FirebaseService();
