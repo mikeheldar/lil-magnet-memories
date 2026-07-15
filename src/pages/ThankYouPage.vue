@@ -169,6 +169,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
+import { trackPurchase } from '../utils/analytics.js';
 import { authService } from '../services/authService';
 import { marketEventService } from '../services/marketEventService.js';
 import { 
@@ -393,6 +394,22 @@ export default {
 
       if (!orderNumber.value) {
         orderNumber.value = 'N/A';
+      }
+
+      if (orderNumber.value !== 'N/A' && totalAmount.value > 0) {
+        trackPurchase({
+          transactionId: orderNumber.value,
+          value: totalAmount.value,
+          shipping: shippingCost.value,
+          tax: tax.value,
+          items: [
+            {
+              item_id: 'custom-photo-magnets',
+              item_name: 'Custom Photo Magnets',
+              quantity: totalMagnets.value || 1,
+            },
+          ],
+        });
       }
     });
 

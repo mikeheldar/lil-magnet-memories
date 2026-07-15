@@ -29,6 +29,7 @@ module.exports = configure(function (/* ctx */) {
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
       'ssr-firebase', // SSR-safe Firebase initialization
+      'analytics', // GA4 page views (no-op without VITE_GA_MEASUREMENT_ID)
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css

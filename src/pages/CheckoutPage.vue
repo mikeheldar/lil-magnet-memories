@@ -852,6 +852,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { useCart } from '../composables/useCart.js';
+import { trackBeginCheckout } from '../utils/analytics.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
 import {
@@ -985,6 +986,15 @@ export default {
 
     // Check for active market event and check-in status
     onMounted(async () => {
+      trackBeginCheckout({
+        value: cartSubtotal.value,
+        items: cartItems.value.map((item) => ({
+          item_id: item.isCustomUpload ? 'custom-photo-magnets' : String(item.productId),
+          item_name: item.productName,
+          quantity: item.quantity || 1,
+          price: item.pricePerUnit,
+        })),
+      });
       console.log('🛒 Checkout page route query:', route.query);
       console.log(
         '🛒 Checkout page isFromMarketEventUpload:',
