@@ -971,6 +971,8 @@
         </div>
       </div>
     </footer>
+
+    <NewsletterOfferBanner />
   </q-layout>
 </template>
 
@@ -986,9 +988,11 @@ import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
 import { firebaseService } from '../services/firebaseService.js';
+import NewsletterOfferBanner from '../components/NewsletterOfferBanner.vue';
 
 export default {
   name: 'MainLayout',
+  components: { NewsletterOfferBanner },
   setup() {
     const siteLd = {
       '@context': 'https://schema.org',

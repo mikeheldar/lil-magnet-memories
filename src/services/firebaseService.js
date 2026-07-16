@@ -3329,7 +3329,35 @@ class FirebaseService {
     }
   }
 
-  async createPromoCode({ code, type, value, validFrom, validUntil, active = true }) {
+  // The promo code (if any) marked as the site-wide welcome offer, shown in the
+  // newsletter signup banner. Returns null when no active, date-valid offer exists.
+  async getWelcomeOfferPromo() {
+    try {
+      const coll = collection(db, FirebaseService.PROMO_CODES_COLLECTION);
+      const q = query(coll, where('active', '==', true), where('welcomeOffer', '==', true));
+      const snap = await getDocs(q);
+      const now = new Date();
+      const valid = snap.docs
+        .map((d) => ({ id: d.id, code: d.id, ...d.data() }))
+        .filter((p) => {
+          if (p.validFrom && p.validFrom.toDate && p.validFrom.toDate() > now) return false;
+          if (p.validUntil && p.validUntil.toDate && p.validUntil.toDate() < now) return false;
+          return true;
+        });
+      if (!valid.length) return null;
+      const p = valid[0];
+      return {
+        code: p.code,
+        type: ['percent', 'fixed', 'fixed_total'].includes(p.type) ? p.type : 'percent',
+        value: Number(p.value),
+      };
+    } catch (error) {
+      console.error('Error getting welcome offer promo:', error);
+      return null;
+    }
+  }
+
+  async createPromoCode({ code, type, value, validFrom, validUntil, active = true, welcomeOffer = false }) {
     try {
       const normalizedCode = String(code).trim().toUpperCase();
       if (!normalizedCode) throw new Error('Promo code is required');
@@ -3341,6 +3369,7 @@ class FirebaseService {
         type: ['percent', 'fixed', 'fixed_total'].includes(type) ? type : 'percent',
         value: Number(value),
         active: !!active,
+        welcomeOffer: !!welcomeOffer,
         createdAt: now,
         updatedAt: now,
       };
