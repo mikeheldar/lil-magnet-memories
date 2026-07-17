@@ -61,7 +61,7 @@
           />
         </div>
         <div class="text-body2 text-grey-8 q-mt-xs">
-          Enter it in the promo code box at checkout for {{ offerText }} your order.
+          We'll apply it automatically at checkout for {{ offerText }} your order.
         </div>
       </q-card-section>
     </q-card>
@@ -76,6 +76,7 @@ import { firebaseService } from '../services/firebaseService.js';
 import { trackEvent } from '../utils/analytics.js';
 
 const DONE_KEY = 'lmm_welcome_offer_done';
+const CODE_KEY = 'lmm_welcome_offer_code';
 const DISMISSED_AT_KEY = 'lmm_welcome_offer_dismissed_at';
 const DISMISS_DAYS = 14;
 const SHOW_DELAY_MS = 5000;
@@ -160,6 +161,7 @@ export default {
         await firebaseService.subscribeToNewsletter(normalized, 'welcome-offer');
         subscribed.value = true;
         storage.set(DONE_KEY, '1');
+        storage.set(CODE_KEY, offer.value.code);
         trackEvent('sign_up', { method: 'welcome_offer_banner' });
       } catch (e) {
         console.error('Welcome offer signup failed:', e);

@@ -397,6 +397,12 @@ export default {
       }
 
       if (orderNumber.value !== 'N/A' && totalAmount.value > 0) {
+        // The welcome offer is for the first order — don't re-apply it next time.
+        try {
+          localStorage.removeItem('lmm_welcome_offer_code');
+        } catch (e) {
+          /* ignore */
+        }
         trackPurchase({
           transactionId: orderNumber.value,
           value: totalAmount.value,

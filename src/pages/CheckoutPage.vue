@@ -986,6 +986,7 @@ export default {
 
     // Check for active market event and check-in status
     onMounted(async () => {
+      autoApplyWelcomeOffer();
       trackBeginCheckout({
         value: cartSubtotal.value,
         items: cartItems.value.map((item) => ({
@@ -1852,6 +1853,40 @@ export default {
       appliedPromoCode.value = null;
       appliedPromo.value = null;
       promoMessage.value = '';
+    };
+
+    // Welcome-offer code saved by NewsletterOfferBanner — apply it without making
+    // the customer remember/paste it. Invalid or expired codes are forgotten.
+    const WELCOME_CODE_KEY = 'lmm_welcome_offer_code';
+    const autoApplyWelcomeOffer = async () => {
+      if (appliedPromoCode.value) return;
+      let stored = null;
+      try {
+        stored = window.localStorage.getItem(WELCOME_CODE_KEY);
+      } catch (e) {
+        return;
+      }
+      if (!stored) return;
+      applyingPromo.value = true;
+      try {
+        const result = await firebaseService.validatePromoCode(stored);
+        if (result.valid) {
+          appliedPromoCode.value = stored.toUpperCase();
+          appliedPromo.value = { type: result.type, value: result.value };
+          promoMessage.value = 'Your welcome offer was applied automatically.';
+          promoMessageSuccess.value = true;
+        } else {
+          try {
+            window.localStorage.removeItem(WELCOME_CODE_KEY);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      } catch (e) {
+        // Validation failed (e.g. offline) — keep the code for a later attempt.
+      } finally {
+        applyingPromo.value = false;
+      }
     };
 
     // Auto-select payment option when shipping option list updates
