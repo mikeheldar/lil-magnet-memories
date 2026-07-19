@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue';
-import { trackAddToCart } from 'src/utils/analytics';
+import { trackAddToCart, trackRemoveFromCart } from 'src/utils/analytics';
 import { auth } from '../firebase/config.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { firebaseService } from '../services/firebaseService.js';
@@ -522,9 +522,22 @@ export function useCart() {
       (item) => item.productId === productId
     );
     if (index >= 0) {
-      cartItems.value.splice(index, 1);
+      const [removed] = cartItems.value.splice(index, 1);
       // Explicitly trigger save to ensure immediate sync
       saveCart(cartItems.value);
+      trackRemoveFromCart({
+        value: removed.totalPrice ?? removed.totalCost ?? 0,
+        items: [
+          {
+            item_id: removed.isCustomUpload
+              ? 'custom-photo-magnets'
+              : String(removed.productId),
+            item_name: removed.productName,
+            quantity: removed.quantity || 1,
+            price: removed.pricePerUnit,
+          },
+        ],
+      });
     }
   };
 

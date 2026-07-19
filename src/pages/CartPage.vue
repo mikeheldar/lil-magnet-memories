@@ -219,6 +219,7 @@ import { onMounted, ref } from 'vue';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { auth } from '../firebase/config.js';
 import { firebaseService } from '../services/firebaseService.js';
+import { trackViewCart } from '../utils/analytics.js';
 
 export default {
   name: 'CartPage',
@@ -257,6 +258,18 @@ export default {
         }
       } else {
         console.log('ℹ️ User not logged in or anonymous, using localStorage cart');
+      }
+
+      if (cartItems.value.length > 0) {
+        trackViewCart({
+          value: cartSubtotal.value,
+          items: cartItems.value.map((item) => ({
+            item_id: item.isCustomUpload ? 'custom-photo-magnets' : String(item.productId),
+            item_name: item.productName,
+            quantity: item.quantity || 1,
+            price: item.pricePerUnit,
+          })),
+        });
       }
       loading.value = false;
     });

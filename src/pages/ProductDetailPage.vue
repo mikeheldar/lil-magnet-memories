@@ -105,7 +105,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
@@ -123,6 +123,7 @@ import {
   categoryListTitle,
   routeTypeToCategory,
 } from '../utils/productTypeRoutes.js';
+import { trackViewItem, productToGaItem } from '../utils/analytics.js';
 
 function collectProductImageUrls(product) {
   if (!product) return [];
@@ -170,6 +171,14 @@ export default {
         return found;
       }
       return null;
+    });
+
+    let viewedProductId = null;
+    watch(product, (p) => {
+      if (!p || p.id === viewedProductId) return;
+      viewedProductId = p.id;
+      const item = productToGaItem(p);
+      trackViewItem({ value: item.price || 0, items: [item] });
     });
 
     const fallbackDescription =
