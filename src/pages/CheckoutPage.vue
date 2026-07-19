@@ -205,6 +205,13 @@
                         "
                         :input-attrs="{ autocomplete: 'email' }"
                       />
+                      <q-checkbox
+                        v-model="newsletterOptIn"
+                        dense
+                        size="sm"
+                        class="text-grey-8 q-mt-xs"
+                        label="Email me special offers and new products"
+                      />
                     </div>
                     <div class="col-12">
                       <q-input
@@ -852,7 +859,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { useCart } from '../composables/useCart.js';
-import { trackBeginCheckout } from '../utils/analytics.js';
+import { trackBeginCheckout, trackEvent } from '../utils/analytics.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
 import {
@@ -930,6 +937,8 @@ export default {
     const showCreditCardForm = ref(false); // Track if credit card form should be shown (deprecated - use showCreditCardSection)
     const showApplePaySection = ref(true); // Track if Apple Pay section is expanded (default true)
     const showCreditCardSection = ref(false); // Track if Credit Card section is expanded (default false)
+
+    const newsletterOptIn = ref(false);
 
     const customerInfo = ref({
       firstName: '',
@@ -4731,6 +4740,15 @@ export default {
           })
         );
 
+        if (newsletterOptIn.value && customerInfo.value.email) {
+          firebaseService
+            .subscribeToNewsletter(customerInfo.value.email, 'checkout')
+            .then(() => trackEvent('sign_up', { method: 'checkout_opt_in' }))
+            .catch((err) =>
+              console.warn('Newsletter opt-in failed (order unaffected):', err)
+            );
+        }
+
         // Ensure dialog is closed before navigating
         showOrderSuccessDialog.value = false;
 
@@ -4893,6 +4911,7 @@ export default {
       canPlaceOrder,
       submitting,
       checkedInEvent,
+      newsletterOptIn,
       placeOrder,
       getPaymentIcon,
       availablePaymentMethods,
