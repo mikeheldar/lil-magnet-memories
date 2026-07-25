@@ -1016,6 +1016,29 @@ class FirebaseService {
     }
   }
 
+  // Get ALL orders without an orderBy clause — Firestore orderBy drops docs
+  // missing the field, and legacy orders have inconsistent date fields.
+  // Used by the sales dashboard, which needs every order for accurate totals.
+  async getOrdersForAnalytics() {
+    try {
+      const ordersRef = collection(db, 'orders');
+      const querySnapshot = await getDocs(ordersRef);
+
+      const orders = [];
+      querySnapshot.forEach((doc) => {
+        orders.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      return orders;
+    } catch (error) {
+      console.error('Error getting orders for analytics:', error);
+      throw error;
+    }
+  }
+
   // Get orders for a specific user (by userId or email)
   async getUserOrders(userId, userEmail = null) {
     try {

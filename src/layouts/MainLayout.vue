@@ -753,6 +753,16 @@
                 </q-item-section>
               </q-item>
 
+              <q-item clickable v-ripple @click="navigateTo('/admin/sales')">
+                <q-item-section avatar>
+                  <q-icon name="monitoring" color="green" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Sales Dashboard</q-item-label>
+                  <q-item-label caption>Revenue, orders, top products</q-item-label>
+                </q-item-section>
+              </q-item>
+
               <q-item clickable v-ripple @click="navigateTo('/reviews-management')">
                 <q-item-section avatar>
                   <q-icon name="rate_review" color="blue" />
