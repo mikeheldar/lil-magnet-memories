@@ -13,6 +13,7 @@ import {
   where,
   limit,
   Timestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import {
   ref,
@@ -1188,6 +1189,58 @@ class FirebaseService {
       await updateDoc(orderRef, updates);
     } catch (error) {
       console.error('Error updating archived state for order:', error);
+      throw error;
+    }
+  }
+
+  // Reconcile archived orders that still carry an open status.
+  // Orders archived before setOrderArchived began stamping status='completed'
+  // are hidden from the default admin list but still counted as "open" by the
+  // daily reminder and any status-keyed report/dashboard. This scans all orders
+  // and stamps the stale ones completed via a DIRECT batched write — the same
+  // email-free path setOrderArchived uses (never routes through updateOrderStatus,
+  // so no customer email fires). Idempotent: a second run finds nothing to fix.
+  async reconcileArchivedOrderStatuses({ dryRun = false } = {}) {
+    const OPEN_STATUSES = ['new', 'paid', 'in_progress'];
+    try {
+      const orders = await this.getOrdersForAnalytics();
+      const stale = orders.filter(
+        (o) => o && o.archived === true && OPEN_STATUSES.includes(o.status)
+      );
+
+      const result = {
+        scanned: orders.length,
+        stale: stale.length,
+        fixed: 0,
+        dryRun: !!dryRun,
+        orderNumbers: stale
+          .map((o) => o.orderNumber || o.id)
+          .filter(Boolean)
+          .slice(0, 50),
+      };
+
+      if (dryRun || stale.length === 0) {
+        return result;
+      }
+
+      // Firestore batches cap at 500 ops — chunk to stay well under.
+      const CHUNK = 400;
+      for (let i = 0; i < stale.length; i += CHUNK) {
+        const slice = stale.slice(i, i + CHUNK);
+        const batch = writeBatch(db);
+        slice.forEach((o) => {
+          batch.update(doc(db, 'orders', o.id), {
+            status: 'completed',
+            updatedAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+        result.fixed += slice.length;
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error reconciling archived order statuses:', error);
       throw error;
     }
   }
