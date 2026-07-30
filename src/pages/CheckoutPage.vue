@@ -205,6 +205,13 @@
                         "
                         :input-attrs="{ autocomplete: 'email' }"
                       />
+                      <q-checkbox
+                        v-model="newsletterOptIn"
+                        dense
+                        size="sm"
+                        class="text-grey-8 q-mt-xs"
+                        label="Email me special offers and new products"
+                      />
                     </div>
                     <div class="col-12">
                       <q-input
@@ -852,6 +859,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { useCart } from '../composables/useCart.js';
+import { trackBeginCheckout, trackEvent } from '../utils/analytics.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
 import {
@@ -930,6 +938,8 @@ export default {
     const showApplePaySection = ref(true); // Track if Apple Pay section is expanded (default true)
     const showCreditCardSection = ref(false); // Track if Credit Card section is expanded (default false)
 
+    const newsletterOptIn = ref(false);
+
     const customerInfo = ref({
       firstName: '',
       lastName: '',
@@ -985,6 +995,16 @@ export default {
 
     // Check for active market event and check-in status
     onMounted(async () => {
+      autoApplyWelcomeOffer();
+      trackBeginCheckout({
+        value: cartSubtotal.value,
+        items: cartItems.value.map((item) => ({
+          item_id: item.isCustomUpload ? 'custom-photo-magnets' : String(item.productId),
+          item_name: item.productName,
+          quantity: item.quantity || 1,
+          price: item.pricePerUnit,
+        })),
+      });
       console.log('🛒 Checkout page route query:', route.query);
       console.log(
         '🛒 Checkout page isFromMarketEventUpload:',
@@ -1842,6 +1862,40 @@ export default {
       appliedPromoCode.value = null;
       appliedPromo.value = null;
       promoMessage.value = '';
+    };
+
+    // Welcome-offer code saved by NewsletterOfferBanner — apply it without making
+    // the customer remember/paste it. Invalid or expired codes are forgotten.
+    const WELCOME_CODE_KEY = 'lmm_welcome_offer_code';
+    const autoApplyWelcomeOffer = async () => {
+      if (appliedPromoCode.value) return;
+      let stored = null;
+      try {
+        stored = window.localStorage.getItem(WELCOME_CODE_KEY);
+      } catch (e) {
+        return;
+      }
+      if (!stored) return;
+      applyingPromo.value = true;
+      try {
+        const result = await firebaseService.validatePromoCode(stored);
+        if (result.valid) {
+          appliedPromoCode.value = stored.toUpperCase();
+          appliedPromo.value = { type: result.type, value: result.value };
+          promoMessage.value = 'Your welcome offer was applied automatically.';
+          promoMessageSuccess.value = true;
+        } else {
+          try {
+            window.localStorage.removeItem(WELCOME_CODE_KEY);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      } catch (e) {
+        // Validation failed (e.g. offline) — keep the code for a later attempt.
+      } finally {
+        applyingPromo.value = false;
+      }
     };
 
     // Auto-select payment option when shipping option list updates
@@ -4686,6 +4740,15 @@ export default {
           })
         );
 
+        if (newsletterOptIn.value && customerInfo.value.email) {
+          firebaseService
+            .subscribeToNewsletter(customerInfo.value.email, 'checkout')
+            .then(() => trackEvent('sign_up', { method: 'checkout_opt_in' }))
+            .catch((err) =>
+              console.warn('Newsletter opt-in failed (order unaffected):', err)
+            );
+        }
+
         // Ensure dialog is closed before navigating
         showOrderSuccessDialog.value = false;
 
@@ -4848,6 +4911,7 @@ export default {
       canPlaceOrder,
       submitting,
       checkedInEvent,
+      newsletterOptIn,
       placeOrder,
       getPaymentIcon,
       availablePaymentMethods,

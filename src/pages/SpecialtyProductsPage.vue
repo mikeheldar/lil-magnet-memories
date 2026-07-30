@@ -142,10 +142,11 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { firebaseService } from '../services/firebaseService.js';
+import { trackViewItemList, productToGaItem } from '../utils/analytics.js';
 import { authService } from '../services/authService';
 import SimpleSlideshow from '../components/SimpleSlideshow.vue';
 
@@ -221,6 +222,17 @@ export default {
 
     const specialtyProducts = computed(() => {
       return products.value.filter((p) => p.category === 'specialty');
+    });
+
+    let listViewTracked = false;
+    watch(specialtyProducts, (list) => {
+      if (listViewTracked || !list.length) return;
+      listViewTracked = true;
+      trackViewItemList({
+        listId: 'specialty',
+        listName: 'Specialty Magnets',
+        items: list.map((p, i) => productToGaItem(p, i)),
+      });
     });
 
     const specialtyProductsByCollection = computed(() => {

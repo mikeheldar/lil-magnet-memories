@@ -753,6 +753,16 @@
                 </q-item-section>
               </q-item>
 
+              <q-item clickable v-ripple @click="navigateTo('/admin/sales')">
+                <q-item-section avatar>
+                  <q-icon name="monitoring" color="green" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Sales Dashboard</q-item-label>
+                  <q-item-label caption>Revenue, orders, top products</q-item-label>
+                </q-item-section>
+              </q-item>
+
               <q-item clickable v-ripple @click="navigateTo('/reviews-management')">
                 <q-item-section avatar>
                   <q-icon name="rate_review" color="blue" />
@@ -760,6 +770,16 @@
                 <q-item-section>
                   <q-item-label>Reviews Management</q-item-label>
                   <q-item-label caption>Manage customer reviews</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple @click="navigateTo('/admin/newsletter')">
+                <q-item-section avatar>
+                  <q-icon name="mark_email_read" color="teal" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Newsletter Subscribers</q-item-label>
+                  <q-item-label caption>View and export signups</q-item-label>
                 </q-item-section>
               </q-item>
 
@@ -961,6 +981,8 @@
         </div>
       </div>
     </footer>
+
+    <NewsletterOfferBanner />
   </q-layout>
 </template>
 
@@ -976,9 +998,11 @@ import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { useCustomerType } from '../composables/useCustomerType.js';
 import { firebaseService } from '../services/firebaseService.js';
+import NewsletterOfferBanner from '../components/NewsletterOfferBanner.vue';
 
 export default {
   name: 'MainLayout',
+  components: { NewsletterOfferBanner },
   setup() {
     const siteLd = {
       '@context': 'https://schema.org',

@@ -123,6 +123,17 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // Newsletter signups — public create/resubscribe (validated, doc ID = email), admin-only read.
+    match /newsletter_subscribers/{emailId} {
+      allow create, update: if request.resource.data.email is string
+        && request.resource.data.email == emailId
+        && emailId.matches('.+@.+\\..+')
+        && emailId.size() < 200
+        && request.resource.data.keys().hasOnly(['email', 'subscribedAt', 'source', 'status'])
+        && request.resource.data.status == 'subscribed';
+      allow read, delete: if isAdminOrOperator();
+    }
+
     // Deny everything else by default.
     match /{document=**} {
       allow read, write: if false;

@@ -69,6 +69,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { authService } from '../services/authService';
+import { firebaseService } from '../services/firebaseService';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 const $q = useQuasar();
@@ -103,11 +104,7 @@ onMounted(() => {
 const onSubmit = async () => {
   submitting.value = true;
   try {
-    // TODO: Implement newsletter subscription functionality
-    // This could integrate with an email service like Mailchimp, SendGrid, etc.
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await firebaseService.subscribeToNewsletter(form.value.email, route.path);
 
     $q.notify({
       type: 'positive',

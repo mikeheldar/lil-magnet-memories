@@ -206,6 +206,8 @@
               />
             </q-card-actions>
           </q-card>
+
+          <recommended-products :exclude-ids="cartProductIds" />
         </div>
       </div>
     </div>
@@ -215,13 +217,16 @@
 <script>
 import { useCart } from '../composables/useCart.js';
 import { useRouter, useRoute } from 'vue-router';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 import { auth } from '../firebase/config.js';
 import { firebaseService } from '../services/firebaseService.js';
+import { trackViewCart } from '../utils/analytics.js';
+import RecommendedProducts from '../components/RecommendedProducts.vue';
 
 export default {
   name: 'CartPage',
+  components: { RecommendedProducts },
   setup() {
     const router = useRouter();
     const route = useRoute();
@@ -237,6 +242,13 @@ export default {
     const { cartItems, cartSubtotal, updateQuantity, removeFromCart } =
       useCart();
     const loading = ref(true);
+
+    // Ids of real products already in the cart, so we never cross-sell them back.
+    const cartProductIds = computed(() =>
+      cartItems.value
+        .filter((item) => !item.isCustomUpload)
+        .map((item) => item.productId)
+    );
 
     // Ensure cart is loaded when page mounts
     onMounted(async () => {
@@ -257,6 +269,18 @@ export default {
         }
       } else {
         console.log('ℹ️ User not logged in or anonymous, using localStorage cart');
+      }
+
+      if (cartItems.value.length > 0) {
+        trackViewCart({
+          value: cartSubtotal.value,
+          items: cartItems.value.map((item) => ({
+            item_id: item.isCustomUpload ? 'custom-photo-magnets' : String(item.productId),
+            item_name: item.productName,
+            quantity: item.quantity || 1,
+            price: item.pricePerUnit,
+          })),
+        });
       }
       loading.value = false;
     });
@@ -314,6 +338,7 @@ export default {
     return {
       cartItems,
       cartSubtotal,
+      cartProductIds,
       updateQuantity,
       removeFromCart,
       goToCheckout,

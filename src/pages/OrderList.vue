@@ -151,6 +151,21 @@
             <q-tooltip>Delete Selected</q-tooltip>
           </q-btn>
         </template>
+        <q-space />
+        <q-btn
+          flat
+          dense
+          icon="cleaning_services"
+          label="Fix archived statuses"
+          color="teal"
+          :loading="reconciling"
+          @click="reconcileArchivedStatuses"
+        >
+          <q-tooltip>
+            Stamp archived-but-open orders completed (fixes the daily reminder
+            over-count) — no customer emails sent
+          </q-tooltip>
+        </q-btn>
       </div>
 
       <q-card
@@ -1346,6 +1361,71 @@ export default {
       });
     };
 
+    // --- Data hygiene: fix archived orders stuck on an open status ---
+    // Orders archived before archiving began stamping status='completed' stay
+    // hidden from the list but are still counted "open" by the daily reminder
+    // and the sales dashboard. One-tap reconcile stamps them completed (no email).
+    const reconciling = ref(false);
+
+    const reconcileArchivedStatuses = async () => {
+      if (reconciling.value) return;
+      reconciling.value = true;
+      try {
+        const preview = await firebaseService.reconcileArchivedOrderStatuses({
+          dryRun: true,
+        });
+        if (preview.stale === 0) {
+          $q.notify({
+            type: 'positive',
+            message: `All ${preview.scanned} orders are consistent — no archived-but-open orders to fix.`,
+            icon: 'verified',
+            position: 'top',
+          });
+          reconciling.value = false;
+          return;
+        }
+        $q.dialog({
+          title: 'Fix archived order statuses',
+          message: `${preview.stale} archived order(s) still carry an open status (new/paid/in_progress). They stay hidden from this list but are still counted as "open" by the daily reminder email and the sales dashboard. Stamp them completed now? No customer emails are sent.`,
+          cancel: true,
+          persistent: true,
+          ok: { label: `Fix ${preview.stale}`, color: 'teal' },
+        })
+          .onOk(async () => {
+            try {
+              const res = await firebaseService.reconcileArchivedOrderStatuses();
+              $q.notify({
+                type: 'positive',
+                message: `Fixed ${res.fixed} archived order(s) — stamped completed, no emails sent.`,
+                icon: 'verified',
+                position: 'top',
+              });
+              await loadOrders();
+            } catch (err) {
+              console.error('Reconcile failed:', err);
+              $q.notify({
+                type: 'negative',
+                message: `Reconcile failed: ${err.message}`,
+                position: 'top',
+              });
+            } finally {
+              reconciling.value = false;
+            }
+          })
+          .onCancel(() => {
+            reconciling.value = false;
+          });
+      } catch (err) {
+        console.error('Reconcile preview failed:', err);
+        $q.notify({
+          type: 'negative',
+          message: `Could not scan orders: ${err.message}`,
+          position: 'top',
+        });
+        reconciling.value = false;
+      }
+    };
+
     const openPrintTemplate = (order) => {
       let photos = [];
       let quantities = [];
@@ -1634,6 +1714,8 @@ export default {
       clearSelection,
       bulkArchiveSelected,
       confirmBulkDelete,
+      reconciling,
+      reconcileArchivedStatuses,
       openPrintTemplate,
       getTotalMagnetsFromCart,
       formatAddress,

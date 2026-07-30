@@ -136,10 +136,24 @@ async function handleRequest(request, env) {
   const newHeaders = new Headers(request.headers);
   newHeaders.set('X-Prerender-Token', token);
 
-  return fetch(
-    new Request(newURL, {
-      headers: newHeaders,
-      redirect: 'manual',
-    })
-  );
+  // Fail open: if Prerender errors (bad token, outage, timeout), serve the
+  // SPA from origin instead of surfacing a 5xx to crawlers — Googlebot can
+  // render the SPA shell, but a 503 deindexes the page.
+  let prerendered;
+  try {
+    prerendered = await fetch(
+      new Request(newURL, {
+        headers: newHeaders,
+        redirect: 'manual',
+      })
+    );
+  } catch (err) {
+    return fetch(request);
+  }
+
+  if (prerendered.status >= 500) {
+    return fetch(request);
+  }
+
+  return prerendered;
 }

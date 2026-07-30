@@ -903,6 +903,11 @@
             label="Active"
             class="q-mb-sm"
           />
+          <q-toggle
+            v-model="editingPromoCode.welcomeOffer"
+            label="Welcome offer (shown in the newsletter signup banner)"
+            class="q-mb-sm"
+          />
           <div v-if="promoCodeError" class="text-negative q-mt-sm">{{ promoCodeError }}</div>
         </q-card-section>
         <q-card-actions align="right">
@@ -979,7 +984,7 @@ export default {
     const promoCodes = ref([]);
     const loadingPromoCodes = ref(false);
     const promoCodeDialog = ref(false);
-    const editingPromoCode = ref({ code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true });
+    const editingPromoCode = ref({ code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true, welcomeOffer: false });
     const promoCodeEditId = ref(null);
     const promoCodeError = ref('');
     const promoDeleteDialog = ref(false);
@@ -1268,7 +1273,7 @@ export default {
 
     const addPromoCode = () => {
       promoCodeEditId.value = null;
-      editingPromoCode.value = { code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true };
+      editingPromoCode.value = { code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true, welcomeOffer: false };
       promoCodeError.value = '';
       promoCodeDialog.value = true;
     };
@@ -1282,6 +1287,7 @@ export default {
         validFrom: formatPromoDate(row.validFrom) || null,
         validUntil: formatPromoDate(row.validUntil) || null,
         active: row.active !== false,
+        welcomeOffer: row.welcomeOffer === true,
       };
       promoCodeError.value = '';
       promoCodeDialog.value = true;
@@ -1290,7 +1296,7 @@ export default {
     const closePromoCodeDialog = () => {
       promoCodeDialog.value = false;
       promoCodeEditId.value = null;
-      editingPromoCode.value = { code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true };
+      editingPromoCode.value = { code: '', type: 'percent', value: 10, validFrom: null, validUntil: null, active: true, welcomeOffer: false };
       promoCodeError.value = '';
     };
 
@@ -1338,6 +1344,7 @@ export default {
             validFrom: validFrom || undefined,
             validUntil: validUntil || undefined,
             active: p.active,
+            welcomeOffer: !!p.welcomeOffer,
           });
           safeNotify({ type: 'positive', message: 'Promo code updated', position: 'top' });
         } else {
@@ -1348,6 +1355,7 @@ export default {
             validFrom: validFrom || undefined,
             validUntil: validUntil || undefined,
             active: p.active,
+            welcomeOffer: !!p.welcomeOffer,
           });
           safeNotify({ type: 'positive', message: 'Promo code created', position: 'top' });
         }

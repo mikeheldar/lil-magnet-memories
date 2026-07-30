@@ -1613,14 +1613,18 @@ exports.dailyOpenOrdersReminder = functions.pubsub
             .collection('orders')
             .where('status', 'in', openStatuses)
             .get();
-        if (snapshot.empty) {
+        // Archived orders are hidden in the admin UI and may still carry an open
+        // status if they were archived before archiving began stamping
+        // status='completed' — never count them as open.
+        const openDocs = snapshot.docs.filter((doc) => { var _a; return !((_a = doc.data()) === null || _a === void 0 ? void 0 : _a.archived); });
+        if (openDocs.length === 0) {
             console.log('✅ [REMINDER] No open orders at 9:00am. No email sent.');
             return null;
         }
         const appBaseUrl = String(process.env.PUBLIC_APP_BASE_URL || 'https://www.lilmagnetmemories.com').replace(/\/+$/, '');
         const projectId = process.env.GCLOUD_PROJECT || 'lil-magnet-memories';
         const adminOrdersUrl = `${appBaseUrl}/orders`;
-        const openOrders = snapshot.docs
+        const openOrders = openDocs
             .map((doc) => (Object.assign({ id: doc.id }, (doc.data() || {}))))
             .sort((a, b) => {
             const aTs = getOrderTimestampValue(a) || 0;

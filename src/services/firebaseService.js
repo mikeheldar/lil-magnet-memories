@@ -13,6 +13,7 @@ import {
   where,
   limit,
   Timestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import {
   ref,
@@ -1016,6 +1017,29 @@ class FirebaseService {
     }
   }
 
+  // Get ALL orders without an orderBy clause — Firestore orderBy drops docs
+  // missing the field, and legacy orders have inconsistent date fields.
+  // Used by the sales dashboard, which needs every order for accurate totals.
+  async getOrdersForAnalytics() {
+    try {
+      const ordersRef = collection(db, 'orders');
+      const querySnapshot = await getDocs(ordersRef);
+
+      const orders = [];
+      querySnapshot.forEach((doc) => {
+        orders.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      return orders;
+    } catch (error) {
+      console.error('Error getting orders for analytics:', error);
+      throw error;
+    }
+  }
+
   // Get orders for a specific user (by userId or email)
   async getUserOrders(userId, userEmail = null) {
     try {
@@ -1165,6 +1189,58 @@ class FirebaseService {
       await updateDoc(orderRef, updates);
     } catch (error) {
       console.error('Error updating archived state for order:', error);
+      throw error;
+    }
+  }
+
+  // Reconcile archived orders that still carry an open status.
+  // Orders archived before setOrderArchived began stamping status='completed'
+  // are hidden from the default admin list but still counted as "open" by the
+  // daily reminder and any status-keyed report/dashboard. This scans all orders
+  // and stamps the stale ones completed via a DIRECT batched write — the same
+  // email-free path setOrderArchived uses (never routes through updateOrderStatus,
+  // so no customer email fires). Idempotent: a second run finds nothing to fix.
+  async reconcileArchivedOrderStatuses({ dryRun = false } = {}) {
+    const OPEN_STATUSES = ['new', 'paid', 'in_progress'];
+    try {
+      const orders = await this.getOrdersForAnalytics();
+      const stale = orders.filter(
+        (o) => o && o.archived === true && OPEN_STATUSES.includes(o.status)
+      );
+
+      const result = {
+        scanned: orders.length,
+        stale: stale.length,
+        fixed: 0,
+        dryRun: !!dryRun,
+        orderNumbers: stale
+          .map((o) => o.orderNumber || o.id)
+          .filter(Boolean)
+          .slice(0, 50),
+      };
+
+      if (dryRun || stale.length === 0) {
+        return result;
+      }
+
+      // Firestore batches cap at 500 ops — chunk to stay well under.
+      const CHUNK = 400;
+      for (let i = 0; i < stale.length; i += CHUNK) {
+        const slice = stale.slice(i, i + CHUNK);
+        const batch = writeBatch(db);
+        slice.forEach((o) => {
+          batch.update(doc(db, 'orders', o.id), {
+            status: 'completed',
+            updatedAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+        result.fixed += slice.length;
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error reconciling archived order statuses:', error);
       throw error;
     }
   }
@@ -3329,7 +3405,35 @@ class FirebaseService {
     }
   }
 
-  async createPromoCode({ code, type, value, validFrom, validUntil, active = true }) {
+  // The promo code (if any) marked as the site-wide welcome offer, shown in the
+  // newsletter signup banner. Returns null when no active, date-valid offer exists.
+  async getWelcomeOfferPromo() {
+    try {
+      const coll = collection(db, FirebaseService.PROMO_CODES_COLLECTION);
+      const q = query(coll, where('active', '==', true), where('welcomeOffer', '==', true));
+      const snap = await getDocs(q);
+      const now = new Date();
+      const valid = snap.docs
+        .map((d) => ({ id: d.id, code: d.id, ...d.data() }))
+        .filter((p) => {
+          if (p.validFrom && p.validFrom.toDate && p.validFrom.toDate() > now) return false;
+          if (p.validUntil && p.validUntil.toDate && p.validUntil.toDate() < now) return false;
+          return true;
+        });
+      if (!valid.length) return null;
+      const p = valid[0];
+      return {
+        code: p.code,
+        type: ['percent', 'fixed', 'fixed_total'].includes(p.type) ? p.type : 'percent',
+        value: Number(p.value),
+      };
+    } catch (error) {
+      console.error('Error getting welcome offer promo:', error);
+      return null;
+    }
+  }
+
+  async createPromoCode({ code, type, value, validFrom, validUntil, active = true, welcomeOffer = false }) {
     try {
       const normalizedCode = String(code).trim().toUpperCase();
       if (!normalizedCode) throw new Error('Promo code is required');
@@ -3341,6 +3445,7 @@ class FirebaseService {
         type: ['percent', 'fixed', 'fixed_total'].includes(type) ? type : 'percent',
         value: Number(value),
         active: !!active,
+        welcomeOffer: !!welcomeOffer,
         createdAt: now,
         updatedAt: now,
       };
@@ -3589,6 +3694,45 @@ class FirebaseService {
       console.error('Error validating promo code:', error);
       return { valid: false, message: 'Code could not be validated.' };
     }
+  }
+
+  // Newsletter subscribers — doc ID is the normalized email so re-subscribing
+  // the same address updates in place instead of creating duplicates.
+  async subscribeToNewsletter(email, source = 'newsletter-signup') {
+    const normalized = (email || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+      throw new Error('Invalid email address');
+    }
+    const subscriberRef = doc(db, 'newsletter_subscribers', normalized);
+    await setDoc(subscriberRef, {
+      email: normalized,
+      subscribedAt: serverTimestamp(),
+      source,
+      status: 'subscribed',
+    });
+    return normalized;
+  }
+
+  // Admin/operator only (enforced by Firestore rules): newest first.
+  async getNewsletterSubscribers() {
+    const subscribersQuery = query(
+      collection(db, 'newsletter_subscribers'),
+      orderBy('subscribedAt', 'desc')
+    );
+    const snapshot = await getDocs(subscribersQuery);
+    return snapshot.docs.map((docSnap) => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        email: data.email || docSnap.id,
+        source: data.source || '',
+        status: data.status || '',
+        subscribedAt:
+          data.subscribedAt && data.subscribedAt.toDate
+            ? data.subscribedAt.toDate()
+            : null,
+      };
+    });
   }
 }
 

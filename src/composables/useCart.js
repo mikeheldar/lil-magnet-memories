@@ -1,4 +1,5 @@
 import { ref, computed, watch } from 'vue';
+import { trackAddToCart, trackRemoveFromCart } from 'src/utils/analytics';
 import { auth } from '../firebase/config.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { firebaseService } from '../services/firebaseService.js';
@@ -385,6 +386,22 @@ export function useCart() {
     }
     // Explicitly trigger save to ensure immediate sync
     saveCart(cartItems.value);
+
+    const tracked =
+      existingIndex >= 0
+        ? cartItems.value[existingIndex]
+        : cartItems.value[cartItems.value.length - 1];
+    trackAddToCart({
+      value: (tracked.pricePerUnit || 0) * quantity,
+      items: [
+        {
+          item_id: String(tracked.productId),
+          item_name: tracked.productName,
+          quantity,
+          price: tracked.pricePerUnit,
+        },
+      ],
+    });
   };
 
   const addCustomUploadToCart = (uploadData) => {
@@ -452,7 +469,21 @@ export function useCart() {
     cartItems.value.push(cartItem);
     // Explicitly trigger save to ensure immediate sync
     saveCart(cartItems.value);
-    
+
+    trackAddToCart({
+      value: cartItem.totalCost || 0,
+      items: [
+        {
+          item_id: 'custom-photo-magnets',
+          item_name: cartItem.productName,
+          quantity: cartItem.quantity || 1,
+          price: cartItem.quantity
+            ? Math.round((cartItem.totalCost / cartItem.quantity) * 100) / 100
+            : cartItem.totalCost,
+        },
+      ],
+    });
+
     return cartItem.productId;
   };
 
@@ -491,9 +522,22 @@ export function useCart() {
       (item) => item.productId === productId
     );
     if (index >= 0) {
-      cartItems.value.splice(index, 1);
+      const [removed] = cartItems.value.splice(index, 1);
       // Explicitly trigger save to ensure immediate sync
       saveCart(cartItems.value);
+      trackRemoveFromCart({
+        value: removed.totalPrice ?? removed.totalCost ?? 0,
+        items: [
+          {
+            item_id: removed.isCustomUpload
+              ? 'custom-photo-magnets'
+              : String(removed.productId),
+            item_name: removed.productName,
+            quantity: removed.quantity || 1,
+            price: removed.pricePerUnit,
+          },
+        ],
+      });
     }
   };
 
