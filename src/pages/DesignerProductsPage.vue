@@ -168,6 +168,10 @@ export default {
         'novelty magnets, gift ideas, holiday magnets, teacher gifts, event keepsakes, Dunwoody gift shop, Sandy Springs personalized gifts',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
+      breadcrumb: [
+        { name: 'Home', path: '/' },
+        { name: 'Novelty Magnets', path: route.path },
+      ],
     }));
     const products = ref([]);
     const loading = ref(true);

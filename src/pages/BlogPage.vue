@@ -68,6 +68,10 @@ useSiteSeo(() => ({
     'magnet gift ideas, custom photo magnets, holiday gifts, Dunwoody gifts, Sandy Springs gifts, team magnets, family photo gifts',
   path: route.path,
   image: '/assets/lil-magnet-memories-logo.png',
+  breadcrumb: [
+    { name: 'Home', path: '/' },
+    { name: 'Blog', path: route.path },
+  ],
 }));
 
 const loading = ref(true);

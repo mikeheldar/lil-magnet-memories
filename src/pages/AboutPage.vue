@@ -256,6 +256,10 @@ export default {
         'about lil magnet memories, Dunwoody small business, Sandy Springs gift ideas, custom magnet company, personalized photo magnets',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
+      breadcrumb: [
+        { name: 'Home', path: '/' },
+        { name: 'About Us', path: route.path },
+      ],
     }));
   },
 };

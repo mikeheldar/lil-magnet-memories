@@ -68,6 +68,10 @@ useSiteSeo(() => ({
   keywords: 'magnet FAQ, custom magnet questions, shipping info, pricing questions',
   path: route.path,
   image: '/assets/lil-magnet-memories-logo.png',
+  breadcrumb: [
+    { name: 'Home', path: '/' },
+    { name: 'FAQ', path: route.path },
+  ],
 }));
 
 const faqs = ref([
