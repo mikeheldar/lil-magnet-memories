@@ -54,8 +54,9 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useMeta } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
-import { useSiteSeo } from '../composables/useSiteSeo.js';
+import { useSiteSeo, toAbsoluteUrl } from '../composables/useSiteSeo.js';
 
 const router = useRouter();
 const route = useRoute();
@@ -67,6 +68,10 @@ useSiteSeo(() => ({
   keywords: 'magnet FAQ, custom magnet questions, shipping info, pricing questions',
   path: route.path,
   image: '/assets/lil-magnet-memories-logo.png',
+  breadcrumb: [
+    { name: 'Home', path: '/' },
+    { name: 'FAQ', path: route.path },
+  ],
 }));
 
 const faqs = ref([
@@ -111,6 +116,37 @@ const faqs = ref([
     answer: 'Once your order ships, you\'ll receive an email with a tracking number. You can use this tracking number to monitor your shipment\'s progress. If you have questions about your order status, please contact us.',
   },
 ]);
+
+// FAQPage structured data (Google rich result) — built from the same visible faqs
+// so the on-page content and the schema always match. Answers are stripped to plain
+// text (schema.org acceptedAnswer.text). Injected as its own script key so it merges
+// with useSiteSeo's meta and the sitewide LocalBusiness/WebSite JSON-LD.
+const stripHtml = (html) =>
+  String(html || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+useMeta(() => ({
+  script: {
+    faqPageLd: {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        '@id': `${toAbsoluteUrl(route.path)}#faq`,
+        mainEntity: faqs.value.map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: stripHtml(faq.answer),
+          },
+        })),
+      }),
+    },
+  },
+}));
 </script>
 
 <style lang="scss" scoped>

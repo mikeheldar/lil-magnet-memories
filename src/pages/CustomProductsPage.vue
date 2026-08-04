@@ -215,6 +215,10 @@ export default {
         'custom photo magnets, team magnets, graduation gifts, holiday gift ideas, family reunion favors, Dunwoody custom gifts, Sandy Springs magnet shop',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
+      breadcrumb: [
+        { name: 'Home', path: '/' },
+        { name: 'Custom Photo Magnets', path: route.path },
+      ],
     }));
     const products = ref([]);
     const loading = ref(true);

@@ -64,7 +64,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
-import { toAbsoluteUrl } from '../composables/useSiteSeo.js';
+import { toAbsoluteUrl, buildBreadcrumbLd } from '../composables/useSiteSeo.js';
 
 const route = useRoute();
 const loading = ref(true);
@@ -114,6 +114,12 @@ const applyMeta = () => {
   const canonical = toAbsoluteUrl(route.path);
   const image = toAbsoluteUrl(displayImages.value[0] || '/assets/lil-magnet-memories-logo.png');
 
+  const breadcrumbLd = buildBreadcrumbLd([
+    { name: 'Home', path: '/' },
+    { name: 'Blog', path: '/blog' },
+    { name: current?.title || 'Blog Post', path: route.path },
+  ]);
+
   useMeta({
     title,
     meta: {
@@ -131,6 +137,12 @@ const applyMeta = () => {
     },
     link: {
       canonical: { rel: 'canonical', href: canonical },
+    },
+    script: {
+      blogBreadcrumbLd: {
+        type: 'application/ld+json',
+        innerHTML: JSON.stringify(breadcrumbLd),
+      },
     },
   });
 };

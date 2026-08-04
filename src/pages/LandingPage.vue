@@ -395,9 +395,9 @@ import {
 import { config } from '../config/environment.js';
 import { marketEventService } from '../services/marketEventService.js';
 import { userPreferencesService } from '../services/userPreferencesService.js';
-import { useQuasar } from 'quasar';
+import { useQuasar, useMeta } from 'quasar';
 import { useCustomerType } from '../composables/useCustomerType.js';
-import { useSiteSeo } from '../composables/useSiteSeo.js';
+import { useSiteSeo, SITE_ORIGIN } from '../composables/useSiteSeo.js';
 import { useProductTypeVisibility } from '../composables/useProductTypeVisibility.js';
 import { ensureNetworkReady } from '../firebase/config.js';
 import { getUserLocation, calculateDistance, formatDistance as formatDistanceUtil } from '../utils/geolocation.js';
@@ -1099,6 +1099,81 @@ export default {
       }
 
       return combined;
+    });
+
+    // --- SEO: AggregateRating + Review structured data (star rich results) ---
+    // Sourced from the SAME reviews rendered visibly below, so schema can never
+    // drift from on-page content (Google requires the reviews be visible).
+    // Anchored to the sitewide #localbusiness @id so it merges with the graph
+    // emitted in MainLayout. Inert (emits nothing) until real reviews load.
+    const toIsoDate = value => {
+      if (!value) return null;
+      try {
+        if (typeof value.toDate === 'function') return value.toDate().toISOString();
+        if (typeof value.seconds === 'number') return new Date(value.seconds * 1000).toISOString();
+        const d = new Date(value);
+        return isNaN(d.getTime()) ? null : d.toISOString();
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const reviewStructuredData = computed(() => {
+      const list = allReviewsCombined.value || [];
+      const rated = list.filter(r => Number(r.rating) > 0);
+      if (rated.length === 0) return null;
+
+      const sum = rated.reduce((acc, r) => acc + Number(r.rating), 0);
+      const avg = Math.round((sum / rated.length) * 10) / 10;
+
+      const reviewNodes = rated.slice(0, 12).map(r => {
+        const node = {
+          '@type': 'Review',
+          author: {
+            '@type': 'Person',
+            name: r.customerName || r.author || 'Verified Customer',
+          },
+          reviewRating: {
+            '@type': 'Rating',
+            ratingValue: Number(r.rating),
+            bestRating: 5,
+            worstRating: 1,
+          },
+        };
+        const body = (r.reviewText || r.text || '').toString().trim();
+        if (body) node.reviewBody = body;
+        const iso = toIsoDate(r.createdAt);
+        if (iso) node.datePublished = iso;
+        return node;
+      });
+
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        '@id': `${SITE_ORIGIN}/#localbusiness`,
+        name: "Li'l Magnet Memories",
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: avg,
+          reviewCount: rated.length,
+          bestRating: 5,
+          worstRating: 1,
+        },
+        review: reviewNodes,
+      };
+    });
+
+    useMeta(() => {
+      const ld = reviewStructuredData.value;
+      if (!ld) return {};
+      return {
+        script: {
+          reviewsAggregateRatingLd: {
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify(ld),
+          },
+        },
+      };
     });
 
     // Watch reviews to ensure reactivity and log changes

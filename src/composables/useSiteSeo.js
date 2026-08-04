@@ -123,9 +123,48 @@ export function buildSiteSeoPayload(opts) {
 }
 
 /**
+ * Build a schema.org BreadcrumbList JSON-LD object from an ordered list of crumbs.
+ * Each crumb is { name, path } where path is site-relative (or absolute); positions
+ * are assigned in order. Google renders this as the breadcrumb trail in the search
+ * result (replaces the raw URL, lifts CTR) — a durable, no-deploy organic lever.
+ * @param {Array<{name: string, path: string}>} items
+ * @returns {object|null} BreadcrumbList LD, or null if there are no valid crumbs
+ */
+export function buildBreadcrumbLd(items) {
+  const crumbs = (items || []).filter((c) => c && c.name && c.path);
+  if (!crumbs.length) return null;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: c.name,
+      item: toAbsoluteUrl(c.path),
+    })),
+  };
+}
+
+/**
  * Reactive SEO via Quasar Meta (re-runs when dependencies inside getter change).
- * @param {() => object} getter returns { title, description, keywords?, path, ogType?, image? }
+ * @param {() => object} getter returns { title, description, keywords?, path, ogType?,
+ *   image?, breadcrumb? } — when `breadcrumb` (an array of { name, path }) is present,
+ *   a BreadcrumbList JSON-LD script is injected alongside the meta.
  */
 export function useSiteSeo(getter) {
-  useMeta(() => buildSiteSeoPayload(getter()));
+  useMeta(() => {
+    const opts = getter() || {};
+    const payload = buildSiteSeoPayload(opts);
+    const breadcrumbLd = buildBreadcrumbLd(opts.breadcrumb);
+    if (breadcrumbLd) {
+      payload.script = {
+        ...(payload.script || {}),
+        breadcrumbLd: {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify(breadcrumbLd),
+        },
+      };
+    }
+    return payload;
+  });
 }

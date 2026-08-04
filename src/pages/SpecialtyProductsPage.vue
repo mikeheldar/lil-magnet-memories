@@ -167,6 +167,10 @@ export default {
         'specialty magnets, unique custom magnets, team event gifts, family milestone gifts, holiday photo gifts, Dunwoody events, Sandy Springs events',
       path: route.path,
       image: '/assets/lil-magnet-memories-logo.png',
+      breadcrumb: [
+        { name: 'Home', path: '/' },
+        { name: 'Specialty Products', path: route.path },
+      ],
     }));
     const products = ref([]);
     const loading = ref(true);
