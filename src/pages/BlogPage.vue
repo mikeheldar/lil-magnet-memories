@@ -18,7 +18,8 @@
 
       <div v-else class="row q-col-gutter-md">
         <div v-for="post in posts" :key="post.id" class="col-12 col-md-6 col-lg-4">
-          <q-card class="blog-card cursor-pointer" flat bordered @click="$router.push(`/blog/${post.slug}`)">
+          <router-link :to="`/blog/${post.slug}`" class="blog-card-link">
+            <q-card class="blog-card" flat bordered>
             <q-img
               v-if="post.featuredImage"
               :src="post.featuredImage"
@@ -45,7 +46,8 @@
                 </q-chip>
               </div>
             </q-card-section>
-          </q-card>
+            </q-card>
+          </router-link>
         </div>
       </div>
     </div>
@@ -100,8 +102,15 @@ onMounted(async () => {
   max-width: 1200px;
   margin: 0 auto;
 }
+.blog-card-link {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
 .blog-card {
   height: 100%;
+  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .blog-card:hover {

@@ -30,6 +30,7 @@ const SEO_ROUTES = [
   '/shipping-info',
   '/returns',
   '/faq',
+  '/blog',
   '/newsletter-signup',
   '/leave-review',
 ];
@@ -88,7 +89,7 @@ async function main() {
     context = await browser.newContext();
     page = await context.newPage();
 
-    for (const route of SEO_ROUTES) {
+    const renderRoute = async (route) => {
       try {
         const url = `${baseUrl}${route}`;
         console.log(`Prerendering ${route}`);
@@ -98,17 +99,54 @@ async function main() {
         await page.waitForSelector(appRootSelector, { timeout: 15000 });
         await page
           .waitForLoadState('networkidle', { timeout: 5000 })
-          .catch(() => {});
+          .catch(() => undefined);
         await page.waitForTimeout(500);
         const html = await page.content();
         const outPath = routeToOutputPath(route);
         mkdirSync(dirname(outPath), { recursive: true });
         writeFileSync(outPath, `<!DOCTYPE html>\n${html}`);
         rendered.push({ route, output: outPath.replace(`${projectRoot}/`, '') });
+        return true;
       } catch (routeErr) {
         console.warn(`Failed to prerender ${route}: ${routeErr.message}`);
         writeFallbackRoute(route);
+        return false;
       }
+    };
+
+    for (const route of SEO_ROUTES) {
+      await renderRoute(route);
+    }
+
+    // Discover individual blog posts from the rendered /blog listing and
+    // prerender each so posts are crawlable HTML with their Article/Breadcrumb
+    // JSON-LD baked in. Uses the live SPA (client-side Firestore) — no creds.
+    try {
+      await page.goto(`${baseUrl}/blog`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+      await page.waitForSelector(appRootSelector, { timeout: 15000 });
+      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => undefined);
+      await page.waitForTimeout(1000);
+      const postRoutes = await page.$$eval('a[href*="/blog/"]', (as) =>
+        Array.from(
+          new Set(
+            as
+              .map((a) => {
+                try {
+                  return new URL(a.href).pathname;
+                } catch {
+                  return null;
+                }
+              })
+              .filter((pth) => pth && /^\/blog\/[^/]+$/.test(pth))
+          )
+        )
+      );
+      console.log(`Discovered ${postRoutes.length} blog post route(s)`);
+      for (const route of postRoutes) {
+        await renderRoute(route);
+      }
+    } catch (blogErr) {
+      console.warn(`Blog post discovery skipped: ${blogErr.message}`);
     }
   } catch (browserErr) {
     console.warn(`Browser launch failed, using fallback route copies: ${browserErr.message}`);
