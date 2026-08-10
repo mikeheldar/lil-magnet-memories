@@ -40,6 +40,54 @@ function routeToOutputPath(route) {
   return join(outDir, route.replace(/^\//, ''), 'index.html');
 }
 
+// Canonical origin — keep in sync with SITE_ORIGIN in src/composables/useSiteSeo.js
+const SITE_ORIGIN = 'https://www.lilmagnetmemories.com';
+
+// changefreq/priority per curated route (mirrors the previous static public/sitemap.xml
+// so no prior crawl signal regresses). Any /blog/:slug post uses BLOG_POST_META.
+const SITEMAP_META = {
+  '/': { priority: '1.0', changefreq: 'weekly' },
+  '/products/custom': { priority: '0.9', changefreq: 'weekly' },
+  '/products/novelty': { priority: '0.8', changefreq: 'weekly' },
+  '/products/specialty': { priority: '0.8', changefreq: 'weekly' },
+  '/photo-upload': { priority: '0.8', changefreq: 'monthly' },
+  '/photo-upload-market': { priority: '0.7', changefreq: 'monthly' },
+  '/about': { priority: '0.6', changefreq: 'monthly' },
+  '/contact-us': { priority: '0.5', changefreq: 'monthly' },
+  '/event-calendar': { priority: '0.7', changefreq: 'weekly' },
+  '/blog': { priority: '0.8', changefreq: 'weekly' },
+  '/leave-review': { priority: '0.5', changefreq: 'monthly' },
+  '/shipping-info': { priority: '0.4', changefreq: 'monthly' },
+  '/returns': { priority: '0.4', changefreq: 'monthly' },
+  '/faq': { priority: '0.5', changefreq: 'monthly' },
+  '/newsletter-signup': { priority: '0.4', changefreq: 'monthly' },
+};
+const BLOG_POST_META = { priority: '0.6', changefreq: 'monthly' };
+
+// Build a complete sitemap.xml from the curated pages + every discovered blog post.
+// Unknown routes (admin/debug/utility) are skipped by design.
+function buildSitemapXml(routes) {
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const urls = routes
+    .map((route) => {
+      const meta = route.startsWith('/blog/')
+        ? BLOG_POST_META
+        : SITEMAP_META[route];
+      if (!meta) return null;
+      const loc = `${SITE_ORIGIN}${route}`;
+      return (
+        `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n` +
+        `    <changefreq>${meta.changefreq}</changefreq>\n    <priority>${meta.priority}</priority>\n  </url>`
+      );
+    })
+    .filter(Boolean);
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    `${urls.join('\n')}\n</urlset>\n`
+  );
+}
+
 async function startLocalServer() {
   const app = express();
   app.use(express.static(spaDir));
@@ -162,6 +210,17 @@ async function main() {
     }
     await new Promise((resolve) => server.close(resolve));
   }
+
+  const blogPostRoutes = rendered
+    .map((r) => r.route)
+    .filter((route) => /^\/blog\/[^/]+$/.test(route));
+  const sitemapRoutes = [
+    ...new Set([...Object.keys(SITEMAP_META), ...blogPostRoutes]),
+  ];
+  writeFileSync(join(outDir, 'sitemap.xml'), buildSitemapXml(sitemapRoutes));
+  console.log(
+    `Wrote sitemap.xml with ${sitemapRoutes.length} URLs (${blogPostRoutes.length} blog post(s))`
+  );
 
   writeFileSync(
     join(outDir, 'prerender-routes.json'),
