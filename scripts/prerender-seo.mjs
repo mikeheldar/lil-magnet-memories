@@ -63,6 +63,14 @@ const SITEMAP_META = {
   '/newsletter-signup': { priority: '0.4', changefreq: 'monthly' },
 };
 const BLOG_POST_META = { priority: '0.6', changefreq: 'monthly' };
+// Product detail pages are money pages — rank them above blog posts.
+const PRODUCT_DETAIL_META = { priority: '0.7', changefreq: 'weekly' };
+// Listing pages whose rendered DOM we scrape for /product/:type/:id links.
+const PRODUCT_LISTINGS = [
+  '/products/custom',
+  '/products/novelty',
+  '/products/specialty',
+];
 
 // Build a complete sitemap.xml from the curated pages + every discovered blog post.
 // Unknown routes (admin/debug/utility) are skipped by design.
@@ -72,6 +80,8 @@ function buildSitemapXml(routes) {
     .map((route) => {
       const meta = route.startsWith('/blog/')
         ? BLOG_POST_META
+        : /^\/product\/[^/]+\/[^/]+$/.test(route)
+        ? PRODUCT_DETAIL_META
         : SITEMAP_META[route];
       if (!meta) return null;
       const loc = `${SITE_ORIGIN}${route}`;
@@ -166,35 +176,62 @@ async function main() {
       await renderRoute(route);
     }
 
-    // Discover individual blog posts from the rendered /blog listing and
-    // prerender each so posts are crawlable HTML with their Article/Breadcrumb
-    // JSON-LD baked in. Uses the live SPA (client-side Firestore) — no creds.
-    try {
-      await page.goto(`${baseUrl}/blog`, { waitUntil: 'domcontentloaded', timeout: 90000 });
-      await page.waitForSelector(appRootSelector, { timeout: 15000 });
-      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => undefined);
-      await page.waitForTimeout(1000);
-      const postRoutes = await page.$$eval('a[href*="/blog/"]', (as) =>
-        Array.from(
-          new Set(
-            as
-              .map((a) => {
-                try {
-                  return new URL(a.href).pathname;
-                } catch {
-                  return null;
-                }
-              })
-              .filter((pth) => pth && /^\/blog\/[^/]+$/.test(pth))
+    // Discover detail-page routes linked from a rendered listing page, then
+    // prerender each so they are crawlable HTML with their JSON-LD baked in.
+    // Uses the live SPA (client-side Firestore) at build time — no creds.
+    const discoverAndRender = async (listingRoute, linkSelector, pattern, label) => {
+      try {
+        await page.goto(`${baseUrl}${listingRoute}`, {
+          waitUntil: 'domcontentloaded',
+          timeout: 90000,
+        });
+        await page.waitForSelector(appRootSelector, { timeout: 15000 });
+        await page
+          .waitForLoadState('networkidle', { timeout: 5000 })
+          .catch(() => undefined);
+        await page.waitForTimeout(1000);
+        const hrefs = await page.$$eval(linkSelector, (as) =>
+          Array.from(
+            new Set(
+              as
+                .map((a) => {
+                  try {
+                    return new URL(a.href).pathname;
+                  } catch {
+                    return null;
+                  }
+                })
+                .filter(Boolean)
+            )
           )
-        )
-      );
-      console.log(`Discovered ${postRoutes.length} blog post route(s)`);
-      for (const route of postRoutes) {
-        await renderRoute(route);
+        );
+        const routes = hrefs.filter((pth) => pattern.test(pth));
+        console.log(
+          `Discovered ${routes.length} ${label} route(s) from ${listingRoute}`
+        );
+        for (const route of routes) {
+          if (!rendered.some((r) => r.route === route)) {
+            await renderRoute(route);
+          }
+        }
+      } catch (err) {
+        console.warn(`${label} discovery skipped for ${listingRoute}: ${err.message}`);
       }
-    } catch (blogErr) {
-      console.warn(`Blog post discovery skipped: ${blogErr.message}`);
+    };
+
+    await discoverAndRender(
+      '/blog',
+      'a[href*="/blog/"]',
+      /^\/blog\/[^/]+$/,
+      'blog post'
+    );
+    for (const listing of PRODUCT_LISTINGS) {
+      await discoverAndRender(
+        listing,
+        'a[href*="/product/"]',
+        /^\/product\/[^/]+\/[^/]+$/,
+        'product'
+      );
     }
   } catch (browserErr) {
     console.warn(`Browser launch failed, using fallback route copies: ${browserErr.message}`);
@@ -214,12 +251,20 @@ async function main() {
   const blogPostRoutes = rendered
     .map((r) => r.route)
     .filter((route) => /^\/blog\/[^/]+$/.test(route));
+  const productRoutes = rendered
+    .map((r) => r.route)
+    .filter((route) => /^\/product\/[^/]+\/[^/]+$/.test(route));
   const sitemapRoutes = [
-    ...new Set([...Object.keys(SITEMAP_META), ...blogPostRoutes]),
+    ...new Set([
+      ...Object.keys(SITEMAP_META),
+      ...blogPostRoutes,
+      ...productRoutes,
+    ]),
   ];
   writeFileSync(join(outDir, 'sitemap.xml'), buildSitemapXml(sitemapRoutes));
   console.log(
-    `Wrote sitemap.xml with ${sitemapRoutes.length} URLs (${blogPostRoutes.length} blog post(s))`
+    `Wrote sitemap.xml with ${sitemapRoutes.length} URLs ` +
+      `(${blogPostRoutes.length} blog post(s), ${productRoutes.length} product(s))`
   );
 
   writeFileSync(

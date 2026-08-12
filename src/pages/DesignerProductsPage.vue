@@ -74,7 +74,7 @@
                       label="View Details"
                       icon="arrow_forward"
                       class="full-width"
-                      @click.stop="goToProductDetail(product)"
+                      :to="detailPathFor(product)"
                     />
                   </q-card-actions>
                 </q-card>
@@ -127,7 +127,7 @@
                   label="View Details"
                   icon="arrow_forward"
                   class="full-width"
-                  @click.stop="goToProductDetail(product)"
+                  :to="detailPathFor(product)"
                 />
               </q-card-actions>
             </q-card>
@@ -244,8 +244,11 @@ export default {
       return groupProductsByCollection(designerProducts.value);
     });
 
+    const detailPathFor = (product) =>
+      productDetailPath(product.category, product.id);
+
     const goToProductDetail = (product) => {
-      router.push(productDetailPath(product.category, product.id));
+      router.push(detailPathFor(product));
     };
 
     onMounted(() => {
@@ -257,6 +260,7 @@ export default {
       designerProducts,
       designerProductsByCollection,
       loading,
+      detailPathFor,
       goToProductDetail,
     };
   },
