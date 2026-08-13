@@ -72,9 +72,26 @@ const PRODUCT_LISTINGS = [
   '/products/specialty',
 ];
 
+// Escape the five XML entities. Critical for image <loc>s: Firebase Storage URLs
+// carry `?alt=media&token=...`, and a bare `&` makes the sitemap invalid XML.
+function escapeXml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+// Google caps image-sitemap entries at 1000 images per page; keep it sane per URL.
+const MAX_IMAGES_PER_URL = 25;
+
 // Build a complete sitemap.xml from the curated pages + every discovered blog post.
-// Unknown routes (admin/debug/utility) are skipped by design.
-function buildSitemapXml(routes) {
+// Unknown routes (admin/debug/utility) are skipped by design. When `imagesByRoute`
+// carries image URLs for a route (scraped from its prerendered og:image + Product
+// JSON-LD), they're emitted as <image:image> entries so Google Image search — a real
+// discovery channel for a photo-magnet store — can index the actual product photos.
+function buildSitemapXml(routes, imagesByRoute = {}) {
   const lastmod = new Date().toISOString().slice(0, 10);
   const urls = routes
     .map((route) => {
@@ -85,17 +102,71 @@ function buildSitemapXml(routes) {
         : SITEMAP_META[route];
       if (!meta) return null;
       const loc = `${SITE_ORIGIN}${route}`;
+      const images = (imagesByRoute[route] || [])
+        .slice(0, MAX_IMAGES_PER_URL)
+        .map((img) => `    <image:image>\n      <image:loc>${escapeXml(img)}</image:loc>\n    </image:image>`)
+        .join('\n');
       return (
-        `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n` +
-        `    <changefreq>${meta.changefreq}</changefreq>\n    <priority>${meta.priority}</priority>\n  </url>`
+        `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <lastmod>${lastmod}</lastmod>\n` +
+        `    <changefreq>${meta.changefreq}</changefreq>\n    <priority>${meta.priority}</priority>\n` +
+        (images ? `${images}\n` : '') +
+        '  </url>'
       );
     })
     .filter(Boolean);
   return (
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' +
+    ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' +
     `${urls.join('\n')}\n</urlset>\n`
   );
+}
+
+// Pull indexable image URLs out of a prerendered page's live DOM: the og:image meta
+// (present on every page) plus any Product JSON-LD `image` array (multiple product
+// photos per detail page). Absolute http(s) only, deduped, in document order.
+async function collectPageImages(page) {
+  try {
+    const urls = await page.evaluate(() => {
+      const out = [];
+      const push = (u) => {
+        if (typeof u === 'string' && /^https?:\/\//i.test(u) && !out.includes(u)) {
+          out.push(u);
+        }
+      };
+      document
+        .querySelectorAll('meta[property="og:image"]')
+        .forEach((m) => push(m.getAttribute('content')));
+      document
+        .querySelectorAll('script[type="application/ld+json"]')
+        .forEach((s) => {
+          let data;
+          try {
+            data = JSON.parse(s.textContent);
+          } catch {
+            return;
+          }
+          const nodes = Array.isArray(data)
+            ? data
+            : data && data['@graph']
+            ? data['@graph']
+            : [data];
+          nodes.forEach((n) => {
+            if (!n) return;
+            const t = n['@type'];
+            const isProduct =
+              t === 'Product' || (Array.isArray(t) && t.includes('Product'));
+            if (isProduct && n.image) {
+              (Array.isArray(n.image) ? n.image : [n.image]).forEach(push);
+            }
+          });
+        });
+      return out;
+    });
+    return urls;
+  } catch {
+    return [];
+  }
 }
 
 async function startLocalServer() {
@@ -129,6 +200,7 @@ async function main() {
   const { server, port } = await startLocalServer();
   const baseUrl = `http://127.0.0.1:${port}`;
   const rendered = [];
+  const imagesByRoute = {};
   const fallbackRoutes = [];
   let browser;
   let context;
@@ -163,6 +235,8 @@ async function main() {
         const outPath = routeToOutputPath(route);
         mkdirSync(dirname(outPath), { recursive: true });
         writeFileSync(outPath, `<!DOCTYPE html>\n${html}`);
+        const imgs = await collectPageImages(page);
+        if (imgs.length) imagesByRoute[route] = imgs;
         rendered.push({ route, output: outPath.replace(`${projectRoot}/`, '') });
         return true;
       } catch (routeErr) {
@@ -261,10 +335,18 @@ async function main() {
       ...productRoutes,
     ]),
   ];
-  writeFileSync(join(outDir, 'sitemap.xml'), buildSitemapXml(sitemapRoutes));
+  writeFileSync(
+    join(outDir, 'sitemap.xml'),
+    buildSitemapXml(sitemapRoutes, imagesByRoute)
+  );
+  const imageCount = sitemapRoutes.reduce(
+    (n, route) => n + (imagesByRoute[route] || []).length,
+    0
+  );
   console.log(
     `Wrote sitemap.xml with ${sitemapRoutes.length} URLs ` +
-      `(${blogPostRoutes.length} blog post(s), ${productRoutes.length} product(s))`
+      `(${blogPostRoutes.length} blog post(s), ${productRoutes.length} product(s), ` +
+      `${imageCount} image entries)`
   );
 
   writeFileSync(
