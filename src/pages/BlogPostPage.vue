@@ -27,6 +27,7 @@
           <q-img
             v-if="displayImages.length === 1"
             :src="displayImages[0]"
+            :alt="post.title"
             :ratio="16 / 9"
             class="rounded-borders"
           />
@@ -37,7 +38,7 @@
               class="col-12"
               :class="index === 0 ? 'col-md-12' : 'col-md-6'"
             >
-              <q-img :src="imageUrl" :ratio="index === 0 ? 16 / 9 : 1" class="rounded-borders" />
+              <q-img :src="imageUrl" :alt="`${post.title} — image ${index + 1}`" :ratio="index === 0 ? 16 / 9 : 1" class="rounded-borders" />
             </div>
           </div>
         </div>

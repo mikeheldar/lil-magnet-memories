@@ -23,6 +23,7 @@
             <q-img
               v-if="post.featuredImage"
               :src="post.featuredImage"
+              :alt="post.title"
               :ratio="16 / 9"
               class="rounded-borders"
             />
