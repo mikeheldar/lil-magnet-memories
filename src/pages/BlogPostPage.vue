@@ -56,6 +56,38 @@
           </q-chip>
         </div>
       </article>
+
+      <section v-if="post && relatedPosts.length" class="related-posts q-mt-xl">
+        <div class="text-h6 text-primary q-mb-md">More magnet ideas</div>
+        <div class="row q-col-gutter-md">
+          <div
+            v-for="related in relatedPosts"
+            :key="related.id"
+            class="col-12 col-sm-6 col-md-4"
+          >
+            <router-link :to="`/blog/${related.slug}`" class="blog-card-link">
+              <q-card class="blog-card" flat bordered>
+                <q-img
+                  v-if="related.featuredImage"
+                  :src="related.featuredImage"
+                  :alt="related.title"
+                  :ratio="16 / 9"
+                  class="rounded-borders"
+                />
+                <q-card-section>
+                  <div class="text-caption text-grey-6 q-mb-xs">
+                    {{ formatDate(related.publishedAt || related.createdAt) }}
+                  </div>
+                  <div class="text-subtitle1 text-primary">{{ related.title }}</div>
+                  <div class="text-body2 text-grey-7 q-mt-xs">
+                    {{ related.excerpt || excerptFromContent(related.content) }}
+                  </div>
+                </q-card-section>
+              </q-card>
+            </router-link>
+          </div>
+        </div>
+      </section>
     </div>
   </q-page>
 </template>
@@ -70,6 +102,7 @@ import { toAbsoluteUrl, buildBreadcrumbLd } from '../composables/useSiteSeo.js';
 const route = useRoute();
 const loading = ref(true);
 const post = ref(null);
+const relatedPosts = ref([]);
 
 const contentHtml = computed(() =>
   String(post.value?.content || '')
@@ -95,6 +128,8 @@ const displayImages = computed(() => {
   (current.instagramSync?.mediaUrls || []).forEach(add);
   return urls;
 });
+
+const excerptFromContent = (content) => String(content || '').slice(0, 140).trim() + '...';
 
 const formatDate = (dateValue) => {
   const d = dateValue instanceof Date ? dateValue : new Date(dateValue || Date.now());
@@ -148,8 +183,44 @@ const applyMeta = () => {
   });
 };
 
+// Pick up to 3 related posts: prefer shared-tag overlap, then most recent.
+const loadRelated = async () => {
+  const current = post.value;
+  if (!current) {
+    relatedPosts.value = [];
+    return;
+  }
+  try {
+    const all = await firebaseService.getPublishedBlogPosts(60);
+    const currentTags = new Set((current.tags || []).map((t) => String(t).toLowerCase()));
+    const dateVal = (p) => {
+      const d = p.publishedAt || p.createdAt;
+      const parsed = d instanceof Date ? d : new Date(d || 0);
+      return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+    };
+    const candidates = all
+      .filter((p) => p.id !== current.id && p.slug && p.slug !== current.slug)
+      .map((p) => ({
+        post: p,
+        overlap: (p.tags || []).reduce(
+          (n, t) => (currentTags.has(String(t).toLowerCase()) ? n + 1 : n),
+          0
+        ),
+        recency: dateVal(p),
+      }))
+      .sort((a, b) => b.overlap - a.overlap || b.recency - a.recency)
+      .slice(0, 3)
+      .map((c) => c.post);
+    relatedPosts.value = candidates;
+  } catch (error) {
+    console.error('Failed to load related posts:', error);
+    relatedPosts.value = [];
+  }
+};
+
 const loadPost = async () => {
   loading.value = true;
+  relatedPosts.value = [];
   try {
     post.value = await firebaseService.getBlogPostBySlug(route.params.slug);
   } catch (error) {
@@ -158,6 +229,7 @@ const loadPost = async () => {
   } finally {
     loading.value = false;
     applyMeta();
+    if (post.value) void loadRelated();
   }
 };
 
@@ -179,5 +251,23 @@ onMounted(async () => {
   margin: 0 0 1rem 0;
   line-height: 1.7;
 }
+.related-posts {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 1.5rem;
+}
+.blog-card-link {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+.blog-card {
+  height: 100%;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.blog-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
 </style>
-
