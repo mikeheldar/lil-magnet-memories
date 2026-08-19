@@ -1013,8 +1013,12 @@ export default {
           name: "Li'l Magnet Memories",
           url: SITE_ORIGIN,
           image: `${SITE_ORIGIN}/assets/lil-magnet-memories-logo.png`,
+          logo: `${SITE_ORIGIN}/assets/lil-magnet-memories-logo.png`,
+          email: 'info@lilmagnetmemories.com',
           description:
             'Custom photo magnets and personalized magnet gifts. Order online or find us at local market events.',
+          // Relative indicator ("$" = inexpensive) — magnets are low-cost; honest without quoting a hard figure.
+          priceRange: '$',
           address: {
             '@type': 'PostalAddress',
             streetAddress: '4952 Leisure Valley',
@@ -1023,6 +1027,17 @@ export default {
             postalCode: '30338',
             addressCountry: 'US',
           },
+          // Ships nationwide + works local market events in the Atlanta metro.
+          areaServed: [
+            { '@type': 'City', name: 'Atlanta' },
+            { '@type': 'AdministrativeArea', name: 'Georgia' },
+            { '@type': 'Country', name: 'United States' },
+          ],
+          knowsAbout: [
+            'Custom photo magnets',
+            'Personalized magnet gifts',
+            'Novelty magnets',
+          ],
           sameAs: ['https://www.instagram.com/lilmagnetmemories'],
         },
         {
