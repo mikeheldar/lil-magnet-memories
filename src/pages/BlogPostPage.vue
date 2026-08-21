@@ -47,6 +47,8 @@
           <q-chip
             v-for="tag in post.tags"
             :key="`tag-${tag}`"
+            clickable
+            :to="`/blog/tag/${tagSlug(tag)}`"
             color="primary"
             text-color="white"
             size="sm"
@@ -98,6 +100,7 @@ import { useRoute } from 'vue-router';
 import { useMeta } from 'quasar';
 import { firebaseService } from '../services/firebaseService.js';
 import { toAbsoluteUrl, buildBreadcrumbLd } from '../composables/useSiteSeo.js';
+import { tagSlug } from '../utils/blogTags.js';
 
 const route = useRoute();
 const loading = ref(true);

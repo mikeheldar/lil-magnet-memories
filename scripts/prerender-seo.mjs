@@ -63,6 +63,8 @@ const SITEMAP_META = {
   '/newsletter-signup': { priority: '0.4', changefreq: 'monthly' },
 };
 const BLOG_POST_META = { priority: '0.6', changefreq: 'monthly' };
+// Blog tag archive hubs — topic clusters that spread crawl equity across the blog graph.
+const BLOG_TAG_META = { priority: '0.5', changefreq: 'weekly' };
 // Product detail pages are money pages — rank them above blog posts.
 const PRODUCT_DETAIL_META = { priority: '0.7', changefreq: 'weekly' };
 // Listing pages whose rendered DOM we scrape for /product/:type/:id links.
@@ -95,7 +97,9 @@ function buildSitemapXml(routes, imagesByRoute = {}) {
   const lastmod = new Date().toISOString().slice(0, 10);
   const urls = routes
     .map((route) => {
-      const meta = route.startsWith('/blog/')
+      const meta = route.startsWith('/blog/tag/')
+        ? BLOG_TAG_META
+        : route.startsWith('/blog/')
         ? BLOG_POST_META
         : /^\/product\/[^/]+\/[^/]+$/.test(route)
         ? PRODUCT_DETAIL_META
@@ -298,6 +302,14 @@ async function main() {
       'a[href*="/blog/"]',
       /^\/blog\/[^/]+$/,
       'blog post'
+    );
+    // Blog tag archive hubs (crawlable topic clusters) — linked from the /blog tag
+    // cloud and from each post's tag chips.
+    await discoverAndRender(
+      '/blog',
+      'a[href*="/blog/tag/"]',
+      /^\/blog\/tag\/[^/]+$/,
+      'blog tag'
     );
     for (const listing of PRODUCT_LISTINGS) {
       await discoverAndRender(

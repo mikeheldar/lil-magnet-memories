@@ -8,6 +8,22 @@
         </div>
       </div>
 
+      <div v-if="!loading && allTags.length" class="text-center q-mb-xl">
+        <div class="text-caption text-grey-6 q-mb-sm">Browse by topic</div>
+        <q-chip
+          v-for="t in allTags"
+          :key="t.slug"
+          clickable
+          :to="`/blog/tag/${t.slug}`"
+          outline
+          color="primary"
+          size="sm"
+          class="q-mr-xs q-mb-xs"
+        >
+          {{ t.label }}
+        </q-chip>
+      </div>
+
       <div v-if="loading" class="text-center q-pa-xl">
         <q-spinner-dots size="40px" color="primary" />
       </div>
@@ -56,9 +72,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
+import { tagSlug } from '../utils/blogTags.js';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 const route = useRoute();
@@ -79,6 +96,18 @@ useSiteSeo(() => ({
 
 const loading = ref(true);
 const posts = ref([]);
+
+// De-duplicated tag list (by slug) across all loaded posts, for the topic hub links.
+const allTags = computed(() => {
+  const bySlug = new Map();
+  for (const post of posts.value) {
+    for (const tag of post.tags || []) {
+      const slug = tagSlug(tag);
+      if (slug && !bySlug.has(slug)) bySlug.set(slug, { slug, label: String(tag) });
+    }
+  }
+  return Array.from(bySlug.values()).sort((a, b) => a.label.localeCompare(b.label));
+});
 
 const excerptFromContent = (content) => String(content || '').slice(0, 140).trim() + '...';
 const formatDate = (dateValue) => {
