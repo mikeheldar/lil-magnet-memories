@@ -1606,6 +1606,18 @@ exports.dailyOpenOrdersReminder = functions.pubsub
     .timeZone('America/New_York')
     .onRun(async () => {
     try {
+        // Environment guard: this reminder emails a fixed set of human inboxes
+        // (lilmagnetmemories@gmail.com + admins). If the function is deployed to a
+        // non-prod project (e.g. lil-magnet-memories-test), it would send an
+        // identical-looking email from that project's data to the SAME inboxes —
+        // which is exactly the phantom "30 open orders" email. Only ever send from
+        // the prod project; no-op everywhere else.
+        const PROD_PROJECT_ID = 'lil-magnet-memories';
+        const runningProjectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
+        if (runningProjectId !== PROD_PROJECT_ID) {
+            console.log(`⏭️ [REMINDER] Skipping — running in non-prod project "${runningProjectId || 'unknown'}", not "${PROD_PROJECT_ID}". No email sent.`);
+            return null;
+        }
         const emailConfig = getEmailConfig();
         const db = admin.firestore();
         const openStatuses = ['new', 'paid', 'in_progress'];
@@ -1655,7 +1667,10 @@ exports.dailyOpenOrdersReminder = functions.pubsub
           `;
         })
             .join('');
-        const subject = `URGENT: ${openOrders.length} open order${openOrders.length === 1 ? '' : 's'} pending fulfillment`;
+        // Belt-and-suspenders: if this ever runs outside prod (it shouldn't, given
+        // the guard above), make it screamingly obvious in the subject line.
+        const envTag = projectId === 'lil-magnet-memories' ? '' : `[${projectId}] `;
+        const subject = `${envTag}URGENT: ${openOrders.length} open order${openOrders.length === 1 ? '' : 's'} pending fulfillment`;
         const html = `
         <div style="font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #b91c1c; margin-top: 0;">Urgent order reminder</h2>
@@ -1668,6 +1683,9 @@ exports.dailyOpenOrdersReminder = functions.pubsub
           <ul style="padding-left: 20px;">
             ${itemsHtml}
           </ul>
+          <p style="font-size: 12px; color: #9ca3af; margin-top: 24px;">
+            Source: Firebase project <strong>${escapeHtmlAttr(projectId)}</strong> • ${escapeHtmlAttr(appBaseUrl)}
+          </p>
         </div>
       `;
         const textLines = openOrders.map((order) => {

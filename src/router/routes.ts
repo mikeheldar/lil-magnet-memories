@@ -78,6 +78,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/BlogPage.vue'),
       },
       {
+        path: 'blog/tag/:tag',
+        component: () => import('pages/BlogTagPage.vue'),
+      },
+      {
         path: 'blog/:slug',
         component: () => import('pages/BlogPostPage.vue'),
       },

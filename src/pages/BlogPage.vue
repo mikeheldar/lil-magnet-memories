@@ -8,6 +8,22 @@
         </div>
       </div>
 
+      <div v-if="!loading && allTags.length" class="text-center q-mb-xl">
+        <div class="text-caption text-grey-6 q-mb-sm">Browse by topic</div>
+        <q-chip
+          v-for="t in allTags"
+          :key="t.slug"
+          clickable
+          :to="`/blog/tag/${t.slug}`"
+          outline
+          color="primary"
+          size="sm"
+          class="q-mr-xs q-mb-xs"
+        >
+          {{ t.label }}
+        </q-chip>
+      </div>
+
       <div v-if="loading" class="text-center q-pa-xl">
         <q-spinner-dots size="40px" color="primary" />
       </div>
@@ -18,10 +34,12 @@
 
       <div v-else class="row q-col-gutter-md">
         <div v-for="post in posts" :key="post.id" class="col-12 col-md-6 col-lg-4">
-          <q-card class="blog-card cursor-pointer" flat bordered @click="$router.push(`/blog/${post.slug}`)">
+          <router-link :to="`/blog/${post.slug}`" class="blog-card-link">
+            <q-card class="blog-card" flat bordered>
             <q-img
               v-if="post.featuredImage"
               :src="post.featuredImage"
+              :alt="post.title"
               :ratio="16 / 9"
               class="rounded-borders"
             />
@@ -45,7 +63,8 @@
                 </q-chip>
               </div>
             </q-card-section>
-          </q-card>
+            </q-card>
+          </router-link>
         </div>
       </div>
     </div>
@@ -53,9 +72,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
+import { tagSlug } from '../utils/blogTags.js';
 import { useSiteSeo } from '../composables/useSiteSeo.js';
 
 const route = useRoute();
@@ -76,6 +96,18 @@ useSiteSeo(() => ({
 
 const loading = ref(true);
 const posts = ref([]);
+
+// De-duplicated tag list (by slug) across all loaded posts, for the topic hub links.
+const allTags = computed(() => {
+  const bySlug = new Map();
+  for (const post of posts.value) {
+    for (const tag of post.tags || []) {
+      const slug = tagSlug(tag);
+      if (slug && !bySlug.has(slug)) bySlug.set(slug, { slug, label: String(tag) });
+    }
+  }
+  return Array.from(bySlug.values()).sort((a, b) => a.label.localeCompare(b.label));
+});
 
 const excerptFromContent = (content) => String(content || '').slice(0, 140).trim() + '...';
 const formatDate = (dateValue) => {
@@ -100,8 +132,15 @@ onMounted(async () => {
   max-width: 1200px;
   margin: 0 auto;
 }
+.blog-card-link {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
 .blog-card {
   height: 100%;
+  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .blog-card:hover {

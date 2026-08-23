@@ -88,7 +88,7 @@
                           color="primary"
                           label="View Details"
                           icon="arrow_forward"
-                          @click.stop="goToProductDetail(product)"
+                          :to="detailPathFor(product)"
                         />
                         <q-btn
                           outline
@@ -166,7 +166,7 @@
                       color="primary"
                       label="View Details"
                       icon="arrow_forward"
-                      @click.stop="goToProductDetail(product)"
+                      :to="detailPathFor(product)"
                     />
                     <q-btn
                       outline
@@ -291,8 +291,13 @@ export default {
       return groupProductsByCollection(customProducts.value);
     });
 
+    // Real URL for a product detail page — used both for programmatic
+    // navigation and as the `:to` on the crawlable "View Details" link so
+    // Googlebot can discover product pages (and the prerender can enumerate them).
+    const detailPathFor = (product) => `/product/custom/${product.id}`;
+
     const goToProductDetail = (product) => {
-      router.push(`/product/custom/${product.id}`);
+      router.push(detailPathFor(product));
     };
 
     const goToPurchase = (product) => {
@@ -308,6 +313,7 @@ export default {
       customProducts,
       customProductsByCollection,
       loading,
+      detailPathFor,
       goToProductDetail,
       goToPurchase,
     };
