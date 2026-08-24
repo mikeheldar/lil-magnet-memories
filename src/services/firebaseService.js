@@ -1245,6 +1245,60 @@ class FirebaseService {
     }
   }
 
+  // Data hygiene mirror of reconcileArchivedOrderStatuses for the OTHER half of
+  // the status/shippingStatus split: orders marked shipped/delivered but whose
+  // `status` was never advanced past new/paid/in_progress. Stamps them
+  // status:'completed' via a DIRECT write (never updateOrderStatus) so NO
+  // customer email fires. Idempotent — a second run finds 0.
+  async reconcileShippedOrderStatuses({ dryRun = false } = {}) {
+    const OPEN_STATUSES = ['new', 'paid', 'in_progress'];
+    const FULFILLED_SHIPPING = ['shipped', 'delivered'];
+    try {
+      const orders = await this.getOrdersForAnalytics();
+      const stale = orders.filter(
+        (o) =>
+          o &&
+          OPEN_STATUSES.includes(o.status) &&
+          FULFILLED_SHIPPING.includes(o.shippingStatus)
+      );
+
+      const result = {
+        scanned: orders.length,
+        stale: stale.length,
+        fixed: 0,
+        dryRun: !!dryRun,
+        orderNumbers: stale
+          .map((o) => o.orderNumber || o.id)
+          .filter(Boolean)
+          .slice(0, 50),
+      };
+
+      if (dryRun || stale.length === 0) {
+        return result;
+      }
+
+      // Firestore batches cap at 500 ops — chunk to stay well under.
+      const CHUNK = 400;
+      for (let i = 0; i < stale.length; i += CHUNK) {
+        const slice = stale.slice(i, i + CHUNK);
+        const batch = writeBatch(db);
+        slice.forEach((o) => {
+          batch.update(doc(db, 'orders', o.id), {
+            status: 'completed',
+            updatedAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+        result.fixed += slice.length;
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error reconciling shipped order statuses:', error);
+      throw error;
+    }
+  }
+
   // Delete photo from Firebase Storage
   async deletePhotoFromStorage(photoUrl) {
     try {

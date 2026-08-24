@@ -29,7 +29,7 @@
         <div class="row items-center q-gutter-md justify-center">
           <q-toggle
             v-model="hideCompleted"
-            label="Hide completed orders"
+            label="Hide fulfilled orders"
             color="primary"
           />
           <q-separator vertical />
@@ -53,7 +53,7 @@
             flat
             dense
             icon="history"
-            label="View Completed Orders"
+            label="View Fulfilled Orders"
             color="grey-7"
             @click="showCompletedDialog = true"
           />
@@ -164,6 +164,21 @@
           <q-tooltip>
             Stamp archived-but-open orders completed (fixes the daily reminder
             over-count) — no customer emails sent
+          </q-tooltip>
+        </q-btn>
+        <q-btn
+          flat
+          dense
+          icon="local_shipping"
+          label="Fix shipped statuses"
+          color="teal"
+          :loading="reconcilingShipped"
+          @click="reconcileShippedStatuses"
+        >
+          <q-tooltip>
+            Stamp shipped/delivered-but-open orders completed (they were never
+            marked completed, so the reminder + list still counted them open) —
+            no customer emails sent
           </q-tooltip>
         </q-btn>
       </div>
@@ -600,7 +615,7 @@
     <q-dialog v-model="showCompletedDialog" maximized>
       <q-card>
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Completed Orders</div>
+          <div class="text-h6">Fulfilled Orders</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
@@ -654,6 +669,7 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
+import { isOrderFulfilled } from '../utils/orderStatus.js';
 import { useQuasar, useMeta } from 'quasar';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
@@ -807,7 +823,7 @@ export default {
 
       // Filter by completion status
       if (hideCompleted.value) {
-        filtered = filtered.filter((order) => order.status !== 'completed');
+        filtered = filtered.filter((order) => !isOrderFulfilled(order));
       }
 
       // Archive visibility (default hide archived)
@@ -1033,7 +1049,9 @@ export default {
     };
 
     const completedOrders = computed(() => {
-      return orders.value.filter((order) => order.status === 'completed');
+      // "Fulfilled" = completed OR already shipped/delivered, so orders hidden
+      // from the active list by the toggle always show up here (never vanish).
+      return orders.value.filter((order) => isOrderFulfilled(order));
     });
 
     const formatDate = (timestamp) => {
@@ -1426,6 +1444,72 @@ export default {
       }
     };
 
+    // --- Data hygiene: fix shipped/delivered orders stuck on an open status ---
+    // "Mark as Shipped/Delivered" sets shippingStatus but never advances status,
+    // so a long-shipped order can read status='paid'. That's what kept the daily
+    // reminder over-counting (fixed in functions) and clutters the active list.
+    // One-tap reconcile stamps them completed (direct write, no customer email).
+    const reconcilingShipped = ref(false);
+
+    const reconcileShippedStatuses = async () => {
+      if (reconcilingShipped.value) return;
+      reconcilingShipped.value = true;
+      try {
+        const preview = await firebaseService.reconcileShippedOrderStatuses({
+          dryRun: true,
+        });
+        if (preview.stale === 0) {
+          $q.notify({
+            type: 'positive',
+            message: `All ${preview.scanned} orders are consistent — no shipped-but-open orders to fix.`,
+            icon: 'verified',
+            position: 'top',
+          });
+          reconcilingShipped.value = false;
+          return;
+        }
+        $q.dialog({
+          title: 'Fix shipped order statuses',
+          message: `${preview.stale} order(s) are marked shipped/delivered but still carry an open status (new/paid/in_progress). They're fulfilled, but the daily reminder email and the active list still count them as open. Stamp them completed now? No customer emails are sent.`,
+          cancel: true,
+          persistent: true,
+          ok: { label: `Fix ${preview.stale}`, color: 'teal' },
+        })
+          .onOk(async () => {
+            try {
+              const res = await firebaseService.reconcileShippedOrderStatuses();
+              $q.notify({
+                type: 'positive',
+                message: `Fixed ${res.fixed} shipped order(s) — stamped completed, no emails sent.`,
+                icon: 'verified',
+                position: 'top',
+              });
+              await loadOrders();
+            } catch (err) {
+              console.error('Shipped reconcile failed:', err);
+              $q.notify({
+                type: 'negative',
+                message: `Reconcile failed: ${err.message}`,
+                position: 'top',
+              });
+            } finally {
+              reconcilingShipped.value = false;
+            }
+          })
+          .onCancel(() => {
+            reconcilingShipped.value = false;
+          });
+      } catch (err) {
+        console.error('Shipped reconcile preview failed:', err);
+        $q.notify({
+          type: 'negative',
+          message: `Could not scan orders: ${err.message}`,
+          position: 'top',
+        });
+        reconcilingShipped.value = false;
+      }
+    };
+
     const openPrintTemplate = (order) => {
       let photos = [];
       let quantities = [];
@@ -1716,6 +1800,8 @@ export default {
       confirmBulkDelete,
       reconciling,
       reconcileArchivedStatuses,
+      reconcilingShipped,
+      reconcileShippedStatuses,
       openPrintTemplate,
       getTotalMagnetsFromCart,
       formatAddress,
