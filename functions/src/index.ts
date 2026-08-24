@@ -2052,7 +2052,23 @@ export const dailyOpenOrdersReminder = functions.pubsub
       // Archived orders are hidden in the admin UI and may still carry an open
       // status if they were archived before archiving began stamping
       // status='completed' — never count them as open.
-      const openDocs = snapshot.docs.filter((doc) => !doc.data()?.archived);
+      //
+      // Shipped/delivered orders are FULFILLED even when their `status` field was
+      // never flipped to 'completed'. The admin "Mark as Shipped/Delivered" action
+      // (OrderList.vue -> updateShippingStatus) only sets `shippingStatus`
+      // (pending -> shipped -> delivered) and deliberately leaves `status` alone.
+      // So an order that was long since shipped keeps status='paid'/'in_progress'
+      // and would be counted here as "open pending fulfillment" — that is the root
+      // cause of the phantom "N open orders" reminder (a shipped order IS done).
+      // Exclude anything already shipped or delivered.
+      const FULFILLED_SHIPPING = ['shipped', 'delivered'];
+      const openDocs = snapshot.docs.filter((doc) => {
+        const data = doc.data() || {};
+        if (data.archived) return false;
+        const shipping = String(data.shippingStatus || '').toLowerCase();
+        if (FULFILLED_SHIPPING.includes(shipping)) return false;
+        return true;
+      });
 
       if (openDocs.length === 0) {
         console.log('✅ [REMINDER] No open orders at 9:00am. No email sent.');
