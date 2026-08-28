@@ -13,7 +13,7 @@
         <q-input
           v-model="searchQuery"
           filled
-          placeholder="Search by name or email..."
+          placeholder="Search by name, email, or order #..."
           clearable
           class="max-width-600"
           style="margin: 0 auto; max-width: 600px"
@@ -802,21 +802,25 @@ export default {
     const filteredOrders = computed(() => {
       let filtered = orders.value;
 
-      // Filter by search query (name or email)
+      // Filter by search query (name, email, or order number)
       if (searchQuery.value && searchQuery.value.trim()) {
         const query = searchQuery.value.toLowerCase().trim();
+        // Strip a leading '#' so "#1042" and "1042" both match the order number
+        const orderNumberQuery = query.replace(/^#/, '');
         filtered = filtered.filter((order) => {
           const customer = order.customer || {};
           const firstName = (customer.firstName || '').toLowerCase();
           const lastName = (customer.lastName || '').toLowerCase();
           const fullName = `${firstName} ${lastName}`.trim();
           const email = (customer.email || '').toLowerCase();
+          const orderNumber = String(order.orderNumber || '').toLowerCase();
 
           return (
             fullName.includes(query) ||
             firstName.includes(query) ||
             lastName.includes(query) ||
-            email.includes(query)
+            email.includes(query) ||
+            orderNumber.includes(orderNumberQuery)
           );
         });
       }
