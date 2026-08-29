@@ -22,6 +22,12 @@
             <q-icon name="search" />
           </template>
         </q-input>
+        <div
+          v-if="searchQuery && searchQuery.trim()"
+          class="text-caption text-grey-6 q-mt-xs text-center"
+        >
+          {{ filteredOrders.length }} matching {{ filteredOrders.length === 1 ? 'order' : 'orders' }}
+        </div>
       </div>
 
       <!-- Filter Toggles -->
