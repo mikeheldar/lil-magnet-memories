@@ -27,6 +27,7 @@ import { auth } from '../firebase/config.js';
 import { signInAnonymously } from 'firebase/auth';
 import { db, storage, default as getApp } from '../firebase/config.js';
 import { config } from '../config/environment.js';
+import { OPEN_STATUSES, FULFILLED_SHIPPING } from '../utils/orderStatus.js';
 
 export const DEFAULT_SHIPPING_OPTIONS = [
   {
@@ -1121,11 +1122,21 @@ class FirebaseService {
         throw new Error('Order not found');
       }
 
-      // Update the shipping status
-      await updateDoc(orderRef, {
+      // Update the shipping status. When an order becomes shipped/delivered it is
+      // fulfilled, so stamp status:'completed' in this SAME direct write — the
+      // email-free path setOrderArchived uses (never updateOrderStatus, so no
+      // customer status email fires). This closes the status/shippingStatus split
+      // AT THE SOURCE so a shipped order never drifts back to an "open" status and
+      // re-triggers the phantom open-orders reminder. Reverting to 'pending' leaves
+      // status untouched (correcting a mislabel shouldn't silently un-complete).
+      const shippingUpdates = {
         shippingStatus: shippingStatus,
         updatedAt: serverTimestamp(),
-      });
+      };
+      if (FULFILLED_SHIPPING.includes(shippingStatus)) {
+        shippingUpdates.status = 'completed';
+      }
+      await updateDoc(orderRef, shippingUpdates);
 
       // Send shipping status update email to customer if order has shipping
       if (
@@ -1201,7 +1212,6 @@ class FirebaseService {
   // email-free path setOrderArchived uses (never routes through updateOrderStatus,
   // so no customer email fires). Idempotent: a second run finds nothing to fix.
   async reconcileArchivedOrderStatuses({ dryRun = false } = {}) {
-    const OPEN_STATUSES = ['new', 'paid', 'in_progress'];
     try {
       const orders = await this.getOrdersForAnalytics();
       const stale = orders.filter(
@@ -1241,6 +1251,58 @@ class FirebaseService {
       return result;
     } catch (error) {
       console.error('Error reconciling archived order statuses:', error);
+      throw error;
+    }
+  }
+
+  // Data hygiene mirror of reconcileArchivedOrderStatuses for the OTHER half of
+  // the status/shippingStatus split: orders marked shipped/delivered but whose
+  // `status` was never advanced past new/paid/in_progress. Stamps them
+  // status:'completed' via a DIRECT write (never updateOrderStatus) so NO
+  // customer email fires. Idempotent — a second run finds 0.
+  async reconcileShippedOrderStatuses({ dryRun = false } = {}) {
+    try {
+      const orders = await this.getOrdersForAnalytics();
+      const stale = orders.filter(
+        (o) =>
+          o &&
+          OPEN_STATUSES.includes(o.status) &&
+          FULFILLED_SHIPPING.includes(o.shippingStatus)
+      );
+
+      const result = {
+        scanned: orders.length,
+        stale: stale.length,
+        fixed: 0,
+        dryRun: !!dryRun,
+        orderNumbers: stale
+          .map((o) => o.orderNumber || o.id)
+          .filter(Boolean)
+          .slice(0, 50),
+      };
+
+      if (dryRun || stale.length === 0) {
+        return result;
+      }
+
+      // Firestore batches cap at 500 ops — chunk to stay well under.
+      const CHUNK = 400;
+      for (let i = 0; i < stale.length; i += CHUNK) {
+        const slice = stale.slice(i, i + CHUNK);
+        const batch = writeBatch(db);
+        slice.forEach((o) => {
+          batch.update(doc(db, 'orders', o.id), {
+            status: 'completed',
+            updatedAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+        result.fixed += slice.length;
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error reconciling shipped order statuses:', error);
       throw error;
     }
   }
