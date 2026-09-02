@@ -22,48 +22,96 @@
             <q-icon name="search" />
           </template>
         </q-input>
-        <div
-          v-if="searchQuery && searchQuery.trim()"
-          class="text-caption text-grey-6 q-mt-xs text-center"
-        >
-          {{ filteredOrders.length }} matching {{ filteredOrders.length === 1 ? 'order' : 'orders' }}
+      </div>
+
+      <!-- Status filter tags (multi-select; default = open orders, clear = all) -->
+      <div class="q-mt-md">
+        <div class="row items-center justify-center q-gutter-xs status-filter-bar">
+          <span class="text-caption text-weight-medium text-grey-7 q-mr-xs">
+            Status
+          </span>
+          <q-chip
+            v-for="s in ALL_STATUSES"
+            :key="s.value"
+            clickable
+            dense
+            :outline="!statusFilter.includes(s.value)"
+            :color="getStatusColor(s.value)"
+            :text-color="statusFilter.includes(s.value) ? 'white' : undefined"
+            @click="toggleStatus(s.value)"
+          >
+            {{ s.label }}
+            <span class="q-ml-xs text-caption">({{ statusCounts[s.value] || 0 }})</span>
+          </q-chip>
+          <q-separator vertical class="q-mx-sm" />
+          <q-btn
+            flat
+            dense
+            size="sm"
+            label="Open"
+            color="primary"
+            @click="selectOpenStatuses"
+          >
+            <q-tooltip>Show open orders (new, paid, pending, in progress)</q-tooltip>
+          </q-btn>
+          <q-btn
+            flat
+            dense
+            size="sm"
+            :label="statusFilter.length === 0 ? 'All ✓' : 'All'"
+            color="grey-8"
+            @click="clearStatusFilter"
+          >
+            <q-tooltip>Clear the status filter — show every order</q-tooltip>
+          </q-btn>
         </div>
       </div>
 
-      <!-- Filter Toggles -->
-      <div class="q-mt-md q-gutter-md">
-        <div class="row items-center q-gutter-md justify-center">
-          <q-toggle
-            v-model="hideCompleted"
-            label="Hide fulfilled orders"
-            color="primary"
-          />
-          <q-separator vertical />
-          <q-toggle
-            v-model="showArchived"
-            label="Show archived orders"
-            color="deep-purple"
-          />
-          <q-separator vertical />
-          <q-btn-toggle
-            v-model="orderTypeFilter"
-            toggle-color="primary"
-            :options="[
-              { label: 'All Orders', value: 'all' },
-              { label: 'Shipping', value: 'shipping', icon: 'local_shipping' },
-              { label: 'Pickup', value: 'pickup', icon: 'store' },
-            ]"
-          />
+      <!-- Delivery type filter tags (multi-select; empty = all types) -->
+      <div class="q-mt-sm">
+        <div class="row items-center justify-center q-gutter-xs status-filter-bar">
+          <span class="text-caption text-weight-medium text-grey-7 q-mr-xs">
+            Type
+          </span>
+          <q-chip
+            v-for="t in ALL_TYPES"
+            :key="t.value"
+            clickable
+            dense
+            :icon="t.icon"
+            :outline="!typeFilter.includes(t.value)"
+            :color="getTypeColor(t.value)"
+            :text-color="typeFilter.includes(t.value) ? 'white' : undefined"
+            @click="toggleType(t.value)"
+          >
+            {{ t.label }}
+            <span class="q-ml-xs text-caption">({{ typeCounts[t.value] || 0 }})</span>
+          </q-chip>
+          <q-separator vertical class="q-mx-sm" />
           <q-btn
-            v-if="hideCompleted"
             flat
             dense
-            icon="history"
-            label="View Fulfilled Orders"
-            color="grey-7"
-            @click="showCompletedDialog = true"
+            size="sm"
+            :label="typeFilter.length === 0 ? 'All ✓' : 'All'"
+            color="grey-8"
+            @click="clearTypeFilter"
+          >
+            <q-tooltip>Clear the type filter — show shipping and pickup</q-tooltip>
+          </q-btn>
+          <q-separator vertical class="q-mx-sm" />
+          <q-toggle
+            v-model="showArchived"
+            label="Show archived"
+            color="deep-purple"
+            dense
           />
         </div>
+      </div>
+
+      <div class="text-caption text-grey-6 q-mt-sm text-center">
+        Showing {{ filteredOrders.length }}
+        {{ filteredOrders.length === 1 ? 'order' : 'orders' }}
+        <template v-if="!showArchived"> (archived hidden)</template>
       </div>
     </div>
 
@@ -158,35 +206,54 @@
           </q-btn>
         </template>
         <q-space />
-        <q-btn
+        <q-btn-dropdown
           flat
           dense
           icon="cleaning_services"
-          label="Fix archived statuses"
+          label="Cleanup"
           color="teal"
-          :loading="reconciling"
-          @click="reconcileArchivedStatuses"
+          :loading="reconciling || reconcilingShipped"
         >
-          <q-tooltip>
-            Stamp archived-but-open orders completed (fixes the daily reminder
-            over-count) — no customer emails sent
-          </q-tooltip>
-        </q-btn>
-        <q-btn
-          flat
-          dense
-          icon="local_shipping"
-          label="Fix shipped statuses"
-          color="teal"
-          :loading="reconcilingShipped"
-          @click="reconcileShippedStatuses"
-        >
-          <q-tooltip>
-            Stamp shipped/delivered-but-open orders completed (they were never
-            marked completed, so the reminder + list still counted them open) —
-            no customer emails sent
-          </q-tooltip>
-        </q-btn>
+          <q-list style="min-width: 320px">
+            <q-item
+              v-close-popup
+              clickable
+              :disable="reconciling"
+              @click="reconcileArchivedStatuses"
+            >
+              <q-item-section avatar>
+                <q-icon name="cleaning_services" color="teal" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Fix archived statuses</q-item-label>
+                <q-item-label caption>
+                  Stamp archived-but-open orders completed, so the daily reminder
+                  and sales dashboard stop counting them open. No customer emails
+                  sent.
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item
+              v-close-popup
+              clickable
+              :disable="reconcilingShipped"
+              @click="reconcileShippedStatuses"
+            >
+              <q-item-section avatar>
+                <q-icon name="local_shipping" color="teal" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Fix shipped statuses</q-item-label>
+                <q-item-label caption>
+                  Stamp shipped/delivered-but-open orders completed — they were
+                  fulfilled but never marked complete, so the reminder and list
+                  still counted them open. No customer emails sent.
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
       </div>
 
       <q-card
@@ -617,57 +684,6 @@
       </q-card>
     </div>
 
-    <!-- Completed Orders Dialog -->
-    <q-dialog v-model="showCompletedDialog" maximized>
-      <q-card>
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Fulfilled Orders</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-
-        <q-card-section class="q-pt-none">
-          <div class="row q-col-gutter-md">
-            <q-card
-              v-for="order in completedOrders"
-              :key="order.id"
-              class="col-12 col-md-6 col-lg-4"
-            >
-              <q-card-section>
-                <div class="text-subtitle1 text-weight-bold q-mb-sm">
-                  Order #{{ order.orderNumber }}
-                  <q-chip
-                    color="green"
-                    text-color="white"
-                    size="sm"
-                    class="q-ml-sm"
-                  >
-                    {{ getDisplayStatus(order.status) }}
-                  </q-chip>
-                </div>
-                <div class="text-caption q-mb-sm">
-                  <strong>Customer:</strong> {{ order.customer.firstName }}
-                  {{ order.customer.lastName }}
-                </div>
-                <div class="text-caption q-mb-sm">
-                  <strong>Email:</strong> {{ order.customer.email }}
-                </div>
-                <div class="text-caption q-mb-sm">
-                  <strong>Total Magnets:</strong> {{ order.totalMagnets }}
-                </div>
-                <div class="text-caption q-mb-sm">
-                  <strong>Completed:</strong> {{ formatDate(order.updatedAt) }}
-                </div>
-              </q-card-section>
-            </q-card>
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="Close" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </q-page>
 </template>
 
@@ -677,7 +693,7 @@ import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { isOrderFulfilled } from '../utils/orderStatus.js';
 import { useQuasar, useMeta } from 'quasar';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import { config } from '../config/environment.js';
 
@@ -698,13 +714,32 @@ export default {
       }
     });
 
+    // Canonical order statuses shown as filter tags. Order matters (display order).
+    const ALL_STATUSES = [
+      { value: 'new', label: 'New' },
+      { value: 'paid', label: 'Paid' },
+      { value: 'pending_payment', label: 'Pending Payment' },
+      { value: 'in_progress', label: 'In Progress' },
+      { value: 'completed', label: 'Completed' },
+      { value: 'cancelled', label: 'Cancelled' },
+    ];
+    // "Open" = not yet fulfilled. These are the tags selected by default.
+    const OPEN_STATUS_VALUES = ['new', 'paid', 'pending_payment', 'in_progress'];
+
+    // Delivery type tags (multi-select; empty selection = show all types).
+    const ALL_TYPES = [
+      { value: 'shipping', label: 'Shipping', icon: 'local_shipping' },
+      { value: 'pickup', label: 'Pickup', icon: 'store' },
+    ];
+
     const orders = ref([]);
     const loading = ref(true);
     const error = ref(null);
-    const hideCompleted = ref(false);
     const showArchived = ref(false);
-    const showCompletedDialog = ref(false);
-    const orderTypeFilter = ref('all'); // 'all', 'shipping', 'pickup'
+    // Multi-select delivery type filter. Empty array = no type filter (show ALL).
+    const typeFilter = ref([]);
+    // Multi-select status filter. Empty array = no status filter (show ALL).
+    const statusFilter = ref([...OPEN_STATUS_VALUES]);
     const searchQuery = ref('');
     const $q = useQuasar();
     const router = useRouter();
@@ -716,9 +751,13 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        // Sort by submissionDateClient descending (newest first) on the server for better performance
-        // Client-side sort will handle any edge cases with missing dates
-        const q = query(ordersRef, orderBy('submissionDateClient', 'desc'));
+        // IMPORTANT: do NOT use Firestore orderBy() here. orderBy silently EXCLUDES
+        // any document missing the sort field, so older orders without
+        // submissionDateClient (e.g. LMM-251207-8682) never load and become
+        // invisible in the admin list — no search or toggle can surface them,
+        // yet the daily reminder still flags them. Load the whole collection and
+        // let the client-side sort below (which handles missing dates) order it.
+        const q = query(ordersRef);
 
         unsubscribeOrders = onSnapshot(
           q,
@@ -831,9 +870,13 @@ export default {
         });
       }
 
-      // Filter by completion status
-      if (hideCompleted.value) {
-        filtered = filtered.filter((order) => !isOrderFulfilled(order));
+      // Filter by status tags (empty selection = show all statuses).
+      // Uses effective status so a paid-but-already-shipped order counts as
+      // completed and never leaks back into the default "open" view.
+      if (statusFilter.value.length > 0) {
+        filtered = filtered.filter((order) =>
+          statusFilter.value.includes(getEffectiveStatus(order))
+        );
       }
 
       // Archive visibility (default hide archived)
@@ -841,12 +884,11 @@ export default {
         filtered = filtered.filter((order) => !order.archived);
       }
 
-      // Filter by order type (shipping vs pickup)
-      if (orderTypeFilter.value !== 'all') {
-        filtered = filtered.filter((order) => {
-          const orderType = getOrderType(order);
-          return orderType === orderTypeFilter.value;
-        });
+      // Filter by delivery type (empty selection = show all types)
+      if (typeFilter.value.length > 0) {
+        filtered = filtered.filter((order) =>
+          typeFilter.value.includes(getOrderType(order))
+        );
       }
 
       // Ensure filtered results are sorted by submissionDateClient (most recent first)
@@ -1058,11 +1100,70 @@ export default {
       }
     };
 
-    const completedOrders = computed(() => {
-      // "Fulfilled" = completed OR already shipped/delivered, so orders hidden
-      // from the active list by the toggle always show up here (never vanish).
-      return orders.value.filter((order) => isOrderFulfilled(order));
+    // Effective status for filtering/counting: a fulfilled order (completed OR
+    // already shipped/delivered) is treated as 'completed' regardless of a stale
+    // status field, so the shipping/status split can't hide fulfilled orders in
+    // the "open" view. Everything else keeps its own status.
+    const getEffectiveStatus = (order) => {
+      if (isOrderFulfilled(order)) return 'completed';
+      return order?.status || 'new';
+    };
+
+    // Live count per status tag (respects the archived toggle so the numbers
+    // match what the list would actually show).
+    const statusCounts = computed(() => {
+      const counts = {};
+      for (const order of orders.value) {
+        if (!showArchived.value && order.archived) continue;
+        const s = getEffectiveStatus(order);
+        counts[s] = (counts[s] || 0) + 1;
+      }
+      return counts;
     });
+
+    const toggleStatus = (value) => {
+      const idx = statusFilter.value.indexOf(value);
+      if (idx === -1) {
+        statusFilter.value.push(value);
+      } else {
+        statusFilter.value.splice(idx, 1);
+      }
+    };
+
+    const selectOpenStatuses = () => {
+      statusFilter.value = [...OPEN_STATUS_VALUES];
+    };
+
+    const clearStatusFilter = () => {
+      statusFilter.value = [];
+    };
+
+    // Live count per delivery-type tag (respects the archived toggle so the
+    // numbers match what the list would actually show).
+    const typeCounts = computed(() => {
+      const counts = {};
+      for (const order of orders.value) {
+        if (!showArchived.value && order.archived) continue;
+        const t = getOrderType(order);
+        counts[t] = (counts[t] || 0) + 1;
+      }
+      return counts;
+    });
+
+    const getTypeColor = (type) => (type === 'shipping' ? 'blue' : 'green');
+
+    const toggleType = (value) => {
+      const idx = typeFilter.value.indexOf(value);
+      if (idx === -1) {
+        typeFilter.value.push(value);
+      } else {
+        typeFilter.value.splice(idx, 1);
+      }
+    };
+
+    const clearTypeFilter = () => {
+      typeFilter.value = [];
+    };
 
     const formatDate = (timestamp) => {
       // Never use current date as fallback - show "N/A" or raw value instead
@@ -1786,13 +1887,21 @@ export default {
       orders,
       loading,
       error,
-      hideCompleted,
       showArchived,
-      showCompletedDialog,
-      orderTypeFilter,
       searchQuery,
+      ALL_STATUSES,
+      statusFilter,
+      statusCounts,
+      toggleStatus,
+      selectOpenStatuses,
+      clearStatusFilter,
+      ALL_TYPES,
+      typeFilter,
+      typeCounts,
+      getTypeColor,
+      toggleType,
+      clearTypeFilter,
       filteredOrders,
-      completedOrders,
       loadOrders,
       formatDate,
       getStatusColor,
