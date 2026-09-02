@@ -677,7 +677,7 @@ import { useRouter } from 'vue-router';
 import { firebaseService } from '../services/firebaseService.js';
 import { isOrderFulfilled } from '../utils/orderStatus.js';
 import { useQuasar, useMeta } from 'quasar';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import { config } from '../config/environment.js';
 
@@ -716,9 +716,13 @@ export default {
 
       try {
         const ordersRef = collection(db, 'orders');
-        // Sort by submissionDateClient descending (newest first) on the server for better performance
-        // Client-side sort will handle any edge cases with missing dates
-        const q = query(ordersRef, orderBy('submissionDateClient', 'desc'));
+        // IMPORTANT: do NOT use Firestore orderBy() here. orderBy silently EXCLUDES
+        // any document missing the sort field, so older orders without
+        // submissionDateClient (e.g. LMM-251207-8682) never load and become
+        // invisible in the admin list — no search or toggle can surface them,
+        // yet the daily reminder still flags them. Load the whole collection and
+        // let the client-side sort below (which handles missing dates) order it.
+        const q = query(ordersRef);
 
         unsubscribeOrders = onSnapshot(
           q,
