@@ -1307,6 +1307,87 @@ class FirebaseService {
     }
   }
 
+  // Data hygiene: archive orders whose order date can't be recovered at all.
+  // We first try to resolve a date from the explicit date fields OR by parsing
+  // the YYMMDD block out of the order number (LMM-251207-8682 -> 2025-12-07).
+  // Only orders that STILL have no resolvable date (and aren't already archived)
+  // are archived here — so we never bury an order we could have dated. Stamps
+  // archived:true + status:'completed' (direct write, NO customer email) so they
+  // leave the open view and stop being counted open by the reminder/dashboard.
+  async archiveUndatedOrders({ dryRun = false } = {}) {
+    try {
+      const orders = await this.getOrdersForAnalytics();
+
+      const hasResolvableDate = (o) => {
+        const fields = [
+          'submissionDateClient',
+          'submissionDate',
+          'createdAtClient',
+          'createdAt',
+          'orderDate',
+          'date',
+        ];
+        for (const f of fields) {
+          const v = o[f];
+          if (v === null || v === undefined) continue;
+          if (typeof v?.toDate === 'function') return true;
+          if (typeof v === 'number' && v > 0) return true;
+          if (v instanceof Date && !isNaN(v.getTime())) return true;
+          if (typeof v === 'object' && 'seconds' in v) return true;
+          if (typeof v === 'string' && !isNaN(new Date(v).getTime())) return true;
+        }
+        // Fallback: YYMMDD embedded in the order number.
+        const m = String(o.orderNumber || '').match(/(\d{2})(\d{2})(\d{2})/);
+        if (m) {
+          const mm = +m[2];
+          const dd = +m[3];
+          if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) return true;
+        }
+        return false;
+      };
+
+      const undated = orders.filter(
+        (o) => o && o.archived !== true && !hasResolvableDate(o)
+      );
+
+      const result = {
+        scanned: orders.length,
+        stale: undated.length,
+        fixed: 0,
+        dryRun: !!dryRun,
+        orderNumbers: undated
+          .map((o) => o.orderNumber || o.id)
+          .filter(Boolean)
+          .slice(0, 50),
+      };
+
+      if (dryRun || undated.length === 0) {
+        return result;
+      }
+
+      // Firestore batches cap at 500 ops — chunk to stay well under.
+      const CHUNK = 400;
+      for (let i = 0; i < undated.length; i += CHUNK) {
+        const slice = undated.slice(i, i + CHUNK);
+        const batch = writeBatch(db);
+        slice.forEach((o) => {
+          batch.update(doc(db, 'orders', o.id), {
+            archived: true,
+            status: 'completed',
+            updatedAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+        result.fixed += slice.length;
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error archiving undated orders:', error);
+      throw error;
+    }
+  }
+
   // Delete photo from Firebase Storage
   async deletePhotoFromStorage(photoUrl) {
     try {
