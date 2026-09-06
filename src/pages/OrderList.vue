@@ -212,7 +212,7 @@
           icon="cleaning_services"
           label="Cleanup"
           color="teal"
-          :loading="reconciling || reconcilingShipped"
+          :loading="reconciling || reconcilingShipped || archivingUndated"
         >
           <q-list style="min-width: 320px">
             <q-item
@@ -249,6 +249,25 @@
                   Stamp shipped/delivered-but-open orders completed — they were
                   fulfilled but never marked complete, so the reminder and list
                   still counted them open. No customer emails sent.
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item
+              v-close-popup
+              clickable
+              :disable="archivingUndated"
+              @click="archiveUndatedOrders"
+            >
+              <q-item-section avatar>
+                <q-icon name="event_busy" color="teal" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Archive undated orders</q-item-label>
+                <q-item-label caption>
+                  Archive old orders whose date can't be recovered from the order
+                  number or a stored date field. Removes them from the open view;
+                  no customer emails sent.
                 </q-item-label>
               </q-item-section>
             </q-item>
@@ -402,7 +421,7 @@
                 </div>
                 <div>
                   <strong>Order Date:</strong>
-                  {{ formatDate(order.submissionDateClient) }}
+                  {{ formatOrderDate(order) }}
                 </div>
                 <div v-if="order.totalAmount">
                   <strong>Total Amount:</strong> ${{
@@ -772,38 +791,9 @@ export default {
 
             // Sort by submissionDateClient (most recent first), handling missing/invalid dates
             ordersList.sort((a, b) => {
-              const getDateValue = (order) => {
-                // Use submissionDateClient as primary date for sorting
-                const date = order.submissionDateClient;
-                if (!date) {
-                  // Return a very old date (0) so invalid dates sort to the bottom
-                  return 0;
-                }
-                try {
-                  // Handle Firestore Timestamp
-                  if (date && typeof date.toDate === 'function') {
-                    return date.toDate().getTime();
-                  }
-                  // Handle number timestamps (milliseconds since epoch)
-                  if (typeof date === 'number') {
-                    return date;
-                  }
-                  // Handle Firestore timestamp object with seconds/nanoseconds
-                  if (date && typeof date === 'object' && 'seconds' in date) {
-                    return (
-                      date.seconds * 1000 + (date.nanoseconds || 0) / 1000000
-                    );
-                  }
-                  // Handle Date objects or string timestamps
-                  const parsed = new Date(date);
-                  const time = parsed.getTime();
-                  // If invalid date, return 0 (will sort to bottom)
-                  return isNaN(time) ? 0 : time;
-                } catch {
-                  // Return 0 for any parsing errors (will sort to bottom)
-                  return 0;
-                }
-              };
+              // Effective date (stored field, else recovered from order #);
+              // 0 sorts undated orders to the bottom.
+              const getDateValue = (order) => getEffectiveOrderDate(order).ms || 0;
               const dateA = getDateValue(a);
               const dateB = getDateValue(b);
               // Sort descending (newest first): larger date (b) - smaller date (a) = positive, so b comes first
@@ -893,36 +883,9 @@ export default {
 
       // Ensure filtered results are sorted by submissionDateClient (most recent first)
       filtered.sort((a, b) => {
-        const getDateValue = (order) => {
-          // Use submissionDateClient as primary date for sorting
-          const date = order.submissionDateClient;
-          if (!date) {
-            // Return a very old date (0) so invalid dates sort to the bottom
-            return 0;
-          }
-          try {
-            // Handle Firestore Timestamp
-            if (date && typeof date.toDate === 'function') {
-              return date.toDate().getTime();
-            }
-            // Handle number timestamps (milliseconds since epoch)
-            if (typeof date === 'number') {
-              return date;
-            }
-            // Handle Firestore timestamp object with seconds/nanoseconds
-            if (date && typeof date === 'object' && 'seconds' in date) {
-              return date.seconds * 1000 + (date.nanoseconds || 0) / 1000000;
-            }
-            // Handle Date objects or string timestamps
-            const parsed = new Date(date);
-            const time = parsed.getTime();
-            // If invalid date, return 0 (will sort to bottom)
-            return isNaN(time) ? 0 : time;
-          } catch {
-            // Return 0 for any parsing errors (will sort to bottom)
-            return 0;
-          }
-        };
+        // Effective date (stored field, else recovered from order #);
+        // 0 sorts undated orders to the bottom.
+        const getDateValue = (order) => getEffectiveOrderDate(order).ms || 0;
         const dateA = getDateValue(a);
         const dateB = getDateValue(b);
         // If both dates are 0 (invalid), maintain original order
@@ -1163,6 +1126,75 @@ export default {
 
     const clearTypeFilter = () => {
       typeFilter.value = [];
+    };
+
+    // --- Order date recovery -------------------------------------------------
+    // Some old orders were written before the date fields worked and show
+    // "Order Date: N/A". The order NUMBER encodes the date though —
+    // LMM-251207-8682 -> 2025-12-07 — so we can recover most of them. This is
+    // display/sort only; no data is written.
+    const toMs = (val) => {
+      if (val === null || val === undefined) return null;
+      try {
+        if (typeof val.toDate === 'function') return val.toDate().getTime();
+        if (typeof val === 'number') return val > 0 ? val : null;
+        if (val instanceof Date)
+          return isNaN(val.getTime()) ? null : val.getTime();
+        if (typeof val === 'object' && 'seconds' in val)
+          return val.seconds * 1000 + (val.nanoseconds || 0) / 1000000;
+        if (typeof val === 'string') {
+          const t = new Date(val).getTime();
+          return isNaN(t) ? null : t;
+        }
+      } catch {
+        return null;
+      }
+      return null;
+    };
+
+    // Parse the YYMMDD block out of an order number (LMM-251207-8682).
+    const parseDateFromOrderNumber = (orderNumber) => {
+      if (!orderNumber) return null;
+      const m = String(orderNumber).match(/(\d{2})(\d{2})(\d{2})/);
+      if (!m) return null;
+      const yy = +m[1];
+      const mm = +m[2];
+      const dd = +m[3];
+      if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return null;
+      const d = new Date(2000 + yy, mm - 1, dd);
+      return isNaN(d.getTime()) ? null : d.getTime();
+    };
+
+    // Resolve an order's effective date: explicit fields first, then the date
+    // embedded in the order number. Returns { ms, source }.
+    const getEffectiveOrderDate = (order) => {
+      if (!order) return { ms: null, source: null };
+      const fields = [
+        'submissionDateClient',
+        'submissionDate',
+        'createdAtClient',
+        'createdAt',
+        'orderDate',
+        'date',
+      ];
+      for (const f of fields) {
+        const ms = toMs(order[f]);
+        if (ms) return { ms, source: 'field' };
+      }
+      const fromNum = parseDateFromOrderNumber(order.orderNumber);
+      if (fromNum) return { ms: fromNum, source: 'orderNumber' };
+      return { ms: null, source: null };
+    };
+
+    // Display string for an order's date, with a hint when it was recovered
+    // from the order number rather than a stored date field.
+    const formatOrderDate = (order) => {
+      const { ms, source } = getEffectiveOrderDate(order);
+      if (!ms) return 'N/A';
+      if (source === 'orderNumber') {
+        return `${new Date(ms).toLocaleDateString()} (from order #)`;
+      }
+      return new Date(ms).toLocaleString();
     };
 
     const formatDate = (timestamp) => {
@@ -1621,6 +1653,71 @@ export default {
       }
     };
 
+    // --- Data hygiene: archive orders with an unrecoverable date ---
+    // After date recovery (stored fields + order-number parse), a few very old
+    // orders may still have no date at all. This archives ONLY those leftovers
+    // so they leave the open view. Same dry-run preview -> confirm flow.
+    const archivingUndated = ref(false);
+
+    const archiveUndatedOrders = async () => {
+      if (archivingUndated.value) return;
+      archivingUndated.value = true;
+      try {
+        const preview = await firebaseService.archiveUndatedOrders({
+          dryRun: true,
+        });
+        if (preview.stale === 0) {
+          $q.notify({
+            type: 'positive',
+            message: `All ${preview.scanned} orders have a recoverable date — nothing to archive.`,
+            icon: 'verified',
+            position: 'top',
+          });
+          archivingUndated.value = false;
+          return;
+        }
+        $q.dialog({
+          title: 'Archive undated orders',
+          message: `${preview.stale} order(s) have no date that can be recovered from a stored field or the order number. Archive them now? They'll leave the open view and stop being counted open by the reminder and dashboard. No customer emails are sent.`,
+          cancel: true,
+          persistent: true,
+          ok: { label: `Archive ${preview.stale}`, color: 'teal' },
+        })
+          .onOk(async () => {
+            try {
+              const res = await firebaseService.archiveUndatedOrders();
+              $q.notify({
+                type: 'positive',
+                message: `Archived ${res.fixed} undated order(s) — no emails sent.`,
+                icon: 'verified',
+                position: 'top',
+              });
+              await loadOrders();
+            } catch (err) {
+              console.error('Archive undated failed:', err);
+              $q.notify({
+                type: 'negative',
+                message: `Archive failed: ${err.message}`,
+                position: 'top',
+              });
+            } finally {
+              archivingUndated.value = false;
+            }
+          })
+          .onCancel(() => {
+            archivingUndated.value = false;
+          });
+      } catch (err) {
+        console.error('Archive undated preview failed:', err);
+        $q.notify({
+          type: 'negative',
+          message: `Could not scan orders: ${err.message}`,
+          position: 'top',
+        });
+        archivingUndated.value = false;
+      }
+    };
+
     const openPrintTemplate = (order) => {
       let photos = [];
       let quantities = [];
@@ -1921,6 +2018,9 @@ export default {
       reconcileArchivedStatuses,
       reconcilingShipped,
       reconcileShippedStatuses,
+      archivingUndated,
+      archiveUndatedOrders,
+      formatOrderDate,
       openPrintTemplate,
       getTotalMagnetsFromCart,
       formatAddress,
