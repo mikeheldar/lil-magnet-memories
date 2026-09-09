@@ -219,7 +219,7 @@ async function main() {
   };
 
   try {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     context = await browser.newContext();
     page = await context.newPage();
 
