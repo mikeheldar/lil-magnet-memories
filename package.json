@@ -9,7 +9,7 @@
     "dev": "quasar dev",
     "dev:ssr": "quasar dev -m ssr",
     "build": "quasar build -m spa",
-    "build:seo": "npm run build && (npx playwright install chromium || true) && node scripts/prerender-seo.mjs",
+    "build:seo": "npm run build && (npx playwright install chromium chromium-headless-shell || true) && node scripts/prerender-seo.mjs",
     "build:ssr": "quasar build -m ssr",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
