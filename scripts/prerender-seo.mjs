@@ -43,6 +43,148 @@ function routeToOutputPath(route) {
 // Canonical origin — keep in sync with SITE_ORIGIN in src/composables/useSiteSeo.js
 const SITE_ORIGIN = 'https://www.lilmagnetmemories.com';
 
+// Per-route <head> content for the FALLBACK path (when chromium can't launch — the
+// reality on Vercel's build container, where every route otherwise ships one identical
+// bare SPA shell with no canonical/OG/description). Copy mirrors each page's own
+// useSiteSeo() getter so the crawler sees the SAME meta the client renders. Dynamic
+// routes (/product/:type/:id, /blog/:slug) are intentionally absent — no static copy to
+// fabricate; they fall back to the plain shell.
+const OG_IMAGE = `${SITE_ORIGIN}/assets/lil-magnet-memories-logo.png`;
+const ROUTE_HEAD = {
+  '/': {
+    title: 'Home - Lil Magnet Memories',
+    socialTitle: 'Lil Magnet Memories - Custom Photo Magnets',
+    description:
+      'Turn your favorite photos into custom magnets for holidays, team gifts, family keepsakes, school events, and parties in Dunwoody, Sandy Springs, and nearby Atlanta.',
+  },
+  '/about': {
+    title: 'About Us - Lil Magnet Memories',
+    crumb: 'About Us',
+    description:
+      'Learn about Lil Magnet Memories, a Dunwoody-area custom magnet studio helping families, teams, and event planners preserve memories with personalized photo magnets.',
+  },
+  '/products/custom': {
+    title: 'Custom Photo Magnets - Lil Magnet Memories',
+    crumb: 'Custom Photo Magnets',
+    description:
+      'Create custom photo magnets from your own pictures for holiday gifts, sports teams, family reunions, graduations, and party events across Dunwoody and Sandy Springs.',
+  },
+  '/products/novelty': {
+    title: 'Novelty Magnets - Lil Magnet Memories',
+    crumb: 'Novelty Magnets',
+    description:
+      'Shop novelty magnet styles and ready-made layouts for birthdays, holidays, teacher gifts, and event keepsakes in Dunwoody, Sandy Springs, and metro Atlanta.',
+  },
+  '/products/specialty': {
+    title: 'Specialty Products - Lil Magnet Memories',
+    crumb: 'Specialty Products',
+    description:
+      'Discover specialty magnet products with unique shapes and finishes, perfect for team events, family milestones, holiday gifting, and local celebrations.',
+  },
+  '/event-calendar': {
+    title: 'Event Calendar - Lil Magnet Memories',
+    crumb: 'Event Calendar',
+    description:
+      'Find upcoming Lil Magnet Memories market events near Dunwoody and Sandy Springs. Bring your pictures and order custom magnets for teams, families, and party events.',
+  },
+  '/photo-upload': {
+    title: 'Upload Photos - Lil Magnet Memories',
+    crumb: 'Upload Photos',
+    description:
+      'Upload your photos for custom photo magnets. Easy photo upload with preview and cropping tools. Start creating your memories!',
+  },
+  '/contact-us': {
+    title: 'Contact Us - Lil Magnet Memories',
+    crumb: 'Contact Us',
+    description:
+      'Contact Lil Magnet Memories for custom photo magnets, local event orders, and personalized gift ideas in Dunwoody, Sandy Springs, and nearby areas.',
+  },
+  '/shipping-info': {
+    title: 'Shipping Information - Lil Magnet Memories',
+    crumb: 'Shipping Information',
+    description:
+      'Shipping information for custom photo magnets. Learn about delivery times, shipping costs, and pickup options at market events.',
+  },
+  '/returns': {
+    title: 'Returns & Refunds - Lil Magnet Memories',
+    crumb: 'Returns & Refunds',
+    description:
+      'Our return and refund policy for custom photo magnets. Learn about our satisfaction guarantee and how to request returns or refunds.',
+  },
+  '/faq': {
+    title: 'FAQ - Lil Magnet Memories',
+    crumb: 'FAQ',
+    description:
+      'Frequently asked questions about custom photo magnets. Learn about ordering, shipping, pricing, and our products.',
+  },
+  '/blog': {
+    title: 'Magnet Gift Ideas Blog - Lil Magnet Memories',
+    crumb: 'Blog',
+    description:
+      'Explore custom magnet gift ideas for holidays, birthdays, team events, and family memories in Dunwoody and Sandy Springs.',
+  },
+  '/newsletter-signup': {
+    title: 'Newsletter Signup - Lil Magnet Memories',
+    crumb: 'Newsletter Signup',
+    description:
+      'Subscribe to our newsletter for special offers, new products, and updates from Lil Magnet Memories.',
+  },
+  '/leave-review': {
+    title: 'Leave a Review - Lil Magnet Memories',
+    crumb: 'Leave a Review',
+    description:
+      'Share your experience with Lil Magnet Memories. Leave a review and help others discover our custom photo magnets.',
+  },
+};
+
+// Rewrite the SPA shell's <head> with a route's real title/description/canonical/OG +
+// a BreadcrumbList JSON-LD, so a fallback copy is still crawlable and unique per URL.
+// Returns the html unchanged for routes with no curated entry (dynamic detail pages).
+function injectFallbackHead(html, route) {
+  const meta = ROUTE_HEAD[route];
+  if (!meta) return html;
+  const canonical = `${SITE_ORIGIN}${route}`;
+  const title = meta.title;
+  const socialTitle = meta.socialTitle || title;
+  const desc = (meta.description || '').slice(0, 320);
+
+  let out = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeXml(title)}</title>`);
+  // Drop the static default description meta; the route-specific one is added below.
+  out = out.replace(/<meta[^>]*name=["']?description["']?[^>]*>/i, '');
+
+  const tags = [
+    `<meta name="description" content="${escapeXml(desc)}">`,
+    `<link rel="canonical" href="${escapeXml(canonical)}">`,
+    `<meta property="og:title" content="${escapeXml(socialTitle)}">`,
+    `<meta property="og:description" content="${escapeXml(desc)}">`,
+    `<meta property="og:url" content="${escapeXml(canonical)}">`,
+    `<meta property="og:type" content="website">`,
+    `<meta property="og:image" content="${escapeXml(OG_IMAGE)}">`,
+    `<meta property="og:site_name" content="Lil Magnet Memories">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+    `<meta name="twitter:title" content="${escapeXml(socialTitle)}">`,
+    `<meta name="twitter:description" content="${escapeXml(desc)}">`,
+    `<meta name="twitter:image" content="${escapeXml(OG_IMAGE)}">`,
+  ];
+  if (route !== '/' && meta.crumb) {
+    const breadcrumb = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_ORIGIN}/` },
+        { '@type': 'ListItem', position: 2, name: meta.crumb, item: canonical },
+      ],
+    };
+    tags.push(
+      `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`
+    );
+  }
+  const block = `\n${tags.join('\n')}\n`;
+  return out.includes('</head>')
+    ? out.replace('</head>', `${block}</head>`)
+    : out + block;
+}
+
 // changefreq/priority per curated route (mirrors the previous static public/sitemap.xml
 // so no prior crawl signal regresses). Any /blog/:slug post uses BLOG_POST_META.
 const SITEMAP_META = {
@@ -213,7 +355,7 @@ async function main() {
   const writeFallbackRoute = (route) => {
     const outPath = routeToOutputPath(route);
     mkdirSync(dirname(outPath), { recursive: true });
-    writeFileSync(outPath, `<!DOCTYPE html>\n${spaIndexHtml}`);
+    writeFileSync(outPath, `<!DOCTYPE html>\n${injectFallbackHead(spaIndexHtml, route)}`);
     fallbackRoutes.push(route);
     console.warn(`Fallback copy for ${route}`);
   };
