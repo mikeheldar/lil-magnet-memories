@@ -227,6 +227,288 @@ function escapeXml(value) {
     .replace(/'/g, '&apos;');
 }
 
+// ---------------------------------------------------------------------------
+// Browser-free detail-page discovery via Firestore's public REST API.
+// The DOM-scrape discovery below only runs when chromium launches — which it
+// does NOT in Vercel's build container — so product/blog detail pages would
+// otherwise never be prerendered or listed in the sitemap. These helpers read
+// the same public collections the SPA reads (no creds) and let us emit
+// self-sufficient fallback copies + sitemap entries for the money pages.
+// ---------------------------------------------------------------------------
+const FS_TEST = process.env.VITE_IS_TEST_ENVIRONMENT === 'true';
+const FS_PROJECT_ID =
+  (FS_TEST
+    ? process.env.VITE_FIREBASE_PROJECT_ID_TEST
+    : process.env.VITE_FIREBASE_PROJECT_ID) || 'lil-magnet-memories';
+const FS_API_KEY =
+  (FS_TEST
+    ? process.env.VITE_FIREBASE_API_KEY_TEST
+    : process.env.VITE_FIREBASE_API_KEY) || '';
+const FS_BASE = `https://firestore.googleapis.com/v1/projects/${FS_PROJECT_ID}/databases/(default)/documents`;
+
+// Convert one Firestore REST typed value into a plain JS value.
+function fsVal(v) {
+  if (v == null) return undefined;
+  if ('stringValue' in v) return v.stringValue;
+  if ('integerValue' in v) return Number(v.integerValue);
+  if ('doubleValue' in v) return v.doubleValue;
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('timestampValue' in v) return v.timestampValue;
+  if ('nullValue' in v) return null;
+  if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsVal);
+  if ('mapValue' in v) {
+    const o = {};
+    const fields = v.mapValue.fields || {};
+    for (const k of Object.keys(fields)) o[k] = fsVal(fields[k]);
+    return o;
+  }
+  return undefined;
+}
+
+// Flatten a Firestore REST document into { id, ...fields }.
+function fsDoc(doc) {
+  const o = { id: doc.name.split('/').pop() };
+  const fields = doc.fields || {};
+  for (const k of Object.keys(fields)) o[k] = fsVal(fields[k]);
+  return o;
+}
+
+// List a public collection (paginated). Products are public-read; a plain list
+// works with no key on this project, but pass the key when present for safety.
+async function fsListCollection(collectionId) {
+  const docs = [];
+  let pageToken = '';
+  for (let i = 0; i < 20; i += 1) {
+    const params = new URLSearchParams({ pageSize: '300' });
+    if (FS_API_KEY) params.set('key', FS_API_KEY);
+    if (pageToken) params.set('pageToken', pageToken);
+    const res = await fetch(`${FS_BASE}/${collectionId}?${params}`);
+    if (!res.ok) throw new Error(`Firestore ${collectionId} HTTP ${res.status}`);
+    const data = await res.json();
+    (data.documents || []).forEach((d) => docs.push(fsDoc(d)));
+    if (!data.nextPageToken) break;
+    pageToken = data.nextPageToken;
+  }
+  return docs;
+}
+
+// blog_posts rules only expose PUBLISHED docs, so a plain list 403s — query them.
+async function fsQueryPublishedBlog() {
+  const url = `${FS_BASE}:runQuery${FS_API_KEY ? `?key=${FS_API_KEY}` : ''}`;
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: 'blog_posts' }],
+      where: {
+        fieldFilter: {
+          field: { fieldPath: 'status' },
+          op: 'EQUAL',
+          value: { stringValue: 'published' },
+        },
+      },
+      limit: 500,
+    },
+  };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`blog_posts runQuery HTTP ${res.status}`);
+  const rows = await res.json();
+  return rows.filter((r) => r.document).map((r) => fsDoc(r.document));
+}
+
+// Firestore product category `designer` maps to the public `/product/novelty/*`
+// URL (mirrors src/utils/productTypeRoutes.js).
+function categoryToRouteType(category) {
+  return category === 'designer' ? 'novelty' : category;
+}
+function categoryListTitle(routeType) {
+  if (routeType === 'custom') return 'Custom Photo Magnets';
+  if (routeType === 'novelty' || routeType === 'designer') return 'Novelty Magnets';
+  if (routeType === 'specialty') return 'Specialty Magnets';
+  return 'Products';
+}
+function toAbsolute(u) {
+  if (!u) return '';
+  return /^https?:\/\//i.test(u)
+    ? u
+    : `${SITE_ORIGIN}${u.startsWith('/') ? '' : '/'}${u}`;
+}
+// First pricing entry → numeric "from" price (mirrors ProductDetailPage).
+function firstOfferPrice(pricing) {
+  if (!pricing || typeof pricing !== 'object') return null;
+  const keys = Object.keys(pricing);
+  if (!keys.length) return null;
+  const n = Number(pricing[keys[0]]);
+  return Number.isNaN(n) ? null : n;
+}
+
+// Generic <head> rewriter for a dynamic detail page: title/description/canonical/
+// OG/Twitter + any JSON-LD blocks. Same shape as injectFallbackHead but data-driven.
+function injectHead(html, { title, socialTitle, description, canonical, ogType = 'website', image, jsonLd = [] }) {
+  const st = socialTitle || title;
+  const desc = (description || '').slice(0, 320);
+  const img = image || OG_IMAGE;
+  let out = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeXml(title)}</title>`);
+  out = out.replace(/<meta[^>]*name=["']?description["']?[^>]*>/i, '');
+  const tags = [
+    `<meta name="description" content="${escapeXml(desc)}">`,
+    `<link rel="canonical" href="${escapeXml(canonical)}">`,
+    `<meta property="og:title" content="${escapeXml(st)}">`,
+    `<meta property="og:description" content="${escapeXml(desc)}">`,
+    `<meta property="og:url" content="${escapeXml(canonical)}">`,
+    `<meta property="og:type" content="${escapeXml(ogType)}">`,
+    `<meta property="og:image" content="${escapeXml(img)}">`,
+    `<meta property="og:site_name" content="Lil Magnet Memories">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+    `<meta name="twitter:title" content="${escapeXml(st)}">`,
+    `<meta name="twitter:description" content="${escapeXml(desc)}">`,
+    `<meta name="twitter:image" content="${escapeXml(img)}">`,
+  ];
+  for (const ld of jsonLd) {
+    tags.push(`<script type="application/ld+json">${JSON.stringify(ld)}</script>`);
+  }
+  const block = `\n${tags.join('\n')}\n`;
+  return out.includes('</head>')
+    ? out.replace('</head>', `${block}</head>`)
+    : out + block;
+}
+
+// Build the route + image list + head-injector for a product detail page,
+// mirroring src/pages/ProductDetailPage.vue's useMeta (title, Product + Breadcrumb
+// JSON-LD, offers). Returns null for products with no routable category.
+function buildProductRoute(p) {
+  if (!p.category) return null;
+  const routeType = categoryToRouteType(p.category);
+  const route = `/product/${routeType}/${p.id}`;
+  const canonical = `${SITE_ORIGIN}${route}`;
+  const name = p.description || 'Custom magnet product';
+  const body = String(
+    p.detailedDescription ||
+      p.description ||
+      'View product details for custom photo magnets. See pricing, sizes, and options.'
+  ).trim();
+  const desc = body.slice(0, 160);
+  const imgs = [];
+  if (p.imageUrl) imgs.push(toAbsolute(p.imageUrl));
+  const extra = (Array.isArray(p.images) && p.images.length ? p.images : p.imageUrls) || [];
+  if (Array.isArray(extra)) extra.forEach((u) => imgs.push(toAbsolute(u)));
+  const images = [...new Set(imgs.filter(Boolean))];
+  const primary = images[0] || OG_IMAGE;
+  const productLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name,
+    description: body.slice(0, 5000),
+    image: images.length ? images : [primary],
+    sku: String(p.id),
+    brand: { '@type': 'Brand', name: "Li'l Magnet Memories" },
+  };
+  const price = firstOfferPrice(p.pricing);
+  if (price != null) {
+    productLd.offers = {
+      '@type': 'Offer',
+      priceCurrency: 'USD',
+      price: String(price),
+      availability: 'https://schema.org/InStock',
+      url: canonical,
+    };
+  }
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_ORIGIN },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: categoryListTitle(routeType),
+        item: `${SITE_ORIGIN}/products/${routeType}`,
+      },
+      { '@type': 'ListItem', position: 3, name, item: canonical },
+    ],
+  };
+  return {
+    route,
+    images,
+    head: (html) =>
+      injectHead(html, {
+        title: `${name} | Lil Magnet Memories`,
+        description: desc,
+        canonical,
+        ogType: 'product',
+        image: primary,
+        jsonLd: [productLd, breadcrumbLd],
+      }),
+  };
+}
+
+// Build route + head for a published blog post, mirroring BlogPostPage.vue.
+function buildBlogRoute(post) {
+  if (!post.slug) return null;
+  const route = `/blog/${post.slug}`;
+  const canonical = `${SITE_ORIGIN}${route}`;
+  const title = `${post.title || 'Blog Post'} - Lil Magnet Memories Blog`;
+  const description = String(
+    post.seoDescription ||
+      post.excerpt ||
+      post.content ||
+      'Custom magnet ideas, events, and local gift inspiration.'
+  ).slice(0, 160);
+  const imgRaw =
+    post.coverImage ||
+    (Array.isArray(post.images) && post.images[0]) ||
+    post.imageUrl ||
+    '';
+  const image = imgRaw ? toAbsolute(imgRaw) : OG_IMAGE;
+  const articleLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title || 'Blog Post',
+    description,
+    image: [image],
+    author: { '@type': 'Organization', name: 'Lil Magnet Memories' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Lil Magnet Memories',
+      logo: { '@type': 'ImageObject', url: OG_IMAGE },
+    },
+    mainEntityOfPage: canonical,
+  };
+  if (post.publishedAt) articleLd.datePublished = post.publishedAt;
+  if (post.updatedAt || post.publishedAt) {
+    articleLd.dateModified = post.updatedAt || post.publishedAt;
+  }
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_ORIGIN },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_ORIGIN}/blog` },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: post.title || 'Blog Post',
+        item: canonical,
+      },
+    ],
+  };
+  return {
+    route,
+    images: imgRaw ? [image] : [],
+    head: (html) =>
+      injectHead(html, {
+        title,
+        description,
+        canonical,
+        ogType: 'article',
+        image,
+        jsonLd: [articleLd, breadcrumbLd],
+      }),
+  };
+}
+
 // Google caps image-sitemap entries at 1000 images per page; keep it sane per URL.
 const MAX_IMAGES_PER_URL = 25;
 
@@ -476,12 +758,72 @@ async function main() {
     await new Promise((resolve) => server.close(resolve));
   }
 
-  const blogPostRoutes = rendered
-    .map((r) => r.route)
-    .filter((route) => /^\/blog\/[^/]+$/.test(route));
-  const productRoutes = rendered
-    .map((r) => r.route)
-    .filter((route) => /^\/product\/[^/]+\/[^/]+$/.test(route));
+  // ---- Browser-free discovery via Firestore public REST (build-time) ----
+  // Runs regardless of whether chromium launched. For any product/blog detail
+  // route the browser didn't already render, write a self-sufficient fallback
+  // copy (rich head + Product/Article JSON-LD) and add it to the sitemap. This
+  // is the reliable path on Vercel, where chromium never launches — without it,
+  // the money pages (product details) have zero SEO and never reach the sitemap.
+  const restRoutes = [];
+  const alreadyHave = (route) =>
+    rendered.some((r) => r.route === route) || restRoutes.includes(route);
+  const writeDetailFallback = (built) => {
+    if (!built || alreadyHave(built.route)) return;
+    const outPath = routeToOutputPath(built.route);
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, `<!DOCTYPE html>\n${built.head(spaIndexHtml)}`);
+    if (built.images.length) imagesByRoute[built.route] = built.images;
+    restRoutes.push(built.route);
+  };
+
+  if (typeof fetch === 'function') {
+    try {
+      const products = (await fsListCollection('products')).filter(
+        (p) => p.isTesting !== true && p.category
+      );
+      products.forEach((p) => writeDetailFallback(buildProductRoute(p)));
+      console.log(
+        `REST discovery: ${products.length} public product(s) → ` +
+          `${restRoutes.filter((r) => r.startsWith('/product/')).length} route(s)`
+      );
+    } catch (err) {
+      console.warn(`Product REST discovery skipped: ${err.message}`);
+    }
+    try {
+      const posts = await fsQueryPublishedBlog();
+      const before = restRoutes.length;
+      posts.forEach((post) => writeDetailFallback(buildBlogRoute(post)));
+      console.log(
+        `REST discovery: ${posts.length} published blog post(s) → ` +
+          `${restRoutes.length - before} route(s)`
+      );
+    } catch (err) {
+      console.warn(`Blog REST discovery skipped: ${err.message}`);
+    }
+  } else {
+    console.warn('Global fetch unavailable — skipping Firestore REST discovery');
+  }
+
+  const restBlogRoutes = restRoutes.filter((route) => /^\/blog\/[^/]+$/.test(route));
+  const restProductRoutes = restRoutes.filter((route) =>
+    /^\/product\/[^/]+\/[^/]+$/.test(route)
+  );
+  const blogPostRoutes = [
+    ...new Set([
+      ...rendered
+        .map((r) => r.route)
+        .filter((route) => /^\/blog\/[^/]+$/.test(route)),
+      ...restBlogRoutes,
+    ]),
+  ];
+  const productRoutes = [
+    ...new Set([
+      ...rendered
+        .map((r) => r.route)
+        .filter((route) => /^\/product\/[^/]+\/[^/]+$/.test(route)),
+      ...restProductRoutes,
+    ]),
+  ];
   const sitemapRoutes = [
     ...new Set([
       ...Object.keys(SITEMAP_META),
@@ -510,8 +852,10 @@ async function main() {
         generatedAt: new Date().toISOString(),
         routeCount: rendered.length,
         fallbackRouteCount: fallbackRoutes.length,
+        restRouteCount: restRoutes.length,
         routes: rendered.map((r) => r.route),
         fallbackRoutes,
+        restRoutes,
       },
       null,
       2
